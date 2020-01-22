@@ -212,6 +212,7 @@ app.get('/tree', asyncHandler(async (req, res, next) => {
   var walletEntityId = entityId;
   var wallet = req.query.wallet;
   if(wallet != null){
+    console.log(wallet);
 
     const query1 = {
       text: `SELECT *
@@ -235,29 +236,53 @@ app.get('/tree', asyncHandler(async (req, res, next) => {
 
   }
 
+
+  var limitSQL = "";
+  const limit = req.query.limit;
+  if(limit != null){
+    limitClause = `LIMIT ${limit}`
+  }
+  
  
   const query = {
-    text: `SELECT *
+    text: `SELECT token.*, image_url, lat, lon, 
+    tree_region.name AS region_name,
+    trees.time_created AS tree_captured_at
     FROM token
-    WHERE entity_id = $1`,
+    JOIN trees
+    ON trees.id = token.tree_id
+    LEFT JOIN (
+      SELECT DISTINCT  name, tree_id
+      FROM tree_region
+      JOIN region
+      ON region.id = tree_region.region_id
+      WHERE zoom_level = 4
+    ) tree_region
+    ON tree_region.tree_id = trees.id 
+    WHERE entity_id = $1
+    ORDER BY tree_captured_at DESC 
+    ${limitClause}`,
     values: [walletEntityId]
   }
   const rval = await pool.query(query);
 
   const trees = [];
-  for(i=0; i<rval.rows.length; i++){
+  for(token of rval.rows){
     treeItem = {
-      token: rval.rows[i].uuid,
-      map_url: "https://treetracker.org?treeid="+rval.rows[i].tree_id,
-      image_url: "not implemented",
-      meta: "map url is hard coded to live map"
+      token: token.uuid,
+      map_url: config.map_url + "?treeid="+token.tree_id,
+      image_url: token.image_url,
+      tree_captured_at: token.tree_captured_at,
+      latitude: token.lat,
+      longitude: token.lon,
+      region: token.region_name
     }
     trees.push(treeItem);
   }
   const response = {
     trees: trees,
     wallet: wallet,
-    wallet_url: "https://dev.treetracker.org/?wallet="+wallet
+    wallet_url: config.wallet_url + "?wallet="+wallet
   }
 
   res.status(200).json(response);
@@ -283,6 +308,107 @@ const renderAccountData = function(entity){
 }
 
 
+app.get('/history', asyncHandler(async (req, res, next) => {
+
+  const entityId = req.entity_id;
+  const accessGranted = await checkAccess(entityId, 'list_trees');
+  if( !accessGranted ){
+    res.status(401).json({
+      message:"Not Permitted"
+    });
+    return;
+  }
+
+
+  const tokenUUID = req.query.token;
+  const query0 = {
+    text: `SELECT *
+    FROM token 
+    WHERE uuid = $1`,
+    values: [tokenUUID]
+  }
+  const rval0 = await pool.query(query0);
+  const token = rval0.rows[0];
+
+
+  // check that we manage the wallet this token is in
+
+  // get primary account
+  const query1 = {
+    text: `SELECT *
+    FROM entity 
+    LEFT JOIN (
+      SELECT entity_id, COUNT(id) AS tokens_in_wallet
+      FROM token
+      GROUP BY entity_id
+    ) balance
+    ON balance.entity_id = entity.id
+    WHERE entity.id = $1`,
+    values: [entityId]
+  }
+  const rval1 = await pool.query(query1);
+  const entity = rval1.rows[0];
+  const managedWallets = [entity.id];
+
+  // get any child accounts
+  if( await checkAccess(entityId, 'manage_accounts') ){
+    const query2 = {
+      text: `SELECT *
+      FROM entity 
+      JOIN entity_manager
+      ON entity_manager.child_entity_id = entity.id
+      WHERE entity_manager.parent_entity_id = $1
+      AND entity_manager.active = TRUE`,
+      values: [entityId]
+    }
+    const rval2 = await pool.query(query2);
+    const entityManagers = rval2.rows;
+    for(entityManager of entityManagers){
+      managedWallets.push(entityManager.child_entity_id);
+    }
+
+  }
+  console.log(managedWallets);
+
+
+  if(!managedWallets.includes(token.entity_id)){
+    res.status(401).json({
+      message:"You do not have access to history for this tree"
+    });
+    return;
+  }
+
+
+  const query4 = {
+    text: `SELECT '${tokenUUID}' as token,
+    sender.wallet as sender_wallet,
+    receiver.wallet as receiver_wallet,
+    processed_at
+    FROM transaction
+    JOIN entity sender
+    ON sender.id = transaction.sender_entity_id
+    JOIN entity receiver
+    ON receiver.id = transaction.receiver_entity_id
+    WHERE token_id = $1
+    ORDER BY processed_at`,
+    values: [token.id]
+  }
+  const rval4 = await pool.query(query4);
+  const history = [];  
+  for(transaction of rval4.rows){
+    history.push(transaction);
+  }
+
+  const response = {
+    history: history
+  };
+  res.status(200).json(response);
+  res.end();
+
+}));
+
+
+
 app.get('/account', asyncHandler(async (req, res, next) => {
 
   const entityId = req.entity_id;
@@ -299,7 +425,13 @@ app.get('/account', asyncHandler(async (req, res, next) => {
   const query1 = {
     text: `SELECT *
     FROM entity 
-    WHERE id = $1`,
+    LEFT JOIN (
+      SELECT entity_id, COUNT(id) AS tokens_in_wallet
+      FROM token
+      GROUP BY entity_id
+    ) balance
+    ON balance.entity_id = entity.id
+    WHERE entity.id = $1`,
     values: [entityId]
   }
   const rval1 = await pool.query(query1);
@@ -325,11 +457,13 @@ app.get('/account', asyncHandler(async (req, res, next) => {
   const accounts = [];
   const accountData = renderAccountData(entity);
   accountData.access = 'primary';
+  accountData.tokens_in_wallet = entity.tokens_in_wallet ? entity.tokens_in_wallet : 0;
   accounts.push(accountData);
 
   for(const childEntity of childEntities){
     const childAccountData = renderAccountData(childEntity);
     childAccountData.access = 'child';
+    childAccountData.tokens_in_wallet = childEntity.tokens_in_wallet ? childEntity.tokens_in_wallet : 0;
     accounts.push(childAccountData);
   }
 
@@ -362,11 +496,11 @@ app.post('/account', asyncHandler(async (req, res, next) => {
   //TODO: these should occur in a transaction
   const query1 = {
     text: `INSERT INTO entity
-    (name, first_name, last_name, email, phone, website, wallet)
+    (type, name, first_name, last_name, email, phone, website, wallet)
     values
-    ($1, $2, $3, $4, $5, $6, $7)
+    ($1, $2, $3, $4, $5, $6, $7, $8)
     RETURNING *`,
-    values: [body.name, body.first_name, body.last_name, body.email, body.phone, body.website, body.wallet]
+    values: ['p', body.name, body.first_name, body.last_name, body.email, body.phone, body.website, body.wallet]
   }
   const rval1 = await pool.query(query1);
   const subAccount = rval1.rows[0];
@@ -389,10 +523,174 @@ app.post('/account', asyncHandler(async (req, res, next) => {
 
 }));
 
+app.post('/transfer/bundle', asyncHandler(async (req, res, next) => {
+
+  console.log('Bundle transfer requested');
+
+  const entityId = req.entity_id;
+
+  {
+    const accessGranted = await checkAccess(entityId, 'transfer_bundle');
+    if( !accessGranted ){
+      res.status(401).json({
+        message:"Not Permitted"
+      });
+      return;
+    }
+  }
+
+  {
+    const accessGranted = await checkAccess(entityId, 'manage_accounts');
+    if( !accessGranted ){
+      res.status(401).json({
+        message:"Not Permitted"
+      });
+      return;
+    }
+  }
+
+  console.log("Role access approved");
+
+  const bundleSize = req.body.bundle_size;
+  const senderWallet = req.body.sender_wallet;
+  const receiverWallet = req.body.receiver_wallet;
+
+  // Get sender entity id
+
+  const queryWallet1 = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [senderWallet]
+  }
+  const rvalWallet1 = await pool.query(queryWallet1);
+  const senderEntityId = rvalWallet1.rows[0].id;
+
+
+  const queryWallet2 = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [receiverWallet]
+  }
+  const rvalWallet2 = await pool.query(queryWallet2);
+  receiverEntityId = rvalWallet2.rows[0].id;
+
+  if(receiverEntityId == senderEntityId){
+    res.status(403).json({
+      message:"Sender and receiver are identical"
+    });
+    return;
+  }
+
+  // Check access to sender and receiver wallets
+
+  if(senderEntityId != entityId){
+    // check if this is a valid subaccount
+    const managementAccountQuery = {
+      text: `SELECT *
+      FROM entity_manager
+      WHERE child_entity_id = $1
+      AND entity_manager.active = TRUE`,
+      values: [senderEntityId]
+    };      
+    const managementRval = await pool.query(managementAccountQuery);
+    var managed = false
+    if(managementRval.rows.length > 0){
+      for(r of managementRval.rows){
+        if(r.parent_entity_id == entityId){
+          managed = true;
+          break;
+        }
+      }
+    }
+
+    if(managed == false){
+      res.status(401).json({
+        message:"You do not manage the sender of this transfer"
+      });
+      return;
+    }
+  }
+
+
+  if(receiverEntityId != entityId){
+    // check if this is a valid subaccount
+    const managementAccountQuery = {
+      text: `SELECT *
+      FROM entity_manager
+      WHERE child_entity_id = $1
+      AND entity_manager.active = TRUE`,
+      values: [receiverEntityId]
+    };      
+    const managementRval = await pool.query(managementAccountQuery);
+    var managed = false
+    if(managementRval.rows.length > 0){
+      for(r of managementRval.rows){
+        if(r.parent_entity_id == entityId){
+          managed = true;
+          break;
+        }
+      }
+    }
+
+    if(managed == false){
+      res.status(401).json({
+        message:"You do not manage the receiver of this transfer"
+      });
+      return;
+    }
+  }
+
+
+
+  // Find tokens for this bundle
+  const queryTokens = {
+    text: `SELECT *
+    FROM token
+    WHERE entity_id = $1
+    ORDER BY id ASC
+    LIMIT $2`,
+    values: [senderEntityId, bundleSize]
+  }
+  const rvalTokens = await pool.query(queryTokens);
+  const tokens = rvalTokens.rows; 
+  
+  if(tokens.length != bundleSize){
+    res.status(422).json({
+      message:"Not enough tokens matching bundle description"
+    });
+    return;
+  }
+
+  const tokenUUIDs = [];
+  for(token of tokens){
+    tokenUUIDs.push(token.uuid);
+  }
+
+
+  // move tokens
+  const query2 = {
+    text: `UPDATE token
+    SET entity_id = $1
+    WHERE uuid = ANY ($2)`,
+    values : [receiverEntityId, tokenUUIDs]
+  }
+  const rval2 = await pool.query(query2);
+
+  const response = {
+    status: `${tokens.length} tokens transferred to ${receiverWallet}`,
+    wallet_url: config.wallet_url + "?wallet="+receiverWallet
+  }
+  res.status(200).json(response);
+  res.end();
+
+}));
+
+
 
 app.post('/transfer', asyncHandler(async (req, res, next) => {
 
-  console.log('ok');
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
@@ -401,10 +699,10 @@ app.post('/transfer', asyncHandler(async (req, res, next) => {
     });
     return;
   }
-  console.log('ok');
 
   // TODO: validate inputs
   const tokens = req.body.tokens;
+  const senderWallet = req.body.sender_wallet;
   const receiverWallet = req.body.receiver_wallet;
 
   const queryWallet = {
@@ -414,20 +712,30 @@ app.post('/transfer', asyncHandler(async (req, res, next) => {
     values: [receiverWallet]
   }
   const rvalWallet = await pool.query(queryWallet);
-  receiverEntityId = rvalWallet.rows[0].id;
+  const receiverEntityId = rvalWallet.rows[0].id;
+
+  const queryWallet2 = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [senderWallet]
+  }
+  const rvalWallet2 = await pool.query(queryWallet2);
+  const senderEntityId = rvalWallet2.rows[0].id;
 
   // validate tokens
   const query = {
     text: `SELECT entity_id, count(id)
     FROM token
     WHERE uuid = ANY ($1)
+    AND entity_id = $2
     GROUP BY entity_id`,
-    values: [tokens]
+    values: [tokens, senderEntityId]
   }
   const rval = await pool.query(query);
   if(rval.rows.length != 1){
     res.status(403).json({
-      message:"Tokens must be non-empty and all be held by the same entity"
+      message:"Tokens must be non-empty and all be held by the sender wallet"
     });
     return;
   }
@@ -441,13 +749,13 @@ app.post('/transfer', asyncHandler(async (req, res, next) => {
   }
 
 
-  console.log(tokenReport);
   if(tokenReport.entity_id != entityId){
     // check if this is a valid subaccount
     const managementAccountQuery = {
       text: `SELECT *
       FROM entity_manager
-      WHERE child_entity_id = $1`,
+      WHERE child_entity_id = $1
+      AND entity_manager.active = TRUE`,
       values: [tokenReport.entity_id]
     };      
     const managementRval = await pool.query(managementAccountQuery);
@@ -531,7 +839,10 @@ app.post('/transfer', asyncHandler(async (req, res, next) => {
   
 
 
-  const response = {status: "ok - transfer log not implemented yet"}
+  const response = {
+    status: `${tokens.length} tokens transferred to ${receiverWallet}`,
+    wallet_url: config.wallet_url + "?wallet="+receiverWallet
+  }
   res.status(200).json(response);
   res.end();
 
@@ -543,7 +854,11 @@ app.post('/send', asyncHandler(async (req, res, next) => {
 }));
 
 app.get('*',function(req, res){
-    res.sendFile(path.join(__dirname,'index.html'));
+  console.log('Did not match path');
+});
+
+app.post('*',function(req, res){
+  console.log('Did not match path');
 });
 
 app.listen(port,()=>{
