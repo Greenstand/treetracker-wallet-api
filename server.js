@@ -678,7 +678,10 @@ app.post('/transfer/bundle', asyncHandler(async (req, res, next) => {
   }
   const rval2 = await pool.query(query2);
 
-  const response = {status: `${tokens.length} tokens transferred to ${receiverWallet}`}
+  const response = {
+    status: `${tokens.length} tokens transferred to ${receiverWallet}`,
+    wallet_url: config.wallet_url + "?wallet="+receiverWallet
+  }
   res.status(200).json(response);
   res.end();
 
@@ -836,7 +839,10 @@ app.post('/transfer', asyncHandler(async (req, res, next) => {
   
 
 
-  const response = {status: `${tokens.length} tokens transferred to ${receiverWallet}`}
+  const response = {
+    status: `${tokens.length} tokens transferred to ${receiverWallet}`,
+    wallet_url: config.wallet_url + "?wallet="+receiverWallet
+  }
   res.status(200).json(response);
   res.end();
 
