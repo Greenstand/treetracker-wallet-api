@@ -445,6 +445,12 @@ app.get('/account', asyncHandler(async (req, res, next) => {
     FROM entity 
     JOIN entity_manager
     ON entity_manager.child_entity_id = entity.id
+    LEFT JOIN (
+      SELECT entity_id, COUNT(id) AS tokens_in_wallet
+      FROM token
+      GROUP BY entity_id
+    ) balance
+    ON balance.entity_id = entity_manager.child_entity_id
     WHERE entity_manager.parent_entity_id = $1
     AND entity_manager.active = TRUE`,
     values: [entityId]
