@@ -20,6 +20,7 @@
     "express": "^4.16.2",
     "express-async-handler": "^1.1.4",
     "express-bearer-token": "^2.1.1",
+    "express-validator": "^6.4.0",
     "jsonwebtoken": "8.1.0",
     "morgan": "^1.9.1",
     "pg": "^7.4.0"

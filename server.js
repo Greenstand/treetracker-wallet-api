@@ -10,6 +10,8 @@ const JWT = require('jsonwebtoken');
 const Crypto = require('crypto');
 const asyncHandler = require('express-async-handler');
 const FS = require('fs');
+const { check, validationResult } = require('express-validator');
+
 
 const config = require('./config/config');
 
@@ -116,7 +118,15 @@ app.use(asyncHandler(async (req, res, next) => {
  
 }));
 
-app.post('/auth', asyncHandler(async (req, res, next) => {
+app.post('/auth', [
+  check('wallet').isAlphanumeric(),
+ ], asyncHandler(async (req, res, next) => {
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
   if (!req.body || (!req.body['wallet'] || !req.body['password'] )) {
     console.log('ERROR: Authentication, no credentials submitted');
     res.status(406).send('Error: No credentials submitted 1');
