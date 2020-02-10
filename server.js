@@ -11,6 +11,7 @@ const Crypto = require('crypto');
 const asyncHandler = require('express-async-handler');
 const FS = require('fs');
 const { check, validationResult } = require('express-validator');
+const { body } = require('express-validator');
 
 
 const config = require('./config/config');
@@ -133,6 +134,18 @@ app.post('/auth', [
     res.end();
     return;
   }
+
+  app.post('/auth', [
+    check('password').isLength({ min: 8 }),
+    check('wallet').isLength({ min: 4 })
+   ], asyncHandler(async (req, res, next) => {
+  
+    const errors = isLength(req);
+  
+    if (!errors.isLength()) {
+       return res.status(422).json({ errors: errors.array() });
+    }
+   
 
   const wallet = req.body['wallet'];
   const password = req.body['password'];
@@ -503,6 +516,9 @@ app.post('/account', asyncHandler(async (req, res, next) => {
     return;
   }
   console.log('ok');
+
+  
+
 
   const body = req.body;
   console.log(body);
@@ -881,4 +897,7 @@ app.listen(port,()=>{
     console.log('listening on port ' + port);
 });
 
-module.exports = app;
+module.exports = app; 
+
+ }
+ ))
