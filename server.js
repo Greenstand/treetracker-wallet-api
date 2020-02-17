@@ -136,14 +136,14 @@ app.post('/auth', [
   }
 
   app.post('/auth', [
-    check('password').isLength({ min: 8 }),
-    check('wallet').isLength({ min: 4 })
-   ], asyncHandler(async (req, res, next) => {
+    req.check('password','Password is invalid').isLength({ min: 8, max: 16 }),
+    req.check('wallet','Invalid wallet').isLength({ min: 4, max: 16 })
+   ], asyncHandler(async (req, res) => {
   
     const errors = isLength(req);
   
     if (!errors.isLength()) {
-       return res.status(422).json({ errors: errors.array() });
+       return res.errorHandler().json({ errors: errors.array() });
     }
    
 
@@ -188,6 +188,16 @@ app.post('/auth', [
   return;
 
 }));
+
+app.post('/auth', body('passwordConfirmation').custom((value, { req }) => {
+  if (value !== req.body.password) {
+    throw new Error('Password confirmation does not match password');
+  }
+  
+  return true;
+}), (_req) => {
+
+});
 
 // middleware layer that checks jwt authentication
 
