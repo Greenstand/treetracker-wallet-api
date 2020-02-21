@@ -138,7 +138,6 @@ app.post('/auth', [
     return;
   }
 
-
   const wallet = req.body['wallet'];
   const password = req.body['password'];
 
@@ -213,7 +212,13 @@ app.use((req, res, next)=>{
   }
 });
 
+
+// Validation
+// limit optional, but must be an integer
+// wallet optional, but most be alphanumeric
 app.get('/tree', asyncHandler(async (req, res, next) => {
+
+
 
   const entityId = req.entity_id;
 
@@ -230,6 +235,7 @@ app.get('/tree', asyncHandler(async (req, res, next) => {
   if(wallet != null){
     console.log(wallet);
 
+    //TODO: verify this user has access to this wallet
     const query1 = {
       text: `SELECT *
       FROM entity 
@@ -237,6 +243,12 @@ app.get('/tree', asyncHandler(async (req, res, next) => {
       values: [wallet]
     }
     const rval1 = await pool.query(query1);
+    if(rval1.rows.length == 0){
+      res.status(404).json({
+        message:"Invalid wallet"
+      });
+      return;
+    }
     walletEntityId = rval1.rows[0].id;
 
   } else {
@@ -524,7 +536,6 @@ app.post('/account', [
      return res.status(422).json({ errors: errors.array() });
   }
 
-  console.log('ok');
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
@@ -533,13 +544,22 @@ app.post('/account', [
     });
     return;
   }
-  console.log('ok');
-
-  
-
 
   const body = req.body;
-  console.log(body);
+
+  const queryWallet = {
+    text: `SELECT *
+    FROM entity 
+    WHERE wallet = $1`,
+    values: [body.wallet]
+  }
+  const rvalWallet = await pool.query(queryWallet);
+  if(rvalWallet.rows.length > 0){
+    res.status(409).json({
+      message:"This wallet name is taken"
+    });
+    return;
+  }
 
   //TODO: wallet cannot already exist in database.  unique index blocks this in database, but check here also
 
@@ -898,6 +918,44 @@ app.post('/transfer', asyncHandler(async (req, res, next) => {
 
 }));
 
+app.get('/token', asyncHandler(async (req, res, next) => {
+
+
+  const query = {
+    text: `SELECT token.*, image_url, lat, lon, 
+    tree_region.name AS region_name,
+    trees.time_created AS tree_captured_at
+    FROM token
+    JOIN trees
+    ON trees.id = token.tree_id
+    LEFT JOIN (
+      SELECT DISTINCT  name, tree_id
+      FROM tree_region
+      JOIN region
+      ON region.id = tree_region.region_id
+      WHERE zoom_level = 4
+    ) tree_region
+    ON tree_region.tree_id = trees.id 
+    WHERE uuid = $1`,
+    values: [walletEntityId]
+  }
+  const rval = await pool.query(query);
+
+  const trees = [];
+  for(token of rval.rows){
+    treeItem = {
+      token: token.uuid,
+      map_url: config.map_url + "?treeid="+token.tree_id,
+      image_url: token.image_url,
+      tree_captured_at: token.tree_captured_at,
+      latitude: token.lat,
+      longitude: token.lon,
+      region: token.region_name
+    }
+    trees.push(treeItem);
+  }
+
+}));
 
 app.post('/send', asyncHandler(async (req, res, next) => {
   // not implemented, for sending externally
@@ -916,5 +974,3 @@ app.listen(port,()=>{
 });
 
 module.exports = app; 
-
- 
