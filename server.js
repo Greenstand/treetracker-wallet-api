@@ -121,6 +121,8 @@ app.use(asyncHandler(async (req, res, next) => {
 
 app.post('/auth', [
   check('wallet').isAlphanumeric(),
+  check('wallet','Invalid wallet').isLength({ min: 4, max: 16 }),
+  check('password','Password is invalid').isLength({ min: 8, max: 16 }),
  ], asyncHandler(async (req, res, next) => {
 
   const errors = validationResult(req);
@@ -128,6 +130,7 @@ app.post('/auth', [
   if (!errors.isEmpty()) {
      return res.status(422).json({ errors: errors.array() });
   }
+
   if (!req.body || (!req.body['wallet'] || !req.body['password'] )) {
     console.log('ERROR: Authentication, no credentials submitted');
     res.status(406).send('Error: No credentials submitted 1');
@@ -135,18 +138,7 @@ app.post('/auth', [
     return;
   }
 
-  app.post('/auth', [
-    req.check('password','Password is invalid').isLength({ min: 8, max: 16 }),
-    req.check('wallet','Invalid wallet').isLength({ min: 4, max: 16 })
-   ], asyncHandler(async (req, res) => {
   
-    const errors = isLength(req);
-  
-    if (!errors.isLength()) {
-       return res.errorHandler().json({ errors: errors.array() });
-    }
-   
-
   const wallet = req.body['wallet'];
   const password = req.body['password'];
 
@@ -189,15 +181,15 @@ app.post('/auth', [
 
 }));
 
-app.post('/auth', body('passwordConfirmation').custom((value, { req }) => {
-  if (value !== req.body.password) {
-    throw new Error('Password confirmation does not match password');
-  }
+// app.post('/auth', body('passwordConfirmation').custom((value, { req }) => {
+//   if (value !== req.body.password) {
+//     throw new Error('Password confirmation does not match password');
+//   }
   
-  return true;
-}), (_req) => {
+//   return true;90#
+// }), (_req) => {
 
-});
+// });
 
 // middleware layer that checks jwt authentication
 
@@ -230,6 +222,10 @@ app.use((req, res, next)=>{
   }
 });
 
+
+// Validation
+// limit optional, but must be an integer
+// wallet optional, but most be alphanumeric
 app.get('/tree', asyncHandler(async (req, res, next) => {
 
   const entityId = req.entity_id;
@@ -362,6 +358,13 @@ app.get('/history', asyncHandler(async (req, res, next) => {
   }
   const rval0 = await pool.query(query0);
   const token = rval0.rows[0];
+
+  if(token == null){
+    res.status(404).json({
+      message:"Not Found"
+    });
+    return;
+  }
 
 
   // check that we manage the wallet this token is in
@@ -516,7 +519,6 @@ app.get('/account', asyncHandler(async (req, res, next) => {
 
 app.post('/account', asyncHandler(async (req, res, next) => {
 
-  console.log('ok');
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
@@ -525,13 +527,22 @@ app.post('/account', asyncHandler(async (req, res, next) => {
     });
     return;
   }
-  console.log('ok');
-
-  
-
 
   const body = req.body;
-  console.log(body);
+
+  const queryWallet = {
+    text: `SELECT *
+    FROM entity 
+    WHERE wallet = $1`,
+    values: [body.wallet]
+  }
+  const rvalWallet = await pool.query(queryWallet);
+  if(rvalWallet.rows.length > 0){
+    res.status(409).json({
+      message:"This wallet name is taken"
+    });
+    return;
+  }
 
   //TODO: wallet cannot already exist in database.  unique index blocks this in database, but check here also
 
@@ -908,6 +919,3 @@ app.listen(port,()=>{
 });
 
 module.exports = app; 
-
- }
- ))
