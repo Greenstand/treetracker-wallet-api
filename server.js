@@ -121,6 +121,8 @@ app.use(asyncHandler(async (req, res, next) => {
 
 app.post('/auth', [
   check('wallet').isAlphanumeric(),
+  check('password','Password is invalid').isLength({ min: 8, max: 16 }),
+  check('wallet','Invalid wallet').isLength({ min: 4, max: 16 })
  ], asyncHandler(async (req, res, next) => {
 
   const errors = validationResult(req);
@@ -128,6 +130,7 @@ app.post('/auth', [
   if (!errors.isEmpty()) {
      return res.status(422).json({ errors: errors.array() });
   }
+
   if (!req.body || (!req.body['wallet'] || !req.body['password'] )) {
     console.log('ERROR: Authentication, no credentials submitted');
     res.status(406).send('Error: No credentials submitted 1');
@@ -135,17 +138,6 @@ app.post('/auth', [
     return;
   }
 
-  app.post('/auth', [
-    req.check('password','Password is invalid').isLength({ min: 8, max: 16 }),
-    req.check('wallet','Invalid wallet').isLength({ min: 4, max: 16 })
-   ], asyncHandler(async (req, res) => {
-  
-    const errors = isLength(req);
-  
-    if (!errors.isLength()) {
-       return res.errorHandler().json({ errors: errors.array() });
-    }
-   
 
   const wallet = req.body['wallet'];
   const password = req.body['password'];
@@ -189,15 +181,6 @@ app.post('/auth', [
 
 }));
 
-app.post('/auth', body('passwordConfirmation').custom((value, { req }) => {
-  if (value !== req.body.password) {
-    throw new Error('Password confirmation does not match password');
-  }
-  
-  return true;
-}), (_req) => {
-
-});
 
 // middleware layer that checks jwt authentication
 
@@ -341,8 +324,16 @@ const renderAccountData = function(entity){
 }
 
 
-app.get('/history', asyncHandler(async (req, res, next) => {
+app.get('/history',[
+  check('token').isUUID()
+], asyncHandler(async (req, res, next) => {
 
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
+  
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'list_trees');
   if( !accessGranted ){
@@ -362,6 +353,13 @@ app.get('/history', asyncHandler(async (req, res, next) => {
   }
   const rval0 = await pool.query(query0);
   const token = rval0.rows[0];
+
+  if(token == null){
+    res.status(404).json ({
+      message:"Token Not Found"
+   })
+   return;
+  }
 
 
   // check that we manage the wallet this token is in
@@ -514,7 +512,17 @@ app.get('/account', asyncHandler(async (req, res, next) => {
 
 }));
 
-app.post('/account', asyncHandler(async (req, res, next) => {
+app.post('/account', [
+
+    check('wallet', 'Invalid wallet name').isAlphanumeric()
+
+], asyncHandler(async (req, res, next) => {
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
 
   console.log('ok');
   const entityId = req.entity_id;
@@ -909,5 +917,4 @@ app.listen(port,()=>{
 
 module.exports = app; 
 
- }
- ))
+ 
