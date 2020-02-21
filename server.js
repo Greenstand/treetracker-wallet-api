@@ -138,7 +138,6 @@ app.post('/auth', [
     return;
   }
 
-
   const wallet = req.body['wallet'];
   const password = req.body['password'];
 
@@ -214,26 +213,9 @@ app.use((req, res, next)=>{
 });
 
 
-// app.post('/user', [
-//   check('username').isEmail(),
-// ], asyncHandler(async (req, res, next) => {
-
-
-//   // Finds the validation errors in this request and wraps them in an object with handy functions
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return res.status(422).json({ errors: errors.array() });
-//   }
-
-//   User.create({
-//     username: req.body.username,
-//     password: req.body.password
-//   }).then(user => res.json(user));
-// });
-
-
-
-
+// Validation
+// limit optional, but must be an integer
+// wallet optional, but most be alphanumeric
 app.get('/tree', asyncHandler(async (req, res, next) => {
 
 
@@ -554,7 +536,6 @@ app.post('/account', [
      return res.status(422).json({ errors: errors.array() });
   }
 
-  console.log('ok');
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
@@ -563,13 +544,22 @@ app.post('/account', [
     });
     return;
   }
-  console.log('ok');
-
-  
-
 
   const body = req.body;
-  console.log(body);
+
+  const queryWallet = {
+    text: `SELECT *
+    FROM entity 
+    WHERE wallet = $1`,
+    values: [body.wallet]
+  }
+  const rvalWallet = await pool.query(queryWallet);
+  if(rvalWallet.rows.length > 0){
+    res.status(409).json({
+      message:"This wallet name is taken"
+    });
+    return;
+  }
 
   //TODO: wallet cannot already exist in database.  unique index blocks this in database, but check here also
 
@@ -984,5 +974,3 @@ app.listen(port,()=>{
 });
 
 module.exports = app; 
-
- 
