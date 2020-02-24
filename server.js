@@ -593,7 +593,16 @@ app.post('/account', [
 
 }));
 
-app.post('/transfer/bundle', asyncHandler(async (req, res, next) => {
+app.post('/transfer/bundle', [
+
+    check('bundle_size' , 'Invaid bundle numbers').isNumeric()
+
+], asyncHandler(async (req, res, next) => {
+
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
 
   console.log('Bundle transfer requested');
 
@@ -759,7 +768,17 @@ app.post('/transfer/bundle', asyncHandler(async (req, res, next) => {
 
 
 
-app.post('/transfer', asyncHandler(async (req, res, next) => {
+app.post('/transfer', [
+
+    check('token','Invalid token').isUUID()
+
+], asyncHandler(async (req, res, next) => {
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
 
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
