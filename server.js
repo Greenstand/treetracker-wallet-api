@@ -215,10 +215,19 @@ app.use((req, res, next)=>{
 
 // Validation
 // limit optional, but must be an integer
-// wallet optional, but most be alphanumeric
-app.get('/tree', asyncHandler(async (req, res, next) => {
+// wallet optional, but must be alphanumeric
+app.get('/tree', [
 
+    check('limit', 'Invalid limit number').isNumeric({min: 1, max: 100}),
+    check('wallet', 'Invalid wallet name').isAlphanumeric()
+    
+], asyncHandler(async (req, res, next) => {
 
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
 
   const entityId = req.entity_id;
 
@@ -452,7 +461,17 @@ app.get('/history',[
 
 
 
-app.get('/account', asyncHandler(async (req, res, next) => {
+app.get('/account', [
+
+  check('wallet', 'Invalid wallet name').isAlphanumeric()
+
+], asyncHandler(async (req, res, next) => {
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
 
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'accounts');
@@ -595,9 +614,11 @@ app.post('/account', [
 
 app.post('/transfer/bundle', [
 
-    check('bundle_size' , 'Invaid bundle numbers').isNumeric()
+    check('bundle_size','Invaid bundle numbers').isNumeric()
 
 ], asyncHandler(async (req, res, next) => {
+
+  const errors = validationResult(req);
 
 
   if (!errors.isEmpty()) {
