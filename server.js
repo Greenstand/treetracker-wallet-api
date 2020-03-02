@@ -791,7 +791,12 @@ app.post('/transfer/bundle', [
 
 app.post('/transfer', [
 
-    check('token','Invalid token').isUUID()
+    check('token','Invalid token').isUUID(),
+
+    check('sender_wallet', 'Invalid Sender wallet name').isAlphanumeric(),
+
+    check('receiver_wallet', 'Invalid Reciever wallet name').isAlphanumeric()
+    
 
 ], asyncHandler(async (req, res, next) => {
 
