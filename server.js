@@ -218,8 +218,8 @@ app.use((req, res, next)=>{
 // wallet optional, but must be alphanumeric
 app.get('/tree', [
 
-    check('limit', 'Invalid limit number').isNumeric({min: 1, max: 100}),
-    check('wallet', 'Invalid wallet name').isAlphanumeric()
+    check('limit', 'Invalid limit number').optional().isNumeric({min: 1, max: 100}),
+    check('wallet', 'Invalid wallet name').optional().isAlphanumeric()
     
 ], asyncHandler(async (req, res, next) => {
 
