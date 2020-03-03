@@ -265,7 +265,7 @@ app.get('/tree', asyncHandler(async (req, res, next) => {
   }
 
 
-  var limitSQL = "";
+  var limitClaus = "";
   const limit = req.query.limit;
   if(limit != null){
     limitClause = `LIMIT ${limit}`
