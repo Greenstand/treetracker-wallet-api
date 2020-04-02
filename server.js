@@ -121,8 +121,8 @@ app.use(asyncHandler(async (req, res, next) => {
 
 app.post('/auth', [
   check('wallet').isAlphanumeric(),
-  check('password','Password is invalid').isLength({ min: 8, max: 16 }),
-  check('wallet','Invalid wallet').isLength({ min: 4, max: 16 })
+  check('password','Password is invalid').isLength({ min: 8, max: 32 }),
+  check('wallet','Invalid wallet').isLength({ min: 4, max: 32 })
  ], asyncHandler(async (req, res, next) => {
 
   const errors = validationResult(req);
@@ -218,7 +218,7 @@ app.use((req, res, next)=>{
 // wallet optional, but must be alphanumeric
 app.get('/tree', [
 
-    check('limit', 'Invalid limit number').optional().isNumeric({min: 1, max: 100}),
+    check('limit', 'Invalid limit number').optional().isNumeric({min: 1, max: 1000}),
     check('wallet', 'Invalid wallet name').optional().isAlphanumeric()
     
 ], asyncHandler(async (req, res, next) => {
@@ -575,7 +575,7 @@ app.post('/account', [
   const rvalWallet = await pool.query(queryWallet);
   if(rvalWallet.rows.length > 0){
     res.status(409).json({
-      message:"This wallet name is taken"
+      message:"This wallet name is taken. Please select different wallet name"
     });
     return;
   }
