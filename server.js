@@ -234,7 +234,7 @@ app.get('/tree', [
   const accessGranted = await checkAccess(entityId, 'list_trees');
   if( !accessGranted ){
     res.status(401).json({
-      message:"Not Permitted"
+      message:"You do not have access for list_trees"
     });
     return;
   }
@@ -359,7 +359,7 @@ app.get('/history',[
   const accessGranted = await checkAccess(entityId, 'list_trees');
   if( !accessGranted ){
     res.status(401).json({
-      message:"Not Permitted"
+      message:"You do not have access for list_trees"
     });
     return;
   }
@@ -477,7 +477,7 @@ app.get('/account', [
   const accessGranted = await checkAccess(entityId, 'accounts');
   if( !accessGranted ){
     res.status(401).json({
-      message:"Not Permitted"
+      message:"You do not have access for accounts"
     });
     return;
   }
@@ -559,7 +559,7 @@ app.post('/account', [
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
     res.status(401).json({
-      message:"Not Permitted"
+      message:"You do not have access for manage_accounts"
     });
     return;
   }
@@ -633,7 +633,7 @@ app.post('/transfer/bundle', [
     const accessGranted = await checkAccess(entityId, 'transfer_bundle');
     if( !accessGranted ){
       res.status(401).json({
-        message:"Not Permitted"
+        message:"You do not have access for transfer_bundle"
       });
       return;
     }
@@ -643,7 +643,7 @@ app.post('/transfer/bundle', [
     const accessGranted = await checkAccess(entityId, 'manage_accounts');
     if( !accessGranted ){
       res.status(401).json({
-        message:"Not Permitted"
+        message:"You do not have access for manage_accounts"
       });
       return;
     }
@@ -810,7 +810,7 @@ app.post('/transfer', [
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
     res.status(401).json({
-      message:"Not Permitted"
+      message:"You do not have access for manage_accounts"
     });
     return;
   }
