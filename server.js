@@ -90,7 +90,7 @@ app.set('view engine','html');
 app.use(asyncHandler(async (req, res, next) => {
 
   if (!req.headers['treetracker-api-key'] ) {
-    console.log('ERROR: Invalid access - no key');
+    console.log('ERROR: Invalid access - no API key');
     res.status(406).send('Error: Invalid access');
     res.end();
     return;
@@ -108,7 +108,7 @@ app.use(asyncHandler(async (req, res, next) => {
   const rval = await pool.query(query);
 
   if(rval.rows.length == 0){
-    console.log('ERROR: Authentication, invalid access');
+    console.log('ERROR: Authentication, Invalid access');
     res.status(401).send('Error: Invalid access');
     res.end();
     return;
@@ -233,9 +233,11 @@ app.get('/tree', [
 
   const accessGranted = await checkAccess(entityId, 'list_trees');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"You do not have access for list_trees"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "list threes",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -358,9 +360,11 @@ app.get('/history',[
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'list_trees');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"You do not have access for list_trees"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "list threes",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -476,9 +480,11 @@ app.get('/account', [
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'accounts');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"You do not have access for accounts"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "accounts",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -558,9 +564,11 @@ app.post('/account', [
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"You do not have access for manage_accounts"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "manage accounts",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -632,9 +640,11 @@ app.post('/transfer/bundle', [
   {
     const accessGranted = await checkAccess(entityId, 'transfer_bundle');
     if( !accessGranted ){
-      res.status(401).json({
-        message:"You do not have access for transfer_bundle"
-      });
+      res.status(401).json([{
+        msg:"Not Permitted",
+        param: "transfer bundle",
+        location:"access_control"
+      }]);
       return;
     }
   }
@@ -642,9 +652,11 @@ app.post('/transfer/bundle', [
   {
     const accessGranted = await checkAccess(entityId, 'manage_accounts');
     if( !accessGranted ){
-      res.status(401).json({
-        message:"You do not have access for manage_accounts"
-      });
+      res.status(401).json([{
+        msg:"Not Permitted",
+        param: "manage accounts",
+        location:"access_control"
+      }]);
       return;
     }
   }
@@ -809,9 +821,11 @@ app.post('/transfer', [
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"You do not have access for manage_accounts"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "manage accounts",
+      location:"access_control"
+    }]);
     return;
   }
 
