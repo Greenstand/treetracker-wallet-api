@@ -461,17 +461,7 @@ app.get('/history',[
 
 
 
-app.get('/account', [
-
-  check('wallet', 'Invalid wallet name').isAlphanumeric()
-
-], asyncHandler(async (req, res, next) => {
-
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-     return res.status(422).json({ errors: errors.array() });
-  }
+app.get('/account', asyncHandler(async (req, res, next) => {
 
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'accounts');
