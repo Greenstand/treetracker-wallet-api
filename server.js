@@ -121,7 +121,7 @@ app.use(asyncHandler(async (req, res, next) => {
 
 app.post('/auth', [
   check('wallet').isAlphanumeric(),
-  check('password','Password is invalid').isLength({ min: 8, max: 16 }),
+  check('password','Password is invalid').isLength({ min: 6, max: 16 }),
   check('wallet','Invalid wallet').isLength({ min: 4, max: 16 })
  ], asyncHandler(async (req, res, next) => {
 
@@ -791,13 +791,12 @@ app.post('/transfer/bundle', [
 
 app.post('/transfer', [
 
-    check('token','Invalid token').isUUID(),
+    check('tokens[*].*').isUUID(),
 
     check('sender_wallet', 'Invalid Sender wallet name').isAlphanumeric(),
 
     check('receiver_wallet', 'Invalid Reciever wallet name').isAlphanumeric()
     
-
 ], asyncHandler(async (req, res, next) => {
 
   const errors = validationResult(req);
@@ -965,7 +964,6 @@ app.post('/transfer', [
 
 app.get('/token', asyncHandler(async (req, res, next) => {
 
-
   const query = {
     text: `SELECT token.*, image_url, lat, lon, 
     tree_region.name AS region_name,
@@ -1002,8 +1000,122 @@ app.get('/token', asyncHandler(async (req, res, next) => {
 
 }));
 
-app.post('/send', asyncHandler(async (req, res, next) => {
-  // not implemented, for sending externally
+app.get('/wallet/:wallet_id/event', asyncHandler(async (req, res, next) => {
+
+}));
+
+app.post('/wallet/:wallet_id/trust/request', asyncHandler(async (req, res, next) => {
+
+  const type = req.body.type;
+  //const requestor_wallet_id = req.body.wallet_id; this is in the bearer token
+  const requested_wallet_id = req.params.wallet_id;
+
+
+}));
+
+app.post('/wallet/:wallet_id/trust/approve',  asyncHandler(async (req, res, next) => {
+
+  const type = req.body.type;
+  //const wallet_id = req.body.wallet_id; // in the bearer token
+  const approved_wallet_id = req.params.wallet_id;
+
+}));
+
+
+app.post('/send', [
+
+  check('tokens[*].*').isUUID(),
+
+  check('receiver_wallet', 'Invalid Reciever wallet name').isAlphanumeric()
+  
+], asyncHandler(async (req, res, next) => {
+  
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
+
+  const entityId = req.entity_id;
+  // check for trust connection here
+
+  const tokens = req.body.tokens;
+  const receiverWallet = req.body.receiver_wallet;
+  const senderEntityId = entityId
+
+  // this code is copied from /transfer and needs to be refactored in to a model
+  const queryWallet = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [receiverWallet]
+  }
+  const rvalWallet = await pool.query(queryWallet);
+  const receiverEntityId = rvalWallet.rows[0].id;
+
+  // validate tokens
+  const query = {
+    text: `SELECT entity_id, count(id)
+    FROM token
+    WHERE uuid = ANY ($1)
+    AND entity_id = $2
+    GROUP BY entity_id`,
+    values: [tokens, senderEntityId]
+  }
+  const rval = await pool.query(query);
+  if(rval.rows.length != 1){
+    res.status(403).json({
+      message:"Tokens must be non-empty and all be held by the sender wallet"
+    });
+    return;
+  }
+  const tokenReport = rval.rows[0];
+
+  if(receiverEntityId == tokenReport.entity_id){
+    res.status(403).json({
+      message:"Sender and receiever are identical"
+    });
+    return;
+  }
+
+  // todo: start a db transaction 
+  // create a transfer
+  const query1 = {
+    text: `INSERT INTO transfer  
+    (executing_entity_id)
+    values
+    ($1)
+    RETURNING *`,
+    values: [entityId]
+  }
+  const rval1 = await pool.query(query1);
+  const transferId = rval1.rows[0].id;
+
+
+  //TODO use a stored procedure to populate the transfer_id on the transaction records
+  // or explore other ways of doing this
+  // such as flipping the trigger.. so that instead of an update we process a transfer, and this moves the token.. is that good?
+
+  // move tokens
+  const query2 = {
+    text: `UPDATE token
+    SET entity_id = $1
+    WHERE uuid = ANY ($2)`,
+    values : [receiverEntityId, tokens]
+  }
+  const rval2 = await pool.query(query2);
+
+  // get transfer log
+  
+
+
+  const response = {
+    status: `${tokens.length} tokens transferred to ${receiverWallet}`,
+    wallet_url: config.wallet_url + "?wallet="+receiverWallet
+  }
+  res.status(200).json(response);
+  res.end();
+  
+
 }));
 
 app.get('*',function(req, res){
