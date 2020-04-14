@@ -1067,17 +1067,21 @@ app.post('/send', [
   }
   const rval = await pool.query(query);
   if(rval.rows.length != 1){
-    res.status(403).json({
-      message:"Tokens must be non-empty and all be held by the sender wallet"
-    });
+    res.status(403).json([{
+      msg:"Tokens must be non-empty and all be held by the sender wallet",
+      param: "tokens",
+      location:"send"
+    }]);
     return;
   }
   const tokenReport = rval.rows[0];
 
   if(receiverEntityId == tokenReport.entity_id){
-    res.status(403).json({
-      message:"Sender and receiever are identical"
-    });
+    res.status(403).json([{
+      msg:"Sender and receiever are identical",
+      param: "receiver_wallet",
+      location:"send"
+    }]);
     return;
   }
 
