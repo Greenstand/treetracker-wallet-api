@@ -90,7 +90,7 @@ app.set('view engine','html');
 app.use(asyncHandler(async (req, res, next) => {
 
   if (!req.headers['treetracker-api-key'] ) {
-    console.log('ERROR: Invalid access - no key');
+    console.log('ERROR: Invalid access - no API key');
     res.status(406).send('Error: Invalid access');
     res.end();
     return;
@@ -108,7 +108,7 @@ app.use(asyncHandler(async (req, res, next) => {
   const rval = await pool.query(query);
 
   if(rval.rows.length == 0){
-    console.log('ERROR: Authentication, invalid access');
+    console.log('ERROR: Authentication, Invalid access');
     res.status(401).send('Error: Invalid access');
     res.end();
     return;
@@ -121,8 +121,8 @@ app.use(asyncHandler(async (req, res, next) => {
 
 app.post('/auth', [
   check('wallet').isAlphanumeric(),
-  check('password','Password is invalid').isLength({ min: 6, max: 16 }),
-  check('wallet','Invalid wallet').isLength({ min: 4, max: 16 })
+  check('password','Password is invalid').isLength({ min: 8, max: 32 }),
+  check('wallet','Invalid wallet').isLength({ min: 4, max: 32 })
  ], asyncHandler(async (req, res, next) => {
 
   const errors = validationResult(req);
@@ -218,7 +218,7 @@ app.use((req, res, next)=>{
 // wallet optional, but must be alphanumeric
 app.get('/tree', [
 
-    check('limit', 'Invalid limit number').optional().isNumeric({min: 1, max: 100}),
+    check('limit', 'Invalid limit number').optional().isNumeric({min: 1, max: 1000}),
     check('wallet', 'Invalid wallet name').optional().isAlphanumeric()
     
 ], asyncHandler(async (req, res, next) => {
@@ -233,9 +233,11 @@ app.get('/tree', [
 
   const accessGranted = await checkAccess(entityId, 'list_trees');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"Not Permitted"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "list threes",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -358,9 +360,11 @@ app.get('/history',[
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'list_trees');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"Not Permitted"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "list threes",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -461,24 +465,16 @@ app.get('/history',[
 
 
 
-app.get('/account', [
-
-  check('wallet', 'Invalid wallet name').isAlphanumeric()
-
-], asyncHandler(async (req, res, next) => {
-
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-     return res.status(422).json({ errors: errors.array() });
-  }
+app.get('/account', asyncHandler(async (req, res, next) => {
 
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'accounts');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"Not Permitted"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "accounts",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -558,9 +554,11 @@ app.post('/account', [
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"Not Permitted"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "manage accounts",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -575,7 +573,7 @@ app.post('/account', [
   const rvalWallet = await pool.query(queryWallet);
   if(rvalWallet.rows.length > 0){
     res.status(409).json({
-      message:"This wallet name is taken"
+      message:"This wallet name is taken. Please select different wallet name"
     });
     return;
   }
@@ -632,9 +630,11 @@ app.post('/transfer/bundle', [
   {
     const accessGranted = await checkAccess(entityId, 'transfer_bundle');
     if( !accessGranted ){
-      res.status(401).json({
-        message:"Not Permitted"
-      });
+      res.status(401).json([{
+        msg:"Not Permitted",
+        param: "transfer bundle",
+        location:"access_control"
+      }]);
       return;
     }
   }
@@ -642,9 +642,11 @@ app.post('/transfer/bundle', [
   {
     const accessGranted = await checkAccess(entityId, 'manage_accounts');
     if( !accessGranted ){
-      res.status(401).json({
-        message:"Not Permitted"
-      });
+      res.status(401).json([{
+        msg:"Not Permitted",
+        param: "manage accounts",
+        location:"access_control"
+      }]);
       return;
     }
   }
@@ -808,9 +810,11 @@ app.post('/transfer', [
   const entityId = req.entity_id;
   const accessGranted = await checkAccess(entityId, 'manage_accounts');
   if( !accessGranted ){
-    res.status(401).json({
-      message:"Not Permitted"
-    });
+    res.status(401).json([{
+      msg:"Not Permitted",
+      param: "manage accounts",
+      location:"access_control"
+    }]);
     return;
   }
 
@@ -1131,3 +1135,8 @@ app.listen(port,()=>{
 });
 
 module.exports = app; 
+
+
+
+// error from the API . We need to check and add error on those when you put wrong token to the postman
+// error was with POST acccount
