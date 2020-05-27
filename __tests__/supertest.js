@@ -20,7 +20,7 @@ const mockUser = {
 //   wallet: "mockwallet"
 // };
 
-const apiKey = 'owck7A36fLCf1VNgExQRx1LYq8gkiyZv';
+const apiKey = '';
 
 describe('Route integration', () => {
   // Authorization path
