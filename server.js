@@ -17,8 +17,8 @@ const { body } = require('express-validator');
 const config = require('./config/config');
 
 // PRIVATE and PUBLIC key
-const privateKEY  = FS.readFileSync('./config/private.key', 'utf8');
-const publicKEY  = FS.readFileSync('./config/public.key', 'utf8');
+const privateKEY = FS.readFileSync('./config/jwtRS256.key', 'utf8');
+const publicKEY = FS.readFileSync('./config/jwtRS256.key.pub', 'utf8');
 
 const signingOptions = {
  issuer: "greenstand",
@@ -38,6 +38,7 @@ const pool = new Pool({
 
 pool.on('connect', (client) => {
   //console.log("connected", client);
+  console.log("hash", sha512("test1234", 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde'));
 })
 
 //process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
@@ -51,6 +52,8 @@ const sha512 = function(password, salt){
     var value = hash.digest('hex');
     return value;
 };
+
+
 
 const checkAccess = async function(entityId, roleName){
 
@@ -161,7 +164,6 @@ app.post('/auth', [
 
   const entity = rval2.rows[0];
   const hash = sha512(password, entity.salt);
-  console.log(hash);
 
   if(hash != entity.password){
     console.log('ERROR: Authentication, invalid credentials');
@@ -192,7 +194,7 @@ app.use((req, res, next)=>{
     JWT.verify(token, publicKEY, verifyOptions, (err,decod)=>{
       if(err){
         console.log(err);
-        console.log('ERROR: Authentication, token  not verified');
+        console.log('ERROR: Authentication, token not verified');
         res.status(403).json({
           message:"Wrong Token"
         });
@@ -230,7 +232,6 @@ app.get('/tree', [
   }
 
   const entityId = req.entity_id;
-
   const accessGranted = await checkAccess(entityId, 'list_trees');
   if( !accessGranted ){
     res.status(401).json([{
@@ -276,7 +277,7 @@ app.get('/tree', [
   }
 
 
-  var limitClaus = "";
+  var limitClause = "";
   const limit = req.query.limit;
   if(limit != null){
     limitClause = `LIMIT ${limit}`
