@@ -4,7 +4,8 @@ const bearerToken = require('express-bearer-token');
 const bodyParser = require('body-parser');
 const http = require('http');
 const pg = require('pg');
-const { Pool, Client } = require('pg');
+const pool = require('./database/database.js');
+
 const path = require('path');
 const JWT = require('jsonwebtoken');
 const Crypto = require('crypto');
@@ -14,11 +15,11 @@ const { check, validationResult } = require('express-validator');
 const { body } = require('express-validator');
 
 
-const config = require('./config/config');
+const config = require('../config/config.js');
 
 // PRIVATE and PUBLIC key
-const privateKEY = FS.readFileSync('./config/private.key', 'utf8');
-const publicKEY = FS.readFileSync('./config/public.key', 'utf8');
+const privateKEY = FS.readFileSync('../config/jwtRS256.key', 'utf8');
+const publicKEY = FS.readFileSync('../config/jwtRS256.key.pub', 'utf8');
 
 const signingOptions = {
  issuer: "greenstand",
@@ -32,15 +33,6 @@ const verifyOptions = {
  algorithms:  ["RS256"]
 };
 
-const pool = new Pool({
-  connectionString: config.connectionString
-});
-
-pool.on('connect', (client) => {
-  //console.log("connected", client);
-})
-
-//process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 const app = express();
 const port = process.env.NODE_PORT || 3006;
