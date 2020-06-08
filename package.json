@@ -8,7 +8,7 @@
     "test-unit": "NODE_ENV=test mocha --require co-mocha 'lib/*.spec.js'",
     "test-int": "NODE_ENV=test mocha --require co-mocha 'index.spec.js'",
     "test-auth": "NODE_ENV=test mocha --require co-mocha 'lib/auth.spec.js'",
-    "server": "node server.js",
+    "server": "cd ./server && node server.js",
     "test-integration": "NODE_ENV=test mocha --timeout 5000 --require co-mocha './__tests__/supertest.js'"
   },
   "keywords": [],

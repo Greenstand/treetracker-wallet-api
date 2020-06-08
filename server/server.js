@@ -1,65 +1,22 @@
 const express = require('express');
 const Sentry = require('@sentry/node');
-const bearerToken = require('express-bearer-token');
 const bodyParser = require('body-parser');
 const http = require('http');
 const pg = require('pg');
 const pool = require('./database/database.js');
+const router = require('./routes/router.js')
+const authController = require('./controllers/authController.js');
 
 const path = require('path');
-const JWT = require('jsonwebtoken');
-const Crypto = require('crypto');
 const asyncHandler = require('express-async-handler');
-const FS = require('fs');
 const { check, validationResult } = require('express-validator');
 const { body } = require('express-validator');
-
-
-const config = require('../config/config.js');
-
-// PRIVATE and PUBLIC key
-const privateKEY = FS.readFileSync('../config/jwtRS256.key', 'utf8');
-const publicKEY = FS.readFileSync('../config/jwtRS256.key.pub', 'utf8');
-
-const signingOptions = {
- issuer: "greenstand",
- expiresIn:  "365d",
- algorithm:  "RS256"
-};
-
-const verifyOptions = {
- issuer: "greenstand",
- expiresIn:  "365d",
- algorithms:  ["RS256"]
-};
 
 
 const app = express();
 const port = process.env.NODE_PORT || 3006;
 
-const sha512 = function(password, salt){
-    var hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
-    hash.update(password);
-    var value = hash.digest('hex');
-    return value;
-};
-
-const checkAccess = async function(entityId, roleName){
-
-  const query = {
-    text: `SELECT *
-    FROM entity_role
-    WHERE entity_id = $1
-    AND role_name = $2
-    AND enabled = TRUE`,
-    values: [entityId, roleName]
-  }
-  const rval = await pool.query(query);
-
-  return rval.rows.length == 1;
-
-}
-
+const config = require('../config/config.js');
 
 Sentry.init({ dsn: config.sentry_dsn });
 
@@ -67,6 +24,8 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
 app.use(Sentry.Handlers.errorHandler());
+
+app.use('/', router);
 
 // Optional fallthrough error handler
 app.use(function onError(err, req, res, next) {
@@ -78,131 +37,6 @@ app.use(function onError(err, req, res, next) {
 
 
 app.set('view engine','html');
-
-app.use(asyncHandler(async (req, res, next) => {
-
-  if (!req.headers['treetracker-api-key'] ) {
-    console.log('ERROR: Invalid access - no API key');
-    res.status(406).send('Error: Invalid access');
-    res.end();
-    return;
-  }
-
-  const apiKey = req.headers['treetracker-api-key'];
-
-  const query = {
-    text: `SELECT *
-    FROM api_key
-    WHERE key = $1
-    AND tree_token_api_access`,
-    values: [apiKey]
-  }
-  const rval = await pool.query(query);
-
-  if(rval.rows.length == 0){
-    console.log('ERROR: Authentication, Invalid access');
-    res.status(401).send('Error: Invalid access');
-    res.end();
-    return;
-  }
-
-  console.log("Valid Access");
-  next();
- 
-}));
-
-app.post('/auth', [
-  check('wallet').isAlphanumeric(),
-  check('password','Password is invalid').isLength({ min: 8, max: 32 }),
-  check('wallet','Invalid wallet').isLength({ min: 4, max: 32 })
- ], asyncHandler(async (req, res, next) => {
-
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-     return res.status(422).json({ errors: errors.array() });
-  }
-
-  if (!req.body || (!req.body['wallet'] || !req.body['password'] )) {
-    console.log('ERROR: Authentication, no credentials submitted');
-    res.status(406).send('Error: No credentials submitted 1');
-    res.end();
-    return;
-  }
-
-  const wallet = req.body['wallet'];
-  const password = req.body['password'];
-
-  // Now check for wallet/password
-  const query2 = {
-    text: `SELECT *
-    FROM entity
-    WHERE wallet = $1
-    AND password IS NOT NULL`,
-    values: [wallet]
-  }
-  console.log(query2);
-  const rval2 = await pool.query(query2);
-
-  if(rval2.rows.length == 0){
-    console.log('ERROR: Authentication, invalid credentials');
-    res.status(401).send('Error: Invalid credentials');
-    res.end();
-    return;
-  } 
-
-  const entity = rval2.rows[0];
-  const hash = sha512(password, entity.salt);
-
-  if(hash != entity.password){
-    console.log('ERROR: Authentication, invalid credentials');
-    res.status(401).send('Error: Invalid credentials');
-    res.end();
-    return;
-  }
-
-
-  const payload = {
-    id: entity.id
-  };
-  const jwt = JWT.sign(payload, privateKEY, signingOptions);
-  res.status(200).json({"token": jwt});
-  return;
-
-}));
-
-
-// middleware layer that checks jwt authentication
-
-app.use(bearerToken());
-app.use((req, res, next)=>{
-  // check header or url parameters or post parameters for token
-  var token = req.token;
-  if(token){
-    //Decode the token
-    JWT.verify(token, publicKEY, verifyOptions, (err,decod)=>{
-      if(err){
-        console.log(err);
-        console.log('ERROR: Authentication, token not verified');
-        res.status(403).json({
-          message:"Wrong Token"
-        });
-      }
-      else{
-        req.payload = decod;
-        req.entity_id = decod.id;
-        next();
-      }
-    });
-  }
-  else{
-    console.log('ERROR: Authentication, no token supplied for protected path');
-    res.status(403).json({
-      message:"No Token"
-    });
-  }
-});
-
 
 // Validation
 // limit optional, but must be an integer
