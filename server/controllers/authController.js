@@ -47,16 +47,17 @@ authController.apiKey = async (req, res, next) => {
     FROM api_key
     WHERE key = $1
     AND tree_token_api_access`,
-    values: [apiKey]
+    values: [apiKey],
   };
   const rval = await pool.query(query);
 
   if (rval.rows.length === 0) {
     console.log('ERROR: Authentication, Invalid access');
-    // return next( {'Error: Invalid API access'});
-    // res.status(401).send('Error: Invalid API access');
-    // res.end();
-    // return;
+    return next({
+      log: 'Invalid API access',
+      status: 401,
+      message: { err: 'Invalid API access' },
+    });
   }
   res.locals.api = true;
   console.log("Valid Access");

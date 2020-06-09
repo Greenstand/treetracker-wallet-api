@@ -35,7 +35,7 @@ app.use((err, req, res, next) => {
   };
   // replaces the errorObj with custom returned err from middleware
   const errorObj = { ...defaultErr, ...err };
-  return res.status(errorObj.status).json(errorObj.message);
+  return res.status(errorObj.status).json(errorObj.message.err);
 });
 
 
