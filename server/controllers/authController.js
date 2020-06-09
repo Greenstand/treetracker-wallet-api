@@ -31,7 +31,10 @@ const sha512 = function(password, salt) {
   return value;
 };
 
-// API Key Verification
+/* ________________________________________________________________________
+ * API Key Verification
+ * ________________________________________________________________________
+*/
 authController.apiKey = async (req, res, next) => {
   if (!req.headers['treetracker-api-key']) {
     console.log('ERROR: Invalid access - no API key');
@@ -64,22 +67,32 @@ authController.apiKey = async (req, res, next) => {
   next();
 };
 
-// Authorization Route - checks wallet and password
+/* ________________________________________________________________________
+ * Authorization Route - checks wallet and password credentials
+ * ________________________________________________________________________
+*/
+
+
 authController.authorize = async (req, res, next) => {
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next({ errors: errors.array() });
-    //  return res.status(422).json({ errors: errors.array() });
+    return next({
+      log: 'Invalid credential format',
+      status: 422,
+      message: { err: errors.array() },
+    });
   }
-  if (!req.body || (!req.body['wallet'] || !req.body['password'] )) {
+  if (!req.body || (!req.body.wallet || !req.body.password )) {
     console.log('ERROR: Authentication, no credentials submitted');
-    return next('Error: No credentials submitted');
-    // res.status(406).send('Error: No credentials submitted 1');
-    // res.end();
-    // return;
+    return next({
+      log: 'Error: No credentials submitted',
+      status: 406,
+      message: { err: 'Error: No credentials submitted' },
+    });
   }
-  const wallet = req.body['wallet'];
-  const password = req.body['password'];
+
+  const { wallet, password } = req.body;
 
   // Now check for wallet/password
   const query2 = {
@@ -87,37 +100,42 @@ authController.authorize = async (req, res, next) => {
     FROM entity
     WHERE wallet = $1
     AND password IS NOT NULL`,
-    values: [wallet]
-  }
+    values: [wallet],
+  };
   console.log(query2);
   const rval2 = await pool.query(query2);
 
-  if(rval2.rows.length == 0){
+  if (rval2.rows.length === 0) {
     console.log('ERROR: Authentication, invalid credentials');
-    // res.status(401).send('Error: Invalid credentials');
-    // res.end();
-    // return;
-    return next('Error: Invalid credentials');
-  } 
+    return next({
+      log: 'Error: Invalid credentials',
+      status: 401,
+      message: { err: 'Error: Invalid credentials' },
+    });
+  }
 
   const entity = rval2.rows[0];
   const hash = sha512(password, entity.salt);
 
-  if(hash != entity.password){
+  if (hash !== entity.password) {
     console.log('ERROR: Authentication, invalid credentials');
-    // res.status(401).send('Error: Invalid credentials');
-    // res.end();
-    // return;
-    return next('Error: Invalid credentials');
+    return next({
+      log: 'Error: Invalid credentials',
+      status: 401,
+      message: { err: 'Error: Invalid credentials' },
+    });
   }
   res.locals.id = entity.id;
   next();
 };
 
-// JWT Verification 
-authController.verifyJWT = (req, res, next) => {
+/* ________________________________________________________________________
+ * JWT Issuance upon prior authorization
+ * ________________________________________________________________________
+*/
+authController.issueJWT = (req, res, next) => {
   const payload = {
-    id: res.locals.id
+    id: res.locals.id,
   };
   const jwt = JWT.sign(payload, privateKEY, signingOptions);
   res.locals.jwt = jwt;

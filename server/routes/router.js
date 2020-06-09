@@ -12,7 +12,7 @@ router.post('/auth',
   ],
   authController.apiKey,
   authController.authorize,
-  authController.verifyJWT,
+  authController.issueJWT,
   (req, res) => res.status(200).json({ token: res.locals.jwt }));
 
 
