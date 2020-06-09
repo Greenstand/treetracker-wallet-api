@@ -36,13 +36,10 @@ authController.apiKey = async (req, res, next) => {
   if (!req.headers['treetracker-api-key']) {
     console.log('ERROR: Invalid access - no API key');
     return next({
-      log: 'Invalid API access',
+      log: 'Invalid access - no API key',
       status: 401,
-      message: { err:'Invalid API access'}
+      message: { err: 'Invalid access - no API key' },
     });
-    // res.status(406).send('Error: Invalid access - no API key');
-    // res.end();
-    // return;
   }
   const apiKey = req.headers['treetracker-api-key'];
   const query = {
