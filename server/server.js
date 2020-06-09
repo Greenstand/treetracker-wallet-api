@@ -23,16 +23,19 @@ Sentry.init({ dsn: config.sentry_dsn });
 app.use(Sentry.Handlers.requestHandler());
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
-app.use(Sentry.Handlers.errorHandler());
 
 app.use('/', router);
 
-// Optional fallthrough error handler
-app.use(function onError(err, req, res, next) {
-  // The error id is attached to `res.sentry` to be returned
-  // and optionally displayed to the user for support.
-  res.statusCode = 500;
-  res.end(res.sentry + '\n');
+// Global error handler
+app.use((err, req, res, next) => {
+  const defaultErr = {
+    log: 'Express error handler caught unknown middleware error',
+    status: 500,
+    message: { err: 'An error occured' },
+  };
+  // replaces the errorObj with custom returned err from middleware
+  const errorObj = { ...defaultErr, ...err };
+  return res.status(errorObj.status).json(errorObj.message);
 });
 
 
@@ -957,6 +960,8 @@ app.get('*',function(req, res){
 app.post('*',function(req, res){
   console.log('Did not match path');
 });
+
+
 
 app.listen(port,()=>{
     console.log('listening on port ' + port);

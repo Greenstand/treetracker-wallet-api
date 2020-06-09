@@ -11,8 +11,9 @@ router.post('/auth',
     check('wallet','Invalid wallet').isLength({ min: 4, max: 32 }),
   ],
   authController.apiKey,
-  authController.authorize,
-  authController.verifyJWT,
+  // authController.authorize,
+  // authController.verifyJWT,
   (req, res) => res.status(200).json({ token: res.locals.jwt }));
+
 
 module.exports = router;

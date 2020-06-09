@@ -4,7 +4,6 @@ const JWT = require('jsonwebtoken');
 const Crypto = require('crypto');
 const pool = require('../database/database.js');
 const { check, validationResult } = require('express-validator');
-const asyncHandler = require('express-async-handler');
 const FS = require('fs');
 
 const config = require('../../config/config.js');
@@ -36,8 +35,12 @@ const sha512 = function(password, salt) {
 authController.apiKey = async (req, res, next) => {
   if (!req.headers['treetracker-api-key']) {
     console.log('ERROR: Invalid access - no API key');
-    return next('Error: Invalid API access');
-    // res.status(406).send('Error: Invalid API access');
+    return next({
+      log: 'Invalid API access',
+      status: 401,
+      message: { err:'Invalid API access'}
+    });
+    // res.status(406).send('Error: Invalid access - no API key');
     // res.end();
     // return;
   }
@@ -53,7 +56,7 @@ authController.apiKey = async (req, res, next) => {
 
   if (rval.rows.length === 0) {
     console.log('ERROR: Authentication, Invalid access');
-    return next('Error: Invalid API access');
+    // return next( {'Error: Invalid API access'});
     // res.status(401).send('Error: Invalid API access');
     // res.end();
     // return;
