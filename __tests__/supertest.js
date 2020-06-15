@@ -50,7 +50,6 @@ describe('Route integration', () => {
       .end((err, res) => {
         if (err) done(err);
         token = res.body.token;
-        // entityId = res.entity_id;
         done();
       });
   });

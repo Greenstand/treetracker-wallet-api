@@ -1,5 +1,4 @@
 const authController = {};
-const bearerToken = require('express-bearer-token');
 const JWT = require('jsonwebtoken');
 const Crypto = require('crypto');
 const pool = require('../database/database.js');
@@ -38,7 +37,7 @@ const sha512 = function(password, salt) {
 authController.apiKey = async (req, res, next) => {
   if (!req.headers['treetracker-api-key']) {
     console.log('ERROR: Invalid access - no API key');
-    return next({
+    next({
       log: 'Invalid access - no API key',
       status: 401,
       message: { err: 'Invalid access - no API key' },
@@ -56,13 +55,12 @@ authController.apiKey = async (req, res, next) => {
 
   if (rval.rows.length === 0) {
     console.log('ERROR: Authentication, Invalid access');
-    return next({
+    next({
       log: 'Invalid API access',
       status: 401,
       message: { err: 'Invalid API access' },
     });
   }
-  res.locals.api = true;
   console.log("Valid Access");
   next();
 };
@@ -74,18 +72,17 @@ authController.apiKey = async (req, res, next) => {
 
 
 authController.authorize = async (req, res, next) => {
-
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next({
-      log: 'Invalid credential format',
+    next({
+      log: 'Error: Invalid credential format',
       status: 422,
       message: { err: errors.array() },
     });
   }
   if (!req.body || (!req.body.wallet || !req.body.password )) {
     console.log('ERROR: Authentication, no credentials submitted');
-    return next({
+    next({
       log: 'Error: No credentials submitted',
       status: 406,
       message: { err: 'Error: No credentials submitted' },
@@ -107,7 +104,7 @@ authController.authorize = async (req, res, next) => {
 
   if (rval2.rows.length === 0) {
     console.log('ERROR: Authentication, invalid credentials');
-    return next({
+    next({
       log: 'Error: Invalid credentials',
       status: 401,
       message: { err: 'Error: Invalid credentials' },
@@ -119,7 +116,7 @@ authController.authorize = async (req, res, next) => {
 
   if (hash !== entity.password) {
     console.log('ERROR: Authentication, invalid credentials');
-    return next({
+    next({
       log: 'Error: Invalid credentials',
       status: 401,
       message: { err: 'Error: Invalid credentials' },
@@ -142,8 +139,63 @@ authController.issueJWT = (req, res, next) => {
   next();
 };
 
+authController.verifyJWT = (req, res, next) => {
+  if (!req.headers.token) {
+    console.log('ERROR: Authentication, no token supplied for protected path');
+    next({
+      log: 'ERROR: Authentication, no token supplied for protected path',
+      status: 403,
+      message: { err: 'ERROR: Authentication, no token supplied for protected path' },
+    });
+  }
+  const { token } = req.headers;
+  if (token) {
+    // Decode the token
+    JWT.verify(token, publicKEY, verifyOptions, (err, decod) => {
+      if (err) {
+        console.log(err);
+        console.log('ERROR: Authentication, token not verified');
+        next({
+          log: 'ERROR: Authentication, token not verified',
+          status: 403,
+          message: { err: 'ERROR: Authentication, token not verified' },
+        });
+      }
+      req.payload = decod;
+      req.entity_id = decod.id;
+      next();
+    });
+  }
+  next();
+};
 
-// middleware layer that checks jwt authentication
+authController.checkAccess = async (req, res, next) => {
+  const entityId = req.entity_id;
+  const roleName = res.locals.role;
+  const query = {
+    text: `SELECT *
+    FROM entity_role
+    WHERE entity_id = $1
+    AND role_name = $2
+    AND enabled = TRUE`,
+    values: [entityId, roleName]
+  };
+  const rval = await pool.query(query);
+
+  if (rval.rows.length !== 1) {
+    next({
+      log: 'ERROR: Permission to list_trees not granted',
+      status: 401,
+      message: { err: 'ERROR: Permission to list_trees not granted'}
+    });
+  }
+  next();
+};
+
+/* ________________________________________________________________________
+ * Verifies JWT authentication upon requesting access to logged in actions
+ * ________________________________________________________________________
+*/
 
 // app.use(bearerToken());
 // app.use((req, res, next)=>{

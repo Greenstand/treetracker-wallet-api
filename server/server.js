@@ -44,117 +44,116 @@ app.set('view engine','html');
 // Validation
 // limit optional, but must be an integer
 // wallet optional, but must be alphanumeric
-app.get('/tree', [
+// app.get('/tree', [
 
-    check('limit', 'Invalid limit number').optional().isNumeric({min: 1, max: 1000}),
-    check('wallet', 'Invalid wallet name').optional().isAlphanumeric()
+//     check('limit', 'Invalid limit number').optional().isNumeric({min: 1, max: 1000}),
+//     check('wallet', 'Invalid wallet name').optional().isAlphanumeric()
     
-], asyncHandler(async (req, res, next) => {
+// ], asyncHandler(async (req, res, next) => {
 
-  const errors = validationResult(req);
+//   const errors = validationResult(req);
 
-  if (!errors.isEmpty()) {
-     return res.status(422).json({ errors: errors.array() });
-  }
+//   if (!errors.isEmpty()) {
+//      return res.status(422).json({ errors: errors.array() });
+//   }
 
-  const entityId = req.entity_id;
-  const accessGranted = await checkAccess(entityId, 'list_trees');
-  if( !accessGranted ){
-    res.status(401).json([{
-      msg:"Not Permitted",
-      param: "list threes",
-      location:"access_control"
-    }]);
-    return;
-  }
+//   const entityId = req.entity_id;
+//   const accessGranted = await checkAccess(entityId, 'list_trees');
+//   if( !accessGranted ){
+//     res.status(401).json([{
+//       msg:"Not Permitted",
+//       param: "list trees",
+//       location:"access_control"
+//     }]);
+//     return;
+//   }
 
-  var walletEntityId = entityId;
-  var wallet = req.query.wallet;
-  if(wallet != null){
-    console.log(wallet);
+  // var walletEntityId = entityId;
+  // var wallet = req.query.wallet;
+  // if(wallet != null){
+  //   console.log(wallet);
 
-    //TODO: verify this user has access to this wallet
-    const query1 = {
-      text: `SELECT *
-      FROM entity 
-      WHERE wallet = $1`,
-      values: [wallet]
-    }
-    const rval1 = await pool.query(query1);
-    if(rval1.rows.length == 0){
-      res.status(404).json({
-        message:"Invalid wallet"
-      });
-      return;
-    }
-    walletEntityId = rval1.rows[0].id;
+  //   //TODO: verify this user has access to this wallet
+  //   const query1 = {
+  //     text: `SELECT *
+  //     FROM entity 
+  //     WHERE wallet = $1`,
+  //     values: [wallet]
+  //   }
+  //   const rval1 = await pool.query(query1);
+  //   if(rval1.rows.length == 0){
+  //     res.status(404).json({
+  //       message:"Invalid wallet"
+  //     });
+  //     return;
+  //   }
+  //   walletEntityId = rval1.rows[0].id;
+  // } else {
 
-  } else {
+  //   const query1 = {
+  //     text: `SELECT *
+  //     FROM entity 
+  //     WHERE id = $1`,
+  //     values: [walletEntityId]
+  //   }
+  //   const rval1 = await pool.query(query1);
+  //   wallet = rval1.rows[0].wallet;
 
-    const query1 = {
-      text: `SELECT *
-      FROM entity 
-      WHERE id = $1`,
-      values: [walletEntityId]
-    }
-    const rval1 = await pool.query(query1);
-    wallet = rval1.rows[0].wallet;
-
-  }
+  // }
 
 
-  var limitClause = "";
-  const limit = req.query.limit;
-  if(limit != null){
-    limitClause = `LIMIT ${limit}`
-  }
+//   var limitClause = "";
+//   const limit = req.query.limit;
+//   if(limit != null){
+//     limitClause = `LIMIT ${limit}`
+//   }
   
  
-  const query = {
-    text: `SELECT token.*, image_url, lat, lon, 
-    tree_region.name AS region_name,
-    trees.time_created AS tree_captured_at
-    FROM token
-    JOIN trees
-    ON trees.id = token.tree_id
-    LEFT JOIN (
-      SELECT DISTINCT  name, tree_id
-      FROM tree_region
-      JOIN region
-      ON region.id = tree_region.region_id
-      WHERE zoom_level = 4
-    ) tree_region
-    ON tree_region.tree_id = trees.id 
-    WHERE entity_id = $1
-    ORDER BY tree_captured_at DESC 
-    ${limitClause}`,
-    values: [walletEntityId]
-  }
-  const rval = await pool.query(query);
+//   const query = {
+//     text: `SELECT token.*, image_url, lat, lon, 
+//     tree_region.name AS region_name,
+//     trees.time_created AS tree_captured_at
+//     FROM token
+//     JOIN trees
+//     ON trees.id = token.tree_id
+//     LEFT JOIN (
+//       SELECT DISTINCT  name, tree_id
+//       FROM tree_region
+//       JOIN region
+//       ON region.id = tree_region.region_id
+//       WHERE zoom_level = 4
+//     ) tree_region
+//     ON tree_region.tree_id = trees.id 
+//     WHERE entity_id = $1
+//     ORDER BY tree_captured_at DESC 
+//     ${limitClause}`,
+//     values: [walletEntityId]
+//   }
+//   const rval = await pool.query(query);
 
-  const trees = [];
-  for(token of rval.rows){
-    treeItem = {
-      token: token.uuid,
-      map_url: config.map_url + "?treeid="+token.tree_id,
-      image_url: token.image_url,
-      tree_captured_at: token.tree_captured_at,
-      latitude: token.lat,
-      longitude: token.lon,
-      region: token.region_name
-    }
-    trees.push(treeItem);
-  }
-  const response = {
-    trees: trees,
-    wallet: wallet,
-    wallet_url: config.wallet_url + "?wallet="+wallet
-  }
+//   const trees = [];
+//   for(token of rval.rows){
+//     treeItem = {
+//       token: token.uuid,
+//       map_url: config.map_url + "?treeid="+token.tree_id,
+//       image_url: token.image_url,
+//       tree_captured_at: token.tree_captured_at,
+//       latitude: token.lat,
+//       longitude: token.lon,
+//       region: token.region_name
+//     }
+//     trees.push(treeItem);
+//   }
+//   const response = {
+//     trees: trees,
+//     wallet: wallet,
+//     wallet_url: config.wallet_url + "?wallet="+wallet
+//   }
 
-  res.status(200).json(response);
-  res.end();
+//   res.status(200).json(response);
+//   res.end();
 
-}));
+// }));
 
 const renderAccountData = function(entity){
   console.log(entity);
