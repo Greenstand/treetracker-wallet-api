@@ -8,8 +8,8 @@ const FS = require('fs');
 const config = require('../../config/config.js');
 
 // PRIVATE and PUBLIC key
-const privateKEY = FS.readFileSync('../config/jwtRS256.key', 'utf8');
-const publicKEY = FS.readFileSync('../config/jwtRS256.key.pub', 'utf8');
+const privateKEY = FS.readFileSync('../config/private.key', 'utf8');
+const publicKEY = FS.readFileSync('../config/public.key', 'utf8');
 
 const signingOptions = {
  issuer: "greenstand",
@@ -140,7 +140,7 @@ authController.issueJWT = (req, res, next) => {
 };
 
 authController.verifyJWT = (req, res, next) => {
-  if (!req.headers.token) {
+  if (!req.headers.authorization) {
     console.log('ERROR: Authentication, no token supplied for protected path');
     next({
       log: 'ERROR: Authentication, no token supplied for protected path',
@@ -148,11 +148,13 @@ authController.verifyJWT = (req, res, next) => {
       message: { err: 'ERROR: Authentication, no token supplied for protected path' },
     });
   }
-  const { token } = req.headers;
+  //accounts for the "Bearer" string before the token
+  const tokenArray = req.headers.authorization.split(' ');
+  const token = tokenArray[1];
   if (token) {
     // Decode the token
     JWT.verify(token, publicKEY, verifyOptions, (err, decod) => {
-      if (err) {
+      if (err || tokenArray[0] !== 'Bearer') {
         console.log(err);
         console.log('ERROR: Authentication, token not verified');
         next({
@@ -186,7 +188,7 @@ authController.checkAccess = async (req, res, next) => {
     next({
       log: 'ERROR: Permission to list_trees not granted',
       status: 401,
-      message: { err: 'ERROR: Permission to list_trees not granted'}
+      message: { err: 'ERROR: Permission to list_trees not granted'},
     });
   }
   next();
