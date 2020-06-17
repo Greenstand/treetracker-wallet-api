@@ -5,25 +5,23 @@ const pool = require('../database/database.js');
 const { check, validationResult } = require('express-validator');
 const FS = require('fs');
 
-const config = require('../../config/config.js');
-
 // PRIVATE and PUBLIC key
-const privateKEY = FS.readFileSync('../config/private.key', 'utf8');
-const publicKEY = FS.readFileSync('../config/public.key', 'utf8');
+const privateKEY = FS.readFileSync('../config/jwtRS256.key', 'utf8');
+const publicKEY = FS.readFileSync('../config/jwtRS256.key.pub', 'utf8');
 
 const signingOptions = {
- issuer: "greenstand",
- expiresIn:  "365d",
- algorithm:  "RS256"
+  issuer: "greenstand",
+  expiresIn:  "365d",
+  algorithm:  "RS256",
 };
 
 const verifyOptions = {
- issuer: "greenstand",
- expiresIn:  "365d",
- algorithms:  ["RS256"]
+  issuer: "greenstand",
+  expiresIn:  "365d",
+  algorithms:  ["RS256"],
 };
 
-const sha512 = function(password, salt) {
+const sha512 = (password, salt) => {
   const hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
   hash.update(password);
   const value = hash.digest('hex');
@@ -61,7 +59,7 @@ authController.apiKey = async (req, res, next) => {
       message: { err: 'Invalid API access' },
     });
   }
-  console.log("Valid Access");
+  console.log('Valid Access');
   next();
 };
 
@@ -163,16 +161,14 @@ authController.verifyJWT = (req, res, next) => {
           message: { err: 'ERROR: Authentication, token not verified' },
         });
       }
-      req.payload = decod;
-      req.entity_id = decod.id;
-      next();
+      res.locals.entity_id = decod.id;
     });
   }
   next();
 };
 
 authController.checkAccess = async (req, res, next) => {
-  const entityId = req.entity_id;
+  const entityId = res.locals.entity_id;
   const roleName = res.locals.role;
   const query = {
     text: `SELECT *
@@ -194,56 +190,5 @@ authController.checkAccess = async (req, res, next) => {
   next();
 };
 
-/* ________________________________________________________________________
- * Verifies JWT authentication upon requesting access to logged in actions
- * ________________________________________________________________________
-*/
-
-// app.use(bearerToken());
-// app.use((req, res, next)=>{
-//   // check header or url parameters or post parameters for token
-//   var token = req.token;
-//   if(token){
-//     //Decode the token
-//     JWT.verify(token, publicKEY, verifyOptions, (err,decod)=>{
-//       if(err){
-//         console.log(err);
-//         console.log('ERROR: Authentication, token not verified');
-//         res.status(403).json({
-//           message:"Wrong Token"
-//         });
-//       }
-//       else{
-//         req.payload = decod;
-//         req.entity_id = decod.id;
-//         next();
-//       }
-//     });
-//   }
-//   else{
-//     console.log('ERROR: Authentication, no token supplied for protected path');
-//     res.status(403).json({
-//       message:"No Token"
-//     });
-//   }
-// });
-
-
-
-// const checkAccess = async function(entityId, roleName){
-
-// const query = {
-//   text: `SELECT *
-//   FROM entity_role
-//   WHERE entity_id = $1
-//   AND role_name = $2
-//   AND enabled = TRUE`,
-//   values: [entityId, roleName]
-// }
-// const rval = await pool.query(query);
-
-// return rval.rows.length == 1;
-
-// }
 
 module.exports = authController;

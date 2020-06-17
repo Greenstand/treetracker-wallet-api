@@ -20,7 +20,6 @@ const config = require('../config/config.js');
 
 Sentry.init({ dsn: config.sentry_dsn });
 
-app.use(Sentry.Handlers.requestHandler());
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
 
@@ -48,7 +47,6 @@ app.set('view engine','html');
 
 //     check('limit', 'Invalid limit number').optional().isNumeric({min: 1, max: 1000}),
 //     check('wallet', 'Invalid wallet name').optional().isAlphanumeric()
-    
 // ], asyncHandler(async (req, res, next) => {
 
 //   const errors = validationResult(req);

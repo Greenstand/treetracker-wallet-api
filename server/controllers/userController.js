@@ -14,7 +14,7 @@ userController.getTrees = async (req, res, next) => {
     });
   }
   let { wallet } = req.query;
-  const entityId = req.entity_id;
+  const entityId = res.locals.entity_id;
   let walletEntityId = entityId;
 
   if (wallet != null) {
@@ -27,6 +27,7 @@ userController.getTrees = async (req, res, next) => {
       WHERE wallet = $1`,
       values: [wallet],
     };
+
     const rval1 = await pool.query(query1);
 
     if (rval1.rows.length === 0) {
@@ -48,11 +49,10 @@ userController.getTrees = async (req, res, next) => {
     wallet = rval2.rows[0].wallet;
   }
 
-  const limitClause = req.query.limit !== null ? `LIMIT ${req.query.limit}` : '';
-
+  const limitClause = req.query.limit ? `LIMIT ${req.query.limit}` : ' ';
   const query3 = {
     text: `SELECT token.*, image_url, lat, lon, 
-    tree_region.name AS region_name,
+    tree_region.name AS region_name, 
     trees.time_created AS tree_captured_at
     FROM token
     JOIN trees
@@ -66,26 +66,29 @@ userController.getTrees = async (req, res, next) => {
     ) tree_region
     ON tree_region.tree_id = trees.id 
     WHERE entity_id = $1
-    ORDER BY tree_captured_at DESC 
+    ORDER BY tree_captured_at DESC
     ${limitClause}`,
     values: [walletEntityId],
   };
+
   const rval3 = await pool.query(query3);
 
-  /*eslint-disable*/
   const trees = [];
-  for (token of rval3.rows) {
-    treeItem = {
-      token: token.uuid,
-      map_url: config.map_url + "?treeid="+token.tree_id,
-      image_url: token.image_url,
-      tree_captured_at: token.tree_captured_at,
-      latitude: token.lat,
-      longitude: token.lon,
-      region: token.region_name
+  if (rval3.rows.length !== 0) {
+    /*eslint-disable*/
+    for (token of rval3.rows) {
+      treeItem = {
+        token: token.uuid,
+        map_url: config.map_url + "?treeid="+token.tree_id,
+        image_url: token.image_url,
+        tree_captured_at: token.tree_captured_at,
+        latitude: token.lat,
+        longitude: token.lon,
+        region: token.region_name
+      }
+      trees.push(treeItem);
     }
-    trees.push(treeItem);
-  }
+  } 
   const response = {
     trees: trees,
     wallet: wallet,
@@ -93,7 +96,7 @@ userController.getTrees = async (req, res, next) => {
   };
   res.locals.trees = response;
   next();
-}
+};
 
 
 module.exports = userController;

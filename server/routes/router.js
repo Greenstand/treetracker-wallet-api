@@ -5,8 +5,6 @@ const { check, validationResult } = require('express-validator');
 const authController = require('../controllers/authController.js');
 const userController = require('../controllers/userController.js');
 
-// router.use(bearerToken());
-
 router.post('/auth',
   [
     check('wallet').isAlphanumeric(),
