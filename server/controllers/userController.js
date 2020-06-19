@@ -3,7 +3,11 @@ const pool = require('../database/database.js');
 const { check, validationResult } = require('express-validator');
 const config = require('../../config/config.js');
 
-
+/* ________________________________________________________________________
+ * Get all trees currently in the logged in account's default wallet,
+ * or all trees in each managed sub-account wallets.
+ * ________________________________________________________________________
+*/
 userController.getTrees = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -98,5 +102,85 @@ userController.getTrees = async (req, res, next) => {
   next();
 };
 
+/* ________________________________________________________________________
+ * Get details of logged in account and sub-accounts.
+ * ________________________________________________________________________
+*/
+userController.getAccounts = async (req, res, next) => {
+  const entityId = res.locals.entity_id;
+  console.log(entityId);
+  // get primary account
+  const query1 = {
+    text: `SELECT *
+    FROM entity 
+    LEFT JOIN (
+      SELECT entity_id, COUNT(id) AS tokens_in_wallet
+      FROM token
+      GROUP BY entity_id
+    ) balance
+    ON balance.entity_id = entity.id
+    WHERE entity.id = $1`,
+    values: [entityId]
+  };
+  const rval1 = await pool.query(query1);
+  const entity = rval1.rows[0];
+
+// get child accounts
+  const query2 = {
+    text: `SELECT *
+    FROM entity 
+    JOIN entity_manager
+    ON entity_manager.child_entity_id = entity.id
+    LEFT JOIN (
+      SELECT entity_id, COUNT(id) AS tokens_in_wallet
+      FROM token
+      GROUP BY entity_id
+    ) balance
+    ON balance.entity_id = entity_manager.child_entity_id
+    WHERE entity_manager.parent_entity_id = $1
+    AND entity_manager.active = TRUE`,
+    values: [entityId]
+  }
+  const rval2 = await pool.query(query2);
+  const childEntities = rval2.rows;
+
+  const renderAccountData = (entity) => {
+    console.log(entity);
+    let accountData = {
+      type: entity.type, 
+      wallet: entity.wallet,
+      email: entity.email,
+      phone: entity.phone
+    };
+    if (entity.type == 'p') {
+      accountData.first_name = entity.first_name;
+      accountData.last_name = entity.last_name;
+    } else if (entity.type == 'o') {
+      accountData.name = entity.name;
+    }
+    return accountData;
+  };
+
+// create response json
+  const accounts = [];
+  const accountData = renderAccountData(entity);
+  accountData.access = 'primary';
+  accountData.tokens_in_wallet = entity.tokens_in_wallet ? entity.tokens_in_wallet : 0;
+  accounts.push(accountData);
+
+  for (const childEntity of childEntities) {
+    const childAccountData = renderAccountData(childEntity);
+    childAccountData.access = 'child';
+    childAccountData.tokens_in_wallet = childEntity.tokens_in_wallet ? childEntity.tokens_in_wallet : 0;
+    accounts.push(childAccountData);
+  }
+
+  const response = {
+    accounts: accounts
+  };
+  res.locals.accounts = response;
+  next();
+
+};
 
 module.exports = userController;

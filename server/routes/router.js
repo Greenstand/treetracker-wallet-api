@@ -32,5 +32,15 @@ router.get('/tree',
   userController.getTrees,
   (req, res) => res.status(200).json(res.locals.trees));
 
+router.get('/account',
+  authController.verifyJWT,
+  (req, res, next) => {
+    res.locals.role = 'accounts';
+    next();
+  },
+  authController.checkAccess,
+  userController.getAccounts,
+  (req, res) => res.status(200).json(res.locals.accounts));
+
 
 module.exports = router;

@@ -6,8 +6,8 @@ const { check, validationResult } = require('express-validator');
 const FS = require('fs');
 
 // PRIVATE and PUBLIC key
-const privateKEY = FS.readFileSync('../config/jwtRS256.key', 'utf8');
-const publicKEY = FS.readFileSync('../config/jwtRS256.key.pub', 'utf8');
+const privateKEY = FS.readFileSync('../config/private.key', 'utf8');
+const publicKEY = FS.readFileSync('../config/public.key', 'utf8');
 
 const signingOptions = {
   issuer: "greenstand",
@@ -182,9 +182,9 @@ authController.checkAccess = async (req, res, next) => {
 
   if (rval.rows.length !== 1) {
     next({
-      log: 'ERROR: Permission to list_trees not granted',
+      log: `ERROR: Permission for ${roleName} not granted`,
       status: 401,
-      message: { err: 'ERROR: Permission to list_trees not granted'},
+      message: { err: `ERROR: Permission to ${roleName} not granted`},
     });
   }
   next();
