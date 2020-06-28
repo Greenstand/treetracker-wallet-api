@@ -6,10 +6,11 @@
   "scripts": {
     "test": "npm run test-unit; npm run test-int; npm run test-auth",
     "test-unit": "NODE_ENV=test mocha --require co-mocha 'lib/*.spec.js'",
+    "test-unitB": "NODE_ENV=test mocha --timeout 5000 --require co-mocha './**/*.spec.js'",
     "test-int": "NODE_ENV=test mocha --require co-mocha 'index.spec.js'",
     "test-auth": "NODE_ENV=test mocha --require co-mocha 'lib/auth.spec.js'",
     "server": "cd ./server && node server.js",
-    "test-integration": "NODE_ENV=test mocha --timeout 5000 --require co-mocha './__tests__/supertest.js'"
+    "test-integration": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './__tests__/supertest.js'"
   },
   "keywords": [],
   "author": "",
@@ -24,7 +25,8 @@
     "express-validator": "^6.4.0",
     "jsonwebtoken": "8.1.0",
     "morgan": "^1.9.1",
-    "pg": "^7.4.0"
+    "pg": "^7.4.0",
+    "uuid": "^8.2.0"
   },
   "devDependencies": {
     "chai": "3.5.0",
