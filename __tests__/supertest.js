@@ -10,6 +10,7 @@ const request = require('supertest');
 const assert = require ('assert');
 const server = 'http://localhost:3006';
 const { expect } = require('chai');
+const seed = require('../tests/seed');
 
 const mockUser = {
   wallet: 'testuser',
@@ -20,9 +21,24 @@ const mockUser = {
 //   wallet: "mockwallet"
 // };
 
-const apiKey = '';
+const apiKey = seed.apiKey;
 
 describe('Route integration', () => {
+  before((done) => {
+    //before all, seed data to DB
+    seed.seed()
+      .then(() => {
+        done();
+      });
+  });
+
+  after(done => {
+    //after finished all the test, clear data from DB
+    seed.clear()
+      .then(() => {
+        done();
+      });
+  });
   // Authorization path
   describe('/auth', () => {
     describe('POST', () => {
@@ -70,6 +86,8 @@ describe('Route integration', () => {
             if (err) done(err);
             expect(res.body).to.have.property('trees');
             expect(res.body.trees).to.be.an('array');
+            //should have a tree now
+            expect(res.body.trees).to.have.lengthOf(1);
             expect(res.body).to.have.property('wallet');
             expect(res.body).to.have.property('wallet_url');
             done();
