@@ -6,8 +6,8 @@ const { check, validationResult } = require('express-validator');
 const FS = require('fs');
 
 // PRIVATE and PUBLIC key
-const privateKEY = FS.readFileSync('../config/private.key', 'utf8');
-const publicKEY = FS.readFileSync('../config/public.key', 'utf8');
+const privateKEY = FS.readFileSync('../config/jwtRS256.key', 'utf8');
+const publicKEY = FS.readFileSync('../config/jwtRS256.key.pub', 'utf8');
 
 const signingOptions = {
   issuer: "greenstand",

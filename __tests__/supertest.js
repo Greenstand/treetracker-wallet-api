@@ -10,7 +10,7 @@ const request = require('supertest');
 const assert = require ('assert');
 const server = 'http://localhost:3006';
 const { expect } = require('chai');
-const seed = require('../tests/seed');
+const seed = require('./seed');
 
 const mockUser = {
   wallet: 'testuser',
