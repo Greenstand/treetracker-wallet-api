@@ -2,6 +2,8 @@ const userController = {};
 const pool = require('../database/database.js');
 const { check, validationResult } = require('express-validator');
 const config = require('../../config/config.js');
+const log = require("loglevel");
+log.setLevel("debug");
 
 /* ________________________________________________________________________
  * Get all trees currently in the logged in account's default wallet,
@@ -9,6 +11,7 @@ const config = require('../../config/config.js');
  * ________________________________________________________________________
 */
 userController.getTrees = async (req, res, next) => {
+  log.debug("getTree");
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     next({
@@ -74,7 +77,7 @@ userController.getTrees = async (req, res, next) => {
     ${limitClause}`,
     values: [walletEntityId],
   };
-
+  log.debug("pg:", query3.text, query3.values);
   const rval3 = await pool.query(query3);
 
   const trees = [];

@@ -22,8 +22,31 @@ describe("Seed data into DB", () => {
     expect(r).to.have.property('rows').that.have.lengthOf(1);
   });
 
-  it("should have token data", async () => {
+
+  describe("Should find a token", () => {
+    let token;
+
+    before(async () => {
+      expect(seed.token).to.have.property('id');
+      r = await pool.query(
+        `select * from token where id = '${seed.token.id}'`
+      )
+      expect(r)
+        .to.have.property('rows').to.have.lengthOf(1);
+      token = r.rows[0];
+    });
+
+    it("Token should match tree/entity id", () => {
+      expect(token)
+        .to.have.property('tree_id')
+        .to.equal(seed.tree.id);
+      expect(token)
+        .to.have.property('entity_id')
+        .to.equal(seed.entity.id);
+    });
+
   });
+
 
   describe("Should have a entity", () => {
     let r;
@@ -36,7 +59,7 @@ describe("Seed data into DB", () => {
         .to.have.property('rows').to.have.lengthOf(1);
     });
 
-    it("should have a entity it's wallet == fortest", async () => {
+    it("is wallet should == fortest", async () => {
       expect(r)
         .to.have.property('rows')
         .that.have.lengthOf(1)
@@ -67,8 +90,33 @@ describe("Seed data into DB", () => {
         .to.equal(seed.entity.passwordHash);
     });
 
+    it("Should have permission list_trees", async () => {
+      const query = 
+        `SELECT *
+          FROM entity_role
+          WHERE entity_id = ${seed.entity.id}
+          AND role_name = 'list_trees'
+          AND enabled = TRUE`;
+      const result = await pool.query(query);
+      log.debug("pg:", query);
+      expect(result)
+        .to.have.property("rows")
+        .to.have.lengthOf(1);
+    });
   });
 
+  describe("Should have a tree", () => {
+    let tree;
+
+    before(async () => {
+      let r = await pool.query({
+        text: `select * from trees where id = ${tree.id}`,
+        values: [seed.apiKey]
+      });
+      expect(r).to.have.property('rows').that.have.lengthOf(1);
+    });
+
+  });
 
 });
 

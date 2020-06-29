@@ -823,11 +823,11 @@ app.post('/send', [
 }));
 
 app.get('*',function(req, res){
-  console.log('Did not match path');
+  console.log('Did not match path', req.originalUrl);
 });
 
 app.post('*',function(req, res){
-  console.log('Did not match path');
+  console.log('Did not match path', req.originalUrl);
 });
 
 

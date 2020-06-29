@@ -18,7 +18,12 @@ const entity = {
   type: "p",
 }
 
+const tree = {
+  id: 999999,
+}
+
 const token = {
+  id: 9,
   uuid: uuid.v4(),
 }
 
@@ -29,8 +34,12 @@ const storyOfThisSeed = `
       name: ${entity.name}
       wallet: ${entity.wallet}
       password: ${entity.password}
-    a tree: #1
-    a token: #1
+
+    a tree: #${tree.id}
+
+    a token: #${token.id}
+      tree: #${tree.id}
+      entity: #${entity.id}
       uuid: ${token.uuid}
 `
 console.debug(
@@ -59,6 +68,7 @@ async function seed(){
   //entity
   {
     log.info("clear entity");
+    await pool.query(`delete from entity_role where entity_id = ${entity.id}`);
     let query = `delete from entity where id = ${entity.id}`;
     let result = await pool.query(query);
     assert(result);
@@ -71,16 +81,43 @@ async function seed(){
     assert(result);
   }
 
-  console.log("clear token first");
-  await pool.query("delete from token");
-  console.log("seed token");
-  const query = {
-    text: `INSERT into token
-    (id, tree_id, entity_id, uuid)
-    values ($1, $2, $3, $4)`,
-    values: [1, 1, 3, token.uuid]
-  };
-  await pool.query(query);
+  //entity role
+  {
+    log.info("clear role");
+    await pool.query(`delete from entity_role where entity_id = ${entity.id}`);
+    await pool.query(
+      `insert into entity_role
+      (entity_id, role_name, enabled)
+      values (${entity.id}, 'list_trees', true)`
+    );
+  }
+
+  //tree
+  {
+    log.info("clear tree");
+    await pool.query(`delete from trees where id = ${tree.id}`);
+    await pool.query({
+      text: `insert into trees
+      (id, time_created, time_updated)
+      values (${tree.id}, $1, $1)
+      `,
+      values: [new Date()]
+    });
+  }
+
+  //token
+  {
+    console.log("clear token first");
+    await pool.query("delete from token");
+    console.log("seed token");
+    const query = {
+      text: `INSERT into token
+      (id, tree_id, entity_id, uuid)
+      values ($1, $2, $3, $4)`,
+      values: [token.id, tree.id, entity.id, token.uuid]
+    };
+    await pool.query(query);
+  }
 }
 
 async function clear(){
@@ -88,4 +125,4 @@ async function clear(){
   await pool.query("delete from token");
 }
 
-module.exports = {seed, clear, apiKey, entity};
+module.exports = {seed, clear, apiKey, entity, tree, token};
