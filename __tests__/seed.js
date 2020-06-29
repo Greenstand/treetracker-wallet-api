@@ -5,6 +5,20 @@ const pool = require('../server/database/database.js');
 const uuid = require("uuid");
 
 const apiKey = "FORTESTFORTESTFORTESTFORTESTFORTEST";
+const uuidA = uuid.v4();
+
+const storyOfThisSeed = `
+    api_key: ${apiKey}
+    a tree: #1
+    a token: #1
+      uuid: ${uuidA}
+    a entity: #3
+`
+console.debug(
+"--------------------------story of databse ----------------------------------",
+storyOfThisSeed,
+"-----------------------------------------------------------------------------",
+);
 
 async function seed(){
 
@@ -28,9 +42,9 @@ async function seed(){
   console.log("seed token");
   const query = {
     text: `INSERT into token
-    (tree_id, entity_id, uuid)
-    values ($1, $2, $3)`,
-    values: [1, 3, uuid.v4()]
+    (id, tree_id, entity_id, uuid)
+    values ($1, $2, $3, $4)`,
+    values: [1, 1, 3, uuidA]
   };
   await pool.query(query);
 }
