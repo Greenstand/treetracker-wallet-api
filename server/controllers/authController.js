@@ -113,7 +113,7 @@ authController.authorize = async (req, res, next) => {
   const hash = sha512(password, entity.salt);
 
   if (hash !== entity.password) {
-    console.log('ERROR: Authentication, invalid credentials');
+    console.log('ERROR: Authentication, invalid credentials.');
     next({
       log: 'Error: Invalid credentials',
       status: 401,

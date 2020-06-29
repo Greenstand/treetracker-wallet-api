@@ -13,8 +13,8 @@ const { expect } = require('chai');
 const seed = require('./seed');
 
 const mockUser = {
-  wallet: 'testuser',
-  password: 'test1234',
+  wallet: seed.entity.wallet,
+  password: seed.entity.password,
 };
 
 // const mockWallet = {
@@ -110,6 +110,8 @@ describe('Route integration', () => {
             if (err) done(err);
             expect(res.body).to.have.property('accounts');
             expect(res.body.accounts).to.be.an('array');
+            expect(res.body).to.have.property('accounts')
+              .that.have.lengthOf(1);
             done();
           });
       });

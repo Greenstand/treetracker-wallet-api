@@ -3,16 +3,35 @@
  */
 const pool = require('../server/database/database.js');
 const uuid = require("uuid");
+const log = require("loglevel");
+log.setLevel("debug");
+const assert = require("assert");
 
 const apiKey = "FORTESTFORTESTFORTESTFORTESTFORTEST";
-const uuidA = uuid.v4();
+const entity = {
+  id: 10,
+  name: "fortest",
+  wallet: "fortest",
+  password: "test1234",
+  passwordHash: "31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1",
+  salt: "TnDe2LDPS7VaPD9GQWL3fhG4jk194nde",
+  type: "p",
+}
+
+const token = {
+  uuid: uuid.v4(),
+}
 
 const storyOfThisSeed = `
     api_key: ${apiKey}
+    a entity: #${entity.id}
+      type: ${entity.type}
+      name: ${entity.name}
+      wallet: ${entity.wallet}
+      password: ${entity.password}
     a tree: #1
     a token: #1
-      uuid: ${uuidA}
-    a entity: #3
+      uuid: ${token.uuid}
 `
 console.debug(
 "--------------------------story of databse ----------------------------------",
@@ -37,6 +56,21 @@ async function seed(){
     values: [apiKey, true, "test", "test", "test"]
   });
 
+  //entity
+  {
+    log.info("clear entity");
+    let query = `delete from entity where id = ${entity.id}`;
+    let result = await pool.query(query);
+    assert(result);
+    query = `insert into entity
+    (id, type, name, wallet, password, salt)
+    values (${entity.id}, '${entity.type}', '${entity.name}', '${entity.wallet}', '${entity.passwordHash}', '${entity.salt}')
+    `;
+    log.debug(query);
+    result = await pool.query(query);
+    assert(result);
+  }
+
   console.log("clear token first");
   await pool.query("delete from token");
   console.log("seed token");
@@ -44,7 +78,7 @@ async function seed(){
     text: `INSERT into token
     (id, tree_id, entity_id, uuid)
     values ($1, $2, $3, $4)`,
-    values: [1, 1, 3, uuidA]
+    values: [1, 1, 3, token.uuid]
   };
   await pool.query(query);
 }
@@ -54,4 +88,4 @@ async function clear(){
   await pool.query("delete from token");
 }
 
-module.exports = {seed, clear, apiKey};
+module.exports = {seed, clear, apiKey, entity};
