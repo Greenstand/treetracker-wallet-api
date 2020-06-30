@@ -404,6 +404,157 @@ userController.transfer = async (req, res, next) => {
   next();
 };
 
+
+userController.transferBundle = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
+
+  console.log('Bundle transfer requested');
+
+  const entityId = res.locals.entity_id;
+  assert(entityId);
+
+  console.log("Role access approved");
+
+  const bundleSize = req.body.bundle_size;
+  const senderWallet = req.body.sender_wallet;
+  const receiverWallet = req.body.receiver_wallet;
+
+  // Get sender entity id
+
+  const queryWallet1 = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [senderWallet]
+  }
+  const rvalWallet1 = await pool.query(queryWallet1);
+  const senderEntityId = rvalWallet1.rows[0].id;
+
+
+  const queryWallet2 = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [receiverWallet]
+  }
+  const rvalWallet2 = await pool.query(queryWallet2);
+  receiverEntityId = rvalWallet2.rows[0].id;
+
+  if(receiverEntityId == senderEntityId){
+    res.status(403).json({
+      message:"Sender and receiver are identical"
+    });
+    return;
+  }
+
+  // Check access to sender and receiver wallets
+
+  if(senderEntityId != entityId){
+    // check if this is a valid subaccount
+    const managementAccountQuery = {
+      text: `SELECT *
+      FROM entity_manager
+      WHERE child_entity_id = $1
+      AND entity_manager.active = TRUE`,
+      values: [senderEntityId]
+    };      
+    const managementRval = await pool.query(managementAccountQuery);
+    var managed = false
+    if(managementRval.rows.length > 0){
+      for(r of managementRval.rows){
+        if(r.parent_entity_id == entityId){
+          managed = true;
+          break;
+        }
+      }
+    }
+
+    if(managed == false){
+      res.status(401).json({
+        message:"You do not manage the sender of this transfer"
+      });
+      return;
+    }
+  }
+
+
+  if(receiverEntityId != entityId){
+    // check if this is a valid subaccount
+    const managementAccountQuery = {
+      text: `SELECT *
+      FROM entity_manager
+      WHERE child_entity_id = $1
+      AND entity_manager.active = TRUE`,
+      values: [receiverEntityId]
+    };      
+    const managementRval = await pool.query(managementAccountQuery);
+    var managed = false
+    if(managementRval.rows.length > 0){
+      for(r of managementRval.rows){
+        if(r.parent_entity_id == entityId){
+          managed = true;
+          break;
+        }
+      }
+    }
+
+    if(managed == false){
+      res.status(401).json({
+        message:"You do not manage the receiver of this transfer"
+      });
+      return;
+    }
+  }
+
+
+
+  // Find tokens for this bundle
+  const queryTokens = {
+    text: `SELECT *
+    FROM token
+    WHERE entity_id = $1
+    ORDER BY id ASC
+    LIMIT $2`,
+    values: [senderEntityId, bundleSize]
+  }
+  const rvalTokens = await pool.query(queryTokens);
+  const tokens = rvalTokens.rows; 
+  
+  if(tokens.length != bundleSize){
+    res.status(422).json({
+      message:"Not enough tokens matching bundle description"
+    });
+    return;
+  }
+
+  const tokenUUIDs = [];
+  for(token of tokens){
+    tokenUUIDs.push(token.uuid);
+  }
+
+
+  // move tokens
+  const query2 = {
+    text: `UPDATE token
+    SET entity_id = $1
+    WHERE uuid = ANY ($2)`,
+    values : [receiverEntityId, tokenUUIDs]
+  }
+  const rval2 = await pool.query(query2);
+
+  const response = {
+    status: `${tokens.length} tokens transferred to ${receiverWallet}`,
+    wallet_url: config.wallet_url + "?wallet="+receiverWallet
+  }
+  res.locals.response = response;
+  next();
+
+};
+
 userController.history = async (req, res, next) => {
 
   const errors = validationResult(req);

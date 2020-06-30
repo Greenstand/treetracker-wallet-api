@@ -4,7 +4,7 @@
 const pool = require('../server/database/database.js');
 const uuid = require('uuid');
 const log = require('loglevel');
-log.setLevel('debug');
+//log.setLevel('info');
 const assert = require('assert');
 
 const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
@@ -52,12 +52,12 @@ storyOfThisSeed,
 
 async function seed(){
 
-  console.log('clear api_key for test');
+  log.debug('clear api_key for test');
   await pool.query({
     text: 'delete from api_key where key = $1',
     values: [apiKey],
   });
-  console.log('seed api key');
+  log.debug('seed api key');
   //TODO should use appropriate hash & salt to populate this talbel
   await pool.query({
     text: `INSERT INTO api_key
@@ -69,7 +69,7 @@ async function seed(){
 
   //entity
   {
-    log.info('clear entity');
+    log.debug('clear entity');
     await pool.query(`delete from entity_role where entity_id = ${entity.id}`);
     let query = `delete from entity where id = ${entity.id}`;
     let result = await pool.query(query);
@@ -85,7 +85,7 @@ async function seed(){
 
   //entity role
   {
-    log.info('clear role');
+    log.debug('clear role');
     await pool.query(`delete from entity_role where entity_id = ${entity.id}`);
     await pool.query(
       `insert into entity_role
@@ -100,7 +100,7 @@ async function seed(){
 
   //tree
   {
-    log.info('clear tree');
+    log.debug('clear tree');
     await pool.query(`delete from trees where id = ${tree.id}`);
     await pool.query({
       text: `insert into trees
@@ -113,9 +113,9 @@ async function seed(){
 
   //token
   {
-    console.log('clear token first');
+    log.log('clear token first');
     await pool.query('delete from token');
-    console.log('seed token');
+    log.log('seed token');
     const query = {
       text: `INSERT into token
       (id, tree_id, entity_id, uuid)
@@ -127,15 +127,15 @@ async function seed(){
 }
 
 async function clear(){
-  log.info('clear all transaction');
+  log.debug('clear all transaction');
   await pool.query('delete from transaction');
-  log.info('clear all token');
+  log.debug('clear all token');
   await pool.query('delete from token');
-  log.info('clear all entity_role');
+  log.debug('clear all entity_role');
   await pool.query('delete from entity_role');
-  log.info('clear all entity_manager');
+  log.debug('clear all entity_manager');
   await pool.query('delete from entity_manager');
-  log.info('clear all entity');
+  log.debug('clear all entity');
   await pool.query('delete from entity');
 }
 

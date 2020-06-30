@@ -12,7 +12,7 @@ const server = 'http://localhost:3006';
 const { expect } = require('chai');
 const seed = require('./seed');
 const log = require('loglevel');
-log.setLevel('debug');
+log.setLevel('warn');
 
 const mockUser = {
   wallet: seed.entity.wallet,
@@ -28,14 +28,14 @@ const apiKey = seed.apiKey;
 describe(`Route integration, login with wallet:${seed.entity.wallet} `, () => {
   let token;
 
-  before(async () => {
+  beforeEach(async () => {
     //before all, seed data to DB
     await seed.clear();
     await seed.seed();
   });
 
   // Authorizes before each of the follow tests
-  before("login", (done) => {
+  beforeEach("login", (done) => {
     request(server)
       .post('/auth')
       .set('treetracker-api-key', apiKey)
@@ -49,7 +49,7 @@ describe(`Route integration, login with wallet:${seed.entity.wallet} `, () => {
       });
   });
 
-  after(done => {
+  afterEach(done => {
     //after finished all the test, clear data from DB
     seed.clear()
       .then(() => {
@@ -130,7 +130,7 @@ describe(`Route integration, login with wallet:${seed.entity.wallet} `, () => {
 
       describe(`Create subWallet '${subWallet.name}' under wallet:${seed.entity.wallet}`, () => {
 
-        before(async () => {
+        beforeEach(async () => {
           const res = await request(server)
             .post('/account')
             .set('treetracker-api-key', apiKey)
@@ -159,13 +159,49 @@ describe(`Route integration, login with wallet:${seed.entity.wallet} `, () => {
 
         describe(`Now transfer wallet:${seed.entity.wallet}'s token to the new wallet`, () => {
 
-          before(async () => {
+          beforeEach(async () => {
             const res = await request(server)
               .post('/transfer')
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${token}`)
               .send({
                 tokens: [seed.token.uuid],
+                sender_wallet: seed.entity.wallet,
+                receiver_wallet: subWallet.name,
+              });
+            expect(res)
+              .to.have.property('statusCode', 200);
+          });
+
+          it('Should be able to find a record about this token in the history API', async () => {
+            const res = await request(server)
+              .get(`/history?token=${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res)
+              .to.have.property('statusCode', 200);
+            expect(res.body)
+              .to.have.property('history')
+              .to.have.lengthOf(1);
+            expect(res.body.history[0])
+              .to.have.property('token', seed.token.uuid);
+            expect(res.body.history[0])
+              .to.have.property('sender_wallet', seed.entity.wallet);
+            expect(res.body.history[0])
+              .to.have.property('receiver_wallet', subWallet.name);
+          });
+
+        });
+
+        describe(`Now bundle transfer wallet:${seed.entity.wallet}'s token to the new wallet`, () => {
+
+          beforeEach(async () => {
+            const res = await request(server)
+              .post('/transfer/bundle')
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`)
+              .send({
+                bundle_size: 1,
                 sender_wallet: seed.entity.wallet,
                 receiver_wallet: subWallet.name,
               });
