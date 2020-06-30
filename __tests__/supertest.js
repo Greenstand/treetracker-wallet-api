@@ -120,6 +120,10 @@ describe('Route integration', () => {
         expect(response)
           .to.have.property('statusCode')
           .to.equal(200);
+            expect(response.body).to.have.property('accounts');
+            expect(response.body.accounts).to.be.an('array');
+            expect(response.body).to.have.property('accounts')
+              .that.have.lengthOf(1);
       });
 
       it('gets account details', async () => {
