@@ -88,7 +88,10 @@ async function seed(){
     await pool.query(
       `insert into entity_role
       (entity_id, role_name, enabled)
-      values (${entity.id}, 'list_trees', true)`
+      values 
+      (${entity.id}, 'list_trees', true),
+      (${entity.id}, 'accounts', true)
+      `
     );
   }
 

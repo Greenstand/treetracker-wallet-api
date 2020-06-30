@@ -11,6 +11,8 @@ const assert = require ('assert');
 const server = 'http://localhost:3006';
 const { expect } = require('chai');
 const seed = require('./seed');
+const log = require("loglevel");
+log.setLevel("debug");
 
 const mockUser = {
   wallet: seed.entity.wallet,
@@ -24,12 +26,32 @@ const mockUser = {
 const apiKey = seed.apiKey;
 
 describe('Route integration', () => {
+  let token;
+
   before((done) => {
     //before all, seed data to DB
     seed.seed()
       .then(() => {
         done();
       });
+  });
+
+  // Authorizes before each of the follow tests
+  beforeEach("login", (done) => {
+    request(server)
+      .post('/auth')
+      .set('treetracker-api-key', apiKey)
+      .send(mockUser)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        token = res.body.token;
+        expect(token).to.match(/\S+/);
+        done();
+      });
+  });
+
+  it("ttttttttttt", () => {
   });
 
   after(done => {
@@ -57,26 +79,13 @@ describe('Route integration', () => {
       });
     });
   });
-  // Authorizes before each of the follow tests
-  beforeEach((done) => {
-    request(server)
-      .post('/auth')
-      .set('treetracker-api-key', apiKey)
-      .send(mockUser)
-      .expect(200)
-      .end((err, res) => {
-        if (err) done(err);
-        token = res.body.token;
-        done();
-      });
-  });
 
   // Tests that require logged-in authorization
 
   // Get trees in user's wallet
   describe('/tree', () => {
     describe('GET', () => {
-      it.only('gets trees from logged in user wallet', (done) => {
+      it('gets trees from logged in user wallet', (done) => {
         request(server)
           .get('/tree')
           .set('treetracker-api-key', apiKey)
@@ -100,12 +109,11 @@ describe('Route integration', () => {
 // Get details of logged in account and sub-accounts
   describe('/account', () => {
     describe('GET', () => {
-      let response;
 
-      before(async () => {
+      it.only('accounts:', async () => {
         expect(token)
           .to.match(/\S+/);
-        response = await request(server)
+        let response = await request(server)
           .get('/account')
           .set('treetracker-api-key', apiKey)
           .set('Authorization', `Bearer ${token}`);

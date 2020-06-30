@@ -48,7 +48,7 @@ describe("Seed data into DB", () => {
   });
 
 
-  describe("Should have a entity", () => {
+  describe(`Should have the entity ${seed.entity.id}`, () => {
     let r;
 
     before(async () => {
@@ -96,6 +96,20 @@ describe("Seed data into DB", () => {
           FROM entity_role
           WHERE entity_id = ${seed.entity.id}
           AND role_name = 'list_trees'
+          AND enabled = TRUE`;
+      const result = await pool.query(query);
+      log.debug("pg:", query);
+      expect(result)
+        .to.have.property("rows")
+        .to.have.lengthOf(1);
+    });
+
+    it("Should have permission account", async () => {
+      const query = 
+        `SELECT *
+          FROM entity_role
+          WHERE entity_id = ${seed.entity.id}
+          AND role_name = 'accounts'
           AND enabled = TRUE`;
       const result = await pool.query(query);
       log.debug("pg:", query);
