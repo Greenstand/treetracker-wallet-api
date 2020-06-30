@@ -90,6 +90,7 @@ async function seed(){
       (entity_id, role_name, enabled)
       values 
       (${entity.id}, 'list_trees', true),
+      (${entity.id}, 'manage_accounts', true),
       (${entity.id}, 'accounts', true)
       `
     );
@@ -124,8 +125,14 @@ async function seed(){
 }
 
 async function clear(){
-  console.log("clear token first");
+  log.info("clear all token");
   await pool.query("delete from token");
+  log.info("clear all entity_role");
+  await pool.query("delete from entity_role");
+  log.info("clear all entity_manager");
+  await pool.query("delete from entity_manager");
+  log.info("clear all entity");
+  await pool.query("delete from entity");
 }
 
 module.exports = {seed, clear, apiKey, entity, tree, token};

@@ -4,6 +4,7 @@ const { check, validationResult } = require('express-validator');
 const config = require('../../config/config.js');
 const log = require("loglevel");
 log.setLevel("debug");
+const assert = require("assert");
 
 /* ________________________________________________________________________
  * Get all trees currently in the logged in account's default wallet,
@@ -105,6 +106,23 @@ userController.getTrees = async (req, res, next) => {
   next();
 };
 
+const renderAccountData = (entity) => {
+  log.debug(entity);
+  let accountData = {
+    type: entity.type, 
+    wallet: entity.wallet,
+    email: entity.email,
+    phone: entity.phone
+  };
+  if (entity.type == 'p') {
+    accountData.first_name = entity.first_name;
+    accountData.last_name = entity.last_name;
+  } else if (entity.type == 'o') {
+    accountData.name = entity.name;
+  }
+  return accountData;
+};
+
 /* ________________________________________________________________________
  * Get details of logged in account and sub-accounts.
  * ________________________________________________________________________
@@ -147,22 +165,6 @@ userController.getAccounts = async (req, res, next) => {
   const rval2 = await pool.query(query2);
   const childEntities = rval2.rows;
 
-  const renderAccountData = (entity) => {
-    console.log(entity);
-    let accountData = {
-      type: entity.type, 
-      wallet: entity.wallet,
-      email: entity.email,
-      phone: entity.phone
-    };
-    if (entity.type == 'p') {
-      accountData.first_name = entity.first_name;
-      accountData.last_name = entity.last_name;
-    } else if (entity.type == 'o') {
-      accountData.name = entity.name;
-    }
-    return accountData;
-  };
 
 // create response json
   const accounts = [];
@@ -184,6 +186,65 @@ userController.getAccounts = async (req, res, next) => {
   res.locals.accounts = response;
   next();
 
+};
+
+userController.addAccount = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
+
+  const entityId = res.locals.entity_id;
+  assert(entityId);
+  const body = req.body;
+
+  const queryWallet = {
+    text: `SELECT *
+    FROM entity 
+    WHERE wallet = $1`,
+    values: [body.wallet]
+  }
+  const rvalWallet = await pool.query(queryWallet);
+  if(rvalWallet.rows.length > 0){
+    res.status(409).json({
+      message:"This wallet name is taken. Please select different wallet name"
+    });
+    return;
+  }
+
+  //TODO: wallet cannot already exist in database.  unique index blocks this in database, but check here also
+
+  //TODO: these should occur in a transaction
+  const query1 = {
+    text: `INSERT INTO entity
+    (type, name, first_name, last_name, email, phone, website, wallet)
+    values
+    ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING *`,
+    values: ['p', body.name, body.first_name, body.last_name, body.email, body.phone, body.website, body.wallet]
+  }
+  const rval1 = await pool.query(query1);
+  const subAccount = rval1.rows[0];
+  const accountData = renderAccountData(subAccount);
+  accountData.access = 'child';
+
+  const query2 = {
+    text: `INSERT INTO entity_manager
+    (parent_entity_id, child_entity_id, active)
+    values
+    ($1, $2, true)
+    RETURNING *`,
+    values: [entityId, subAccount.id]
+  }
+  const rval2 = await pool.query(query2);
+
+//  res.status(200).json(accountData);
+//  res.end();
+  const response = {
+    accountData,
+  };
+  res.locals.response = response;
+  next();
 };
 
 module.exports = userController;

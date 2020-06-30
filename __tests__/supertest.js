@@ -25,7 +25,7 @@ const mockUser = {
 
 const apiKey = seed.apiKey;
 
-describe('Route integration', () => {
+describe(`Route integration, login with wallet: '${seed.entity.wallet}'`, () => {
   let token;
 
   before((done) => {
@@ -49,9 +49,6 @@ describe('Route integration', () => {
         expect(token).to.match(/\S+/);
         done();
       });
-  });
-
-  it("ttttttttttt", () => {
   });
 
   after(done => {
@@ -110,7 +107,7 @@ describe('Route integration', () => {
   describe('/account', () => {
     describe('GET', () => {
 
-      it.only('accounts:', async () => {
+      it('accounts:', async () => {
         expect(token)
           .to.match(/\S+/);
         let response = await request(server)
@@ -120,23 +117,24 @@ describe('Route integration', () => {
         expect(response)
           .to.have.property('statusCode')
           .to.equal(200);
-            expect(response.body).to.have.property('accounts');
-            expect(response.body.accounts).to.be.an('array');
-            expect(response.body).to.have.property('accounts')
-              .that.have.lengthOf(1);
+        expect(response.body).to.have.property('accounts');
+        expect(response.body.accounts).to.be.an('array');
+        expect(response.body)
+          .to.have.property('accounts')
+          .that.have.property(0)
+          .that.to.have.property("wallet", seed.entity.wallet);
       });
 
-      it('gets account details', async () => {
-//          .expect(200)
-//          .expect('Content-Type', /application\/json/)
-//          .end((err, res) => {
-//            if (err) done(err);
-//            expect(res.body).to.have.property('accounts');
-//            expect(res.body.accounts).to.be.an('array');
-//            expect(res.body).to.have.property('accounts')
-//              .that.have.lengthOf(1);
-//            done();
-//          });
+      it("create account", async () => {
+        const res = await request(server)
+          .post('/account')
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            wallet: "MyFriendsNewWallet"
+          });
+        expect(res)
+          .to.have.property('statusCode', 200);
       });
     });
   });

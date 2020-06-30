@@ -4,6 +4,7 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const authController = require('../controllers/authController.js');
 const userController = require('../controllers/userController.js');
+const assert = require("assert");
 
 router.post('/auth',
   [
@@ -41,6 +42,23 @@ router.get('/account',
   authController.checkAccess,
   userController.getAccounts,
   (req, res) => res.status(200).json(res.locals.accounts));
+
+router.post('/account',
+  [
+    check('wallet', 'Invalid wallet name').isAlphanumeric()
+  ],
+  authController.verifyJWT,
+  (_, res, next) => {
+    res.locals.role = 'manage_accounts';
+    next();
+  },
+  authController.checkAccess,
+  userController.addAccount,
+  (_, res) => {
+    assert(res.locals);
+    assert(res.locals.response);
+    res.status(200).json(res.locals.response);
+  });
 
 
 module.exports = router;
