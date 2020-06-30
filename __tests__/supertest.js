@@ -125,13 +125,17 @@ describe(`Route integration, login with wallet: '${seed.entity.wallet}'`, () => 
           .that.to.have.property('wallet', seed.entity.wallet);
       });
 
-      it('create account/wallet: MyFriendsNewWallet', async () => {
+      const subWallet = {
+        name: 'MyFriendsNewWallet',
+      };
+
+      it(`create account/wallet: ${subWallet.name}`, async () => {
         const res = await request(server)
           .post('/account')
           .set('treetracker-api-key', apiKey)
           .set('Authorization', `Bearer ${token}`)
           .send({
-            wallet: 'MyFriendsNewWallet'
+            wallet: subWallet.name,
           });
         expect(res)
           .to.have.property('statusCode', 200);
@@ -148,6 +152,8 @@ describe(`Route integration, login with wallet: '${seed.entity.wallet}'`, () => 
             .to.have.property('body')
             .to.have.property('accounts')
             .that.to.have.lengthOf(2);
+          expect(res.body.accounts[1])
+            .to.have.property('wallet', subWallet.name);
         }
       });
     });
