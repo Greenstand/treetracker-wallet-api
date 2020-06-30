@@ -41,6 +41,8 @@ const storyOfThisSeed = `
       tree: #${tree.id}
       entity: #${entity.id}
       uuid: ${token.uuid}
+
+    entity #${entity.id} planted a tree #${tree.id}, get a token #${token.id}
 `;
 console.debug(
 '--------------------------story of databse ----------------------------------',
@@ -125,6 +127,8 @@ async function seed(){
 }
 
 async function clear(){
+  log.info('clear all transaction');
+  await pool.query('delete from transaction');
   log.info('clear all token');
   await pool.query('delete from token');
   log.info('clear all entity_role');

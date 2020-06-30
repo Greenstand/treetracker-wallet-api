@@ -60,5 +60,40 @@ router.post('/account',
     res.status(200).json(res.locals.response);
   });
 
+router.post('/transfer',
+  [
+    check('tokens[*].*').isUUID(),
+    check('sender_wallet', 'Invalid Sender wallet name').isAlphanumeric(),
+    check('receiver_wallet', 'Invalid Reciever wallet name').isAlphanumeric()
+  ],
+  authController.verifyJWT,
+  (_, res, next) => {
+    res.locals.role = 'manage_accounts';
+    next();
+  },
+  authController.checkAccess,
+  userController.transfer,
+  (_, res) => {
+    assert(res.locals);
+    assert(res.locals.response);
+    res.status(200).json(res.locals.response);
+  });
+
+router.get('/history',
+  [
+    check('token').isUUID()
+  ],
+  authController.verifyJWT,
+  (_, res, next) => {
+    res.locals.role = 'manage_accounts';
+    next();
+  },
+  authController.checkAccess,
+  userController.history,
+  (_, res) => {
+    assert(res.locals);
+    assert(res.locals.response);
+    res.status(200).json(res.locals.response);
+  });
 
 module.exports = router;

@@ -247,4 +247,265 @@ userController.addAccount = async (req, res, next) => {
   next();
 };
 
+userController.transfer = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
+
+  const entityId = res.locals.entity_id;
+  assert(entityId);
+
+  // TODO: validate inputs
+  const tokens = req.body.tokens;
+  const senderWallet = req.body.sender_wallet;
+  const receiverWallet = req.body.receiver_wallet;
+
+  const queryWallet = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [receiverWallet]
+  }
+  const rvalWallet = await pool.query(queryWallet);
+  const receiverEntityId = rvalWallet.rows[0].id;
+
+  const queryWallet2 = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [senderWallet]
+  }
+  const rvalWallet2 = await pool.query(queryWallet2);
+  const senderEntityId = rvalWallet2.rows[0].id;
+
+  // validate tokens
+  const query = {
+    text: `SELECT entity_id, count(id)
+    FROM token
+    WHERE uuid = ANY ($1)
+    AND entity_id = $2
+    GROUP BY entity_id`,
+    values: [tokens, senderEntityId]
+  }
+  const rval = await pool.query(query);
+  if(rval.rows.length != 1){
+    res.status(403).json({
+      message:"Tokens must be non-empty and all be held by the sender wallet"
+    });
+    return;
+  }
+  const tokenReport = rval.rows[0];
+
+  if(receiverEntityId == tokenReport.entity_id){
+    res.status(403).json({
+      message:"Sender and receiever are identical"
+    });
+    return;
+  }
+
+
+  if(tokenReport.entity_id != entityId){
+    // check if this is a valid subaccount
+    const managementAccountQuery = {
+      text: `SELECT *
+      FROM entity_manager
+      WHERE child_entity_id = $1
+      AND entity_manager.active = TRUE`,
+      values: [tokenReport.entity_id]
+    };      
+    const managementRval = await pool.query(managementAccountQuery);
+    var managed = false
+    if(managementRval.rows.length > 0){
+      for(r of managementRval.rows){
+        if(r.parent_entity_id == entityId){
+          managed = true;
+          break;
+        }
+      }
+    }
+
+    if(managed == false){
+      res.status(401).json({
+        message:"You do not manage the holder of these tokens"
+      });
+      return;
+    }
+  }
+
+  if(receiverEntityId != entityId){
+
+    const managementAccountQuery = {
+      text: `SELECT *
+      FROM entity_manager
+      WHERE child_entity_id = $1`,
+      values: [receiverEntityId]
+    };      
+    const managementRval = await pool.query(managementAccountQuery);
+    var managed = false
+    console.log(managementRval.rows);
+    if(managementRval.rows.length > 0){
+      for(r of managementRval.rows){
+        if(r.parent_entity_id == entityId){
+          managed = true;
+          break;
+        }
+      }
+    }
+
+    if(managed == false){
+      res.status(401).json({
+        message:"You do not manage the receiver for this transfer"
+      });
+      return;
+    }
+
+  }
+
+
+
+  // todo: start a db transaction 
+  // create a transfer
+  const query1 = {
+    text: `INSERT INTO transfer  
+    (executing_entity_id)
+    values
+    ($1)
+    RETURNING *`,
+    values: [entityId]
+  }
+  const rval1 = await pool.query(query1);
+  const transferId = rval1.rows[0].id;
+
+
+  //TODO use a stored procedure to populate the transfer_id on the transaction records
+  // or explore other ways of doing this
+  // such as flipping the trigger.. so that instead of an update we process a transfer, and this moves the token.. is that good?
+
+  // move tokens
+  const query2 = {
+    text: `UPDATE token
+    SET entity_id = $1
+    WHERE uuid = ANY ($2)`,
+    values : [receiverEntityId, tokens]
+  }
+  const rval2 = await pool.query(query2);
+
+  // get transfer log
+
+  const response = {
+    status: `${tokens.length} tokens transferred to ${receiverWallet}`,
+    wallet_url: config.wallet_url + "?wallet="+receiverWallet
+  }
+//  res.status(200).json(response);
+//  res.end();
+  res.locals.response = response;
+  next();
+};
+
+userController.history = async (req, res, next) => {
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
+
+  const entityId = res.locals.entity_id;
+  assert(entityId);
+
+  const tokenUUID = req.query.token;
+  const query0 = {
+    text: `SELECT *
+    FROM token 
+    WHERE uuid = $1`,
+    values: [tokenUUID]
+  }
+  const rval0 = await pool.query(query0);
+  const token = rval0.rows[0];
+
+  if(token == null){
+    res.status(404).json ({
+      message:"Token Not Found"
+   })
+   return;
+  }
+
+
+  // check that we manage the wallet this token is in
+
+  // get primary account
+  const query1 = {
+    text: `SELECT *
+    FROM entity 
+    LEFT JOIN (
+      SELECT entity_id, COUNT(id) AS tokens_in_wallet
+      FROM token
+      GROUP BY entity_id
+    ) balance
+    ON balance.entity_id = entity.id
+    WHERE entity.id = $1`,
+    values: [entityId]
+  }
+  const rval1 = await pool.query(query1);
+  const entity = rval1.rows[0];
+  const managedWallets = [entity.id];
+
+  const query2 = {
+    text: `SELECT *
+    FROM entity 
+    JOIN entity_manager
+    ON entity_manager.child_entity_id = entity.id
+    WHERE entity_manager.parent_entity_id = $1
+    AND entity_manager.active = TRUE`,
+    values: [entityId]
+  }
+  const rval2 = await pool.query(query2);
+  const entityManagers = rval2.rows;
+  for(entityManager of entityManagers){
+    managedWallets.push(entityManager.child_entity_id);
+  }
+
+  console.log(managedWallets);
+
+
+  if(!managedWallets.includes(token.entity_id)){
+    res.status(401).json({
+      message:"You do not have access to history for this tree"
+    });
+    return;
+  }
+
+
+  const query4 = {
+    text: `SELECT '${tokenUUID}' as token,
+    sender.wallet as sender_wallet,
+    receiver.wallet as receiver_wallet,
+    processed_at
+    FROM transaction
+    JOIN entity sender
+    ON sender.id = transaction.sender_entity_id
+    JOIN entity receiver
+    ON receiver.id = transaction.receiver_entity_id
+    WHERE token_id = $1
+    ORDER BY processed_at`,
+    values: [token.id]
+  }
+  const rval4 = await pool.query(query4);
+  const history = [];  
+  for(transaction of rval4.rows){
+    history.push(transaction);
+  }
+
+  const response = {
+    history: history
+  };
+//  res.status(200).json(response);
+//  res.end();
+  res.locals.response = response;
+  next();
+
+}
+
 module.exports = userController;
