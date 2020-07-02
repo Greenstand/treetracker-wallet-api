@@ -94,6 +94,24 @@ router.post('/transfer',
     res.status(200).json(res.locals.response);
   });
 
+router.post('/send',
+[
+  check('tokens[*].*').isUUID(),
+  check('receiver_wallet', 'Invalid Receiver wallet name').isAlphanumeric(),
+],
+  authController.verifyJWT,
+  (_, res, next) => {
+    res.locals.role = 'manage_accounts';
+    next();
+  },
+  authController.checkAccess,
+  userController.send,
+  (_, res) => {
+    assert(res.locals);
+    assert(res.locals.response);
+    res.status(200).json(res.locals.response);
+  });
+
 router.post('/transfer/bundle',
   [
     check('bundle_size').isNumeric(),

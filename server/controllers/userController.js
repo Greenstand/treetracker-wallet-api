@@ -404,6 +404,93 @@ userController.transfer = async (req, res, next) => {
   next();
 };
 
+userController.send = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+     return res.status(422).json({ errors: errors.array() });
+  }
+
+  const entityId = res.locals.entity_id;
+  assert(entityId);
+  // check for trust connection here
+  const tokens = req.body.tokens;
+  const receiverWallet = req.body.receiver_wallet;
+  const senderEntityId = entityId
+
+  // this code is copied from /transfer and needs to be refactored in to a model
+  const queryWallet = {
+    text: `SELECT *
+    FROM entity
+    WHERE wallet = $1`,
+    values: [receiverWallet]
+  }
+  const rvalWallet = await pool.query(queryWallet);
+  const receiverEntityId = rvalWallet.rows[0].id;
+
+  // validate tokens
+  const query = {
+    text: `SELECT entity_id, count(id)
+    FROM token
+    WHERE uuid = ANY ($1)
+    AND entity_id = $2
+    GROUP BY entity_id`,
+    values: [tokens, senderEntityId]
+  }
+  const rval = await pool.query(query);
+  if(rval.rows.length != 1){
+    res.status(403).json([{
+      msg:"Tokens must be non-empty and all be held by the sender wallet",
+      param: "tokens",
+      location:"send"
+    }]);
+    return;
+  }
+  const tokenReport = rval.rows[0];
+
+  if(receiverEntityId == tokenReport.entity_id){
+    res.status(403).json([{
+      msg:"Sender and receiver are identical",
+      param: "receiver_wallet",
+      location:"send"
+    }]);
+    return;
+  }
+
+  // todo: start a db transaction 
+  // create a transfer
+  const query1 = {
+    text: `INSERT INTO transfer  
+    (executing_entity_id)
+    values
+    ($1)
+    RETURNING *`,
+    values: [entityId]
+  }
+  const rval1 = await pool.query(query1);
+  const transferId = rval1.rows[0].id;
+
+
+  //TODO use a stored procedure to populate the transfer_id on the transaction records
+  // or explore other ways of doing this
+  // such as flipping the trigger.. so that instead of an update we process a transfer, and this moves the token.. is that good?
+
+  // move tokens
+  const query2 = {
+    text: `UPDATE token
+    SET entity_id = $1
+    WHERE uuid = ANY ($2)`,
+    values : [receiverEntityId, tokens]
+  }
+  const rval2 = await pool.query(query2);
+
+  const response = {
+    status: `${tokens.length} tokens transferred to ${receiverWallet}`,
+    wallet_url: config.wallet_url + "?wallet="+receiverWallet
+  }
+  res.locals.response = response;
+  next();
+};
+
 
 userController.transferBundle = async (req, res, next) => {
   const errors = validationResult(req);

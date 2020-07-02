@@ -224,6 +224,41 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
 
     });
 
+    describe(`[POST /send] Now transfer wallet:${seed.entity.wallet}'s token to the new wallet`, () => {
+
+      beforeEach(async () => {
+        const res = await request(server)
+          .post('/send')
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            tokens: [seed.token.uuid],
+            receiver_wallet: subWallet.name,
+          });
+        expect(res)
+          .to.have.property('statusCode', 200);
+      });
+
+      it('[GET /history] Should be able to find a record about this token in the history API', async () => {
+        const res = await request(server)
+          .get(`/history?token=${seed.token.uuid}`)
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${token}`);
+        expect(res)
+          .to.have.property('statusCode', 200);
+        expect(res.body)
+          .to.have.property('history')
+          .to.have.lengthOf(1);
+        expect(res.body.history[0])
+          .to.have.property('token', seed.token.uuid);
+        expect(res.body.history[0])
+          .to.have.property('sender_wallet', seed.entity.wallet);
+        expect(res.body.history[0])
+          .to.have.property('receiver_wallet', subWallet.name);
+      });
+
+    });
+
   });
 
   /*
