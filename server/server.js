@@ -116,11 +116,6 @@ app.set('view engine','html');
 
 // }));
 
-
-
-
-
-
 app.get('/token', asyncHandler(async (req, res, next) => {
 
   const query = {

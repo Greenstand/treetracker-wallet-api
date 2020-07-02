@@ -32,21 +32,15 @@ describe(`Route integration, login with wallet:${seed.entity.wallet} `, () => {
     //before all, seed data to DB
     await seed.clear();
     await seed.seed();
-  });
 
-  // Authorizes before each of the follow tests
-  beforeEach("login", (done) => {
-    request(server)
+    // Authorizes before each of the follow tests
+    const res = await request(server)
       .post('/auth')
       .set('treetracker-api-key', apiKey)
-      .send(mockUser)
-      .expect(200)
-      .end((err, res) => {
-        if (err) done(err);
-        token = res.body.token;
-        expect(token).to.match(/\S+/);
-        done();
-      });
+      .send(mockUser);
+    expect(res).to.have.property('statusCode', 200);
+    token = res.body.token;
+    expect(token).to.match(/\S+/);
   });
 
   afterEach(done => {
