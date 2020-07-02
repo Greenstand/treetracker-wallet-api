@@ -4,6 +4,8 @@ const Crypto = require('crypto');
 const pool = require('../database/database.js');
 const { check, validationResult } = require('express-validator');
 const FS = require('fs');
+const log = require("loglevel");
+log.setLevel("debug");
 
 // PRIVATE and PUBLIC key
 const privateKEY = FS.readFileSync('../config/jwtRS256.key', 'utf8');
@@ -113,7 +115,7 @@ authController.authorize = async (req, res, next) => {
   const hash = sha512(password, entity.salt);
 
   if (hash !== entity.password) {
-    console.log('ERROR: Authentication, invalid credentials');
+    console.log('ERROR: Authentication, invalid credentials.');
     next({
       log: 'Error: Invalid credentials',
       status: 401,
@@ -181,6 +183,7 @@ authController.checkAccess = async (req, res, next) => {
   const rval = await pool.query(query);
 
   if (rval.rows.length !== 1) {
+    log.debug("check access fail...", res.locals.entity_id, res.locals.role);
     next({
       log: `ERROR: Permission for ${roleName} not granted`,
       status: 401,
