@@ -116,44 +116,6 @@ app.set('view engine','html');
 
 // }));
 
-app.get('/token', asyncHandler(async (req, res, next) => {
-
-  const query = {
-    text: `SELECT token.*, image_url, lat, lon, 
-    tree_region.name AS region_name,
-    trees.time_created AS tree_captured_at
-    FROM token
-    JOIN trees
-    ON trees.id = token.tree_id
-    LEFT JOIN (
-      SELECT DISTINCT  name, tree_id
-      FROM tree_region
-      JOIN region
-      ON region.id = tree_region.region_id
-      WHERE zoom_level = 4
-    ) tree_region
-    ON tree_region.tree_id = trees.id 
-    WHERE uuid = $1`,
-    values: [walletEntityId]
-  }
-  const rval = await pool.query(query);
-
-  const trees = [];
-  for(token of rval.rows){
-    treeItem = {
-      token: token.uuid,
-      map_url: config.map_url + "?treeid="+token.tree_id,
-      image_url: token.image_url,
-      tree_captured_at: token.tree_captured_at,
-      latitude: token.lat,
-      longitude: token.lon,
-      region: token.region_name
-    }
-    trees.push(treeItem);
-  }
-
-}));
-
 app.get('/wallet/:wallet_id/event', asyncHandler(async (req, res, next) => {
 
 }));

@@ -25,7 +25,7 @@ const subWallet = {
 
 const apiKey = seed.apiKey;
 
-describe(`Route integration, login with wallet:${seed.entity.wallet} `, () => {
+describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet} `, () => {
   let token;
 
   beforeEach(async () => {
@@ -52,20 +52,30 @@ describe(`Route integration, login with wallet:${seed.entity.wallet} `, () => {
   });
 
   // Authorization path
-  describe(`[POST /auth] login with wallet:${seed.entity.wallet}`, () => {
-    it('authorizes user with token', (done) => {
-      request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send(mockUser)
-        .expect('Content-Type', /application\/json/)
-        .expect(200)
-        .end((err, res) => {
-          if (err) done(err);
-          expect(res.body).to.have.property('token');
-          done();
-        });
-    });
+  it(`[POST /auth] login with wallet:${seed.entity.wallet}`, (done) => {
+    request(server)
+      .post('/auth')
+      .set('treetracker-api-key', apiKey)
+      .send(mockUser)
+      .expect('Content-Type', /application\/json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        expect(res.body).to.have.property('token');
+        done();
+      });
+  });
+
+  it(`[GET /token/${seed.token.uuid}] Should be able to get a token `, async () => {
+    const res = await request(server)
+      .get(`/token/${seed.token.uuid}`)
+      .set('treetracker-api-key', apiKey)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body).to.have.property('tokens')
+      .that.have.lengthOf(1)
+      .that.have.property(0)
+      .which.have.property('token', seed.token.uuid);
   });
 
   // Tests that require logged-in authorization
