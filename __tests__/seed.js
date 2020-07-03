@@ -45,7 +45,7 @@ const storyOfThisSeed = `
     entity #${entity.id} planted a tree #${tree.id}, get a token #${token.id}
 `;
 console.debug(
-'--------------------------story of databse ----------------------------------',
+'--------------------------story of database ----------------------------------',
 storyOfThisSeed,
 '-----------------------------------------------------------------------------',
 );

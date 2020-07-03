@@ -238,14 +238,18 @@ userController.addAccount = async (req, res, next) => {
   }
   const rval2 = await pool.query(query2);
 
-//  res.status(200).json(accountData);
-//  res.end();
   const response = {
     accountData,
   };
   res.locals.response = response;
   next();
 };
+
+
+/* ________________________________________________________________________
+ * Transfer specific tree tokens between managed accounts
+ * ________________________________________________________________________
+*/
 
 userController.transfer = async (req, res, next) => {
   const errors = validationResult(req);
@@ -363,8 +367,6 @@ userController.transfer = async (req, res, next) => {
 
   }
 
-
-
   // todo: start a db transaction 
   // create a transfer
   const query1 = {
@@ -398,8 +400,6 @@ userController.transfer = async (req, res, next) => {
     status: `${tokens.length} tokens transferred to ${receiverWallet}`,
     wallet_url: config.wallet_url + "?wallet="+receiverWallet
   }
-//  res.status(200).json(response);
-//  res.end();
   res.locals.response = response;
   next();
 };
@@ -491,6 +491,13 @@ userController.send = async (req, res, next) => {
   next();
 };
 
+/* ________________________________________________________________________
+ * Transfer a number of tree tokens from one managed wallet to another. 
+ * The tokens transfered are not individually identified, but rather drawn 
+ * from the pool of available tokens in the sending wallet. 
+ * ________________________________________________________________________
+*/
+
 
 userController.transferBundle = async (req, res, next) => {
   const errors = validationResult(req);
@@ -568,7 +575,6 @@ userController.transferBundle = async (req, res, next) => {
     }
   }
 
-
   if(receiverEntityId != entityId){
     // check if this is a valid subaccount
     const managementAccountQuery = {
@@ -596,8 +602,6 @@ userController.transferBundle = async (req, res, next) => {
       return;
     }
   }
-
-
 
   // Find tokens for this bundle
   const queryTokens = {
@@ -641,6 +645,12 @@ userController.transferBundle = async (req, res, next) => {
   next();
 
 };
+
+/* ________________________________________________________________________
+ * View the transfer history (impact owner custody chain) for a given tree 
+ * token that is held by the logged in master account or sub-accounts.
+ * ________________________________________________________________________
+*/
 
 userController.history = async (req, res, next) => {
 

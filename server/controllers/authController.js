@@ -139,6 +139,11 @@ authController.issueJWT = (req, res, next) => {
   next();
 };
 
+/* ________________________________________________________________________
+ * JWT Verification upon prior log in
+ * ________________________________________________________________________
+*/
+
 authController.verifyJWT = (req, res, next) => {
   if (!req.headers.authorization) {
     console.log('ERROR: Authentication, no token supplied for protected path');
@@ -168,6 +173,11 @@ authController.verifyJWT = (req, res, next) => {
   }
   next();
 };
+
+/* ________________________________________________________________________
+ * Checks user access privileges
+ * ________________________________________________________________________
+*/
 
 authController.checkAccess = async (req, res, next) => {
   const entityId = res.locals.entity_id;

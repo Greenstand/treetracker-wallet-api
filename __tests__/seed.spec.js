@@ -6,6 +6,10 @@ const log = require("loglevel");
 
 describe("Seed data into DB", () => {
 
+  // before(async () => {
+  //   await seed.clear();
+  // });
+
   before(async () => {
     await seed.seed();
   });
