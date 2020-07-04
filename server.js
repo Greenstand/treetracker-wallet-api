@@ -235,7 +235,7 @@ app.get('/tree', [
   if( !accessGranted ){
     res.status(401).json([{
       msg:"Not Permitted",
-      param: "list threes",
+      param: "list trees",
       location:"access_control"
     }]);
     return;
