@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-// const bearerToken = require('express-bearer-token');
 const { check, validationResult } = require('express-validator');
 const authController = require('../controllers/authController.js');
 const userController = require('../controllers/userController.js');
@@ -25,11 +24,7 @@ router.get('/tree',
     check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
   ],
   authController.verifyJWT,
-  (req, res, next) => {
-    res.locals.role = 'list_trees';
-    next();
-  },
-  authController.checkAccess,
+  authController.checkAccess('list_trees'),
   userController.getTrees,
   (req, res) => res.status(200).json(res.locals.trees));
 
@@ -50,11 +45,7 @@ router.get('/token/:uuid',
 
 router.get('/account',
   authController.verifyJWT,
-  (req, res, next) => {
-    res.locals.role = 'accounts';
-    next();
-  },
-  authController.checkAccess,
+  authController.checkAccess('accounts'),
   userController.getAccounts,
   (req, res) => res.status(200).json(res.locals.accounts));
 
@@ -63,11 +54,7 @@ router.post('/account',
     check('wallet', 'Invalid wallet name').isAlphanumeric()
   ],
   authController.verifyJWT,
-  (_, res, next) => {
-    res.locals.role = 'manage_accounts';
-    next();
-  },
-  authController.checkAccess,
+  authController.checkAccess('manage_accounts'),
   userController.addAccount,
   (_, res) => {
     assert(res.locals);
@@ -82,11 +69,7 @@ router.post('/transfer',
     check('receiver_wallet', 'Invalid Reciever wallet name').isAlphanumeric()
   ],
   authController.verifyJWT,
-  (_, res, next) => {
-    res.locals.role = 'manage_accounts';
-    next();
-  },
-  authController.checkAccess,
+  authController.checkAccess('manage_accounts'),
   userController.transfer,
   (_, res) => {
     assert(res.locals);
@@ -100,11 +83,7 @@ router.post('/send',
   check('receiver_wallet', 'Invalid Receiver wallet name').isAlphanumeric(),
 ],
   authController.verifyJWT,
-  (_, res, next) => {
-    res.locals.role = 'manage_accounts';
-    next();
-  },
-  authController.checkAccess,
+  authController.checkAccess('manage_accounts'),
   userController.send,
   (_, res) => {
     assert(res.locals);
@@ -119,11 +98,7 @@ router.post('/transfer/bundle',
     check('receiver_wallet', 'Invalid Reciever wallet name').isAlphanumeric()
   ],
   authController.verifyJWT,
-  (_, res, next) => {
-    res.locals.role = 'manage_accounts';
-    next();
-  },
-  authController.checkAccess,
+  authController.checkAccess('manage_accounts'),
   userController.transferBundle,
   (_, res) => {
     assert(res.locals);
@@ -136,11 +111,7 @@ router.get('/history',
     check('token').isUUID()
   ],
   authController.verifyJWT,
-  (_, res, next) => {
-    res.locals.role = 'manage_accounts';
-    next();
-  },
-  authController.checkAccess,
+  authController.checkAccess('manage_accounts'),
   userController.history,
   (_, res) => {
     assert(res.locals);

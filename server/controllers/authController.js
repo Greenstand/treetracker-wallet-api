@@ -179,29 +179,29 @@ authController.verifyJWT = (req, res, next) => {
  * ________________________________________________________________________
 */
 
-authController.checkAccess = async (req, res, next) => {
-  const entityId = res.locals.entity_id;
-  const roleName = res.locals.role;
-  const query = {
-    text: `SELECT *
-    FROM entity_role
-    WHERE entity_id = $1
-    AND role_name = $2
-    AND enabled = TRUE`,
-    values: [entityId, roleName]
-  };
-  const rval = await pool.query(query);
+authController.checkAccess = (role) => {
+    return async (req, res, next) => {
+    const entityId = res.locals.entity_id;
+    const query = {
+      text: `SELECT *
+      FROM entity_role
+      WHERE entity_id = $1
+      AND role_name = $2
+      AND enabled = TRUE`,
+      values: [entityId, role]
+    };
+    const rval = await pool.query(query);
 
-  if (rval.rows.length !== 1) {
-    log.debug("check access fail...", res.locals.entity_id, res.locals.role);
-    next({
-      log: `ERROR: Permission for ${roleName} not granted`,
-      status: 401,
-      message: { err: `ERROR: Permission to ${roleName} not granted`},
-    });
+    if (rval.rows.length !== 1) {
+      log.debug("check access fail...", entityId, role);
+      next({
+        log: `ERROR: Permission for ${role} not granted`,
+        status: 401,
+        message: { err: `ERROR: Permission to ${role} not granted`},
+      });
+    }
+    next();
   }
-  next();
 };
-
 
 module.exports = authController;
