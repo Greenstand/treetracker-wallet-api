@@ -195,7 +195,6 @@ userController.addAccount = async (req, res, next) => {
   }
 
   const entityId = res.locals.entity_id;
-  assert(entityId);
   const body = req.body;
 
   const queryWallet = {
@@ -259,7 +258,6 @@ userController.transfer = async (req, res, next) => {
   }
 
   const entityId = res.locals.entity_id;
-  assert(entityId);
 
   // TODO: validate inputs
   const tokens = req.body.tokens;
@@ -411,7 +409,6 @@ userController.send = async (req, res, next) => {
   }
 
   const entityId = res.locals.entity_id;
-  assert(entityId);
   // check for trust connection here
   const tokens = req.body.tokens;
   const receiverWallet = req.body.receiver_wallet;
@@ -509,7 +506,6 @@ userController.transferBundle = async (req, res, next) => {
   console.log('Bundle transfer requested');
 
   const entityId = res.locals.entity_id;
-  assert(entityId);
 
   console.log("Role access approved");
 
@@ -661,7 +657,6 @@ userController.history = async (req, res, next) => {
   }
 
   const entityId = res.locals.entity_id;
-  assert(entityId);
 
   const tokenUUID = req.query.token;
   const query0 = {
@@ -759,7 +754,14 @@ userController.history = async (req, res, next) => {
 userController.token = async (req, res, next) => {
 
   const {uuid} = req.params;
-  assert(uuid);
+
+  if (!uuid) {
+    next({
+      log: 'ERROR: No token supplied',
+      status: 401,
+      message: { err: 'ERROR: No token supplied' },
+    });
+  }
 
   const query = {
     text: `SELECT token.*, image_url, lat, lon, 
