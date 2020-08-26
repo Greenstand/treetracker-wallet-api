@@ -15,11 +15,11 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.runSql("CREATE SCHEMA trading");
+  return null;
 };
 
 exports.down = function(db) {
-  return db.runSql("DROP SCHEMA trading");
+  return null;
 };
 
 exports._meta = {

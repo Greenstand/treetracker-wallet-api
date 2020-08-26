@@ -14,23 +14,23 @@ exports.setup = function(options, seedLink) {
   seed = seedLink;
 };
 
-exports.up = function(db) {
-  return db.createTable('trading.transaction', {
+exports.up = function (db) {
+  return db.createTable('transaction', {
     id: { type: 'int', primaryKey: true, autoincrement: true },
     token_id: { type: 'int', notNull: true },
     transfer_id: { type: 'int', notNull: true },
     source_entity_id: { type: 'int', notNull: true },
     destination_entity_id: { type: 'int', notNull: true },
-    processed_at:  {
+    processed_at: {
       type: 'timestamp',
       notNull: true,
       defaultValue: new String('now()')
-    }
-  })
+    },
+  });
 };
 
-exports.down = function(db) {
-  return db.dropTable('trading.transaction')
+exports.down = function (db) {
+  db.dropTable('transaction');
 };
 
 exports._meta = {
