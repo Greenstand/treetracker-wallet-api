@@ -38,6 +38,8 @@
     "mocha": "^2.5.3",
     "sinon": "^1.17.4",
     "sinon-chai": "^2.8.0",
-    "supertest": "^4.0.2"
+    "supertest": "^4.0.2",
+    "db-migrate": "^0.10.7",
+    "db-migrate-pg": "^0.4.0"
   }
 }
