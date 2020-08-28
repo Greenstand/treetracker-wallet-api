@@ -6,6 +6,16 @@ const uuid = require('uuid');
 const log = require('loglevel');
 //log.setLevel('info');
 const assert = require('assert');
+const knex = require('knex')({
+  client: 'pg',
+//  debug: true,
+  connection: require('../config/config').connectionString,
+});
+
+
+
+
+
 
 const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
 const entity = {
@@ -52,91 +62,92 @@ storyOfThisSeed,
 
 async function seed(){
 
-  log.debug('clear api_key for test');
-  await pool.query({
-    text: 'delete from api_key where key = $1',
-    values: [apiKey],
-  });
   log.debug('seed api key');
   //TODO should use appropriate hash & salt to populate this talbel
-  await pool.query({
-    text: `INSERT INTO api_key
-    (key, tree_token_api_access, hash, salt, name)
-    VALUES ($1, $2, $3, $4, $5)
-    `,
-    values: [apiKey, true, 'test', 'test', 'test']
-  });
+  await knex('api_key')
+    .insert({
+      key: apiKey,
+      tree_token_api_access: true,
+      hash: 'test',
+      salt: 'test',
+      name: 'test',
+    });
 
   //entity
   {
-    log.debug('clear entity');
-    await pool.query(`delete from entity_role where entity_id = ${entity.id}`);
-    let query = `delete from entity where id = ${entity.id}`;
-    let result = await pool.query(query);
-    assert(result);
-    query = `insert into entity
-    (id, type, name, wallet, password, salt)
-    values (${entity.id}, '${entity.type}', '${entity.name}', '${entity.wallet}', '${entity.passwordHash}', '${entity.salt}')
-    `;
-    log.debug(query);
-    result = await pool.query(query);
-    assert(result);
+    await knex('entity')
+      .where('id', entity.id)
+      .del();
+    await knex('entity')
+      .insert({
+        id: entity.id,
+        type: entity.type,
+        name: entity.name,
+        wallet: entity.wallet,
+        password: entity.passwordHash,
+        salt: entity.salt,
+      });
   }
 
   //entity role
   {
     log.debug('clear role');
-    await pool.query(`delete from entity_role where entity_id = ${entity.id}`);
-    await pool.query(
-      `insert into entity_role
-      (entity_id, role_name, enabled)
-      values 
-      (${entity.id}, 'list_trees', true),
-      (${entity.id}, 'manage_accounts', true),
-      (${entity.id}, 'accounts', true)
-      `
-    );
+    await knex('entity_role')
+      .insert([{
+        entity_id: entity.id,
+        role_name: 'list_trees',
+        enabled: true,
+      },{
+        entity_id: entity.id,
+        role_name: 'manage_accounts',
+        enabled: true,
+      },{
+        entity_id: entity.id,
+        role_name: 'accounts',
+        enabled: true,
+      }]);
   }
 
   //tree
   {
-    log.debug('clear tree');
-    await pool.query(`delete from trees where id = ${tree.id}`);
-    await pool.query({
-      text: `insert into trees
-      (id, time_created, time_updated)
-      values (${tree.id}, $1, $1)
-      `,
-      values: [new Date()]
-    });
+    await knex('trees')
+      .insert({
+        id: tree.id,
+        time_created: new Date(),
+        time_updated: new Date(),
+      });
   }
 
   //token
   {
-    log.log('clear token first');
-    await pool.query('delete from token');
     log.log('seed token');
-    const query = {
-      text: `INSERT into token
-      (id, tree_id, entity_id, uuid)
-      values ($1, $2, $3, $4)`,
-      values: [token.id, tree.id, entity.id, token.uuid]
-    };
-    await pool.query(query);
+    await knex('token')
+      .insert({
+        id: token.id,
+        tree_id: tree.id,
+        entity_id: entity.id,
+        uuid: token.uuid,
+      });
   }
 }
 
 async function clear(){
+  log.debug('clear all key');
+  await knex('api_key').del();
   log.debug('clear all transaction');
-  await pool.query('delete from transaction');
+  await knex('transaction').del();
   log.debug('clear all token');
-  await pool.query('delete from token');
+  await knex('token').del();
+  log.debug('clear all trees');
+  await knex('trees').del();
+  log.debug('clear all planter');
+  await knex('planter').del();
   log.debug('clear all entity_role');
-  await pool.query('delete from entity_role');
+  await knex('entity_role').del();
   log.debug('clear all entity_manager');
-  await pool.query('delete from entity_manager');
+  await knex('entity_manager').del();
   log.debug('clear all entity');
-  await pool.query('delete from entity');
+  await knex('entity').del();
 }
 
 module.exports = {seed, clear, apiKey, entity, tree, token};
