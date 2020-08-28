@@ -154,6 +154,10 @@ async function clear(){
   await knex('transaction').del();
   log.debug('clear all token');
   await knex('token').del();
+  log.debug('clear all trees');
+  await knex('trees').del();
+  log.debug('clear all planter');
+  await knex('planter').del();
   log.debug('clear all entity_role');
   await knex('entity_role').del();
   log.debug('clear all entity_manager');
