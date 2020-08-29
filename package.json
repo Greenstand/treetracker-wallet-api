@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test-unit; npm run test-int; npm run test-auth",
-    "test-unit": "NODE_ENV=test mocha --require co-mocha 'lib/*.spec.js'",
+    "test-unit": "NODE_ENV=test mocha --require co-mocha './server/**/*.spec.js'",
     "test-int": "NODE_ENV=test mocha --require co-mocha 'index.spec.js'",
     "test-auth": "NODE_ENV=test mocha --require co-mocha 'lib/auth.spec.js'",
     "server": "cd ./server && node server.js",
+    "serverTest": "cd ./server && nodemon server.js",
     "test-seedDB": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './**/*.spec.js'",
     "test-integration": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './__tests__/supertest.js'"
   },
@@ -27,6 +28,7 @@
     "knex": "^0.21.5",
     "loglevel": "^1.6.8",
     "morgan": "^1.9.1",
+    "nodemon": "^2.0.4",
     "pg": "^7.4.0",
     "uuid": "^8.2.0"
   },
@@ -35,8 +37,11 @@
     "chai-http": "^4.3.0",
     "co-mocha": "1.1.2",
     "database-cleaner": "^1.3.0",
+    "db-migrate": "^0.10.7",
+    "db-migrate-pg": "^0.4.0",
     "mocha": "^2.5.3",
     "mock-knex": "^0.4.9",
+    "rosie": "^2.0.1",
     "sinon": "^1.17.4",
     "sinon-chai": "^2.8.0",
     "supertest": "^4.0.2"

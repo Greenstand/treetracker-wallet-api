@@ -4,3 +4,4 @@ private.key
 public.key
 jwtRS256.keyjwtRS256.key.pub
 keygen.sh
+database.json

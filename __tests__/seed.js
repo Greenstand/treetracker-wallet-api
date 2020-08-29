@@ -62,10 +62,6 @@ storyOfThisSeed,
 
 async function seed(){
 
-  log.debug('clear api_key for test');
-  await knex('api_key')
-    .where('key', apiKey)
-    .del();
   log.debug('seed api key');
   //TODO should use appropriate hash & salt to populate this talbel
   await knex('api_key')
@@ -79,10 +75,6 @@ async function seed(){
 
   //entity
   {
-    log.debug('clear entity');
-    await knex('entity_role')
-      .where('entity_id', entity.id)
-      .del();
     await knex('entity')
       .where('id', entity.id)
       .del();
@@ -101,9 +93,6 @@ async function seed(){
   {
     log.debug('clear role');
     await knex('entity_role')
-      .where('entity_id', entity.id)
-      .del();
-    await knex('entity_role')
       .insert([{
         entity_id: entity.id,
         role_name: 'list_trees',
@@ -121,10 +110,6 @@ async function seed(){
 
   //tree
   {
-    log.debug('clear tree');
-    await knex('trees')
-      .where('id',tree.id)
-      .del();
     await knex('trees')
       .insert({
         id: tree.id,
@@ -135,9 +120,6 @@ async function seed(){
 
   //token
   {
-    log.log('clear token first');
-    await knex('token')
-      .del();
     log.log('seed token');
     await knex('token')
       .insert({
@@ -150,10 +132,16 @@ async function seed(){
 }
 
 async function clear(){
+  log.debug('clear all key');
+  await knex('api_key').del();
   log.debug('clear all transaction');
   await knex('transaction').del();
   log.debug('clear all token');
   await knex('token').del();
+  log.debug('clear all trees');
+  await knex('trees').del();
+  log.debug('clear all planter');
+  await knex('planter').del();
   log.debug('clear all entity_role');
   await knex('entity_role').del();
   log.debug('clear all entity_manager');
