@@ -288,5 +288,18 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
 
   */
 
+  describe.only("Relationship", () => {
+
+    it("GET /trust_relationships", async () => {
+      const res = await request(server)
+        .get("/trust_relationships")
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${token}`);
+      expect(res).property("statusCode").to.eq(200);
+      expect(res).property("body").property("trust_relationships").lengthOf(1);
+      expect(res.body.trust_relationships[0]).property("id").a("number");
+    });
+  });
 
 });
+
