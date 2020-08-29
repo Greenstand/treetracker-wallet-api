@@ -297,6 +297,7 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
         .set('Authorization', `Bearer ${token}`);
       expect(res).property("statusCode").to.eq(200);
       expect(res).property("body").property("trust_relationships").lengthOf(1);
+      console.warn("body:" , res.body.trust_relationships);
       expect(res.body.trust_relationships[0]).property("id").a("number");
     });
   });

@@ -1,6 +1,6 @@
 class trust_relationship{
-  constructor(id){
-    this.id = id;
+  constructor(options){
+    this.id = options.id;
   }
 }
 
