@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test-unit; npm run test-int; npm run test-auth",
-    "test-unit": "NODE_ENV=test mocha --require co-mocha 'lib/*.spec.js'",
+    "test-unit": "NODE_ENV=test mocha --require co-mocha './server/**/*.spec.js'",
     "test-int": "NODE_ENV=test mocha --require co-mocha 'index.spec.js'",
     "test-auth": "NODE_ENV=test mocha --require co-mocha 'lib/auth.spec.js'",
     "server": "cd ./server && node server.js",
