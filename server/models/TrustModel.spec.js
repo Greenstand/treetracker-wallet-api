@@ -13,10 +13,12 @@ describe("TrustModel", () => {
 
   after(() => {
     mockKnex.unmock(knex);
+    tracker.uninstall();
   });
 
   it("get trust_relationships", async () => {
     tracker.on("query", (query) => {
+      expect(query.sql).match(/select.*trust_relationship.*/);
       query.response([{
         a:1,
       }]);

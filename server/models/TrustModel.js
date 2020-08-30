@@ -1,4 +1,3 @@
-const trust_relationship = require("./entities/trust_relationship");
 const knex = require('knex')({
   client: 'pg',
 //  debug: true,
