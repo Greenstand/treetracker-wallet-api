@@ -14,13 +14,13 @@ exports.setup = function(options, seedLink) {
   seed = seedLink;
 };
 
-// exports.up = function(db) {
-//   return db.runSql("CREATE SCHEMA wallets");
-// };
+exports.up = function(db) {
+  return db.runSql("CREATE SCHEMA wallets");
+};
 
-// exports.down = function(db) {
-//   return db.runSql("DROP SCHEMA wallets");
-// };
+exports.down = function(db) {
+  return db.runSql("DROP SCHEMA wallets");
+};
 
 exports._meta = {
   "version": 1

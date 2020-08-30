@@ -14,12 +14,31 @@ exports.setup = function(options, seedLink) {
   seed = seedLink;
 };
 
-exports.up = function(db) {
-  return null;
+exports.up = function (db) {
+  return db.createTable('transfer', {
+    id: { type: 'int', primaryKey: true, autoincrement: true },
+    originator_entity_id: { type: 'int', notNull: true },
+    source_entity_id: { type: 'int', notNull: true },
+    destination_entity_id: { type: 'int', notNull: true },
+    type: { type: 'transfer_type', notNull: true },
+    parameters: { type: 'json' },
+    state: { type: 'transfer_state', notNull: true },
+    created_at: {
+      type: 'timestamp',
+      notNull: true,
+      defaultValue: new String('now()')
+    },
+    closed_at: {
+      type: 'timestamp',
+      notNull: true,
+      defaultValue: new String('now()')
+    },
+    active: { type: 'boolean', notNull: true },
+  });
 };
 
-exports.down = function(db) {
-  return null;
+exports.down = function (db) {
+  return db.dropTable('transfer');
 };
 
 exports._meta = {
