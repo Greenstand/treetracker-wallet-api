@@ -300,6 +300,18 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
       console.warn("body:" , res.body.trust_relationships);
       expect(res.body.trust_relationships[0]).property("id").a("number");
     });
+
+    it.only("POST /trust_relationships with wrong request type", async () => {
+      const res = await request(server)
+        .post("/trust_relationships")
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          trust_request_type: 'wrongtype',
+          wallet: 'any',
+        });
+      expect(res).property("statusCode").to.eq(400);
+    });
   });
 
 });

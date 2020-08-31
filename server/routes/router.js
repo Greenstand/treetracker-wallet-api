@@ -133,5 +133,18 @@ router.get('/trust_relationships',
   },
 );
 
+router.post('/trust_relationships',
+//  [
+//    check('token').isUUID()
+//  ],
+  authController.verifyJWT,
+  trustController.request,
+  (_, res) => {
+    assert(res.locals);
+    assert(res.locals.response);
+    res.status(200).json(res.locals.response);
+  },
+);
+
 
 module.exports = router;
