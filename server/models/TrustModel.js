@@ -4,6 +4,7 @@ const knex = require('knex')({
 //  debug: true,
   connection: require('../../config/config').connectionString,
 });
+const HttpError = require("./HttpError");
 
 class TrustModel{
   get(){
@@ -14,7 +15,12 @@ class TrustModel{
   }
 
   request(requestType, walletName){
-    expect(requestType).oneOf(Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE));
+    try{
+      expect(requestType).oneOf(Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE));
+    }catch(e){
+      console.warn("TODO", e);
+      throw new HttpError(`The trust request type muse be one of ${Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE).join(',')}`, 400);
+    }
   }
 }
 

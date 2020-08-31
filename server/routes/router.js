@@ -140,9 +140,10 @@ router.post('/trust_relationships',
   authController.verifyJWT,
   trustController.request,
   (_, res) => {
-    assert(res.locals);
-    assert(res.locals.response);
-    res.status(200).json(res.locals.response);
+//    assert(res.locals);
+//    assert(res.locals.response);
+//    res.status(200).json(res.locals.response);
+    res.status(200).json({todo:'todo'});
   },
 );
 

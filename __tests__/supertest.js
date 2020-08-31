@@ -288,7 +288,7 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
 
   */
 
-  describe.only("Relationship", () => {
+  describe("Relationship", () => {
 
     it("GET /trust_relationships", async () => {
       const res = await request(server)
@@ -301,17 +301,33 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
       expect(res.body.trust_relationships[0]).property("id").a("number");
     });
 
-    it.only("POST /trust_relationships with wrong request type", async () => {
-      const res = await request(server)
-        .post("/trust_relationships")
-        .set('treetracker-api-key', apiKey)
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          trust_request_type: 'wrongtype',
-          wallet: 'any',
-        });
-      expect(res).property("statusCode").to.eq(400);
+
+    describe("Request trust relationship", () => {
+      it.only("POST /trust_relationships with wrong request type", async () => {
+        const res = await request(server)
+          .post("/trust_relationships")
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            trust_request_type: 'wrongtype',
+            wallet: 'any',
+          });
+        expect(res).property("statusCode").to.eq(400);
+      });
+
+      it("POST /trust_relationships", async () => {
+        const res = await request(server)
+          .post("/trust_relationships")
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            trust_request_type: 'send',
+            wallet: 'any',
+          });
+        expect(res).property("statusCode").to.eq(200);
+      });
     });
+
   });
 
 });

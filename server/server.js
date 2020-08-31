@@ -11,6 +11,7 @@ const path = require('path');
 const asyncHandler = require('express-async-handler');
 const { check, validationResult } = require('express-validator');
 const { body } = require('express-validator');
+const HttpError = require("./models/HttpError");
 
 
 const app = express();
@@ -24,18 +25,6 @@ app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-
 app.use(bodyParser.json()); // parse application/json
 
 app.use('/', router);
-
-// Global error handler
-app.use((err, req, res, next) => {
-  const defaultErr = {
-    log: 'Express error handler caught unknown middleware error',
-    status: 500,
-    message: { err: 'An error occured' },
-  };
-  // replaces the errorObj with custom returned err from middleware
-  const errorObj = { ...defaultErr, ...err };
-  return res.status(errorObj.status).json(errorObj.message.err);
-});
 
 
 app.set('view engine','html');
@@ -61,13 +50,16 @@ app.post('/wallet/:wallet_id/trust/approve',  asyncHandler(async (req, res, next
 
 }));
 
-app.get('*',function(req, res){
-  console.log('Did not match path', req.originalUrl);
+// Global error handler
+app.use((err, req, res, next) => {
+  console.warn("cathed the error:", err);
+  if(err instanceof HttpError){
+    res.status(err.code).send(err.message);
+  }else{
+    res.status(500).send("Unknown error");
+  }
 });
 
-app.post('*',function(req, res){
-  console.log('Did not match path', req.originalUrl);
-});
 
 
 
