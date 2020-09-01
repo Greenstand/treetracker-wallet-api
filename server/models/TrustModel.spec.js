@@ -46,6 +46,17 @@ describe("TrustModel", () => {
       }).rejects.toThrow();
     });
 
+    it("request successfully", async () => {
+      //TODO ? why must uninstall & install here?
+      tracker.uninstall();
+      tracker.install();
+      tracker.on("query", (query) => {
+        expect(query.sql).match(/insert.*trust_relationship.*/);
+        query.response([]);
+      });
+      await trustModel.request("send", "test");
+    });
+
   });
 
 

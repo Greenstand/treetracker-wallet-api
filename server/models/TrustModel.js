@@ -20,6 +20,10 @@ class TrustModel{
     console.log("walletName", walletName);
     expect(walletName, "Invalid wallet name")
       .match(/test/);
+    await knex("trust_relationship").insert({
+      request_type: requestType,
+      wallet: walletName,
+    });
   }
 }
 
