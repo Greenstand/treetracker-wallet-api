@@ -18,9 +18,9 @@ class TrustModel{
     expect(requestType, () => new HttpError(`The trust request type muse be one of ${Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE).join(',')}`, 400))
       .oneOf(Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE));
     console.log("walletName", walletName);
-    expect(walletName, "Invalid wallet name")
-      .match(/test/);
-    await knex("trust_relationship").insert({
+    expect(walletName, () => new HttpError("Invalid wallet name", 400))
+      .match(/\S+/);
+    await knex("entity_trust").insert({
       request_type: requestType,
       wallet: walletName,
     });

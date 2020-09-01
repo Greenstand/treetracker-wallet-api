@@ -288,6 +288,29 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
 
   */
 
+  describe("Zaven request send trust relationship", () => {
+
+    describe("Request trustphoto", () => {
+
+      beforeEach(async () => {
+        const res = await request(server)
+          .post("/trust_relationships")
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            trust_request_type: 'send',
+            wallet: 'Zaven',
+          });
+        expect(res).property("statusCode").to.eq(200);
+      });
+
+      it.only("Then, some one accept the request; Then we can get the trust", () => {
+      });
+
+    });
+
+  });
+
   describe("Relationship", () => {
 
     it("GET /trust_relationships", async () => {
@@ -303,7 +326,7 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
 
 
     describe("Request trust relationship", () => {
-      it.only("POST /trust_relationships with wrong request type", async () => {
+      it("POST /trust_relationships with wrong request type", async () => {
         const res = await request(server)
           .post("/trust_relationships")
           .set('treetracker-api-key', apiKey)
@@ -315,6 +338,8 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
         expect(res).property("statusCode").to.eq(400);
       });
 
+
+
       it("POST /trust_relationships", async () => {
         const res = await request(server)
           .post("/trust_relationships")
@@ -322,7 +347,7 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
           .set('Authorization', `Bearer ${token}`)
           .send({
             trust_request_type: 'send',
-            wallet: 'any',
+            wallet: 'Zaven',
           });
         expect(res).property("statusCode").to.eq(200);
       });

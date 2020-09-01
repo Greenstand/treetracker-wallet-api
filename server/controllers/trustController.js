@@ -30,11 +30,12 @@ trustController.request = asyncUtil(async (req, res, next) => {
   const trustModel = new TrustModel();
   expect(req).property("body").property("trust_request_type").a(expect.any(String));
   expect(req).property("body").property("wallet").a(expect.any(String));
-  res.locals.response = {
-    trust_relationships: trustModel.request(
+  const trust_relationships = await trustModel.request(
       req.body.trust_request_type,
       req.body.wallet,
-    ),
+    );
+  res.locals.response = {
+    trust_relationships,
   };
   next();
 });
