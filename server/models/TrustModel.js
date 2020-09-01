@@ -7,20 +7,19 @@ const knex = require('knex')({
 const HttpError = require("./HttpError");
 
 class TrustModel{
-  get(){
+  async get(){
     //const trust_relationship_instance = new trust_relationship(1);
-    const list = knex.select()
+    const list = await knex.select()
       .table("trust_relationship");
     return list;
   }
 
-  request(requestType, walletName){
-    try{
-      expect(requestType).oneOf(Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE));
-    }catch(e){
-      console.warn("TODO", e);
-      throw new HttpError(`The trust request type muse be one of ${Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE).join(',')}`, 400);
-    }
+  async request(requestType, walletName){
+    expect(requestType, () => new HttpError(`The trust request type muse be one of ${Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE).join(',')}`, 400))
+      .oneOf(Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE));
+    console.log("walletName", walletName);
+    expect(walletName, "Invalid wallet name")
+      .match(/test/);
   }
 }
 

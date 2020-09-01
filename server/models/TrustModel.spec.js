@@ -4,6 +4,7 @@ const tracker = mockKnex.getTracker();
 const knex = require("../database/knex");
 const chai = require("chai");
 const {expect} = chai;
+const jestExpect = require("expect");
 
 describe("TrustModel", () => {
   let trustModel;
@@ -32,23 +33,21 @@ describe("TrustModel", () => {
 
 
   describe("Request trust", () => {
-    it('request a send trust', async () => {
-      const zavenWallet = 'Zaven';
-      await trustModel.request(
-        TrustModel.ENTITY_TRUST_REQUEST_TYPE.send, 
-        zavenWallet
-      );
-    });
 
     it("request with a wrong type would throw error", async () => {
-      try{
-        trustModel.request("wrongtype","");
-        expect.fail();
-      }catch(e){
-        expect(true).eq(true);
-      }
+      await jestExpect(async () => {
+        await trustModel.request("wrongType","test")
+      }).rejects.toThrow();
     });
+
+    it("request with a wrong wallet name would throw error", async () => {
+      await jestExpect(async () => {
+        await trustModel.request("send","tes t");
+      }).rejects.toThrow();
+    });
+
   });
+
 
 });
 
