@@ -43,7 +43,6 @@
     "db-migrate-pg": "^0.4.0",
     "mocha": "^2.5.3",
     "mock-knex": "^0.4.9",
-    "rosie": "^2.0.1",
     "sinon": "^1.17.4",
     "sinon-chai": "^2.8.0",
     "supertest": "^4.0.2"

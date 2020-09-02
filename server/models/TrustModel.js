@@ -14,7 +14,6 @@ class TrustModel{
   async request(requestType, walletName){
     expect(requestType, () => new HttpError(`The trust request type muse be one of ${Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE).join(',')}`, 400))
       .oneOf(Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE));
-    console.log("walletName", walletName);
     expect(walletName, () => new HttpError("Invalid wallet name", 400))
       .match(/\S+/);
     
