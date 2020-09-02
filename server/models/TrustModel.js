@@ -5,6 +5,7 @@ const knex = require('knex')({
   connection: require('../../config/config').connectionString,
 });
 const HttpError = require("./HttpError");
+const EntityModel = require("./EntityModel");
 
 class TrustModel{
   async get(){
@@ -20,9 +21,13 @@ class TrustModel{
     console.log("walletName", walletName);
     expect(walletName, () => new HttpError("Invalid wallet name", 400))
       .match(/\S+/);
+    
+    //get entity id
+    const entityModel = new EntityModel();
+    const entity = await entityModel.getEntityByWalletName((walletName));
     await knex("entity_trust").insert({
       request_type: requestType,
-      wallet: walletName,
+      target_entity_id: entity.id,
     });
   }
 }

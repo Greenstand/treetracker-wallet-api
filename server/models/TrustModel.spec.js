@@ -50,9 +50,19 @@ describe("TrustModel", () => {
       //TODO ? why must uninstall & install here?
       tracker.uninstall();
       tracker.install();
-      tracker.on("query", (query) => {
-        expect(query.sql).match(/insert.*trust_relationship.*/);
-        query.response([]);
+      tracker.on("query", function sendResult(query, step){
+        [
+          function firstQuery(){
+            expect(query.sql).match(/select.*entity.*/);
+            query.response([{
+              id: 1,
+            }]);
+          },
+          function secondQuery(){
+            expect(query.sql).match(/insert.*entity_trust.*/);
+            query.response([]);
+          },
+        ][step -1]();
       });
       await trustModel.request("send", "test");
     });
