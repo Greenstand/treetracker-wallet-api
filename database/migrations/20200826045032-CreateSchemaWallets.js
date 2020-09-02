@@ -15,10 +15,12 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
+  return null;
   return db.runSql("CREATE SCHEMA wallets");
 };
 
 exports.down = function(db) {
+  return null;
   return db.runSql("DROP SCHEMA wallets");
 };
 
