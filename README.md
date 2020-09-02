@@ -26,6 +26,14 @@ All the integration tests are located under folder `__tests__`
 
 To run the integration test:
 
+First, start the server:
+
+```
+npm run server
+```
+
+Run tests:
+
 ```
 npm run test-integration
 ```
