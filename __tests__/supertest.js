@@ -288,9 +288,9 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
 
   */
 
-  describe("Zaven request send trust relationship", () => {
+  describe(`wallet:${seed.entity.wallet} request trust relationship with type: send`, () => {
 
-    describe("Request trustphoto", () => {
+    describe("Request the send-trust-relationship", () => {
 
       beforeEach(async () => {
         const res = await request(server)
@@ -299,7 +299,7 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
           .set('Authorization', `Bearer ${token}`)
           .send({
             trust_request_type: 'send',
-            wallet: 'Zaven',
+            wallet: seed.entity.wallet,
           });
         expect(res).property("statusCode").to.eq(200);
       });

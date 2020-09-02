@@ -33,7 +33,7 @@ describe("EntityModel", () => {
     expect(entity).to.be.a("object");
   });
 
-  it.only("getEntityByWalletName can not find the wallet name", async () => {
+  it("getEntityByWalletName can not find the wallet name", async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on("query", (query) => {
