@@ -15,11 +15,11 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return null;
+  return db.runSql("CREATE TYPE entity_trust_state_type AS ENUM ('requested', 'cancelled_by_originator', 'cancelled_by_actor', 'cancelled_by_target', 'trusted')");
 };
 
 exports.down = function(db) {
-  return null;
+  return db.runSql("DROP TYPE entity_trust_state_type");
 };
 
 exports._meta = {
