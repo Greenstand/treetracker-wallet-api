@@ -1,9 +1,5 @@
 const expect = require('expect-runtime');
-const knex = require('knex')({
-  client: 'pg',
-//  debug: true,
-  connection: require('../../config/config').connectionString,
-});
+const knex = require('../../server/database/knex');
 const HttpError = require("./HttpError");
 const EntityModel = require("./EntityModel");
 

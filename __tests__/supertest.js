@@ -304,7 +304,7 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.entity.wallet
         expect(res).property("statusCode").to.eq(200);
       });
 
-      it.only("Then, some one accept the request; Then we can get the trust", () => {
+      it("Then, some one accept the request; Then we can get the trust", () => {
       });
 
     });

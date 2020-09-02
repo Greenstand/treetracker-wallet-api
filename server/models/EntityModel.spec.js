@@ -23,7 +23,6 @@ describe("EntityModel", () => {
 
   it("getEntityByWalletName", async () => {
     tracker.on("query", (query) => {
-      console.log("xxx");
       expect(query.sql).match(/select.*entity.*/);
       query.response([{
         id:1,

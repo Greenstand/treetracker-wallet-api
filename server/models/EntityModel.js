@@ -2,11 +2,7 @@
  * The model for: entity, wallet, entity table and so on
  */
 const HttpError = require("./HttpError");
-const knex = require('knex')({
-  client: 'pg',
-//  debug: true,
-  connection: require('../../config/config').connectionString,
-});
+const knex = require('../../server/database/knex');
 const expect = require("expect-runtime");
 
 class EntityModel {
