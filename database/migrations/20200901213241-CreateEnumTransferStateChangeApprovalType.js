@@ -15,11 +15,11 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.runSql("CREATE SCHEMA wallets");
+  return db.runSql("CREATE TYPE transfer_state_change_approval_type AS ENUM ('trusted', 'manual', 'machine')");
 };
 
 exports.down = function(db) {
-  return db.runSql("DROP SCHEMA wallets");
+  return db.runSql("DROP TYPE transfer_state_change_approval_type");
 };
 
 exports._meta = {

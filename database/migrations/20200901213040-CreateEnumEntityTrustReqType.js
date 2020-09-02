@@ -15,11 +15,11 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return null;
+  return db.runSql("CREATE TYPE entity_trust_request_type AS ENUM ('send', 'receive', 'manage', 'yield', 'deduct', 'release')");
 };
 
 exports.down = function(db) {
-  return null;
+  return db.runSql("DROP TYPE entity_trust_request_type");
 };
 
 exports._meta = {

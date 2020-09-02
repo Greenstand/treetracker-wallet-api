@@ -15,11 +15,11 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.runSql("CREATE SCHEMA wallets");
+  return db.runSql("CREATE TYPE transfer_state AS ENUM ('requested', 'pending', 'completed', 'cancelled', 'failed')");
 };
 
 exports.down = function(db) {
-  return db.runSql("DROP SCHEMA wallets");
+  return db.runSql("DROP TYPE transfer_state");
 };
 
 exports._meta = {

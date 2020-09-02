@@ -15,11 +15,11 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return null;
+  return db.runSql("CREATE TYPE transfer_type AS ENUM ('send', 'deduct', 'managed')");
 };
 
 exports.down = function(db) {
-  return null;
+  return db.runSql("DROP TYPE transfer_type");
 };
 
 exports._meta = {

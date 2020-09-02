@@ -8,8 +8,8 @@
     "test-unit": "NODE_ENV=test mocha --require co-mocha './server/**/*.spec.js'",
     "test-int": "NODE_ENV=test mocha --require co-mocha 'index.spec.js'",
     "test-auth": "NODE_ENV=test mocha --require co-mocha 'lib/auth.spec.js'",
-    "server": "cd ./server && node server.js",
     "serverTest": "cd ./server && DEBUG=loopback:*,express:* nodemon server.js",
+    "server": "cd ./server && nodemon server.js",
     "test-seedDB": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './**/*.spec.js'",
     "test-integration": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './__tests__/supertest.js'"
   },

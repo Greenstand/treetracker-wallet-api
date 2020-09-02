@@ -14,21 +14,27 @@ exports.setup = function(options, seedLink) {
   seed = seedLink;
 };
 
-exports.up = function (db) {
-  return db.createTable('transfer', {
+exports.up = function(db) {
+  return db.createTable('entity_trust_log', {
     id: { type: 'int', primaryKey: true, autoincrement: true },
+    entity_trust_id: { type: 'int', notNull: true },
+    actor_entity_id: { type: 'int', notNull: true },
+    target_entity_id: { type: 'int', notNull: true },
+    type: { type: 'entity_trust_type', notNull: true },
     originator_entity_id: { type: 'int', notNull: true },
-    source_entity_id: { type: 'int', notNull: true },
-    destination_entity_id: { type: 'int', notNull: true },
-    type: { type: 'transfer_type', notNull: true },
-    parameters: { type: 'json' },
-    state: { type: 'transfer_state', notNull: true },
-    created_at: {
+    request_type: { type: 'entity_trust_request_type', notNull: true },
+    state: { type: 'entity_trust_state_type', notNull: true },
+    created_at: { 
       type: 'timestamp',
       notNull: true,
       defaultValue: new String('now()')
     },
-    closed_at: {
+    updated_at: {
+      type: 'timestamp',
+      notNull: true,
+      defaultValue: new String('now()')
+    },
+    logged_at: {
       type: 'timestamp',
       notNull: true,
       defaultValue: new String('now()')
@@ -37,8 +43,8 @@ exports.up = function (db) {
   });
 };
 
-exports.down = function (db) {
-  return db.dropTable('transfer');
+exports.down = function(db) {
+  return db.dropTable('entity_trust_log');
 };
 
 exports._meta = {
