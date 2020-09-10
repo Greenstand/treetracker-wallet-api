@@ -3,6 +3,7 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const authController = require('../controllers/authController.js');
 const userController = require('../controllers/userController.js');
+const trustController = require('../controllers/trustController.js');
 const assert = require("assert");
 
 router.post('/auth',
@@ -118,6 +119,33 @@ router.get('/history',
     assert(res.locals.response);
     res.status(200).json(res.locals.response);
   });
+
+router.get('/trust_relationships',
+//  [
+//    check('token').isUUID()
+//  ],
+  authController.verifyJWT,
+  trustController.get,
+  (_, res) => {
+    assert(res.locals);
+    assert(res.locals.response);
+    res.status(200).json(res.locals.response);
+  },
+);
+
+router.post('/trust_relationships',
+//  [
+//    check('token').isUUID()
+//  ],
+  authController.verifyJWT,
+  trustController.request,
+  (_, res) => {
+//    assert(res.locals);
+//    assert(res.locals.response);
+//    res.status(200).json(res.locals.response);
+    res.status(200).json({todo:'todo'});
+  },
+);
 
 
 module.exports = router;
