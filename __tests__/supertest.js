@@ -8,7 +8,7 @@
 
 const request = require('supertest');
 const assert = require ('assert');
-const server = 'http://localhost:3006';
+const server = require("../server/app");
 const { expect } = require('chai');
 const seed = require('./seed');
 const log = require('loglevel');

@@ -5,11 +5,13 @@ const pool = require('../database/database.js');
 const { check, validationResult } = require('express-validator');
 const FS = require('fs');
 const log = require("loglevel");
+const path = require("path");
 log.setLevel("debug");
 
 // PRIVATE and PUBLIC key
-const privateKEY = FS.readFileSync('../config/private.key', 'utf8');
-const publicKEY = FS.readFileSync('../config/public.key', 'utf8');
+console.warn("__dirname:", __dirname);
+const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/private.key'), 'utf8');
+const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../config/public.key'), 'utf8');
 
 const signingOptions = {
   issuer: "greenstand",

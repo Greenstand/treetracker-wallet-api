@@ -135,7 +135,7 @@ async function clear(){
   log.debug('clear all key');
   await knex('api_key').del();
   log.debug('clear all transaction');
-  await knex('transaction').del();
+  await knex('wallets.transaction').del();
   log.debug('clear all token');
   await knex('token').del();
   log.debug('clear all trees');
