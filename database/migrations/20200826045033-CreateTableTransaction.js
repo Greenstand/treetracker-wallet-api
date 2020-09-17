@@ -16,7 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function (db) {
   return db.createTable('transaction', {
-    id: { type: 'int', primaryKey: true, autoincrement: true },
+    id: { type: 'int', primaryKey: true, autoIncrement: true },
     token_id: {
       type: 'int',
       notNull: true,
@@ -43,7 +43,7 @@ exports.up = function (db) {
   })
     // .then(
     //   () => {
-    //     db.addForeignKey('transaction', 'token', 'transaction_token_id_fk', 
+    //     db.addForeignKey('transaction', 'token', 'transaction_token_id_fk',
     //       {
     //         'token_id': 'id',
     //       },

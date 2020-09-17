@@ -15,22 +15,18 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.createTable('transfer_audit', {
+  return db.createTable('api_key', {
     id: { type: 'int', primaryKey: true, autoIncrement: true },
-    transfer_id: { type: 'int', notNull: true },
-    new_state: { type: 'transfer_state', notNull: true },
-    processed_at: {
-      type: 'timestamp',
-      notNull: true,
-      defaultValue: new String('now()')
-    },
-    approval_type: { type: 'transfer_state_change_approval_type', notNull: true },
-    entity_trust_id: { type: 'int', notNull: true },
+    key: { type: 'string' },
+    tree_token_api_access: { type: 'boolean' },
+    hash: { type: 'string' },
+    salt: { type: 'string' },
+    name: { type: 'string' },
   });
 };
 
 exports.down = function(db) {
-  return db.dropTable('transfer-audit');
+  return db.dropTable('api_key');
 };
 
 exports._meta = {
