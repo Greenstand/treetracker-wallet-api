@@ -25,7 +25,7 @@ const newWallet = {
 
 const apiKey = seed.apiKey;
 
-describe(`Route integration, login [POST /auth] with wallet:${seed.wallet.name} `, () => {
+describe('Route integration', () => {
   let token;
 
   beforeEach(async () => {
@@ -80,8 +80,6 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.wallet.name} 
       .which.have.property('token', seed.token.uuid);
   });
 
-
-
   describe(`wallet:${seed.wallet.name} request trust relationship with type: send`, () => {
 
     describe("Request the send-trust-relationship", () => {
@@ -99,6 +97,7 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.wallet.name} 
       });
 
       it("Then, some one accept the request; Then we can get the trust", () => {
+
       });
 
     });
@@ -107,17 +106,28 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.wallet.name} 
 
   describe("Relationship", () => {
 
+    beforeEach(async () => {
+      const res = await request(server)
+        .post("/trust_relationships")
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          trust_request_type: 'send',
+          wallet: seed.wallet.name,
+        });
+      expect(res).property("statusCode").to.eq(200);
+    });
     it("GET /trust_relationships", async () => {
       const res = await request(server)
         .get("/trust_relationships")
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${token}`);
       expect(res).property("statusCode").to.eq(200);
+      log.debug(res);
       expect(res).property("body").property("trust_relationships").lengthOf(1);
       console.warn("body:" , res.body.trust_relationships);
       expect(res.body.trust_relationships[0]).property("id").a("number");
     });
-
 
     describe("Request trust relationship", () => {
       it("POST /trust_relationships with wrong request type", async () => {
@@ -139,7 +149,7 @@ describe(`Route integration, login [POST /auth] with wallet:${seed.wallet.name} 
           .set('Authorization', `Bearer ${token}`)
           .send({
             trust_request_type: 'send',
-            wallet: 'Zaven',
+            wallet: seed.wallet.name,
           });
         expect(res).property("statusCode").to.eq(200);
       });

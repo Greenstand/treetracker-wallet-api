@@ -23,7 +23,7 @@ describe("EntityModel", () => {
 
   it("getEntityByWalletName", async () => {
     tracker.on("query", (query) => {
-      expect(query.sql).match(/select.*entity.*/);
+      expect(query.sql).match(/select.*wallet.*/);
       query.response([{
         id:1,
       }]);
@@ -37,7 +37,7 @@ describe("EntityModel", () => {
     tracker.install();
     tracker.on("query", (query) => {
       console.log("xxx");
-      expect(query.sql).match(/select.*entity.*/);
+      expect(query.sql).match(/select.*wallet.*/);
       query.response([]);
     });
     await jestExpect(async () => {

@@ -22,7 +22,7 @@ describe("TrustModel", () => {
 
   it("get trust_relationships", async () => {
     tracker.on("query", (query) => {
-      expect(query.sql).match(/select.*trust_relationship.*/);
+      expect(query.sql).match(/select.*entity_trust.*/);
       query.response([{
         a:1,
       }]);
@@ -53,7 +53,7 @@ describe("TrustModel", () => {
       tracker.on("query", function sendResult(query, step){
         [
           function firstQuery(){
-            expect(query.sql).match(/select.*entity.*/);
+            expect(query.sql).match(/select.*wallet.*/);
             query.response([{
               id: 1,
             }]);

@@ -104,26 +104,25 @@ async function seed() {
   // }
 
   //entity role
-  // {
-  //   log.debug('clear role');
-  //   await knex('entity_role')
-  //     .insert([{
-  //       entity_id: entity.id,
-  //       role_name: 'list_trees',
-  //       enabled: true,
-  //     },{
-  //       entity_id: entity.id,
-  //       role_name: 'manage_accounts',
-  //       enabled: true,
-  //     },{
-  //       entity_id: entity.id,
-  //       role_name: 'accounts',
-  //       enabled: true,
-  //     }]);
-  // }
+  log.debug('clear role');
+  await knex('entity_role')
+    .insert([{
+      entity_id: wallet.id,
+      role_name: 'list_trees',
+      enabled: true,
+    },{
+      entity_id: wallet.id,
+      role_name: 'manage_accounts',
+      enabled: true,
+    },{
+      entity_id: wallet.id,
+      role_name: 'accounts',
+      enabled: true,
+    }]);
+
 
   //tree
-  await knex('public.trees')
+  await knex('trees')
     .insert({
       id: tree.id,
       time_created: new Date(),
@@ -132,16 +131,14 @@ async function seed() {
 
 
   // //token
-  {
-    log.log('seed token');
-    await knex('wallets.token')
-      .insert({
-        id: token.id,
-        tree_id: tree.id,
-        entity_id: wallet.id,
-        uuid: token.uuid,
-      });
-  }
+  log.log('seed token');
+  await knex('wallets.token')
+    .insert({
+      id: token.id,
+      tree_id: tree.id,
+      entity_id: wallet.id,
+      uuid: token.uuid,
+    });
 }
 
 async function clear() {
@@ -155,22 +152,10 @@ async function clear() {
   await knex('token').del();
   log.debug('clear all trees');
   await knex('trees').del();
-  // log.debug('clear all token');
-  // await knex('wallets.token').del();
-  // log.debug('clear all locations');
-  // await knex('locations').del();
-  // log.debug('clear all pending_updates');
-  // await knex('pending_update').del();
-  // log.debug('clear all notes');
-  // await knex('notes').del();
-  // log.debug('clear all planter');
-  // await knex('public.planter').del();
-  // log.debug('clear all entity_role');
-  // await knex('public.entity_role').del();
-  // log.debug('clear all entity_manager');
-  // await knex('public.entity_manager').del();
   log.debug('clear all wallets');
   await knex('wallets.wallet').del();
+  log.debug('clear all entity_trust');
+  await knex('wallets.entity_trust').del();
 }
 
 module.exports = {seed, clear, apiKey, wallet, tree, token};

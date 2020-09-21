@@ -43,18 +43,18 @@ describe("Seed data into DB", () => {
         .to.equal(seed.tree.id);
       expect(token)
         .to.have.property('entity_id')
-        .to.equal(seed.entity.id);
+        .to.equal(seed.wallet.id);
     });
 
   });
 
 
-  describe(`Should have the entity ${seed.entity.id}`, () => {
+  describe(`Should have the entity ${seed.wallet.id}`, () => {
     let r;
 
     before(async () => {
       r = await pool.query(
-        `select * from entity where wallet = '${seed.entity.wallet}'`
+        `select * from entity where wallet = '${seed.wallet.name}'`
       )
       expect(r)
         .to.have.property('rows').to.have.lengthOf(1);
@@ -77,7 +77,7 @@ describe("Seed data into DB", () => {
 
     it("Should be able to check the password", () => {
       expect(seed)
-        .to.have.property('entity')
+        .to.have.property('wallet')
         .to.have.property('password')
         .to.be.a('string');
       expect(r)
@@ -85,17 +85,17 @@ describe("Seed data into DB", () => {
         .to.have.property(0)
         .to.have.property("salt")
         .to.be.a("string");
-      const hash = sha512(seed.entity.password, r.rows[0].salt);
+      const hash = sha512(seed.wallet.password, r.rows[0].salt);
       expect(r.rows[0])
         .to.have.property('password')
-        .to.equal(seed.entity.passwordHash);
+        .to.equal(seed.wallet.passwordHash);
     });
 
     it("Should have permission list_trees", async () => {
       const query = 
         `SELECT *
           FROM entity_role
-          WHERE entity_id = ${seed.entity.id}
+          WHERE entity_id = ${seed.wallet.id}
           AND role_name = 'list_trees'
           AND enabled = TRUE`;
       const result = await pool.query(query);
@@ -109,7 +109,7 @@ describe("Seed data into DB", () => {
       const query = 
         `SELECT *
           FROM entity_role
-          WHERE entity_id = ${seed.entity.id}
+          WHERE entity_id = ${seed.wallet.id}
           AND role_name = 'accounts'
           AND enabled = TRUE`;
       const result = await pool.query(query);
