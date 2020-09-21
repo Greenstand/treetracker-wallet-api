@@ -1,4 +1,4 @@
-#API Documentation 
+#API Documentation (earlier API version)
 
 https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest
 
@@ -9,6 +9,23 @@ https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest
 * https://youtu.be/hRv5mcxlWX8    Greenstand -  Tokens Transfer  Tutorial Video
 
 * https://youtu.be/H6levADLJ4E    Greenstand - Permission Access Tutorial Video
+
+# Getting Started
+
+## Project Setup
+
+Open terminal and navigate to a folder to install this project:
+
+```
+git clone https://github.com/Greenstand/treetracker-token-trading-api.git
+
+```
+Install all necessary dependencies: 
+
+```
+npm install
+
+```
 
 # How to test
 

@@ -17,12 +17,12 @@ class TrustModel{
     expect(walletName, () => new HttpError("Invalid wallet name", 400))
       .match(/\S+/);
     
-    //get entity id
+    //get wallet id
     const entityModel = new EntityModel();
-    const entity = await entityModel.getEntityByWalletName((walletName));
+    const wallet = await entityModel.getEntityByWalletName((walletName));
     await knex("entity_trust").insert({
       request_type: requestType,
-      target_entity_id: entity.id,
+      target_entity_id: wallet.id,
     });
   }
 }

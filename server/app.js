@@ -41,7 +41,7 @@ app.post('/wallet/:wallet_id/trust/request', asyncHandler(async (req, res, next)
 
 }));
 
-app.post('/wallet/:wallet_id/trust/approve',  asyncHandler(async (req, res, next) => {
+app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next) => {
 
   const type = req.body.type;
   //const wallet_id = req.body.wallet_id; // in the bearer token

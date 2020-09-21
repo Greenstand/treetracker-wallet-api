@@ -13,20 +13,24 @@ const knex = require('knex')({
 });
 
 
-
-
-
-
 const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
-const entity = {
+const wallet = {
   id: 10,
   name: 'fortest',
-  wallet: 'fortest',
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
   type: 'p',
 };
+// const entity = {
+//   id: 10,
+//   name: 'fortest',
+//   wallet: 'fortest',
+//   password: 'test1234',
+//   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+//   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+//   type: 'p',
+// };
 
 const tree = {
   id: 999999,
@@ -39,20 +43,20 @@ const token = {
 
 const storyOfThisSeed = `
     api_key: ${apiKey}
-    a entity: #${entity.id}
-      type: ${entity.type}
-      name: ${entity.name}
-      wallet: ${entity.wallet}
-      password: ${entity.password}
+    a wallet: #${wallet.id}
+      type: ${wallet.type}
+      name: ${wallet.name}
+      wallet: ${wallet.wallet}
+      password: ${wallet.password}
 
     a tree: #${tree.id}
 
     a token: #${token.id}
       tree: #${tree.id}
-      entity: #${entity.id}
+      wallet: #${wallet.id}
       uuid: ${token.uuid}
 
-    entity #${entity.id} planted a tree #${tree.id}, get a token #${token.id}
+    wallet #${wallet.id} planted a tree #${tree.id}, get a token #${token.id}
 `;
 console.debug(
 '--------------------------story of database ----------------------------------',
@@ -60,11 +64,10 @@ storyOfThisSeed,
 '-----------------------------------------------------------------------------',
 );
 
-async function seed(){
-
+async function seed() {
   log.debug('seed api key');
-  //TODO should use appropriate hash & salt to populate this talbel
-  await knex('api_key')
+  //TODO should use appropriate hash & salt to populate this table
+  await knex('wallets.api_key')
     .insert({
       key: apiKey,
       tree_token_api_access: true,
@@ -73,81 +76,101 @@ async function seed(){
       name: 'test',
     });
 
-  //entity
-  {
-    await knex('entity')
-      .where('id', entity.id)
-      .del();
-    await knex('entity')
-      .insert({
-        id: entity.id,
-        type: entity.type,
-        name: entity.name,
-        wallet: entity.wallet,
-        password: entity.passwordHash,
-        salt: entity.salt,
-      });
-  }
+  // wallet
+  await knex('wallets.wallet')
+    .insert({
+      id: wallet.id,
+      type: wallet.type,
+      name: wallet.name,
+      password: wallet.passwordHash,
+      salt: wallet.salt,
+    });
+
+
+  // //entity
+  // {
+  //   await knex('entity')
+  //     .where('id', entity.id)
+  //     .del();
+  //   await knex('entity')
+  //     .insert({
+  //       id: entity.id,
+  //       type: entity.type,
+  //       name: entity.name,
+  //       wallet: entity.wallet,
+  //       password: entity.passwordHash,
+  //       salt: entity.salt,
+  //     });
+  // }
 
   //entity role
-  {
-    log.debug('clear role');
-    await knex('entity_role')
-      .insert([{
-        entity_id: entity.id,
-        role_name: 'list_trees',
-        enabled: true,
-      },{
-        entity_id: entity.id,
-        role_name: 'manage_accounts',
-        enabled: true,
-      },{
-        entity_id: entity.id,
-        role_name: 'accounts',
-        enabled: true,
-      }]);
-  }
+  // {
+  //   log.debug('clear role');
+  //   await knex('entity_role')
+  //     .insert([{
+  //       entity_id: entity.id,
+  //       role_name: 'list_trees',
+  //       enabled: true,
+  //     },{
+  //       entity_id: entity.id,
+  //       role_name: 'manage_accounts',
+  //       enabled: true,
+  //     },{
+  //       entity_id: entity.id,
+  //       role_name: 'accounts',
+  //       enabled: true,
+  //     }]);
+  // }
 
   //tree
-  {
-    await knex('trees')
-      .insert({
-        id: tree.id,
-        time_created: new Date(),
-        time_updated: new Date(),
-      });
-  }
+  await knex('public.trees')
+    .insert({
+      id: tree.id,
+      time_created: new Date(),
+      time_updated: new Date(),
+    });
 
-  //token
+
+  // //token
   {
     log.log('seed token');
-    await knex('token')
+    await knex('wallets.token')
       .insert({
         id: token.id,
         tree_id: tree.id,
-        entity_id: entity.id,
+        entity_id: wallet.id,
         uuid: token.uuid,
       });
   }
 }
 
-async function clear(){
-  log.debug('clear all key');
-  await knex('api_key').del();
+async function clear() {
+  log.debug('clear all api keys');
+  await knex('wallets.api_key').del();
   log.debug('clear all transaction');
   await knex('wallets.transaction').del();
-  log.debug('clear all token');
+  await knex('transaction').del();
+  log.debug('clear all tokens');
+  await knex('wallets.token').del();
   await knex('token').del();
   log.debug('clear all trees');
   await knex('trees').del();
-  log.debug('clear all planter');
-  await knex('planter').del();
-  log.debug('clear all entity_role');
-  await knex('entity_role').del();
-  log.debug('clear all entity_manager');
-  await knex('entity_manager').del();
-  log.debug('clear all entity');
-  await knex('entity').del();
+  // log.debug('clear all token');
+  // await knex('wallets.token').del();
+  // log.debug('clear all locations');
+  // await knex('locations').del();
+  // log.debug('clear all pending_updates');
+  // await knex('pending_update').del();
+  // log.debug('clear all notes');
+  // await knex('notes').del();
+  // log.debug('clear all planter');
+  // await knex('public.planter').del();
+  // log.debug('clear all entity_role');
+  // await knex('public.entity_role').del();
+  // log.debug('clear all entity_manager');
+  // await knex('public.entity_manager').del();
+  log.debug('clear all wallets');
+  await knex('wallets.wallet').del();
 }
 
-module.exports = {seed, clear, apiKey, entity, tree, token};
+module.exports = {seed, clear, apiKey, wallet, tree, token};
