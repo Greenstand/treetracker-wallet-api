@@ -156,6 +156,9 @@ async function clear() {
   await knex('wallets.wallet').del();
   log.debug('clear all entity_trust');
   await knex('wallets.entity_trust').del();
+  log.debug('clear entity_roles');
+  await knex('entity_role').del();
+
 }
 
 module.exports = {seed, clear, apiKey, wallet, tree, token};
