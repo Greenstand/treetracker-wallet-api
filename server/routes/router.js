@@ -19,16 +19,6 @@ router.post('/auth',
 
 // Routes that require logged in status
 
-// router.get('/tree',
-//   [
-//     check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
-//     check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
-//   ],
-//   authController.verifyJWT,
-//   authController.checkAccess('list_trees'),
-//   userController.getTrees,
-//   (req, res) => res.status(200).json(res.locals.trees));
-
 router.get('/token/:uuid',
   // [
   //   TODO ? check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
@@ -72,6 +62,16 @@ router.post('/trust_relationships',
 );
 
 /* __________________________OLD TESTS FOR PREVIOUS API VERSION___________________________
+
+// router.get('/tree',
+//   [
+//     check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
+//     check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
+//   ],
+//   authController.verifyJWT,
+//   authController.checkAccess('list_trees'),
+//   userController.getTrees,
+//   (req, res) => res.status(200).json(res.locals.trees));
 
 router.get('/account',
   authController.verifyJWT,
