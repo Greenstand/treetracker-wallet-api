@@ -19,7 +19,7 @@ describe("TrustModel", () => {
     mockKnex.unmock(knex);
   });
 
-  it.only("get", async () => {
+  it("get", async () => {
     tracker.on("query", (query) => {
       expect(query.sql).match(/select.*trust.*/);
       query.response([{
@@ -30,7 +30,7 @@ describe("TrustModel", () => {
     expect(entity).to.be.a("array");
   });
 
-  it.only("create", async () => {
+  it("create", async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on("query", (query) => {
@@ -38,6 +38,26 @@ describe("TrustModel", () => {
       query.response({});
     });
     await trustModel.create({});
+  });
+
+  it("getById", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on("query", (query) => {
+      expect(query.sql).match(/select.*trust.*/);
+      query.response([{}]);
+    });
+    await trustModel.getById(1);
+  });
+
+  it("update", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on("query", (query) => {
+      expect(query.sql).match(/update.*trust.*/);
+      query.response([{}]);
+    });
+    await trustModel.update({id:1});
   });
 });
 

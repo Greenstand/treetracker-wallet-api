@@ -44,5 +44,15 @@ describe("TrustService", () => {
     });
   });
 
+  describe("Accept trust", () => {
+
+    it("accept", async () => {
+      sinon.stub(TrustModel.prototype, "getById").returns([{id:1}]);
+      sinon.stub(TrustModel.prototype, "update");
+      const trustRelationshipId = 1;
+      await trustService.accept(trustRelationshipId);
+    });
+  });
+
 });
 

@@ -13,9 +13,9 @@ class TrustService{
   }
 
   async request(requestType, walletName){
-    expect(requestType, () => new HttpError(`The trust request type must be one of ${Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE).join(',')}`, 400))
+    expect(requestType, () => new HttpError(400, `The trust request type must be one of ${Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE).join(',')}`))
       .oneOf(Object.keys(TrustModel.ENTITY_TRUST_REQUEST_TYPE));
-    expect(walletName, () => new HttpError("Invalid wallet name", 400))
+    expect(walletName, () => new HttpError(400, "Invalid wallet name"))
       .match(/\S+/);
     
     //get wallet id
@@ -25,6 +25,12 @@ class TrustService{
       request_type: requestType,
       target_entity_id: wallet.id,
     });
+  }
+  
+  async accept(trustRelationshipId){
+    const trustRelationship = await this.trustModel.getById(trustRelationshipId);
+    trustRelationship.entity_trust_state_type = TrustModel.ENTITY_TRUST_STATE_TYPE.trusted;
+    await this.trustModel.update(trustRelationship);
   }
 }
 

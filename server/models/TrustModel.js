@@ -1,4 +1,6 @@
 const knex = require('../../server/database/knex');
+const expect = require("expect-runtime");
+const HttpError = require("../utils/HttpError");
 
 class TrustModel{
   async get(){
@@ -8,8 +10,21 @@ class TrustModel{
     return list;
   }
 
+  async getById(id){
+    const list = await knex.select()
+      .table("wallets.entity_trust")
+      .where("id", id);
+    expect(list, () => new HttpError(404, 'can not find the relationship')).lengthOf.above(0);
+    expect(list, () => new HttpError(500, 'impossible, too many recodes')).lengthOf.most(1);
+    return list;
+  }
+
   async create(trustObject){
     await knex("wallets.entity_trust").insert(trustObject);
+  }
+
+  async update(trustObject){
+    await knex("wallets.entity_trust").update(trustObject).where("id", trustObject.id);
   }
 }
 

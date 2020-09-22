@@ -82,7 +82,7 @@ describe('Route integration', () => {
 
   describe(`wallet:${seed.wallet.name} request trust relationship with type: send`, () => {
 
-    describe("Request the send-trust-relationship", () => {
+    describe("Request the trust-relationship with type send", () => {
 
       beforeEach(async () => {
         const res = await request(server)
