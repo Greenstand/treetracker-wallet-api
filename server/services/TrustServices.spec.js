@@ -1,33 +1,24 @@
-const TrustModel = require("./TrustModel");
-const mockKnex = require("mock-knex");
-const tracker = mockKnex.getTracker();
-const knex = require("../database/knex");
+const TrustService = require("./TrustService");
 const chai = require("chai");
 const {expect} = chai;
 const jestExpect = require("expect");
+const sinon = require("sinon");
+const TrustModel = require("../models/TrustModel");
+const EntityModel = require("../models/EntityModel");
 
-describe("TrustModel", () => {
-  let trustModel;
+describe("TrustService", () => {
+  let trustService;
 
   before(() => {
-    mockKnex.mock(knex);
-    tracker.install();
-    trustModel = new TrustModel();
+    trustService = new TrustService();
   });
 
   after(() => {
-    mockKnex.unmock(knex);
-    tracker.uninstall();
   });
 
   it("get trust_relationships", async () => {
-    tracker.on("query", (query) => {
-      expect(query.sql).match(/select.*entity_trust.*/);
-      query.response([{
-        a:1,
-      }]);
-    });
-    const trust_relationships = await trustModel.get();
+    sinon.stub(TrustModel.prototype, "get").returns([{a:1}]);
+    const trust_relationships = await trustService.getTrustModel().get();
     expect(trust_relationships).lengthOf(1);
   });
 
@@ -36,35 +27,20 @@ describe("TrustModel", () => {
 
     it("request with a wrong type would throw error", async () => {
       await jestExpect(async () => {
-        await trustModel.request("wrongType","test")
+        await trustService.request("wrongType","test")
       }).rejects.toThrow();
     });
 
     it("request with a wrong wallet name would throw error", async () => {
       await jestExpect(async () => {
-        await trustModel.request("send","tes t");
+        await trustService.request("send","tes t");
       }).rejects.toThrow();
     });
 
     it("request successfully", async () => {
-      //TODO ? why must uninstall & install here?
-      tracker.uninstall();
-      tracker.install();
-      tracker.on("query", function sendResult(query, step){
-        [
-          function firstQuery(){
-            expect(query.sql).match(/select.*wallet.*/);
-            query.response([{
-              id: 1,
-            }]);
-          },
-          function secondQuery(){
-            expect(query.sql).match(/insert.*entity_trust.*/);
-            query.response([]);
-          },
-        ][step -1]();
-      });
-      await trustModel.request("send", "test");
+      sinon.stub(EntityModel.prototype, "getEntityByWalletName").returns([{id:1}]);
+      sinon.stub(TrustModel.prototype, "create");
+      await trustService.request("send", "test");
     });
 
   });
