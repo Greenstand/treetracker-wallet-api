@@ -186,7 +186,7 @@ authController.checkAccess = (role) => {
     const walletId = res.locals.wallet_id;
     const query = {
       text: `SELECT *
-      FROM entity_role
+      FROM public.entity_role
       WHERE entity_id = $1
       AND role_name = $2
       AND enabled = TRUE`,
@@ -196,7 +196,7 @@ authController.checkAccess = (role) => {
 
     if (rval.rows.length !== 1) {
       log.debug("check access fail...", walletId, role);
-      next({
+      return next({
         log: `ERROR: Permission for ${role} not granted`,
         status: 401,
         message: { err: `ERROR: Permission to ${role} not granted`},

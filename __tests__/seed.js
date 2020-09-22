@@ -87,24 +87,23 @@ async function seed() {
     });
 
 
-  // //entity
-  // {
-  //   await knex('entity')
-  //     .where('id', entity.id)
-  //     .del();
-  //   await knex('entity')
-  //     .insert({
-  //       id: entity.id,
-  //       type: entity.type,
-  //       name: entity.name,
-  //       wallet: entity.wallet,
-  //       password: entity.passwordHash,
-  //       salt: entity.salt,
-  //     });
-  // }
+  //entity
+  await knex('entity')
+    .where('id', wallet.id)
+    .del();
+  await knex('entity')
+    .insert({
+      id: wallet.id,
+      type: wallet.type,
+      name: wallet.name,
+      wallet: wallet.name,
+      password: wallet.passwordHash,
+      salt: wallet.salt,
+    });
+
 
   //entity role
-  log.debug('clear role');
+  log.debug('insert role');
   await knex('entity_role')
     .insert([{
       entity_id: wallet.id,
@@ -130,7 +129,7 @@ async function seed() {
     });
 
 
-  // //token
+  // token
   log.log('seed token');
   await knex('wallets.token')
     .insert({
@@ -158,6 +157,8 @@ async function clear() {
   await knex('wallets.entity_trust').del();
   log.debug('clear entity_roles');
   await knex('entity_role').del();
+  log.debug('clear entities');
+  await knex('entity').del();
 
 }
 

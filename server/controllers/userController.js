@@ -756,7 +756,7 @@ userController.token = async (req, res, next) => {
   const {uuid} = req.params;
 
   if (!uuid) {
-    next({
+    return next({
       log: 'ERROR: No token supplied',
       status: 401,
       message: { err: 'ERROR: No token supplied' },
@@ -779,13 +779,13 @@ userController.token = async (req, res, next) => {
     ) tree_region
     ON tree_region.tree_id = trees.id 
     WHERE token.uuid = $1`,
-    values: [uuid]
-  }
+    values: [uuid],
+  };
   log.debug(query);
   const rval = await pool.query(query);
 
   const trees = [];
-  for(token of rval.rows){
+  for(token of rval.rows) {
     treeItem = {
       token: token.uuid,
       map_url: config.map_url + "?treeid="+token.tree_id,
@@ -797,12 +797,11 @@ userController.token = async (req, res, next) => {
     }
     trees.push(treeItem);
   }
-
   const response = {
     tokens: trees,
   };
   res.locals.response = response;
   next();
-}
+};
 
 module.exports = userController;
