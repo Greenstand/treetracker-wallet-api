@@ -22,15 +22,15 @@ const wallet = {
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
   type: 'p',
 };
-// const entity = {
-//   id: 10,
-//   name: 'fortest',
-//   wallet: 'fortest',
-//   password: 'test1234',
-//   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
-//   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
-//   type: 'p',
-// };
+ const entity = {
+   id: 10,
+   name: 'fortest',
+   wallet: 'fortest',
+   password: 'test1234',
+   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+   type: 'p',
+ };
 
 const tree = {
   id: 999999,
@@ -87,21 +87,21 @@ async function seed() {
     });
 
 
-  // //entity
-  // {
-  //   await knex('entity')
-  //     .where('id', entity.id)
-  //     .del();
-  //   await knex('entity')
-  //     .insert({
-  //       id: entity.id,
-  //       type: entity.type,
-  //       name: entity.name,
-  //       wallet: entity.wallet,
-  //       password: entity.passwordHash,
-  //       salt: entity.salt,
-  //     });
-  // }
+   //entity
+   {
+     await knex('entity')
+       .where('id', entity.id)
+       .del();
+     await knex('entity')
+       .insert({
+         id: entity.id,
+         type: entity.type,
+         name: entity.name,
+         wallet: entity.wallet,
+         password: entity.passwordHash,
+         salt: entity.salt,
+       });
+   }
 
   //entity role
   log.debug('clear role');
