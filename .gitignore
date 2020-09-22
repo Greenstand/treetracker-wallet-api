@@ -2,6 +2,7 @@ node_modules/
 config/
 private.key
 public.key
-jwtRS256.keyjwtRS256.key.pub
+jwtRS256.key
+jwtRS256.key.pub
 keygen.sh
 database.json
