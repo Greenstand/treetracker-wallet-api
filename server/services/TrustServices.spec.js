@@ -42,9 +42,7 @@ describe("TrustService", () => {
       sinon.stub(TrustModel.prototype, "create");
       await trustService.request("send", "test");
     });
-
   });
-
 
 });
 
