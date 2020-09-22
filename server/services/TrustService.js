@@ -1,7 +1,7 @@
 const expect = require('expect-runtime');
 const knex = require('../../server/database/knex');
-const HttpError = require("./HttpError");
-const EntityModel = require("./EntityModel");
+const HttpError = require("../utils/HttpError");
+const EntityModel = require("../models/EntityModel");
 
 class TrustModel{
   async get(){

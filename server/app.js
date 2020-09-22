@@ -11,7 +11,7 @@ const path = require('path');
 const asyncHandler = require('express-async-handler');
 const { check, validationResult } = require('express-validator');
 const { body } = require('express-validator');
-const HttpError = require("./models/HttpError");
+const HttpError = require("./utils/HttpError");
 
 
 const app = express();

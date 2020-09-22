@@ -3,8 +3,19 @@ const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const authController = require('../controllers/authController.js');
 const userController = require('../controllers/userController.js');
-const trustController = require('../controllers/trustController.js');
 const assert = require("assert");
+const TrustService = require('../services/TrustService');
+const expect = require("expect-runtime");
+
+const asyncUtil = fn =>
+function asyncUtilWrap(...args) {
+  const fnReturn = fn(...args)
+  const next = args[args.length-1]
+  return Promise.resolve(fnReturn).catch(e => {
+    console.error("get error:", e);
+    next(e);
+  })
+}
 
 router.post('/auth',
   [
@@ -125,7 +136,13 @@ router.get('/trust_relationships',
 //    check('token').isUUID()
 //  ],
   authController.verifyJWT,
-  trustController.get,
+  asyncUtil(async (req, res, next) => {
+    const trustService = new TrustService();
+    res.locals.response = {
+      trust_relationships: await trustService.get(),
+    }
+    next();
+  }),
   (_, res) => {
     assert(res.locals);
     assert(res.locals.response);
@@ -138,7 +155,19 @@ router.post('/trust_relationships',
 //    check('token').isUUID()
 //  ],
   authController.verifyJWT,
-  trustController.request,
+  asyncUtil(async (req, res, next) => {
+    const trustService = new TrustService();
+    expect(req).property("body").property("trust_request_type").a(expect.any(String));
+    expect(req).property("body").property("wallet").a(expect.any(String));
+    const trust_relationships = await trustService.request(
+      req.body.trust_request_type,
+      req.body.wallet,
+    );
+    res.locals.response = {
+      trust_relationships,
+    };
+    next();
+  }),
   (_, res) => {
 //    assert(res.locals);
 //    assert(res.locals.response);

@@ -1,7 +1,7 @@
 /* 
  * The model for: entity, wallet, entity table and so on
  */
-const HttpError = require("./HttpError");
+const HttpError = require("../utils/HttpError");
 const knex = require('../../server/database/knex');
 const expect = require("expect-runtime");
 
