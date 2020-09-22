@@ -139,7 +139,7 @@ router.get('/trust_relationships',
   asyncUtil(async (req, res, next) => {
     const trustService = new TrustService();
     res.locals.response = {
-      trust_relationships: await trustService.get(),
+      trust_relationships: await trustService.getTrustModel().get(),
     }
     next();
   }),
