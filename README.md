@@ -81,6 +81,19 @@ If you have not installed db-migrate globally, you can run:
 
 See here to learn more about db-migrate: https://db-migrate.readthedocs.io/en/latest/
 
+## Troubleshooting 
+If you run into issue: 
+```
+ ifError got unwanted exception: function uuid_generate_v4() does not exist
+```
+You can open postgress terminal and runto install required extention
+
+```
+\c <db name> 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+```
+
+
 Now you should be all set up and ready to go!
 
 # How to test
