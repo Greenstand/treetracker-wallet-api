@@ -33,11 +33,20 @@ describe("TrustModel", () => {
   it("create", async () => {
     tracker.uninstall();
     tracker.install();
-    tracker.on("query", (query) => {
-      expect(query.sql).match(/insert.*trust.*/);
-      query.response({});
+    tracker.on('query', function sendResult(query, step) {
+      [
+        function firstQuery() {
+          expect(query.sql).match(/insert.*trust.*/);
+          query.response({});
+        },
+        function secondQuery() {
+          expect(query.sql).match(/select.*trust.*order by.*/);
+          query.response([{id:1}]);
+        }
+      ][step - 1]();
     });
-    await trustModel.create({});
+    const result = await trustModel.create({});
+    expect(result).property('id').a('number');
   });
 
   it("getById", async () => {

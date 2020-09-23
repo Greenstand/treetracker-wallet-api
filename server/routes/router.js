@@ -155,25 +155,29 @@ router.post('/trust_relationships',
 //    check('token').isUUID()
 //  ],
   authController.verifyJWT,
-  asyncUtil(async (req, res, next) => {
+  asyncUtil(async (req, res) => {
     const trustService = new TrustService();
     expect(req).property("body").property("trust_request_type").a(expect.any(String));
     expect(req).property("body").property("wallet").a(expect.any(String));
-    const trust_relationships = await trustService.request(
+    const trust_relationship = await trustService.request(
       req.body.trust_request_type,
       req.body.wallet,
     );
-    res.locals.response = {
-      trust_relationships,
-    };
-    next();
-  }),
-  (_, res) => {
-//    assert(res.locals);
-//    assert(res.locals.response);
-//    res.status(200).json(res.locals.response);
-    res.status(200).json({todo:'todo'});
-  },
+    res.status(200).json(trust_relationship);
+  })
+);
+
+router.post('/trust_relationships/:trustRelationshipId/accept',
+//  [
+//    check('token').isUUID()
+//  ],
+  authController.verifyJWT,
+  asyncUtil(async (req, res) => {
+    const trustService = new TrustService();
+    expect(req.params).property("trustRelationshipId").defined();
+    await trustService.accept(req.params.trustRelationshipId);
+    res.status(200).json();
+  })
 );
 
 

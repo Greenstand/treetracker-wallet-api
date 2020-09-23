@@ -83,6 +83,7 @@ describe('Route integration', () => {
   describe(`wallet:${seed.wallet.name} request trust relationship with type: send`, () => {
 
     describe("Request the trust-relationship with type send", () => {
+      let trustRelationship;
 
       beforeEach(async () => {
         const res = await request(server)
@@ -94,10 +95,22 @@ describe('Route integration', () => {
             wallet: seed.wallet.name,
           });
         expect(res).property("statusCode").to.eq(200);
+        trustRelationship = res.body;
+        expect(trustRelationship).property("id").a("number");
       });
 
-      it("Then, some one accept the request; Then we can get the trust", () => {
+      describe("Accept this request", () => {
 
+        beforeEach(async () => {
+          const res = await request(server)
+            .post(`/trust_relationships/${trustRelationship.id}/accept`)
+            .set('treetracker-api-key', apiKey)
+            .set('Authorization', `Bearer ${token}`);
+          expect(res).property("statusCode").to.eq(200);
+        })
+
+        it.only("", () => {
+        });
       });
 
     });

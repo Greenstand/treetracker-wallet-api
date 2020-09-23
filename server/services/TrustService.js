@@ -21,15 +21,16 @@ class TrustService{
     //get wallet id
     const entityModel = new EntityModel();
     const wallet = await entityModel.getEntityByWalletName((walletName));
-    await this.trustModel.create({
+    const result = await this.trustModel.create({
       request_type: requestType,
       target_entity_id: wallet.id,
     });
+    return result;
   }
   
   async accept(trustRelationshipId){
     const trustRelationship = await this.trustModel.getById(trustRelationshipId);
-    trustRelationship.entity_trust_state_type = TrustModel.ENTITY_TRUST_STATE_TYPE.trusted;
+    trustRelationship.state = TrustModel.ENTITY_TRUST_STATE_TYPE.trusted;
     await this.trustModel.update(trustRelationship);
   }
 }
