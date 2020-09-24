@@ -22,15 +22,6 @@ const wallet = {
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
   type: 'p',
 };
- const entity = {
-   id: 10,
-   name: 'fortest',
-   wallet: 'fortest',
-   password: 'test1234',
-   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
-   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
-   type: 'p',
- };
 
 const tree = {
   id: 999999,
@@ -39,6 +30,15 @@ const tree = {
 const token = {
   id: 9,
   uuid: uuid.v4(),
+};
+
+const walletB = {
+  id: 11,
+  name: 'fortestB',
+  password: 'test1234',
+  passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+  type: 'p',
 };
 
 const storyOfThisSeed = `
@@ -57,6 +57,9 @@ const storyOfThisSeed = `
       uuid: ${token.uuid}
 
     wallet #${wallet.id} planted a tree #${tree.id}, get a token #${token.id}
+
+    another wallet: 
+      ${JSON.stringify(walletB, undefined, 2)}
 `;
 console.debug(
 '--------------------------story of database ----------------------------------',
@@ -86,39 +89,16 @@ async function seed() {
       salt: wallet.salt,
     });
 
+  //walletB
+  await knex('wallets.wallet')
+    .insert({
+      id: walletB.id,
+      type: walletB.type,
+      name: walletB.name,
+      password: walletB.passwordHash,
+      salt: walletB.salt,
+    });
 
-   //entity
-   {
-     await knex('entity')
-       .where('id', entity.id)
-       .del();
-     await knex('entity')
-       .insert({
-         id: entity.id,
-         type: entity.type,
-         name: entity.name,
-         wallet: entity.wallet,
-         password: entity.passwordHash,
-         salt: entity.salt,
-       });
-   }
-
-  //entity role
-  log.debug('clear role');
-  await knex('entity_role')
-    .insert([{
-      entity_id: wallet.id,
-      role_name: 'list_trees',
-      enabled: true,
-    },{
-      entity_id: wallet.id,
-      role_name: 'manage_accounts',
-      enabled: true,
-    },{
-      entity_id: wallet.id,
-      role_name: 'accounts',
-      enabled: true,
-    }]);
 
 
   //tree
@@ -156,9 +136,7 @@ async function clear() {
   await knex('wallets.wallet').del();
   log.debug('clear all entity_trust');
   await knex('wallets.entity_trust').del();
-  log.debug('clear entity_roles');
-  await knex('entity_role').del();
 
 }
 
-module.exports = {seed, clear, apiKey, wallet, tree, token};
+module.exports = {seed, clear, apiKey, wallet, walletB, tree, token};
