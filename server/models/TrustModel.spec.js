@@ -1,72 +1,58 @@
 const TrustModel = require("./TrustModel");
-const {expect} = require("chai");
-const knex = require("../database/knex");
-const mockKnex = require("mock-knex");
-const tracker = mockKnex.getTracker();
-
+const chai = require("chai");
+const {expect} = chai;
+const jestExpect = require("expect");
+const sinon = require("sinon");
+const TrustRepository = require("../repositories/TrustRepository");
+const EntityRepository = require("../repositories/EntityRepository");
 
 describe("TrustModel", () => {
   let trustModel;
 
-  beforeEach(() => {
-    mockKnex.mock(knex);
-    tracker.install();
+  before(() => {
     trustModel = new TrustModel();
-  })
-
-  afterEach(() => {
-    tracker.uninstall();
-    mockKnex.unmock(knex);
   });
 
-  it("get", async () => {
-    tracker.on("query", (query) => {
-      expect(query.sql).match(/select.*trust.*/);
-      query.response([{
-        id:1,
-      }]);
+  after(() => {
+  });
+
+  it("get trust_relationships", async () => {
+    sinon.stub(TrustRepository.prototype, "get").returns([{a:1}]);
+    const trust_relationships = await trustModel.getTrustModel().get();
+    expect(trust_relationships).lengthOf(1);
+  });
+
+
+  describe("Request trust", () => {
+
+    it("request with a wrong type would throw error", async () => {
+      await jestExpect(async () => {
+        await trustModel.request("wrongType","test")
+      }).rejects.toThrow();
     });
-    const entity = await trustModel.get();
-    expect(entity).to.be.a("array");
+
+    it("request with a wrong wallet name would throw error", async () => {
+      await jestExpect(async () => {
+        await trustModel.request("send","tes t");
+      }).rejects.toThrow();
+    });
+
+    it("request successfully", async () => {
+      sinon.stub(EntityRepository.prototype, "getEntityByWalletName").returns([{id:1}]);
+      sinon.stub(TrustRepository.prototype, "create");
+      await trustModel.request("send", "test");
+    });
   });
 
-  it("create", async () => {
-    tracker.uninstall();
-    tracker.install();
-    tracker.on('query', function sendResult(query, step) {
-      [
-        function firstQuery() {
-          expect(query.sql).match(/insert.*trust.*/);
-          query.response({});
-        },
-        function secondQuery() {
-          expect(query.sql).match(/select.*trust.*order by.*/);
-          query.response([{id:1}]);
-        }
-      ][step - 1]();
+  describe("Accept trust", () => {
+
+    it("accept", async () => {
+      sinon.stub(TrustRepository.prototype, "getById").returns([{id:1}]);
+      sinon.stub(TrustRepository.prototype, "update");
+      const trustRelationshipId = 1;
+      await trustModel.accept(trustRelationshipId);
     });
-    const result = await trustModel.create({});
-    expect(result).property('id').a('number');
   });
 
-  it("getById", async () => {
-    tracker.uninstall();
-    tracker.install();
-    tracker.on("query", (query) => {
-      expect(query.sql).match(/select.*trust.*/);
-      query.response([{}]);
-    });
-    await trustModel.getById(1);
-  });
-
-  it("update", async () => {
-    tracker.uninstall();
-    tracker.install();
-    tracker.on("query", (query) => {
-      expect(query.sql).match(/update.*trust.*/);
-      query.response([{}]);
-    });
-    await trustModel.update({id:1});
-  });
 });
 

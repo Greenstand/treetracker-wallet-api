@@ -1,4 +1,4 @@
-const EntityModel = require("./EntityModel");
+const EntityRepository = require("./EntityRepository");
 const {expect} = require("chai");
 const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
@@ -7,13 +7,13 @@ const jestExpect = require("expect");
 
 
 
-describe("EntityModel", () => {
-  let entityModel;
+describe("EntityRepository", () => {
+  let entityRepository;
 
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    entityModel = new EntityModel();
+    entityRepository = new EntityRepository();
   })
 
   afterEach(() => {
@@ -22,13 +22,13 @@ describe("EntityModel", () => {
   });
 
   it("getEntityByWalletName", async () => {
+    tracker.uninstall();
+    tracker.install();
     tracker.on("query", (query) => {
       expect(query.sql).match(/select.*wallet.*/);
-      query.response([{
-        id:1,
-      }]);
+      query.response([{id:1}]);
     });
-    const entity = await entityModel.getEntityByWalletName("Dadior");
+    const entity = await entityRepository.getEntityByWalletName("Dadior");
     expect(entity).to.be.a("object");
   });
 
@@ -36,12 +36,11 @@ describe("EntityModel", () => {
     tracker.uninstall();
     tracker.install();
     tracker.on("query", (query) => {
-      console.log("xxx");
       expect(query.sql).match(/select.*wallet.*/);
       query.response([]);
     });
     await jestExpect(async () => {
-      await entityModel.getEntityByWalletName("Dadior");
+      await entityRepository.getEntityByWalletName("Dadior");
     }).rejects.toThrow(/can not find entity/);
   });
 });

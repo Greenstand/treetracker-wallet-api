@@ -4,7 +4,7 @@ const { check, validationResult } = require('express-validator');
 const authController = require('../controllers/authController.js');
 const userController = require('../controllers/userController.js');
 const assert = require("assert");
-const TrustService = require('../services/TrustService');
+const TrustModel = require('../models/TrustModel');
 const expect = require("expect-runtime");
 
 const asyncUtil = fn =>
@@ -137,9 +137,9 @@ router.get('/trust_relationships',
 //  ],
   authController.verifyJWT,
   asyncUtil(async (req, res, next) => {
-    const trustService = new TrustService();
+    const trustModel = new TrustModel();
     res.locals.response = {
-      trust_relationships: await trustService.getTrustModel().get(),
+      trust_relationships: await trustModel.getTrustModel().get(),
     }
     next();
   }),
@@ -156,10 +156,10 @@ router.post('/trust_relationships',
 //  ],
   authController.verifyJWT,
   asyncUtil(async (req, res) => {
-    const trustService = new TrustService();
+    const trustModel = new TrustModel();
     expect(req).property("body").property("trust_request_type").a(expect.any(String));
     expect(req).property("body").property("wallet").a(expect.any(String));
-    const trust_relationship = await trustService.request(
+    const trust_relationship = await trustModel.request(
       req.body.trust_request_type,
       req.body.wallet,
     );
@@ -173,9 +173,9 @@ router.post('/trust_relationships/:trustRelationshipId/accept',
 //  ],
   authController.verifyJWT,
   asyncUtil(async (req, res) => {
-    const trustService = new TrustService();
+    const trustModel = new TrustModel();
     expect(req.params).property("trustRelationshipId").defined();
-    await trustService.accept(req.params.trustRelationshipId);
+    await trustModel.accept(req.params.trustRelationshipId);
     res.status(200).json();
   })
 );

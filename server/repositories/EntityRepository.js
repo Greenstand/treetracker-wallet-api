@@ -5,7 +5,7 @@ const HttpError = require("../utils/HttpError");
 const knex = require('../../server/database/knex');
 const expect = require("expect-runtime");
 
-class EntityModel {
+class EntityRepository {
 
   async getEntityByWalletName(wallet){
     expect(wallet, () => new HttpError(400, `invalid wallet name:${wallet}`))
@@ -16,4 +16,4 @@ class EntityModel {
   }
 }
 
-module.exports = EntityModel;
+module.exports = EntityRepository;
