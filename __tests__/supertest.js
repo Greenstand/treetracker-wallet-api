@@ -122,7 +122,7 @@ describe('Route integration', () => {
             expect(res).property("statusCode").to.eq(200);
           })
 
-          it.only("Wallet should be able to find the relationship, and it was approved", async () => {
+          it("Wallet should be able to find the relationship, and it was approved", async () => {
             const res = await request(server)
               .get("/trust_relationships")
               .set('treetracker-api-key', apiKey)
