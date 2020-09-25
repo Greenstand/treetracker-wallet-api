@@ -21,7 +21,7 @@ function asyncUtilWrap(...args) {
 trustController.get = async (req, res, next) => {
   const trustModel = new TrustModel();
   res.locals.response = {
-    trust_relationships: trustModel.get(),
+    trust_relationships: await trustModel.get(),
   }
   next();
 };

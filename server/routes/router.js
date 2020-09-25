@@ -19,30 +19,59 @@ router.post('/auth',
 
 // Routes that require logged in status
 
-router.get('/tree',
-  [
-    check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
-    check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
-  ],
-  authController.verifyJWT,
-  authController.checkAccess('list_trees'),
-  userController.getTrees,
-  (req, res) => res.status(200).json(res.locals.trees));
-
 router.get('/token/:uuid',
-  [
-    //TODO ? check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
-    //TODO ? check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
-  ],
+  // [
+  //   TODO ? check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
+  //   TODO ? check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
+  // ],
   authController.verifyJWT,
 //TODO ? didn't defined access role for GET /token
 //  (req, res, next) => {
 //    res.locals.role = 'list_trees';
 //    next();
 //  },
-//  authController.checkAccess,
+  authController.checkAccess('list_trees'),
   userController.token,
   (req, res) => res.status(200).json(res.locals.response));
+
+router.get('/trust_relationships',
+//  [
+//    check('token').isUUID()
+//  ],
+  authController.verifyJWT,
+  trustController.get,
+  (_, res) => {
+    assert(res.locals);
+    assert(res.locals.response);
+    res.status(200).json(res.locals.response);
+  },
+);
+
+router.post('/trust_relationships',
+//  [
+//    check('token').isUUID()
+//  ],
+  authController.verifyJWT,
+  trustController.request,
+  (_, res) => {
+//    assert(res.locals);
+//    assert(res.locals.response);
+//    res.status(200).json(res.locals.response);
+    res.status(200).json({todo:'todo'});
+  },
+);
+
+/* __________________________OLD TESTS FOR PREVIOUS API VERSION___________________________
+
+// router.get('/tree',
+//   [
+//     check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
+//     check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
+//   ],
+//   authController.verifyJWT,
+//   authController.checkAccess('list_trees'),
+//   userController.getTrees,
+//   (req, res) => res.status(200).json(res.locals.trees));
 
 router.get('/account',
   authController.verifyJWT,
@@ -119,33 +148,9 @@ router.get('/history',
     assert(res.locals.response);
     res.status(200).json(res.locals.response);
   });
+*/
 
-router.get('/trust_relationships',
-//  [
-//    check('token').isUUID()
-//  ],
-  authController.verifyJWT,
-  trustController.get,
-  (_, res) => {
-    assert(res.locals);
-    assert(res.locals.response);
-    res.status(200).json(res.locals.response);
-  },
-);
 
-router.post('/trust_relationships',
-//  [
-//    check('token').isUUID()
-//  ],
-  authController.verifyJWT,
-  trustController.request,
-  (_, res) => {
-//    assert(res.locals);
-//    assert(res.locals.response);
-//    res.status(200).json(res.locals.response);
-    res.status(200).json({todo:'todo'});
-  },
-);
 
 
 module.exports = router;

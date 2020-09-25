@@ -5,7 +5,7 @@ const knex = require('knex')({
   client: 'pg',
 //  debug: true,
   connection,
+  searchPath: ['wallets', 'public'],
 });
 
 module.exports = knex;
-

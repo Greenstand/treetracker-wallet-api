@@ -41,7 +41,7 @@ app.post('/wallet/:wallet_id/trust/request', asyncHandler(async (req, res, next)
 
 }));
 
-app.post('/wallet/:wallet_id/trust/approve',  asyncHandler(async (req, res, next) => {
+app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next) => {
 
   const type = req.body.type;
   //const wallet_id = req.body.wallet_id; // in the bearer token
@@ -51,11 +51,11 @@ app.post('/wallet/:wallet_id/trust/approve',  asyncHandler(async (req, res, next
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.warn("cathed the error:", err);
-  if(err instanceof HttpError){
+  console.warn("caught the error:", err);
+  if (err instanceof HttpError) {
     res.status(err.code).send(err.message);
-  }else{
-    res.status(500).send("Unknown error");
+  } else {
+    res.status(err.status).send(err.message.err);
   }
 });
 

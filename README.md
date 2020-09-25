@@ -27,6 +27,7 @@ Install all necessary dependencies:
 npm install
 
 ```
+
 While running the server locally, generate your own public and private JWT keys in your config folder using the keygen script below:
 
 ```
@@ -96,6 +97,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 Now you should be all set up and ready to go!
 
+
 # How to test
 
 ## Unit test
@@ -130,3 +132,7 @@ In order to efficiently run our integration tests, we rely on automated database
 ```
 npm run test-seedDB
 ```
+
+# Contributing
+
+When you are ready to submit a pull request from your local branch, please rebase your branch off of the shared master branch to integrate any new updates in the codebase before submitting. Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. 

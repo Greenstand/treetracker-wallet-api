@@ -10,7 +10,7 @@ class EntityModel {
   async getEntityByWalletName(wallet){
     expect(wallet, () => new HttpError(`invalid wallet name:${wallet}`))
       .match(/^\S+$/);
-    const list = await knex.select().table("entity").where("wallet", wallet);
+    const list = await knex.select().table('wallets.wallet').where('name', wallet);
     expect(list, () => new HttpError(`can not find entity by wallet name:${wallet}`)).defined().lengthOf(1);
     return list[0];
   }

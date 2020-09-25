@@ -10,8 +10,8 @@ log.setLevel("debug");
 
 // PRIVATE and PUBLIC key
 console.warn("__dirname:", __dirname);
-const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/private.key'), 'utf8');
-const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../config/public.key'), 'utf8');
+const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
+const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
 
 const signingOptions = {
   issuer: "greenstand",
@@ -63,7 +63,7 @@ authController.apiKey = async (req, res, next) => {
       message: { err: 'Invalid API access' },
     });
   }
-  console.log('Valid Access');
+  // console.log('Valid Access');
   next();
 };
 
@@ -96,12 +96,12 @@ authController.authorize = async (req, res, next) => {
   // Now check for wallet/password
   const query2 = {
     text: `SELECT *
-    FROM entity
-    WHERE wallet = $1
+    FROM wallet
+    WHERE name = $1
     AND password IS NOT NULL`,
     values: [wallet],
   };
-  console.log(query2);
+  // console.log(query2);
   const rval2 = await pool.query(query2);
 
   if (rval2.rows.length === 0) {
@@ -113,10 +113,10 @@ authController.authorize = async (req, res, next) => {
     });
   }
 
-  const entity = rval2.rows[0];
-  const hash = sha512(password, entity.salt);
+  const wallets = rval2.rows[0];
+  const hash = sha512(password, wallets.salt);
 
-  if (hash !== entity.password) {
+  if (hash !== wallets.password) {
     console.log('ERROR: Authentication, invalid credentials.');
     next({
       log: 'Error: Invalid credentials',
@@ -124,7 +124,7 @@ authController.authorize = async (req, res, next) => {
       message: { err: 'Error: Invalid credentials' },
     });
   }
-  res.locals.id = entity.id;
+  res.locals.id = wallets.id;
   next();
 };
 
@@ -170,7 +170,7 @@ authController.verifyJWT = (req, res, next) => {
           message: { err: 'ERROR: Authentication, token not verified' },
         });
       }
-      res.locals.entity_id = decod.id;
+      res.locals.wallet_id = decod.id;
     });
   }
   next();
@@ -183,20 +183,20 @@ authController.verifyJWT = (req, res, next) => {
 
 authController.checkAccess = (role) => {
     return async (req, res, next) => {
-    const entityId = res.locals.entity_id;
+    const walletId = res.locals.wallet_id;
     const query = {
       text: `SELECT *
-      FROM entity_role
+      FROM public.entity_role
       WHERE entity_id = $1
       AND role_name = $2
       AND enabled = TRUE`,
-      values: [entityId, role]
+      values: [walletId, role]
     };
     const rval = await pool.query(query);
 
     if (rval.rows.length !== 1) {
-      log.debug("check access fail...", entityId, role);
-      next({
+      log.debug("check access fail...", walletId, role);
+      return next({
         log: `ERROR: Permission for ${role} not granted`,
         status: 401,
         message: { err: `ERROR: Permission to ${role} not granted`},
