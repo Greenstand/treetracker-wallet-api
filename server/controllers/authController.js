@@ -33,41 +33,6 @@ const sha512 = (password, salt) => {
 };
 
 /* ________________________________________________________________________
- * API Key Verification
- * ________________________________________________________________________
-*/
-authController.apiKey = async (req, res, next) => {
-  if (!req.headers['treetracker-api-key']) {
-    console.log('ERROR: Invalid access - no API key');
-    next({
-      log: 'Invalid access - no API key',
-      status: 401,
-      message: { err: 'Invalid access - no API key' },
-    });
-  }
-  const apiKey = req.headers['treetracker-api-key'];
-  const query = {
-    text: `SELECT *
-    FROM api_key
-    WHERE key = $1
-    AND tree_token_api_access`,
-    values: [apiKey],
-  };
-  const rval = await pool.query(query);
-
-  if (rval.rows.length === 0) {
-    console.log('ERROR: Authentication, Invalid access');
-    next({
-      log: 'Invalid API access',
-      status: 401,
-      message: { err: 'Invalid API access' },
-    });
-  }
-  // console.log('Valid Access');
-  next();
-};
-
-/* ________________________________________________________________________
  * Authorization Route - checks wallet and password credentials
  * ________________________________________________________________________
 */

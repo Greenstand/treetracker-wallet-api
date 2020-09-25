@@ -47,6 +47,7 @@ router.get('/token/:uuid',
     //TODO ? check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
     //TODO ? check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
   ],
+  helper.apiKeyHandler,
   authController.verifyJWT,
 //TODO ? didn't defined access role for GET /token
 //  (req, res, next) => {
@@ -137,6 +138,7 @@ router.get('/trust_relationships',
 //  [
 //    check('token').isUUID()
 //  ],
+  helper.apiKeyHandler,
   authController.verifyJWT,
   asyncUtil(async (req, res, next) => {
     const trustModel = new TrustModel();
@@ -156,6 +158,7 @@ router.post('/trust_relationships',
 //  [
 //    check('token').isUUID()
 //  ],
+  helper.apiKeyHandler,
   authController.verifyJWT,
   asyncUtil(async (req, res) => {
     const trustModel = new TrustModel();
@@ -173,6 +176,7 @@ router.post('/trust_relationships/:trustRelationshipId/accept',
 //  [
 //    check('token').isUUID()
 //  ],
+  helper.apiKeyHandler,
   authController.verifyJWT,
   asyncUtil(async (req, res) => {
     const trustModel = new TrustModel();
