@@ -11,7 +11,8 @@
     "serverTest": "cd ./server && DEBUG=loopback:*,express:* nodemon server.js",
     "server": "cd ./server && nodemon server.js",
     "test-seedDB": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './**/*.spec.js'",
-    "test-integration": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './__tests__/supertest.js'"
+    "test-integration": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './__tests__/supertest.js'",
+    "testWatch": "NODE_ENV=test mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/**/*.spec.js' './__tests__/supertest.js'"
   },
   "keywords": [],
   "author": "",
