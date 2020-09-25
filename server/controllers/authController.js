@@ -7,6 +7,7 @@ const FS = require('fs');
 const log = require("loglevel");
 const path = require("path");
 log.setLevel("debug");
+const JWTModel = require("../models/auth/JWTModel");
 
 // PRIVATE and PUBLIC key
 console.warn("__dirname:", __dirname);
@@ -101,45 +102,13 @@ authController.issueJWT = (req, res, next) => {
   const payload = {
     id: res.locals.id,
   };
-  const jwt = JWT.sign(payload, privateKEY, signingOptions);
+  const jwtModel = new JWTModel();
+  const jwt = jwtModel.sign(payload);
   res.locals.jwt = jwt;
   next();
 };
 
-/* ________________________________________________________________________
- * JWT Verification upon prior log in
- * ________________________________________________________________________
-*/
 
-authController.verifyJWT = (req, res, next) => {
-  if (!req.headers.authorization) {
-    console.log('ERROR: Authentication, no token supplied for protected path');
-    next({
-      log: 'ERROR: Authentication, no token supplied for protected path',
-      status: 403,
-      message: { err: 'ERROR: Authentication, no token supplied for protected path' },
-    });
-  }
-  //accounts for the "Bearer" string before the token
-  const tokenArray = req.headers.authorization.split(' ');
-  const token = tokenArray[1];
-  if (token) {
-    // Decode the token
-    JWT.verify(token, publicKEY, verifyOptions, (err, decod) => {
-      if (err || tokenArray[0] !== 'Bearer') {
-        console.log(err);
-        console.log('ERROR: Authentication, token not verified');
-        next({
-          log: 'ERROR: Authentication, token not verified',
-          status: 403,
-          message: { err: 'ERROR: Authentication, token not verified' },
-        });
-      }
-      res.locals.wallet_id = decod.id;
-    });
-  }
-  next();
-};
 
 /* ________________________________________________________________________
  * Checks user access privileges

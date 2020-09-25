@@ -5,6 +5,7 @@ const log = require("loglevel");
 const HttpError = require("../utils/HttpError");
 log.setLevel("debug");
 const ApiKeyModel = require("../models/auth/ApiKeyModel");
+const JWTModel = require("../models/auth/JWTModel.js");
 
 
 /*
@@ -47,3 +48,11 @@ exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
   log.debug('Valid Access');
   next();
 });
+
+exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
+  const jwtModel = new JWTModel();
+  const decode = jwtModel.verify(req.headers.authorization);
+  res.locals.wallet_id = decode.id;
+  next();
+});
+

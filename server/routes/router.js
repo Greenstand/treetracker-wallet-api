@@ -48,7 +48,7 @@ router.get('/token/:uuid',
     //TODO ? check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
   ],
   helper.apiKeyHandler,
-  authController.verifyJWT,
+  helper.verifyJWTHandler,
 //TODO ? didn't defined access role for GET /token
 //  (req, res, next) => {
 //    res.locals.role = 'list_trees';
@@ -139,7 +139,7 @@ router.get('/trust_relationships',
 //    check('token').isUUID()
 //  ],
   helper.apiKeyHandler,
-  authController.verifyJWT,
+  helper.verifyJWTHandler,
   asyncUtil(async (req, res, next) => {
     const trustModel = new TrustModel();
     res.locals.response = {
@@ -159,7 +159,7 @@ router.post('/trust_relationships',
 //    check('token').isUUID()
 //  ],
   helper.apiKeyHandler,
-  authController.verifyJWT,
+  helper.verifyJWTHandler,
   asyncUtil(async (req, res) => {
     const trustModel = new TrustModel();
     expect(req).property("body").property("trust_request_type").a(expect.any(String));
@@ -177,7 +177,7 @@ router.post('/trust_relationships/:trustRelationshipId/accept',
 //    check('token').isUUID()
 //  ],
   helper.apiKeyHandler,
-  authController.verifyJWT,
+  helper.verifyJWTHandler,
   asyncUtil(async (req, res) => {
     const trustModel = new TrustModel();
     expect(req.params).property("trustRelationshipId").defined();
