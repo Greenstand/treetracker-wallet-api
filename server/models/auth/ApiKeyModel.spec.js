@@ -28,7 +28,6 @@ describe("ApiKeyModel", () => {
   it("good key should pass", async () => {
     sinon.stub(ApiKeyRepository.prototype, "getByApiKey").returns({});
     await apiKeyModel.check("not_exist");
-    sinon.restore();
     ApiKeyRepository.prototype.getByApiKey.restore();
   });
 
