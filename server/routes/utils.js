@@ -4,6 +4,7 @@
 const log = require("loglevel");
 const HttpError = require("../utils/HttpError");
 log.setLevel("debug");
+const ApiKeyModel = require("../models/auth/ApiKeyModel");
 
 
 /*
@@ -40,33 +41,9 @@ exports.errorHandler = (err, req, res, next) => {
   }
 };
 
-exports.apiKeyHandler = async (req, res, next) => {
-  if (!req.headers['treetracker-api-key']) {
-    console.log('ERROR: Invalid access - no API key');
-    next({
-      log: 'Invalid access - no API key',
-      status: 401,
-      message: { err: 'Invalid access - no API key' },
-    });
-  }
-  const apiKey = req.headers['treetracker-api-key'];
-  const query = {
-    text: `SELECT *
-    FROM api_key
-    WHERE key = $1
-    AND tree_token_api_access`,
-    values: [apiKey],
-  };
-  const rval = await pool.query(query);
-
-  if (rval.rows.length === 0) {
-    console.log('ERROR: Authentication, Invalid access');
-    next({
-      log: 'Invalid API access',
-      status: 401,
-      message: { err: 'Invalid API access' },
-    });
-  }
-  // console.log('Valid Access');
+exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
+  const apiKeyModel = new ApiKeyModel();
+  await apiKeyModel.check(req.headers['treetracker-api-key']);
+  log.debug('Valid Access');
   next();
-};
+});

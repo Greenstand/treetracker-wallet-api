@@ -6,7 +6,9 @@ const userController = require('../controllers/userController.js');
 const assert = require("assert");
 const TrustModel = require('../models/TrustModel');
 const expect = require("expect-runtime");
+const helper = require("./utils");
 
+//TODO move to utils
 const asyncUtil = fn =>
 function asyncUtilWrap(...args) {
   const fnReturn = fn(...args)
@@ -23,7 +25,7 @@ router.post('/auth',
     check('password', 'Password is invalid').isLength({ min: 8, max: 32 }),
     check('wallet', 'Invalid wallet').isLength({ min: 4, max: 32 }),
   ],
-  authController.apiKey,
+  helper.apiKeyHandler,
   authController.authorize,
   authController.issueJWT,
   (req, res) => res.status(200).json({ token: res.locals.jwt }));

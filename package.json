@@ -43,7 +43,7 @@
     "db-migrate-pg": "^0.4.0",
     "expect-runtime": "^0.6.0",
     "mock-knex": "^0.4.9",
-    "sinon": "^1.17.7",
+    "sinon": "^9.0.3",
     "sinon-chai": "^2.8.0",
     "supertest": "^4.0.2"
   }
