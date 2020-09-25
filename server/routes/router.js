@@ -30,7 +30,7 @@ router.get('/token/:uuid',
 //    res.locals.role = 'list_trees';
 //    next();
 //  },
-  // authController.checkAccess('list_trees'),
+  authController.checkAccess('list_trees'),
   userController.token,
   (req, res) => res.status(200).json(res.locals.response));
 

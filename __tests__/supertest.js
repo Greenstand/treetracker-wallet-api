@@ -68,7 +68,7 @@ describe('Route integration', () => {
 
   // Tests that require logged-in authorization
 
-  it(`[GET /token/${seed.token.uuid}] Should be able to get a token `, async () => {
+  it(`[GET /token/${seed.token.uuid}] Should be able to get a token `, async (done) => {
     const res = await request(server)
       .get(`/token/${seed.token.uuid}`)
       .set('treetracker-api-key', apiKey)
@@ -78,6 +78,7 @@ describe('Route integration', () => {
       .that.have.lengthOf(1)
       .that.have.property(0)
       .which.have.property('token', seed.token.uuid);
+    done();
   });
 
   describe(`wallet:${seed.wallet.name} request trust relationship with type: send`, () => {

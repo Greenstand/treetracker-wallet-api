@@ -89,9 +89,6 @@ async function seed() {
 
   //entity
   await knex('entity')
-    .where('id', wallet.id)
-    .del();
-  await knex('entity')
     .insert({
       id: wallet.id,
       type: wallet.type,
@@ -145,10 +142,8 @@ async function clear() {
   await knex('wallets.api_key').del();
   log.debug('clear all transaction');
   await knex('wallets.transaction').del();
-  await knex('transaction').del();
   log.debug('clear all tokens');
   await knex('wallets.token').del();
-  await knex('token').del();
   log.debug('clear all trees');
   await knex('trees').del();
   log.debug('clear all wallets');
@@ -159,7 +154,6 @@ async function clear() {
   await knex('entity_role').del();
   log.debug('clear entities');
   await knex('entity').del();
-
 }
 
 module.exports = {seed, clear, apiKey, wallet, tree, token};
