@@ -27,7 +27,6 @@ router.post('/auth',
   ],
   helper.apiKeyHandler,
   authController.authorize,
-  authController.issueJWT,
   (req, res) => res.status(200).json({ token: res.locals.jwt }));
 
 // Routes that require logged in status

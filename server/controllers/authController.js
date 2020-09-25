@@ -90,17 +90,8 @@ authController.authorize = async (req, res, next) => {
       message: { err: 'Error: Invalid credentials' },
     });
   }
-  res.locals.id = wallets.id;
-  next();
-};
-
-/* ________________________________________________________________________
- * JWT Issuance upon prior authorization
- * ________________________________________________________________________
-*/
-authController.issueJWT = (req, res, next) => {
   const payload = {
-    id: res.locals.id,
+    id: wallets.id,
   };
   const jwtModel = new JWTModel();
   const jwt = jwtModel.sign(payload);
