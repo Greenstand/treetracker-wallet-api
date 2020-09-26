@@ -9,35 +9,6 @@ const WalletModel = require("../models/WalletModel");
 const JWTModel = require("../models/auth/JWTModel");
 const TokenModel = require("../models/TokenModel");
 
-//TODO move to utils
-const asyncUtil = fn =>
-function asyncUtilWrap(...args) {
-  const fnReturn = fn(...args)
-  const next = args[args.length-1]
-  return Promise.resolve(fnReturn).catch(e => {
-    console.error("get error:", e);
-    next(e);
-  })
-}
-
-router.post('/auth',
-  [
-    check('wallet').isAlphanumeric(),
-    check('password', 'Password is invalid').isLength({ min: 8, max: 32 }),
-    check('wallet', 'Invalid wallet').isLength({ min: 4, max: 32 }),
-  ],
-  helper.apiKeyHandler,
-  helper.handlerWrapper(async (req, res, next) => {
-    const { wallet, password } = req.body;
-    const walletModel = new WalletModel();
-    const walletObject = await walletModel.authorize(wallet, password);
-
-    const jwtModel = new JWTModel();
-    const jwt = jwtModel.sign(walletObject);
-    res.locals.jwt = jwt;
-    res.status(200).json({ token: res.locals.jwt });
-    next();
-  }));
 
 // Routes that require logged in status
 
@@ -148,57 +119,6 @@ router.get('/token/:uuid',
 //     res.status(200).json(res.locals.response);
 //   });
 
-router.get('/trust_relationships',
-//  [
-//    check('token').isUUID()
-//  ],
-  helper.apiKeyHandler,
-  helper.verifyJWTHandler,
-  asyncUtil(async (req, res, next) => {
-    const trustModel = new TrustModel();
-    res.locals.response = {
-      trust_relationships: await trustModel.getTrustModel().get(),
-    }
-    next();
-  }),
-  (_, res) => {
-    assert(res.locals);
-    assert(res.locals.response);
-    res.status(200).json(res.locals.response);
-  },
-);
-
-router.post('/trust_relationships',
-//  [
-//    check('token').isUUID()
-//  ],
-  helper.apiKeyHandler,
-  helper.verifyJWTHandler,
-  asyncUtil(async (req, res) => {
-    const trustModel = new TrustModel();
-    expect(req).property("body").property("trust_request_type").a(expect.any(String));
-    expect(req).property("body").property("wallet").a(expect.any(String));
-    const trust_relationship = await trustModel.request(
-      req.body.trust_request_type,
-      req.body.wallet,
-    );
-    res.status(200).json(trust_relationship);
-  })
-);
-
-router.post('/trust_relationships/:trustRelationshipId/accept',
-//  [
-//    check('token').isUUID()
-//  ],
-  helper.apiKeyHandler,
-  helper.verifyJWTHandler,
-  asyncUtil(async (req, res) => {
-    const trustModel = new TrustModel();
-    expect(req.params).property("trustRelationshipId").defined();
-    await trustModel.accept(req.params.trustRelationshipId);
-    res.status(200).json();
-  })
-);
 
 
 module.exports = router;

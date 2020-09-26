@@ -1,16 +1,13 @@
 const express = require('express');
 const Sentry = require('@sentry/node');
 const bodyParser = require('body-parser');
-const http = require('http');
-const pg = require('pg');
-const pool = require('./database/database.js');
 const router = require('./routes/router.js')
-
-const path = require('path');
 const asyncHandler = require('express-async-handler');
 const { check, validationResult } = require('express-validator');
 const { body } = require('express-validator');
 const HttpError = require("./utils/HttpError");
+const authRouter = require('./routes/authRouter.js')
+const trustRouter = require('./routes/trustRouter.js')
 
 
 const app = express();
@@ -21,6 +18,10 @@ Sentry.init({ dsn: config.sentry_dsn });
 
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
+
+//routers
+app.use('/auth', authRouter);
+app.use('/trust_relationships', trustRouter);
 
 app.use('/', router);
 
