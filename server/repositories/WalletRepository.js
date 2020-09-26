@@ -2,10 +2,10 @@
  * The model for: entity, wallet, entity table and so on
  */
 const HttpError = require("../utils/HttpError");
-const knex = require('../../server/database/knex');
+const knex = require('../database/knex');
 const expect = require("expect-runtime");
 
-class EntityRepository {
+class WalletRepository {
 
   async getEntityByWalletName(wallet){
     expect(wallet, () => new HttpError(400, `invalid wallet name:${wallet}`))
@@ -16,4 +16,4 @@ class EntityRepository {
   }
 }
 
-module.exports = EntityRepository;
+module.exports = WalletRepository;

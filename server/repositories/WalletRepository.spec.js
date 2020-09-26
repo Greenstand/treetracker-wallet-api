@@ -1,4 +1,4 @@
-const EntityRepository = require("./EntityRepository");
+const WalletRepository = require("./WalletRepository");
 const {expect} = require("chai");
 const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
@@ -7,13 +7,13 @@ const jestExpect = require("expect");
 
 
 
-describe("EntityRepository", () => {
-  let entityRepository;
+describe("WalletRepository", () => {
+  let walletRepository;
 
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    entityRepository = new EntityRepository();
+    walletRepository = new WalletRepository();
   })
 
   afterEach(() => {
@@ -28,7 +28,7 @@ describe("EntityRepository", () => {
       expect(query.sql).match(/select.*wallet.*/);
       query.response([{id:1}]);
     });
-    const entity = await entityRepository.getEntityByWalletName("Dadior");
+    const entity = await walletRepository.getEntityByWalletName("Dadior");
     expect(entity).to.be.a("object");
   });
 
@@ -40,7 +40,7 @@ describe("EntityRepository", () => {
       query.response([]);
     });
     await jestExpect(async () => {
-      await entityRepository.getEntityByWalletName("Dadior");
+      await walletRepository.getEntityByWalletName("Dadior");
     }).rejects.toThrow(/can not find entity/);
   });
 });

@@ -1,6 +1,6 @@
 const expect = require('expect-runtime');
 const HttpError = require("../utils/HttpError");
-const EntityRepository = require("../repositories/EntityRepository");
+const WalletRepository = require("../repositories/WalletRepository");
 const TrustRepository = require("../repositories/TrustRepository");
 
 class TrustModel{
@@ -19,8 +19,8 @@ class TrustModel{
       .match(/\S+/);
     
     //get wallet id
-    const entityModel = new EntityRepository();
-    const wallet = await entityModel.getEntityByWalletName((walletName));
+    const walletRepository = new WalletRepository();
+    const wallet = await walletRepository.getEntityByWalletName((walletName));
     const result = await this.trustRepository.create({
       request_type: requestType,
       target_entity_id: wallet.id,

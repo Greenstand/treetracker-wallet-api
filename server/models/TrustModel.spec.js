@@ -4,7 +4,7 @@ const {expect} = chai;
 const jestExpect = require("expect");
 const sinon = require("sinon");
 const TrustRepository = require("../repositories/TrustRepository");
-const EntityRepository = require("../repositories/EntityRepository");
+const WalletRepository = require("../repositories/WalletRepository");
 
 describe("TrustModel", () => {
   let trustModel;
@@ -39,10 +39,10 @@ describe("TrustModel", () => {
     });
 
     it("request successfully", async () => {
-      sinon.stub(EntityRepository.prototype, "getEntityByWalletName").returns([{id:1}]);
+      sinon.stub(WalletRepository.prototype, "getEntityByWalletName").returns([{id:1}]);
       sinon.stub(TrustRepository.prototype, "create");
       await trustModel.request("send", "test");
-      EntityRepository.prototype.getEntityByWalletName.restore();
+      WalletRepository.prototype.getEntityByWalletName.restore();
       TrustRepository.prototype.create.restore();
     });
   });
