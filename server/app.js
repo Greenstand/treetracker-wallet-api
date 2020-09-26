@@ -1,13 +1,13 @@
 const express = require('express');
 const Sentry = require('@sentry/node');
 const bodyParser = require('body-parser');
-const router = require('./routes/router.js')
 const asyncHandler = require('express-async-handler');
 const { check, validationResult } = require('express-validator');
 const { body } = require('express-validator');
 const HttpError = require("./utils/HttpError");
 const authRouter = require('./routes/authRouter.js')
 const trustRouter = require('./routes/trustRouter.js')
+const tokenRouter = require('./routes/tokenRouter.js')
 
 
 const app = express();
@@ -21,9 +21,9 @@ app.use(bodyParser.json()); // parse application/json
 
 //routers
 app.use('/auth', authRouter);
+app.use('/token', tokenRouter);
 app.use('/trust_relationships', trustRouter);
 
-app.use('/', router);
 
 
 app.set('view engine','html');

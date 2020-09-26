@@ -22,27 +22,6 @@ const TokenModel = require("../models/TokenModel");
 //   userController.getTrees,
 //   (req, res) => res.status(200).json(res.locals.trees));
 
-router.get('/token/:uuid',
-  [
-    //TODO ? check('limit', 'Invalid limit number').optional().isNumeric({ min: 1, max: 1000 }),
-    //TODO ? check('wallet', 'Invalid wallet name').optional().isAlphanumeric(),
-  ],
-  helper.apiKeyHandler,
-  helper.verifyJWTHandler,
-//TODO ? didn't defined access role for GET /token
-//  (req, res, next) => {
-//    res.locals.role = 'list_trees';
-//    next();
-//  },
-//  authController.checkAccess,
-  helper.handlerWrapper(async (req, res, next) => {
-    const {uuid} = req.params;
-    const tokenModel = new TokenModel();
-    const tokens = await tokenModel.getByUUID(uuid);
-    res.status(200).json({tokens});
-  })
-)
-
 // router.get('/account',
 //   authController.verifyJWT,
 //   authController.checkAccess('accounts'),
