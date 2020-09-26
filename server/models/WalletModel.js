@@ -33,42 +33,6 @@ class WalletModel{
     return {
       id: walletObject.id,
     }
-
-
-//  // Now check for wallet/password
-//  const query2 = {
-//    text: `SELECT *
-//    FROM wallet
-//    WHERE name = $1
-//    AND password IS NOT NULL`,
-//    values: [wallet],
-//  };
-//  // console.log(query2);
-//  const rval2 = await pool.query(query2);
-//
-//  if (rval2.rows.length === 0) {
-//    console.log('ERROR: Authentication, invalid credentials');
-//    next({
-//      log: 'Error: Invalid credentials',
-//      status: 401,
-//      message: { err: 'Error: Invalid credentials' },
-//    });
-//  }
-//
-//  const wallets = rval2.rows[0];
-//  const hash = sha512(password, wallets.salt);
-//
-//  if (hash !== wallets.password) {
-//    console.log('ERROR: Authentication, invalid credentials.');
-//    next({
-//      log: 'Error: Invalid credentials',
-//      status: 401,
-//      message: { err: 'Error: Invalid credentials' },
-//    });
-//  }
-//  const payload = {
-//    id: wallets.id,
-//  };
   }
 }
 

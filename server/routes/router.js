@@ -7,6 +7,8 @@ const assert = require("assert");
 const TrustModel = require('../models/TrustModel');
 const expect = require("expect-runtime");
 const helper = require("./utils");
+const WalletModel = require("../models/WalletModel");
+const JWTModel = require("../models/auth/JWTModel");
 
 //TODO move to utils
 const asyncUtil = fn =>
@@ -26,8 +28,17 @@ router.post('/auth',
     check('wallet', 'Invalid wallet').isLength({ min: 4, max: 32 }),
   ],
   helper.apiKeyHandler,
-  authController.authorize,
-  (req, res) => res.status(200).json({ token: res.locals.jwt }));
+  helper.handlerWrapper(async (req, res, next) => {
+    const { wallet, password } = req.body;
+    const walletModel = new WalletModel();
+    const walletObject = await walletModel.authorize(wallet, password);
+
+    const jwtModel = new JWTModel();
+    const jwt = jwtModel.sign(walletObject);
+    res.locals.jwt = jwt;
+    res.status(200).json({ token: res.locals.jwt });
+    next();
+  }));
 
 // Routes that require logged in status
 
