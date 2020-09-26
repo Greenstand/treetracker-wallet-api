@@ -21,18 +21,18 @@ describe("WalletRepository", () => {
     mockKnex.unmock(knex);
   });
 
-  it("getEntityByWalletName", async () => {
+  it("getByName", async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on("query", (query) => {
       expect(query.sql).match(/select.*wallet.*/);
       query.response([{id:1}]);
     });
-    const entity = await walletRepository.getEntityByWalletName("Dadior");
+    const entity = await walletRepository.getByName("Dadior");
     expect(entity).to.be.a("object");
   });
 
-  it("getEntityByWalletName can not find the wallet name", async () => {
+  it("getByName can not find the wallet name", async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on("query", (query) => {
@@ -40,7 +40,7 @@ describe("WalletRepository", () => {
       query.response([]);
     });
     await jestExpect(async () => {
-      await walletRepository.getEntityByWalletName("Dadior");
+      await walletRepository.getByName("Dadior");
     }).rejects.toThrow(/can not find entity/);
   });
 });

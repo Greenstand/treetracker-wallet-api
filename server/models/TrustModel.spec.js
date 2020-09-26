@@ -39,10 +39,10 @@ describe("TrustModel", () => {
     });
 
     it("request successfully", async () => {
-      sinon.stub(WalletRepository.prototype, "getEntityByWalletName").returns([{id:1}]);
+      sinon.stub(WalletRepository.prototype, "getByName").returns([{id:1}]);
       sinon.stub(TrustRepository.prototype, "create");
       await trustModel.request("send", "test");
-      WalletRepository.prototype.getEntityByWalletName.restore();
+      WalletRepository.prototype.getByName.restore();
       TrustRepository.prototype.create.restore();
     });
   });

@@ -7,13 +7,17 @@ const expect = require("expect-runtime");
 
 class WalletRepository {
 
-  async getEntityByWalletName(wallet){
+  constructor(){
+  }
+
+  async getByName(wallet){
     expect(wallet, () => new HttpError(400, `invalid wallet name:${wallet}`))
       .match(/^\S+$/);
     const list = await knex.select().table('wallets.wallet').where('name', wallet);
     expect(list, () => new HttpError(404, `can not find entity by wallet name:${wallet}`)).defined().lengthOf(1);
     return list[0];
   }
+
 }
 
 module.exports = WalletRepository;

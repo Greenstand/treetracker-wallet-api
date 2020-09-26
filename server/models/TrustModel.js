@@ -20,7 +20,7 @@ class TrustModel{
     
     //get wallet id
     const walletRepository = new WalletRepository();
-    const wallet = await walletRepository.getEntityByWalletName((walletName));
+    const wallet = await walletRepository.getByName((walletName));
     const result = await this.trustRepository.create({
       request_type: requestType,
       target_entity_id: wallet.id,
