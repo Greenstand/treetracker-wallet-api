@@ -785,8 +785,8 @@ userController.token = async (req, res, next) => {
   const rval = await pool.query(query);
 
   const trees = [];
-  for(token of rval.rows){
-    treeItem = {
+  for(let token of rval.rows){
+    let treeItem = {
       token: token.uuid,
       map_url: config.map_url + "?treeid="+token.tree_id,
       image_url: token.image_url,

@@ -9,7 +9,7 @@ describe("ApiKeyRepository", () => {
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    apiKeyRepository = new ApiKeyRepository;
+    apiKeyRepository = new ApiKeyRepository();
   })
 
   afterEach(() => {

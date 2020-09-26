@@ -9,6 +9,7 @@ const expect = require("expect-runtime");
 const helper = require("./utils");
 const WalletModel = require("../models/WalletModel");
 const JWTModel = require("../models/auth/JWTModel");
+const TokenModel = require("../models/TokenModel");
 
 //TODO move to utils
 const asyncUtil = fn =>
@@ -65,8 +66,13 @@ router.get('/token/:uuid',
 //    next();
 //  },
 //  authController.checkAccess,
-  userController.token,
-  (req, res) => res.status(200).json(res.locals.response));
+  helper.handlerWrapper(async (req, res, next) => {
+    const {uuid} = req.params;
+    const tokenModel = new TokenModel();
+    const tokens = await tokenModel.getByUUID(uuid);
+    res.status(200).json({tokens});
+  })
+)
 
 // router.get('/account',
 //   authController.verifyJWT,

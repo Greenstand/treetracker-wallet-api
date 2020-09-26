@@ -1,38 +1,8 @@
 const authController = {};
-const JWT = require('jsonwebtoken');
-const Crypto = require('crypto');
 const pool = require('../database/database.js');
-const { check, validationResult } = require('express-validator');
-const FS = require('fs');
 const log = require("loglevel");
-const path = require("path");
 log.setLevel("debug");
-const JWTModel = require("../models/auth/JWTModel");
-const WalletModel = require("../models/WalletModel");
 
-// PRIVATE and PUBLIC key
-console.warn("__dirname:", __dirname);
-const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
-const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
-
-const signingOptions = {
-  issuer: "greenstand",
-  expiresIn:  "365d",
-  algorithm:  "RS256",
-};
-
-const verifyOptions = {
-  issuer: "greenstand",
-  expiresIn:  "365d",
-  algorithms:  ["RS256"],
-};
-
-const sha512 = (password, salt) => {
-  const hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
-  hash.update(password);
-  const value = hash.digest('hex');
-  return value;
-};
 
 
 
