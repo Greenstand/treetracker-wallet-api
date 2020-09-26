@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
-const authController = require('../controllers/authController.js');
-const userController = require('../controllers/userController.js');
 const assert = require("assert");
 const TrustModel = require('../models/TrustModel');
 const expect = require("expect-runtime");

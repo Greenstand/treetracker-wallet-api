@@ -5,7 +5,6 @@ const http = require('http');
 const pg = require('pg');
 const pool = require('./database/database.js');
 const router = require('./routes/router.js')
-const authController = require('./controllers/authController.js');
 
 const path = require('path');
 const asyncHandler = require('express-async-handler');
