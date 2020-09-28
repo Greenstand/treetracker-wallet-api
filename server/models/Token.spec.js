@@ -5,16 +5,14 @@ const TokenRepository = require("../repositories/TokenRepository");
 const HttpError = require("../utils/HttpError");
 
 describe("Token", () => {
-  let token;
 
   beforeEach(() => {
-    token = new Token();
   })
 
   it("getByUUID() with id which doesn't exist, should throw 404", async () => {
     sinon.stub(TokenRepository.prototype, "getByUUID").rejects(new HttpError(404, "not found"));
     await jestExpect(async () => {
-      await token.getByUUID("testUuid");
+      await Token.buildByUUID("testUuid");
     }).rejects.toThrow('not found');
     TokenRepository.prototype.getByUUID.restore();
   });

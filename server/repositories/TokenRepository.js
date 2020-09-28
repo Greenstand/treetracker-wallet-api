@@ -6,6 +6,12 @@ class TokenRepository{
   }
 
   async getByUUID(uuid){
+    const result = await knex("token").where("uuid", uuid)
+      .first();
+    return result;
+  }
+
+  async getById(id){
     //NOTE raw returns original PG result
     const result = await knex.raw(`SELECT token.*, image_url, lat, lon, 
     tree_region.name AS region_name,
@@ -21,23 +27,19 @@ class TokenRepository{
       WHERE zoom_level = 4
     ) tree_region
     ON tree_region.tree_id = trees.id 
-    WHERE token.uuid = ?`,[uuid]);
+    WHERE token.id = ?`,[id]);
+    const token = result.rows[0];
 
-    console.error("xxxx:", result);
-    const trees = [];
-    for(let token of result.rows){
-      let treeItem = {
-        token: token.uuid,
-        map_url: config.map_url + "?treeid="+token.tree_id,
-        image_url: token.image_url,
-        tree_captured_at: token.tree_captured_at,
-        latitude: token.lat,
-        longitude: token.lon,
-        region: token.region_name
-      }
-      trees.push(treeItem);
+    let treeItem = {
+      token: token.uuid,
+      map_url: config.map_url + "?treeid="+token.tree_id,
+      image_url: token.image_url,
+      tree_captured_at: token.tree_captured_at,
+      latitude: token.lat,
+      longitude: token.lon,
+      region: token.region_name
     }
-    return trees;
+    return treeItem;
   }
 
 }

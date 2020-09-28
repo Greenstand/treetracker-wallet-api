@@ -19,9 +19,8 @@ tokenRouter.get('/:uuid',
 //  authController.checkAccess,
   helper.handlerWrapper(async (req, res, next) => {
     const {uuid} = req.params;
-    const token = new Token();
-    const tokens = await token.getByUUID(uuid);
-    res.status(200).json({tokens});
+    const token = await Token.buildByUUID(uuid);
+    res.status(200).json(await token.toJSON());
   })
 )
 
