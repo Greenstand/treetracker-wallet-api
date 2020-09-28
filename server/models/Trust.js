@@ -3,7 +3,7 @@ const HttpError = require("../utils/HttpError");
 const WalletRepository = require("../repositories/WalletRepository");
 const TrustRepository = require("../repositories/TrustRepository");
 
-class TrustModel{
+class Trust{
   constructor(){
     this.trustRepository = new TrustRepository();
   }
@@ -35,4 +35,4 @@ class TrustModel{
   }
 }
 
-module.exports = TrustModel;
+module.exports = Trust;

@@ -1,7 +1,7 @@
 const express = require('express');
 const { check, validationResult } = require('express-validator');
 const helper = require("./utils");
-const TokenModel = require("../models/TokenModel");
+const Token = require("../models/Token");
 
 const tokenRouter = express.Router();
 tokenRouter.get('/:uuid',
@@ -19,8 +19,8 @@ tokenRouter.get('/:uuid',
 //  authController.checkAccess,
   helper.handlerWrapper(async (req, res, next) => {
     const {uuid} = req.params;
-    const tokenModel = new TokenModel();
-    const tokens = await tokenModel.getByUUID(uuid);
+    const token = new Token();
+    const tokens = await token.getByUUID(uuid);
     res.status(200).json({tokens});
   })
 )

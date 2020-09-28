@@ -2,7 +2,7 @@
  * JWT Issuance upon prior authorization, login
  * ________________________________________________________________________
 */
-const JWT = require('jsonwebtoken');
+const JWTTools = require('jsonwebtoken');
 const Crypto = require('crypto');
 const FS = require('fs');
 const log = require("loglevel");
@@ -28,10 +28,10 @@ const verifyOptions = {
 };
 
 
-class JWTModel{
+class JWT{
 
   sign(payload){
-    return JWT.sign(payload, privateKEY, signingOptions);
+    return JWTTools.sign(payload, privateKEY, signingOptions);
   }
 
   verify(authorization) {
@@ -44,7 +44,7 @@ class JWTModel{
     let result;
     if (token) {
       // Decode the token
-      JWT.verify(token, publicKEY, verifyOptions, (err, decod) => {
+      JWTTools.verify(token, publicKEY, verifyOptions, (err, decod) => {
         if (err || tokenArray[0] !== 'Bearer') {
           log.debug(err);
           throw new HttpError(403, 'ERROR: Authentication, token not verified');
@@ -59,4 +59,4 @@ class JWTModel{
 
 }
 
-module.exports = JWTModel;
+module.exports = JWT;

@@ -1,27 +1,27 @@
-const WalletModel = require("./WalletModel");
+const Wallet = require("./Wallet");
 const {expect} = require("chai");
 const jestExpect = require("expect");
 const sinon = require("sinon");
 const WalletRepository = require("../repositories/WalletRepository");
 const HttpError = require("../utils/HttpError");
 
-describe("WalletModel", () => {
-  let walletModel;
+describe("Wallet", () => {
+  let wallet;
 
   beforeEach(() => {
-    walletModel = new WalletModel();
+    wallet = new Wallet();
   })
 
   it("authorize() with empty parameters should get 400 error", async () => {
       await jestExpect(async () => {
-        await walletModel.authorize(undefined, undefined);
+        await wallet.authorize(undefined, undefined);
       }).rejects.toThrow();
   });
 
   it("authorize() with wallet which doesn't exists, should throw 401", async () => {
     sinon.stub(WalletRepository.prototype, "getByName").rejects(new HttpError(404));
       await jestExpect(async () => {
-        await walletModel.authorize(undefined, undefined);
+        await wallet.authorize(undefined, undefined);
       }).rejects.toThrow();
     WalletRepository.prototype.getByName.restore();
   });
@@ -29,7 +29,7 @@ describe("WalletModel", () => {
   it("authorize() with bad password, should throw 401", async () => {
     sinon.stub(WalletRepository.prototype, "getByName").resolves({id:1});
     await jestExpect(async () => {
-      await walletModel.authorize("testWallet", "testPassword");
+      await wallet.authorize("testWallet", "testPassword");
     }).rejects.toThrow();
     WalletRepository.prototype.getByName.restore();
   });
@@ -40,11 +40,11 @@ describe("WalletModel", () => {
       salt:"salet",
       password: "testPasswordHash",
     });
-    sinon.stub(WalletModel, "sha512").returns("testPasswordHash");
-    const wallet = await walletModel.authorize("testWallet", "testPassword");
-    expect(wallet).property("id").eq(1);
+    sinon.stub(Wallet, "sha512").returns("testPasswordHash");
+    const walletObject = await wallet.authorize("testWallet", "testPassword");
+    expect(walletObject).property("id").eq(1);
     WalletRepository.prototype.getByName.restore();
-    WalletModel.sha512.restore();
+    Wallet.sha512.restore();
   });
 
 });

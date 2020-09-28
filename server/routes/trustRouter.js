@@ -2,7 +2,7 @@ const express = require('express');
 const trustRouter = express.Router();
 const { check, validationResult } = require('express-validator');
 const assert = require("assert");
-const TrustModel = require('../models/TrustModel');
+const Trust = require('../models/Trust');
 const expect = require("expect-runtime");
 const helper = require("./utils");
 
@@ -13,9 +13,9 @@ trustRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
-    const trustModel = new TrustModel();
+    const trust = new Trust();
     res.locals.response = {
-      trust_relationships: await trustModel.getTrustModel().get(),
+      trust_relationships: await trust.getTrustModel().get(),
     }
     next();
   }),
@@ -33,7 +33,7 @@ trustRouter.post('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    const trustModel = new TrustModel();
+    const trustModel = new Trust();
     expect(req).property("body").property("trust_request_type").a(expect.any(String));
     expect(req).property("body").property("wallet").a(expect.any(String));
     const trust_relationship = await trustModel.request(
@@ -51,7 +51,7 @@ trustRouter.post('/:trustRelationshipId/accept',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    const trustModel = new TrustModel();
+    const trustModel = new Trust();
     expect(req.params).property("trustRelationshipId").defined();
     await trustModel.accept(req.params.trustRelationshipId);
     res.status(200).json();

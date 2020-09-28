@@ -1,7 +1,7 @@
 const log = require("loglevel");
 const TokenRepository = require("../repositories/TokenRepository");
 
-class TokenModel{
+class Token{
   
   constructor(){
     this.tokenRepository = new TokenRepository();
@@ -12,4 +12,4 @@ class TokenModel{
   }
 }
 
-module.exports = TokenModel;
+module.exports = Token;

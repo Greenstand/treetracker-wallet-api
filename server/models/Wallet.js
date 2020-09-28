@@ -3,7 +3,7 @@ const HttpError = require("../utils/HttpError");
 const Crypto = require('crypto');
 
 
-class WalletModel{
+class Wallet{
 
   constructor(){
     this.walletRepository = new WalletRepository();
@@ -25,7 +25,7 @@ class WalletModel{
         throw e;
       }
     }
-    const hash = WalletModel.sha512(password, walletObject.salt);
+    const hash = Wallet.sha512(password, walletObject.salt);
 
     if (hash !== walletObject.password) {
       throw new HttpError(401, 'Invalid credentials');
@@ -36,11 +36,11 @@ class WalletModel{
   }
 }
 
-WalletModel.sha512 = (password, salt) => {
+Wallet.sha512 = (password, salt) => {
   const hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
   hash.update(password);
   const value = hash.digest('hex');
   return value;
 };
 
-module.exports = WalletModel;
+module.exports = Wallet;

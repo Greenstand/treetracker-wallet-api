@@ -1,4 +1,4 @@
-const TrustModel = require("./TrustModel");
+const Trust = require("./Trust");
 const chai = require("chai");
 const {expect} = chai;
 const jestExpect = require("expect");
@@ -6,11 +6,11 @@ const sinon = require("sinon");
 const TrustRepository = require("../repositories/TrustRepository");
 const WalletRepository = require("../repositories/WalletRepository");
 
-describe("TrustModel", () => {
-  let trustModel;
+describe("Trust", () => {
+  let trust;
 
   before(() => {
-    trustModel = new TrustModel();
+    trust = new Trust();
   });
 
   after(() => {
@@ -18,7 +18,7 @@ describe("TrustModel", () => {
 
   it("get trust_relationships", async () => {
     sinon.stub(TrustRepository.prototype, "get").returns([{a:1}]);
-    const trust_relationships = await trustModel.getTrustModel().get();
+    const trust_relationships = await trust.getTrustModel().get();
     expect(trust_relationships).lengthOf(1);
     TrustRepository.prototype.get.restore();
   });
@@ -28,20 +28,20 @@ describe("TrustModel", () => {
 
     it("request with a wrong type would throw error", async () => {
       await jestExpect(async () => {
-        await trustModel.request("wrongType","test")
+        await trust.request("wrongType","test")
       }).rejects.toThrow();
     });
 
     it("request with a wrong wallet name would throw error", async () => {
       await jestExpect(async () => {
-        await trustModel.request("send","tes t");
+        await trust.request("send","tes t");
       }).rejects.toThrow();
     });
 
     it("request successfully", async () => {
       sinon.stub(WalletRepository.prototype, "getByName").returns([{id:1}]);
       sinon.stub(TrustRepository.prototype, "create");
-      await trustModel.request("send", "test");
+      await trust.request("send", "test");
       WalletRepository.prototype.getByName.restore();
       TrustRepository.prototype.create.restore();
     });
@@ -53,7 +53,7 @@ describe("TrustModel", () => {
       sinon.stub(TrustRepository.prototype, "getById").returns([{id:1}]);
       sinon.stub(TrustRepository.prototype, "update");
       const trustRelationshipId = 1;
-      await trustModel.accept(trustRelationshipId);
+      await trust.accept(trustRelationshipId);
       TrustRepository.prototype.getById.restore();
       TrustRepository.prototype.update.restore();
     });
