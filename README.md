@@ -46,12 +46,17 @@ We recommend setting up your Postgres server/database locally and exporting your
 exports.connectionString = "postgresql://[your_username]@localhost:5432/[database_name]";
 
 ```
-After setting up your local database, contact us in the development slack channel for the credentials for our dev database. You can then copy over the public schema from the dev database into your own local db. 
 
 Here are some resources to get started on local database set up and migration:
 * https://postgresapp.com
 * pgAdmin and DBeaver are great GUI options to use for navigating your local db 
 * https://www.postgresql.org/docs/9.1/app-pgdump.html
+
+After setting up your local database, you can then copy over the public schema from our database seeding file into your own local db. The file can be found at ./database/treetracker-wallet-seed-schema-only.pgsql. Run the following command to build the relevant tables in your local db's public schema:
+
+```
+psql -h localhost -U <your username> -d <your dbname> -a -f treetracker-wallet-seed-schema-only.pgsql
+```
 
 Next, create a new wallets schema in your local database. Navigate to the database folder and create a database.json file populated with the credentials for your local server:
 
@@ -87,13 +92,13 @@ If you run into issue:
 ```
  ifError got unwanted exception: function uuid_generate_v4() does not exist
 ```
-You can open postgress terminal and runto install required extention
+Delete and recreate your wallets schema and then open postgress terminal and run to install the required extension
 
 ```
 \c <db name> 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
-
+Now re-run the "db-migrate --env dev up" command.
 
 Now you should be all set up and ready to go!
 
@@ -135,4 +140,6 @@ npm run test-seedDB
 
 # Contributing
 
-When you are ready to submit a pull request from your local branch, please rebase your branch off of the shared master branch to integrate any new updates in the codebase before submitting. Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. 
+Create your local git branch and rebase it from the shared master branch. Please make sure to rebuild your local database schemas using the migrations (as illustrated in the Database Setup section above) to capture any latest updates/changes.
+
+When you are ready to submit a pull request from your local branch, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting. Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. 
