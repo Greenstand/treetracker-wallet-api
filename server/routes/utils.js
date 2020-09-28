@@ -4,8 +4,8 @@
 const log = require("loglevel");
 const HttpError = require("../utils/HttpError");
 log.setLevel("debug");
-const ApiKey = require("../models/auth/ApiKey");
-const JWT = require("../models/auth/JWT.js");
+const ApiKeyService = require("../services/ApiKeyService");
+const JWTService = require("../services/JWTService.js");
 
 
 /*
@@ -43,15 +43,15 @@ exports.errorHandler = (err, req, res, next) => {
 };
 
 exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
-  const apiKey = new ApiKey();
+  const apiKey = new ApiKeyService();
   await apiKey.check(req.headers['treetracker-api-key']);
   log.debug('Valid Access');
   next();
 });
 
 exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
-  const jwt = new JWT();
-  const decode = jwt.verify(req.headers.authorization);
+  const jwtService = new JWTService();
+  const decode = jwtService.verify(req.headers.authorization);
   res.locals.wallet_id = decode.id;
   next();
 });

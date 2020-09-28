@@ -3,7 +3,7 @@ const authRouter = express.Router();
 const { check, validationResult } = require('express-validator');
 const helper = require("./utils");
 const Wallet = require("../models/Wallet");
-const JWT = require("../models/auth/JWT");
+const JWTService = require("../services/JWTService");
 
 authRouter.post('/',
   [
@@ -17,8 +17,8 @@ authRouter.post('/',
     const walletModel = new Wallet();
     const walletObject = await walletModel.authorize(wallet, password);
 
-    const jwt = new JWT();
-    const token = jwt.sign(walletObject);
+    const jwtService = new JWTService();
+    const token = jwtService.sign(walletObject);
     res.locals.jwt = token;
     res.status(200).json({ token: res.locals.jwt });
     next();

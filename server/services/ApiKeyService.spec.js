@@ -1,14 +1,14 @@
-const ApiKey = require("./ApiKey");
+const ApiKeyService = require("./ApiKeyService");
 const jestExpect = require("expect");
 const sinon = require("sinon");
-const ApiKeyRepository = require("../../repositories/ApiKeyRepository");
-const HttpError = require("../../utils/HttpError");
+const ApiKeyRepository = require("../repositories/ApiKeyRepository");
+const HttpError = require("../utils/HttpError");
 
 describe("ApiKey", () => {
   let apiKey;
 
   before(() => {
-    apiKey = new ApiKey();
+    apiKey = new ApiKeyService();
   })
 
   it("empty key should throw error", async () => {

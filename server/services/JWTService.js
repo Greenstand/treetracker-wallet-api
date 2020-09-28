@@ -7,13 +7,13 @@ const Crypto = require('crypto');
 const FS = require('fs');
 const log = require("loglevel");
 const path = require("path");
-const HttpError = require("../../utils/HttpError");
+const HttpError = require("../utils/HttpError");
 log.setLevel("debug");
 
 // PRIVATE and PUBLIC key
 console.warn("__dirname:", __dirname);
-const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../../config/jwtRS256.key'), 'utf8');
-const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../../config/jwtRS256.key.pub'), 'utf8');
+const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
+const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
 
 const signingOptions = {
   issuer: "greenstand",
@@ -28,7 +28,7 @@ const verifyOptions = {
 };
 
 
-class JWT{
+class JWTService{
 
   sign(payload){
     return JWTTools.sign(payload, privateKEY, signingOptions);
@@ -59,4 +59,4 @@ class JWT{
 
 }
 
-module.exports = JWT;
+module.exports = JWTService;

@@ -1,3 +1,0 @@
-## Service layer
-
-If models (files under models) can deal with the business, then no need to create new services for it. Service layer just build some objects so that they can take care of the stuff which do not belong to any model.

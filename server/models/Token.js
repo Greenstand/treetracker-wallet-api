@@ -18,11 +18,4 @@ class Token{
   }
 }
 
-Token.buildByUUID = async function(uuid){
-  const tokenRepository = new TokenRepository();
-  const tokenObject = await tokenRepository.getByUUID(uuid);
-  const token = new Token(tokenObject.id);
-  return token;
-};
-
 module.exports = Token;
