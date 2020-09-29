@@ -58,9 +58,10 @@ trustRouter.post('/:trustRelationshipId/accept',
   helper.handlerWrapper(async (req, res) => {
     expect(res.locals).property("wallet_id").number();
     expect(req.params).property("trustRelationshipId").defined();
+    const trustRelationshipId = parseInt(req.params.trustRelationshipId);
     const walletService = new WalletService();
     const wallet = await walletService.getById(res.locals.wallet_id);
-    await wallet.acceptTrustRequestSentToMe(req.params.trustRelationshipId);
+    await wallet.acceptTrustRequestSentToMe(trustRelationshipId);
     res.status(200).json();
   })
 );

@@ -18,6 +18,13 @@ class TrustRepository{
     return list;
   }
 
+  async getByTargetId(id){
+    const list = await knex.select()
+      .table("wallets.entity_trust")
+      .where("target_entity_id", id);
+    return list;
+  }
+
   async getById(id){
     const list = await knex.select()
       .table("wallets.entity_trust")

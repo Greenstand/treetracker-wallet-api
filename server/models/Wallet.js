@@ -45,6 +45,14 @@ class Wallet{
     return await this.trustRepository.getByOriginatorId(this._id);
   }
 
+  /*
+   * Get all the trust relationships targeted to me, means request
+   * the trust from me
+   */
+  async getTrustRelationshipsTargeted(){
+    return await this.trustRepository.getByTargetId(this._id);
+  }
+
   async toJSON(){
     return await this.walletRepository.getById(this._id);
   }
@@ -102,7 +110,19 @@ class Wallet{
   }
   
   async acceptTrustRequestSentToMe(trustRelationshipId){
-    const trustRelationship = await this.trustRepository.getById(trustRelationshipId);
+    expect(trustRelationshipId).number();
+    const trustRelationships = await this.getTrustRelationshipsTargeted(this._id);
+    const trustRelationship = trustRelationships.reduce((a,c) => {
+      expect(c.id).number();
+      if(c.id === trustRelationshipId){
+        return c;
+      }else{
+        return a;
+      }
+    }, undefined);
+    if(!trustRelationship){
+      throw new HttpError(403, "Have no permission to accept this relationship");
+    }
     trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted;
     await this.trustRepository.update(trustRelationship);
   }

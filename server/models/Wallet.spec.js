@@ -112,19 +112,36 @@ describe("Wallet", () => {
   });
 
   describe("Accept trust", () => {
-    let wallet;
+    let wallet = new Wallet(1);
 
     beforeEach(() => {
       wallet = new Wallet(1);
     })
 
-    it("accept", async () => {
-      sinon.stub(TrustRepository.prototype, "getById").returns([{id:1}]);
-      sinon.stub(TrustRepository.prototype, "update");
-      const trustRelationshipId = 1;
-      await wallet.acceptTrustRequestSentToMe(trustRelationshipId);
-      TrustRepository.prototype.getById.restore();
-      TrustRepository.prototype.update.restore();
+    it("accept but the requested trust whose target id is not me, throw 403", async () => {
+      const trustRelationship = {
+        id: 1,
+        target_entity_id: wallet.getId(),
+      };
+      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn2 = sinon.stub(TrustRepository.prototype, "update");
+      await jestExpect(async () => {
+        await wallet.acceptTrustRequestSentToMe(2);
+      }).rejects.toThrow(/no permission/i);
+      fn1.restore();
+      fn2.restore();
+    });
+
+    it("accept successfully", async () => {
+      const trustRelationship = {
+        id: 1,
+        target_entity_id: wallet.getId(),
+      };
+      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn2 = sinon.stub(TrustRepository.prototype, "update");
+      await wallet.acceptTrustRequestSentToMe(trustRelationship.id);
+      fn1.restore();
+      fn2.restore();
     });
   });
 
