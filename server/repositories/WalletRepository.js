@@ -18,6 +18,14 @@ class WalletRepository {
     return list[0];
   }
 
+  async getById(id){
+    const object = await knex.select().table('wallets.wallet').where('id', id).first();
+    if(!object){
+      throw new HttpError(404, "Can not found wallet by id");
+    }
+    return object;
+  }
+
 }
 
 module.exports = WalletRepository;

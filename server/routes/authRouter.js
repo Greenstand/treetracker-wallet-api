@@ -3,7 +3,9 @@ const authRouter = express.Router();
 const { check, validationResult } = require('express-validator');
 const helper = require("./utils");
 const Wallet = require("../models/Wallet");
+const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
+const expect = require("expect-runtime");
 
 authRouter.post('/',
   [
@@ -14,8 +16,9 @@ authRouter.post('/',
   helper.apiKeyHandler,
   helper.handlerWrapper(async (req, res, next) => {
     const { wallet, password } = req.body;
-    const walletModel = new Wallet();
-    const walletObject = await walletModel.authorize(wallet, password);
+    const walletService = new WalletService();
+    const walletModel = await walletService.getByName(wallet);
+    const walletObject = await walletModel.authorize(password);
 
     const jwtService = new JWTService();
     const token = jwtService.sign(walletObject);

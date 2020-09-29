@@ -1,30 +1,23 @@
 const WalletRepository = require("../repositories/WalletRepository");
 const HttpError = require("../utils/HttpError");
 const Crypto = require('crypto');
+const expect = require("expect-runtime");
 
 
 class Wallet{
 
-  constructor(){
+  constructor(id){
+    expect(id).number();
+    this.id = id;
     this.walletRepository = new WalletRepository();
   }
 
-  async authorize(wallet, password){
-    if(!wallet || !password){
+  async authorize(password){
+    if(!password){
       throw new HttpError(400, 'Error: Invalid credential format');
     }
 
-    let walletObject;
-    try{
-      walletObject = await this.walletRepository.getByName(wallet);
-    }catch(e){
-      if(e.code === 404){
-        //404 -> 401
-        throw new HttpError(401, 'Authentication, invalid credentials');
-      }else{
-        throw e;
-      }
-    }
+    let walletObject = await this.toJSON();
     const hash = Wallet.sha512(password, walletObject.salt);
 
     if (hash !== walletObject.password) {
@@ -33,6 +26,10 @@ class Wallet{
     return {
       id: walletObject.id,
     }
+  }
+
+  async toJSON(){
+    return await this.walletRepository.getById(this.id);
   }
 }
 
