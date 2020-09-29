@@ -60,7 +60,7 @@ trustRouter.post('/:trustRelationshipId/accept',
     expect(req.params).property("trustRelationshipId").defined();
     const walletService = new WalletService();
     const wallet = await walletService.getById(res.locals.wallet_id);
-    await wallet.accept(req.params.trustRelationshipId);
+    await wallet.acceptTrustRequestSentToMe(req.params.trustRelationshipId);
     res.status(200).json();
   })
 );

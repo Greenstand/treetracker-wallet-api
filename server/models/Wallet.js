@@ -96,11 +96,12 @@ class Wallet{
     //pass
   }
   
-  async accept(trustRelationshipId){
+  async acceptTrustRequestSentToMe(trustRelationshipId){
     const trustRelationship = await this.trustRepository.getById(trustRelationshipId);
     trustRelationship.state = TrustRepository.ENTITY_TRUST_STATE_TYPE.trusted;
     await this.trustRepository.update(trustRelationship);
   }
+
 }
 
 Wallet.sha512 = (password, salt) => {

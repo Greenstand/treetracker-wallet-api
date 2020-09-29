@@ -112,7 +112,7 @@ describe("Wallet", () => {
       sinon.stub(TrustRepository.prototype, "getById").returns([{id:1}]);
       sinon.stub(TrustRepository.prototype, "update");
       const trustRelationshipId = 1;
-      await wallet.accept(trustRelationshipId);
+      await wallet.acceptTrustRequestSentToMe(trustRelationshipId);
       TrustRepository.prototype.getById.restore();
       TrustRepository.prototype.update.restore();
     });
