@@ -3,10 +3,18 @@ const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
 
 class TrustRepository{
+
   async get(){
     //const trust_relationship_instance = new trust_relationship(1);
     const list = await knex.select()
       .table("wallets.entity_trust");
+    return list;
+  }
+
+  async getByOriginatorId(id){
+    const list = await knex.select()
+      .table("wallets.entity_trust")
+      .where("originator_entity_id", id);
     return list;
   }
 

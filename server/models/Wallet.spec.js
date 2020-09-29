@@ -1,7 +1,10 @@
 const Wallet = require("./Wallet");
-const {expect} = require("chai");
 const jestExpect = require("expect");
 const sinon = require("sinon");
+const chai = require("chai");
+const sinonChai = require("sinon-chai");
+chai.use(sinonChai);
+const {expect} = chai;
 const WalletRepository = require("../repositories/WalletRepository");
 const TrustRepository = require("../repositories/TrustRepository");
 const WalletService = require("../services/WalletService");
@@ -50,15 +53,14 @@ describe("Wallet", () => {
     Wallet.sha512.restore();
   });
 
-  it("get trust_relationships", async () => {
-    sinon.stub(TrustRepository.prototype, "get").returns([{a:1}]);
-    sinon.stub(WalletRepository.prototype, "getById").resolves({id:1});
-    const trust_relationships = await wallet.getTrustRelationships();
-    expect(trust_relationships).lengthOf(1);
-    WalletRepository.prototype.getById.restore();
-    TrustRepository.prototype.get.restore();
-  });
 
+  it("getTrustRelationshipsRequested", async () => {
+    const fnGet = sinon.stub(TrustRepository.prototype, "getByOriginatorId").resolves([]);
+    const trust_relationships = await wallet.getTrustRelationshipsRequested();
+    expect(trust_relationships).lengthOf(0);
+    expect(fnGet).to.have.been.calledWith(wallet.getId());
+    fnGet.restore();
+  });
 
   describe("Request trust", () => {
     let wallet;
@@ -80,24 +82,32 @@ describe("Wallet", () => {
     });
 
     it("request with trust which has existed should throw 403", async () => {
-      sinon.stub(WalletRepository.prototype, "getByName").resolves({id:2});
-      sinon.stub(TrustRepository.prototype, "get").resolves([{
+      const getByName = sinon.stub(WalletRepository.prototype, "getByName").resolves({id:2});
+      const getByOriginatorId = sinon.stub(TrustRepository.prototype, "getByOriginatorId").resolves([{
         type:'send',
         target_entity_id: 2,
       }]);
       await jestExpect(async () => {
         await wallet.requestTrustFromAWallet("send","test");
       }).rejects.toThrow(/existed/i);
-      WalletRepository.prototype.getByName.restore();
-      TrustRepository.prototype.get.restore();
+      getByName.restore();
+      getByOriginatorId.restore();
     });
 
     it("request successfully", async () => {
-      sinon.stub(WalletRepository.prototype, "getByName").resolves({id:2});
-      sinon.stub(TrustRepository.prototype, "get").resolves([]);
+      const fn1 = sinon.stub(WalletRepository.prototype, "getByName").resolves({id:2});
+      const fn2 = sinon.stub(TrustRepository.prototype, "get").resolves([]);
+      const fn3 = sinon.stub(TrustRepository.prototype, "create");
       await wallet.requestTrustFromAWallet("send","test");
-      WalletRepository.prototype.getByName.restore();
-      TrustRepository.prototype.get.restore();
+      expect(fn3).to.have.been.calledWith(
+        sinon.match({
+          actor_entity_id: 1,
+          originator_entity_id: 1,
+        }),
+      );
+      fn1.restore();
+      fn2.restore();
+      fn3.restore();
     });
   });
 

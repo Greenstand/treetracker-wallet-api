@@ -37,8 +37,11 @@ class Wallet{
     }
   }
 
-  async getTrustRelationships(){
-    return await this.trustRepository.get();
+  /*
+   * Get all the trust relationships I have requested
+   */
+  async getTrustRelationshipsRequested(){
+    return await this.trustRepository.getByOriginatorId(this._id);
   }
 
   async toJSON(){
@@ -61,7 +64,7 @@ class Wallet{
     const targetWallet = await this.walletService.getByName(targetWalletName);
 
     //check if I (current wallet) can add a new trust like this
-    const trustRelationships = await this.getTrustRelationships();
+    const trustRelationships = await this.getTrustRelationshipsRequested();
     if(trustRelationships.some(trustRelationship => {
       expect(trustRelationship).property("type").defined();
       expect(trustRelationship).property("target_entity_id").number();
@@ -79,7 +82,8 @@ class Wallet{
     //create this request
     const result = await this.trustRepository.create({
       request_type: requestType,
-      actor_entity_id: this.getId(),
+      actor_entity_id: this._id,
+      originator_entity_id: this._id,
       target_entity_id: targetWallet.getId(),
     });
     return result;
