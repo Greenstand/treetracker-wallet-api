@@ -53,6 +53,13 @@ class Wallet{
     return await this.trustRepository.getByTargetId(this._id);
   }
 
+  /*
+   * Get all relationships which has been accepted
+   */
+  async getTrustRelationshipsTrusted(){
+    return await this.trustRepository.getTrustedByOriginatorId(this._id);
+  }
+
   async toJSON(){
     return await this.walletRepository.getById(this._id);
   }
@@ -125,6 +132,38 @@ class Wallet{
     }
     trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted;
     await this.trustRepository.update(trustRelationship);
+  }
+
+  /*
+   * To check if the indicated trust relationship exist between the source and 
+   * target wallet
+   */
+  async checkTrust(trustType, sourceWallet, targetWallet){
+    expect(trustType).oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
+    expect(sourceWallet).instanceOf(Wallet);
+    expect(targetWallet).instanceOf(Wallet);
+    const trustRelationships = await this.getTrustRelationshipsTrusted();
+    //check if the trust exist
+    if(trustRelationships.some(trustRelationship => {
+      expect(trustRelationship).match({
+        actor_entity_id: expect.any(Number),
+        target_entity_id: expect.any(Number),
+        request_type: expect.any(String),
+      });
+      if(
+        trustRelationship.actor_entity_id === sourceWallet.getId() &&
+        trustRelationship.target_entity_id === targetWallet.getId() &&
+        trustRelationship.request_type === trustType
+      ){
+        return true;
+      }else{
+        return false;
+      }
+    })){
+      log.debug("check trust passed");
+    }else{
+      throw new HttpError(403, "Have no permission to do this action");
+    }
   }
 
 }

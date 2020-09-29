@@ -1,10 +1,6 @@
 /*
- * Only tests the routes that do not alter the database and do not require tokens for now and can
- * add the other tests once we have endpoints that handle deletions and more robust database
- * Substitute personal apiKey in line 22 definition in order to test
- * Start server in terminal with 'npm run server' and run tests with 'npm run test-integration'
+ * The integration test to test the whole business, with DB
  */
-
 
 const request = require('supertest');
 const assert = require ('assert');
@@ -75,6 +71,24 @@ describe('Route integration', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('token').eq(seed.token.uuid);
+  });
+
+  describe(`Before request trust, wallet:${seed.wallet.name} have no permission to send token to walletB:${seed.walletB.name}`, () => {
+
+    beforeEach(async () => {
+      const res = await request(server)
+        .post("/transfers")
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          sender_wallet: seed.wallet.name,
+          receiver_wallet: seed.walletB.name,
+        });
+      expect(res).property("statusCode").to.eq(403);
+    })
+
+    it("", () => {
+    });
   });
 
   describe(`wallet:${seed.wallet.name} request trust relationship with walletB:${seed.walletB.name} & with type: send`, () => {

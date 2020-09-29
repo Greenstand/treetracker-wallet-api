@@ -42,7 +42,7 @@
     "database-cleaner": "^1.3.0",
     "db-migrate": "^0.10.7",
     "db-migrate-pg": "^0.4.0",
-    "expect-runtime": "^0.6.0",
+    "expect-runtime": "^0.7.0",
     "mock-knex": "^0.4.9",
     "sinon": "^9.0.3",
     "sinon-chai": "^2.14.0",

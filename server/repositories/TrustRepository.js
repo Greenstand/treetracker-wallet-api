@@ -25,6 +25,16 @@ class TrustRepository{
     return list;
   }
 
+  async getTrustedByOriginatorId(id){
+    const list = await knex.select()
+      .table("wallets.entity_trust")
+      .where({
+        originator_entity_id: id,
+        state: require("../models/TrustRelationship").ENTITY_TRUST_STATE_TYPE.trusted,
+      });
+    return list;
+  }
+
   async getById(id){
     const list = await knex.select()
       .table("wallets.entity_trust")

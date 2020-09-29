@@ -9,6 +9,7 @@ const WalletRepository = require("../repositories/WalletRepository");
 const TrustRepository = require("../repositories/TrustRepository");
 const WalletService = require("../services/WalletService");
 const HttpError = require("../utils/HttpError");
+const TrustRelationship = require("../models/TrustRelationship");
 
 describe("Wallet", () => {
   let walletService;
@@ -143,6 +144,38 @@ describe("Wallet", () => {
       fn1.restore();
       fn2.restore();
     });
+  });
+
+  describe("checkTrust()", () => {
+
+    it("checkTrust fails, should throw 403", async () => {
+      const walletReceiver = new Wallet(2);
+      const fn1 = sinon.stub(TrustRepository.prototype, "getTrustedByOriginatorId").resolves([]);//no relationship
+      await jestExpect(async () => {
+        await wallet.checkTrust(
+          TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+          wallet,
+          walletReceiver,
+        );
+      }).rejects.toThrow(/no permission/);
+      fn1.restore();
+    });
+
+    it("checkTrust successfully", async () => {
+      const walletReceiver = new Wallet(2);
+      const fn1 = sinon.stub(TrustRepository.prototype, "getTrustedByOriginatorId").resolves([{
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        actor_entity_id: wallet.getId(),
+        target_entity_id: walletReceiver.getId(),
+      }]);//no relationship
+      await wallet.checkTrust(
+        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        wallet,
+        walletReceiver,
+      );
+      fn1.restore();
+    });
+
   });
 
 });

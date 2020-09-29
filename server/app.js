@@ -8,6 +8,7 @@ const HttpError = require("./utils/HttpError");
 const authRouter = require('./routes/authRouter.js')
 const trustRouter = require('./routes/trustRouter.js')
 const tokenRouter = require('./routes/tokenRouter.js')
+const transferRouter = require("./routes/transferRouter");
 
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(bodyParser.json()); // parse application/json
 app.use('/auth', authRouter);
 app.use('/token', tokenRouter);
 app.use('/trust_relationships', trustRouter);
+app.use('/transfers', transferRouter);
 
 
 
