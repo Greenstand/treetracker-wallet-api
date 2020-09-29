@@ -23,6 +23,7 @@ authRouter.post('/',
     const jwtService = new JWTService();
     const token = jwtService.sign(walletObject);
     res.locals.jwt = token;
+    res.locals.id = walletObject.id;
     res.status(200).json({ token: res.locals.jwt });
     next();
   }));

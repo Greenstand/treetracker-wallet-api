@@ -2,7 +2,8 @@ const express = require('express');
 const trustRouter = express.Router();
 const { check, validationResult } = require('express-validator');
 const assert = require("assert");
-const Trust = require('../models/Trust');
+const WalletService = require("../services/WalletService");
+const Wallet = require("../models/Wallet");
 const expect = require("expect-runtime");
 const helper = require("./utils");
 
@@ -13,9 +14,11 @@ trustRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
-    const trust = new Trust();
+    expect(res.locals).property("wallet_id").number();
+    const walletService = new WalletService();
+    const wallet = await walletService.getById(res.locals.wallet_id);
     res.locals.response = {
-      trust_relationships: await trust.getTrustModel().get(),
+      trust_relationships: await wallet.getTrustRelationships(),
     }
     next();
   }),
@@ -33,10 +36,12 @@ trustRouter.post('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    const trustModel = new Trust();
+    expect(res.locals.wallet_id).number();
     expect(req).property("body").property("trust_request_type").a(expect.any(String));
     expect(req).property("body").property("wallet").a(expect.any(String));
-    const trust_relationship = await trustModel.request(
+    const walletService = new WalletService();
+    const wallet = await walletService.getById(res.locals.wallet_id);
+    const trust_relationship = await wallet.request(
       req.body.trust_request_type,
       req.body.wallet,
     );
@@ -51,9 +56,11 @@ trustRouter.post('/:trustRelationshipId/accept',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    const trustModel = new Trust();
+    expect(res.locals).property("wallet_id").number();
     expect(req.params).property("trustRelationshipId").defined();
-    await trustModel.accept(req.params.trustRelationshipId);
+    const walletService = new WalletService();
+    const wallet = await walletService.getById(res.locals.wallet_id);
+    await wallet.accept(req.params.trustRelationshipId);
     res.status(200).json();
   })
 );
