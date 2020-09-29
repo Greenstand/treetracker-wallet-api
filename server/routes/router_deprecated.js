@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator');
 const assert = require("assert");
-const TrustModel = require('../models/TrustModel');
+const TrustModel = require('../models/Trust');
 const expect = require("expect-runtime");
 const helper = require("./utils");
-const WalletModel = require("../models/WalletModel");
-const JWTModel = require("../models/auth/JWTModel");
-const TokenModel = require("../models/TokenModel");
+const WalletModel = require("../models/Wallet");
+const JWTModel = require("../services/JWTService");
+const TokenModel = require("../models/Token");
 
 
 // Routes that require logged in status

@@ -23,7 +23,7 @@ describe("Wallet", () => {
 
   it("authorize() with empty parameters should get 400 error", async () => {
     sinon.stub(WalletRepository.prototype, "getByName").resolves({id:1});
-    wallet = await walletService.getByName("test");
+    const wallet = await walletService.getByName("test");
     expect(wallet).instanceOf(Wallet);
     await jestExpect(async () => {
       await wallet.authorize(undefined);
@@ -69,22 +69,35 @@ describe("Wallet", () => {
 
     it("request with a wrong type would throw error", async () => {
       await jestExpect(async () => {
-        await wallet.request("wrongType","test")
+        await wallet.requestTrustFromAWallet("wrongType","test")
       }).rejects.toThrow("type");
     });
 
     it("request with a wrong wallet name would throw error", async () => {
       await jestExpect(async () => {
-        await wallet.request("send","tes t");
+        await wallet.requestTrustFromAWallet("send","tes t");
       }).rejects.toThrow(/name/i);
     });
 
-    it("request successfully", async () => {
-      sinon.stub(WalletRepository.prototype, "getByName").returns([{id:1}]);
-      sinon.stub(TrustRepository.prototype, "create");
-      await wallet.request("send", "test");
+    it("request with trust which has existed should throw 403", async () => {
+      sinon.stub(WalletRepository.prototype, "getByName").resolves({id:2});
+      sinon.stub(TrustRepository.prototype, "get").resolves([{
+        type:'send',
+        target_entity_id: 2,
+      }]);
+      await jestExpect(async () => {
+        await wallet.requestTrustFromAWallet("send","test");
+      }).rejects.toThrow(/existed/i);
       WalletRepository.prototype.getByName.restore();
-      TrustRepository.prototype.create.restore();
+      TrustRepository.prototype.get.restore();
+    });
+
+    it("request successfully", async () => {
+      sinon.stub(WalletRepository.prototype, "getByName").resolves({id:2});
+      sinon.stub(TrustRepository.prototype, "get").resolves([]);
+      await wallet.requestTrustFromAWallet("send","test");
+      WalletRepository.prototype.getByName.restore();
+      TrustRepository.prototype.get.restore();
     });
   });
 
