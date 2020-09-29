@@ -1,5 +1,6 @@
 const WalletRepository = require("../repositories/WalletRepository");
 const TrustRepository = require("../repositories/TrustRepository");
+const TrustRelationship = require("../models/TrustRelationship");
 const HttpError = require("../utils/HttpError");
 const Crypto = require('crypto');
 const expect = require("expect-runtime");
@@ -55,9 +56,9 @@ class Wallet{
     log.debug("request trust...");
     expect(
       requestType, 
-      () => new HttpError(400, `The trust request type must be one of ${Object.keys(TrustRepository.ENTITY_TRUST_REQUEST_TYPE).join(',')}`)
+      () => new HttpError(400, `The trust request type must be one of ${Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE).join(',')}`)
     )
-      .oneOf(Object.keys(TrustRepository.ENTITY_TRUST_REQUEST_TYPE));
+      .oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
     expect(targetWalletName, () => new HttpError(400, "Invalid wallet name"))
       .match(/\S+/);
 
@@ -102,7 +103,7 @@ class Wallet{
   
   async acceptTrustRequestSentToMe(trustRelationshipId){
     const trustRelationship = await this.trustRepository.getById(trustRelationshipId);
-    trustRelationship.state = TrustRepository.ENTITY_TRUST_STATE_TYPE.trusted;
+    trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted;
     await this.trustRepository.update(trustRelationship);
   }
 

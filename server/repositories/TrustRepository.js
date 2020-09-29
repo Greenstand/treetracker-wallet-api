@@ -39,26 +39,5 @@ class TrustRepository{
   }
 }
 
-TrustRepository.ENTITY_TRUST_TYPE = {
-  send: 'send',
-  manage: 'manage',
-  deduct: 'deduct',
-}
-
-TrustRepository.ENTITY_TRUST_STATE_TYPE = {
-  requested: 'requested',
-  cancelled_by_originator: 'cancelled_by_originator',
-  canceled_by_actor: 'cancelled_by_actor',
-  trusted: 'trusted',
-}
-
-TrustRepository.ENTITY_TRUST_REQUEST_TYPE = {
-  send: 'send',
-  received: 'received',
-  manage: 'manage',
-  yield: 'yield',
-  deduct: 'deduct',
-  release: 'release',
-}
 
 module.exports = TrustRepository;
