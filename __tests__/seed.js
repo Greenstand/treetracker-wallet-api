@@ -99,6 +99,34 @@ async function seed() {
       salt: walletB.salt,
     });
 
+  //entity
+  await knex('entity')
+    .insert({
+      id: wallet.id,
+      type: wallet.type,
+      name: wallet.name,
+      wallet: wallet.name,
+      password: wallet.passwordHash,
+      salt: wallet.salt,
+    });
+
+
+  //entity role
+  log.debug('insert role');
+  await knex('entity_role')
+    .insert([{
+      entity_id: wallet.id,
+      role_name: 'list_trees',
+      enabled: true,
+    },{
+      entity_id: wallet.id,
+      role_name: 'manage_accounts',
+      enabled: true,
+    },{
+      entity_id: wallet.id,
+      role_name: 'accounts',
+      enabled: true,
+    }]);
 
 
   //tree
@@ -110,7 +138,7 @@ async function seed() {
     });
 
 
-  // //token
+  // token
   log.log('seed token');
   await knex('wallets.token')
     .insert({
@@ -126,17 +154,18 @@ async function clear() {
   await knex('wallets.api_key').del();
   log.debug('clear all transaction');
   await knex('wallets.transaction').del();
-  await knex('transaction').del();
   log.debug('clear all tokens');
   await knex('wallets.token').del();
-  await knex('token').del();
   log.debug('clear all trees');
   await knex('trees').del();
   log.debug('clear all wallets');
   await knex('wallets.wallet').del();
   log.debug('clear all entity_trust');
   await knex('wallets.entity_trust').del();
-
+  log.debug('clear entity_roles');
+  await knex('entity_role').del();
+  log.debug('clear entities');
+  await knex('entity').del();
 }
 
 module.exports = {seed, clear, apiKey, wallet, walletB, tree, token};

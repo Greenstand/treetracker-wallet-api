@@ -56,8 +56,8 @@ app.use((err, req, res, next) => {
   //console.warn("catch the error:", err.message);
   if(err instanceof HttpError){
     res.status(err.code).send(err.message);
-  }else{
-    res.status(500).send("Unknown error");
+  } else {
+    res.status(err.status).send(err.message.err);
   }
 });
 
