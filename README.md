@@ -88,13 +88,8 @@ Now you should be all set up and ready to go!
 
 This project use multiple layer structure to build the whole system. Similar with MVC structure:
 
-| The Structure of Wallet API |
-| --- |
-| protocol layer (Express, routers) |
-| service layer |
-| model layer |
-| repository layer |
-| Database (Postgres) |
+![layers](/layers.png "layers")
+
 
 ## Protocol layer
 
