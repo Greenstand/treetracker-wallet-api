@@ -11,7 +11,6 @@ const HttpError = require("../utils/HttpError");
 log.setLevel("debug");
 
 // PRIVATE and PUBLIC key
-console.warn("__dirname:", __dirname);
 const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
 const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
 

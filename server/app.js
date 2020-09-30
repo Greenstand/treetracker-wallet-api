@@ -53,7 +53,7 @@ app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next)
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.warn("cathed the error:", err);
+  //console.warn("catch the error:", err.message);
   if(err instanceof HttpError){
     res.status(err.code).send(err.message);
   }else{

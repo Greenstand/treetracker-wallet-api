@@ -73,7 +73,7 @@ describe('Route integration', () => {
     expect(res.body).to.have.property('token').eq(seed.token.uuid);
   });
 
-  describe(`Before request trust, wallet:${seed.wallet.name} have no permission to send token to walletB:${seed.walletB.name}`, () => {
+  describe(`Before request trust, wallet:${seed.wallet.name} have no permission(403) to send token to walletB:${seed.walletB.name}`, () => {
 
     beforeEach(async () => {
       const res = await request(server)
@@ -136,11 +136,10 @@ describe('Route integration', () => {
               .set('Authorization', `Bearer ${token}`);
             expect(res).property("statusCode").to.eq(200);
             expect(res).property("body").property("trust_relationships").lengthOf(1);
-            console.warn("body:" , res.body.trust_relationships);
             expect(res.body.trust_relationships[0]).property("id").a("number");
           });
 
-          it("Try to send a token to walletB, this time, shouldn't throw 403", async () => {
+          it("Try to send a token to walletB again, this time, shouldn't throw 403", async () => {
             const res = await request(server)
               .post("/transfers")
               .set('treetracker-api-key', apiKey)
@@ -178,7 +177,6 @@ describe('Route integration', () => {
       expect(res).property("statusCode").to.eq(200);
       log.debug(res);
       expect(res).property("body").property("trust_relationships").lengthOf(1);
-      console.warn("body:" , res.body.trust_relationships);
       expect(res.body.trust_relationships[0]).property("id").a("number");
     });
 

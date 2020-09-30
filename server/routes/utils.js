@@ -28,7 +28,6 @@ exports.handlerWrapper = fn =>
     const fnReturn = fn(...args)
     const next = args[args.length-1]
     return Promise.resolve(fnReturn).catch(e => {
-      console.error("get error:", e);
       next(e);
     })
   }
