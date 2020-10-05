@@ -334,6 +334,10 @@ await asyncFunction();
 
 Lack of `await` will also cause the failure of the error-handling chain, the Express handler would break without response, it would cuz to timeout on the client side. Some clue for this kind of problem is that you might found some error warning like: 'unhandled promise error...'
 
+## About mock knex
+
+The only place to mock knex is repositories, we use `mock-knex` to fake the DB operation. But there are some potential problem which would lead to some problem, check this issue: [issue](https://github.com/Greenstand/treetracker-wallet-api/issues/36), so be careful if you are testing DB, and because of this problem, we now isolate the tests of repository from unit test, there is a special command for them: `npm run test-repository`.
+
 # Contributing
 
 Create your local git branch and rebase it from the shared master branch. Please make sure to rebuild your local database schemas using the migrations (as illustrated in the Database Setup section above) to capture any latest updates/changes.
