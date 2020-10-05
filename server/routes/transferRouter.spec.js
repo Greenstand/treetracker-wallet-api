@@ -8,6 +8,7 @@ const ApiKeyService = require("../services/ApiKeyService");
 const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
+const HttpError = require("../utils/HttpError");
 
 describe("authRouter", () => {
   let app;
@@ -55,6 +56,34 @@ describe("authRouter", () => {
       });
     expect(res).property("statusCode").eq(422);
     expect(res.body.message[0].message).match(/sender.*required/);
+  });
+
+  it("all parameters fine, should return 201", async () => {
+    const res = await request(app)
+      .post("/")
+      .send({
+        tokens: ["1"],
+        sender_wallet: "ssss",
+        receiver_wallet: "ssss",
+      });
+    expect(res).property("statusCode").eq(201);
+  });
+
+  it("all parameters fine, but no trust relationship, should return 202", async () => {
+    WalletService.prototype.getById.restore();    
+    sinon.stub(WalletService.prototype, "getById").resolves({
+      transfer: async () => {
+        throw new HttpError(202);
+      },
+    });
+    const res = await request(app)
+      .post("/")
+      .send({
+        tokens: ["1"],
+        sender_wallet: "ssss",
+        receiver_wallet: "ssss",
+      });
+    expect(res).property("statusCode").eq(202);
   });
 
 

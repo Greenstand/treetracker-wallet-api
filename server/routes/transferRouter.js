@@ -27,21 +27,7 @@ transferRouter.post('/',
     const walletSender = await walletService.getByName(req.body.sender_wallet);
     const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
     await walletLogin.transfer(walletSender, walletReceiver);
-//    await walletLogin.checkTrust(
-//      TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
-//      walletSender,
-//      walletReceiver,
-//    );
-//    expect(res.locals.wallet_id).number();
-//    expect(req).property("body").property("trust_request_type").a(expect.any(String));
-//    expect(req).property("body").property("wallet").a(expect.any(String));
-//    const walletService = new WalletService();
-//    const wallet = await walletService.getById(res.locals.wallet_id);
-//    const trust_relationship = await wallet.requestTrustFromAWallet(
-//      req.body.trust_request_type,
-//      req.body.wallet,
-//    );
-    res.status(200).json({});
+    res.status(201).json({});
   })
 );
 
