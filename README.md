@@ -207,7 +207,27 @@ The protocol layer would catch the object and return to client with this respons
 
 # Schema Validation
 
-TODO 
+We use [joi](https://joi.dev) to check JSON schema, like the input parameters for API http request.
+
+To use it, just follow the tutorial of joi, we suggest use `assert` to throw the validation exception, because our global error handler would catch the error throw by joi (ValidationError) and translate to http response (422 Http Code):
+
+```
+  Joi.assert(
+    req.body,
+    Joi.object({
+      wallet: Joi.string()
+        .alphanum()
+        .min(4)
+        .max(32)
+        .required(),
+      password: Joi.string()
+        .pattern(new RegExp('^[a-zA-Z0-9]+$'))
+        .min(8)
+        .max(32)
+        .required(),
+    })
+  );
+```
 
 # Knex
 

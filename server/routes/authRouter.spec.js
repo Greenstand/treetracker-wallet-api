@@ -29,15 +29,25 @@ describe("authRouter", () => {
     sinon.restore();
   })
 
-  it("wallet: 123 should throw error", async () => {
+  it("missing wallet should throw error", async () => {
     const res = await request(app)
       .post("/")
       .send({
-        wallet: 123,
         password: "xxx",
       });
     expect(res).property("statusCode").eq(422);
-    expect(res.body.message[0].message).match(/must/);
+    expect(res.body.message[0].message).match(/required/);
+  });
+
+  it("password too long should throw error", async () => {
+    const res = await request(app)
+      .post("/")
+      .send({
+        wallet: "test",
+        password: "123456789012345678901234567890123456789012345678901234567890",
+      });
+    expect(res).property("statusCode").eq(422);
+    expect(res.body.message[0].message).match(/less/);
   });
 
 });

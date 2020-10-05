@@ -9,18 +9,21 @@ const expect = require("expect-runtime");
 const Joi = require("joi");
 
 authRouter.post('/',
-//  [
-//    check('wallet').isAlphanumeric(),
-//    check('password', 'Password is invalid').isLength({ min: 8, max: 32 }),
-//    check('wallet', 'Invalid wallet').isLength({ min: 4, max: 32 }),
-//  ],
   helper.apiKeyHandler,
   helper.handlerWrapper(async (req, res, next) => {
     Joi.assert(
       req.body,
       Joi.object({
-        wallet: Joi.string().alphanum(),
-        password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+        wallet: Joi.string()
+          .alphanum()
+          .min(4)
+          .max(32)
+          .required(),
+        password: Joi.string()
+          .pattern(new RegExp('^[a-zA-Z0-9]+$'))
+          .min(8)
+          .max(32)
+          .required(),
       })
     );
     const { wallet, password } = req.body;
