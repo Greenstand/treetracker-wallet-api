@@ -109,13 +109,13 @@ This project use multiple layer structure to build the whole system. Similar wit
 ![layers](/layers.png "layers")
 
 
-## Protocol layer
+* **Protocol layer**
 
 Wallet API offers RESTFul API interace based on HTTP protocol. We use Express to handle all HTTP requests.
 
 The Express-routers work like the controller role in MVC, they receive the requests and parameters from client, and translate it and dispatch tasks to appropriate business objects. Then receive the result from them, translate to the 'view', the JSON response, to client.
 
-## Service layer
+* **Service layer**
 
 Both service layer and model layer are where all the business logic is located. Comparing to the Model , `service` object don't have state (stateless).  
 
@@ -123,13 +123,13 @@ Please put business logic code into service object when it is hard to put them i
 
 Because we didn't use Factory or dependency injection to create object, so service layer also can be used as Factory to create `model` object.
 
-## Model layer
+* **Model layer**
 
 The business model, major business logic is here. They are real object, in the perspective of object oriented programming: they have states, they have the method to do stuff. 
 
 There are more discussion about this, check below selection.
 
-## Repository layer
+* **Repository layer**
 
 Repository is responsible for communicate with the real database, this isolation brings flexibility for us, for example, we can consider replace the implementation of the storage infrastructure in the future.
 
