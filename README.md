@@ -217,7 +217,25 @@ We use [Knex](http://knexjs.org/) to visit Postgres Database.
 
 We use [Loglevel](https://github.com/pimterry/loglevel) to deal with log.
 
-TODO usage
+To use log in code:
+
+```
+const log = require("loglevel");
+
+log.debug("...");
+
+log.info("...");
+```
+
+* The default log level
+
+The default log level is `info`, the change it temporarily, when developing, set the env: `NODE_LOG_LEVEL`, for example:
+
+```
+NODE_ENV=test NODE_LOG_LEVEL=debug mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/supertest.js'
+```
+
+Under the hook, there is a initial setup file: `/server/setup.js` to set the default log level.
 
 # How to test
 
@@ -253,10 +271,12 @@ npm run test-seedDB
 There is a command in the `package.json`:
 
 ```
-npm run testWatch
+npm run test-watch
 ```
 
 By running test with this command, the tests would re-run if any code change happened. And with the `bail` argument, tests would stop when it met the first error, it might bring some convenience when developing.
+
+NOTE: There is another command: `test-watch-debug`, it is the same with `test-watch`, except it set log's level to `debug`.
 
 # Troubleshooting
 

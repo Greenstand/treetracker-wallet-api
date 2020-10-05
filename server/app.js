@@ -9,6 +9,7 @@ const authRouter = require('./routes/authRouter.js')
 const trustRouter = require('./routes/trustRouter.js')
 const tokenRouter = require('./routes/tokenRouter.js')
 const transferRouter = require("./routes/transferRouter");
+const {errorHandler} = require("./routes/utils");
 
 
 const app = express();
@@ -52,15 +53,7 @@ app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next)
 }));
 
 // Global error handler
-app.use((err, req, res, next) => {
-  //console.warn("catch the error:", err.message);
-  if(err instanceof HttpError){
-    res.status(err.code).send(err.message);
-  } else {
-    res.status(err.status).send(err.message.err);
-  }
-});
-
+app.use(errorHandler);
 
 
 //do not run the express app by default

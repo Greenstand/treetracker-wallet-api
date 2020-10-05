@@ -8,7 +8,6 @@ const FS = require('fs');
 const log = require("loglevel");
 const path = require("path");
 const HttpError = require("../utils/HttpError");
-log.setLevel("debug");
 
 // PRIVATE and PUBLIC key
 const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');

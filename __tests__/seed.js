@@ -4,7 +4,6 @@
 const pool = require('../server/database/database.js');
 const uuid = require('uuid');
 const log = require('loglevel');
-//log.setLevel('info');
 const assert = require('assert');
 const knex = require('knex')({
   client: 'pg',

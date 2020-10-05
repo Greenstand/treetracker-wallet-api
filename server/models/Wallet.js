@@ -5,7 +5,6 @@ const HttpError = require("../utils/HttpError");
 const Crypto = require('crypto');
 const expect = require("expect-runtime");
 const log = require("loglevel");
-log.setLevel("debug");
 
 class Wallet{
 

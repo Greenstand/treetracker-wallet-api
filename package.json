@@ -12,7 +12,8 @@
     "server": "cd ./server && nodemon server.js",
     "test-seedDB": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './**/*.spec.js'",
     "test-integration": "NODE_ENV=test mocha --timeout 20000 --require co-mocha './__tests__/supertest.js'",
-    "testWatch": "NODE_ENV=test mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/**/*.spec.js' './__tests__/supertest.js'"
+    "test-watch": "NODE_ENV=test NODE_LOG_LEVEL=info mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/supertest.js'",
+    "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/supertest.js'"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +27,7 @@
     "express-async-handler": "^1.1.4",
     "express-bearer-token": "^2.1.1",
     "express-validator": "^6.4.0",
+    "joi": "^17.2.1",
     "jsonwebtoken": "8.1.0",
     "knex": "^0.21.5",
     "loglevel": "^1.6.8",

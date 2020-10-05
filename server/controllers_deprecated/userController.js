@@ -3,7 +3,6 @@ const pool = require('../database/database.js');
 const { check, validationResult } = require('express-validator');
 const config = require('../../config/config.js');
 const log = require("loglevel");
-log.setLevel("debug");
 const assert = require("assert");
 
 /* ________________________________________________________________________

@@ -8,7 +8,6 @@ const server = require("../server/app");
 const { expect } = require('chai');
 const seed = require('./seed');
 const log = require('loglevel');
-log.setLevel('warn');
 
 const mockUser = {
   wallet: seed.wallet.name,

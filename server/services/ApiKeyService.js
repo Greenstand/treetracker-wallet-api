@@ -4,7 +4,6 @@ const path = require("path");
 const HttpError = require("../utils/HttpError");
 const ApiKeyRepository = require("../repositories/ApiKeyRepository");
 const expect = require("expect-runtime");
-log.setLevel("debug");
 
 // PRIVATE and PUBLIC key
 const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');

@@ -1,7 +1,6 @@
 const authController = {};
 const pool = require('../database/database.js');
 const log = require("loglevel");
-log.setLevel("debug");
 
 
 

@@ -3,7 +3,6 @@
  */
 const log = require("loglevel");
 const HttpError = require("../utils/HttpError");
-log.setLevel("debug");
 const ApiKeyService = require("../services/ApiKeyService");
 const JWTService = require("../services/JWTService.js");
 
