@@ -5,25 +5,33 @@ const Wallet = require("../models/Wallet");
 const TrustRelationship = require("../models/TrustRelationship");
 const expect = require("expect-runtime");
 const helper = require("./utils");
+const Joi = require("joi");
 
 
 transferRouter.post('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    expect(req.body).match({
-      sender_wallet: expect.any(String),
-      receiver_wallet: expect.any(String),
-    });
+    Joi.assert(
+      req.body,
+      Joi.object({
+        tokens: Joi.array().items(Joi.string()).required(),
+        sender_wallet: Joi.string()
+          .required(),
+        receiver_wallet: Joi.string()
+          .required(),
+      })
+    );
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const walletSender = await walletService.getByName(req.body.sender_wallet);
     const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
-    await walletLogin.checkTrust(
-      TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
-      walletSender,
-      walletReceiver,
-    );
+    await walletLogin.transfer(walletSender, walletReceiver);
+//    await walletLogin.checkTrust(
+//      TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+//      walletSender,
+//      walletReceiver,
+//    );
 //    expect(res.locals.wallet_id).number();
 //    expect(req).property("body").property("trust_request_type").a(expect.any(String));
 //    expect(req).property("body").property("wallet").a(expect.any(String));

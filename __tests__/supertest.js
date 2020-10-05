@@ -72,7 +72,7 @@ describe('Route integration', () => {
     expect(res.body).to.have.property('token').eq(seed.token.uuid);
   });
 
-  describe(`Before request trust, wallet:${seed.wallet.name} have no permission(403) to send token to walletB:${seed.walletB.name}`, () => {
+  describe(`Before request trust, try to send token from wallet:${seed.wallet.name} to walletB:${seed.walletB.name} should get 202`, () => {
 
     beforeEach(async () => {
       const res = await request(server)
@@ -83,7 +83,7 @@ describe('Route integration', () => {
           sender_wallet: seed.wallet.name,
           receiver_wallet: seed.walletB.name,
         });
-      expect(res).property("statusCode").to.eq(403);
+      expect(res).property("statusCode").to.eq(202);
     })
 
     describe(`wallet:${seed.wallet.name} request trust relationship with walletB:${seed.walletB.name} & with type: send`, () => {
