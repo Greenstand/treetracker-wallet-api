@@ -6,6 +6,7 @@ const Wallet = require("../models/Wallet");
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 const expect = require("expect-runtime");
+const Joi = require("joi");
 
 authRouter.post('/',
 //  [
@@ -15,6 +16,13 @@ authRouter.post('/',
 //  ],
   helper.apiKeyHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    Joi.assert(
+      req.body,
+      Joi.object({
+        wallet: Joi.string().alphanum(),
+        password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+      })
+    );
     const { wallet, password } = req.body;
     const walletService = new WalletService();
     const walletModel = await walletService.getByName(wallet);

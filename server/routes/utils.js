@@ -5,7 +5,7 @@ const log = require("loglevel");
 const HttpError = require("../utils/HttpError");
 const ApiKeyService = require("../services/ApiKeyService");
 const JWTService = require("../services/JWTService.js");
-
+const {ValidationError} = require("joi");
 
 /*
  * This is from the library https://github.com/Abazhenov/express-async-handler
@@ -35,6 +35,10 @@ exports.errorHandler = (err, req, res, next) => {
   log.debug("catch error:", err);
   if(err instanceof HttpError){
     res.status(err.code).send(err.message);
+  }else if(err instanceof ValidationError){
+    res.status(422).send({
+      message: err.details,
+    });
   }else{
     res.status(500).send("Unknown error");
   }
