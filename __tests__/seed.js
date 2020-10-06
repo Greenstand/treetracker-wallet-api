@@ -149,22 +149,17 @@ async function seed() {
 }
 
 async function clear() {
-  log.debug('clear all api keys');
+  log.debug('clear tables');
   await knex('wallets.api_key').del();
-  log.debug('clear all transaction');
   await knex('wallets.transaction').del();
-  log.debug('clear all tokens');
   await knex('wallets.token').del();
-  log.debug('clear all trees');
   await knex('trees').del();
-  log.debug('clear all wallets');
   await knex('wallets.wallet').del();
-  log.debug('clear all entity_trust');
   await knex('wallets.entity_trust').del();
-  log.debug('clear entity_roles');
   await knex('entity_role').del();
-  log.debug('clear entities');
   await knex('entity').del();
+  await knex('wallets.entity_trust').del();
+  await knex('wallets.transfer').del();
 }
 
 module.exports = {seed, clear, apiKey, wallet, walletB, tree, token};

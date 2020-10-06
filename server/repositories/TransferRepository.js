@@ -15,6 +15,13 @@ class TransferRepository{
     const result = await knex("wallets.transfer").orderBy("id", "desc").limit(1);
     return result[0];
   }
+
+  async getPendingTransfers(id){
+    return await knex("wallets.transfer").where({
+      destination_entity_id: id,
+      state: Transfer.STATE.pending,
+    });
+  }
 }
 
 module.exports = TransferRepository;

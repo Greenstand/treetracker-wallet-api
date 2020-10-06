@@ -185,6 +185,14 @@ class Wallet{
     }
   }
 
+  /*
+   * To get all the pending transfer sent to me
+   */
+  async getPendingTransfers(){
+    const result = await this.transferRepository.getPendingTransfers(this._id);
+    return result;
+  }
+
 }
 
 Wallet.sha512 = (password, salt) => {

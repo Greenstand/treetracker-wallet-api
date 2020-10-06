@@ -203,6 +203,17 @@ describe("Wallet", () => {
       await wallet.transfer(sender, receiver);
       fn1.restore();
     });
+
+  });
+
+  describe("getPendingTransfers", () => {
+
+    it.only("getPendingTransfers", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getPendingTransfers").resolves([{id:1}]);
+      const result = await wallet.getPendingTransfers();
+      expect(result).lengthOf(1);
+      fn1.restore();
+    });
   });
 
 });

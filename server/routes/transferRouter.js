@@ -31,5 +31,16 @@ transferRouter.post('/',
   })
 );
 
+transferRouter.get("/pending", 
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  helper.handlerWrapper(async (req, res) => {
+    const walletService = new WalletService();
+    const walletLogin = await walletService.getById(res.locals.wallet_id);
+    const result = await walletLogin.getPendingTransfers();
+    res.status(200).json({transfers: result});
+  })
+);
+
 
 module.exports = transferRouter;

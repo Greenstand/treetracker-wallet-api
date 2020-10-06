@@ -87,6 +87,42 @@ describe('Route integration', () => {
       expect(res).property("statusCode").to.eq(202);
     })
 
+    describe("Login with walletB:${seed.walletB.name}", () => {
+      let tokenB;
+
+      beforeEach(async () => {
+        const res = await request(server)
+          .post('/auth')
+          .set('treetracker-api-key', apiKey)
+          .send({
+            wallet: seed.walletB.name,
+            password: seed.walletB.password,
+          });
+        expect(res).to.have.property('statusCode', 200);
+        tokenB = res.body.token;
+      })
+
+      describe("get all pending transfers belongs to walletB, should have one", () => {
+        let pendingTransfer;
+
+        beforeEach(async () => {
+          const res = await request(server)
+            .get('/transfers/pending')
+            .set('treetracker-api-key', apiKey)
+            .set('Authorization', `Bearer ${tokenB}`);
+          expect(res).to.have.property('statusCode', 200);
+          console.warn("xxx", res.body.transfers);
+          expect(res.body.transfers).lengthOf(1);
+          pendingTransfer = res.body.transfers[0];
+          expect(pendingTransfer).property("destination_entity_id").eq(seed.walletB.id);
+        })
+
+        it.only("", () => {
+        });
+      });
+
+    });
+
     describe(`wallet:${seed.wallet.name} request trust relationship with walletB:${seed.walletB.name} & with type: send`, () => {
       let trustRelationship;
 
