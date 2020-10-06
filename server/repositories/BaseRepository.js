@@ -1,5 +1,6 @@
 const knex = require("../database/knex");
 const expect = require("expect-runtime");
+const HttpError = require("../utils/HttpError");
 
 class BaseRepository{
 
@@ -14,6 +15,15 @@ class BaseRepository{
       throw new HttpError(404, `Can not found ${this._tableName} by id`);
     }
     return object;
+  }
+
+  async getByFilter(filter){
+    const result = await knex.select().table(this._tableName).where(filter);
+    return result;
+  }
+
+  async update(object){
+    await knex(this._tableName).update(object).where("id", object.id);
   }
 }
 

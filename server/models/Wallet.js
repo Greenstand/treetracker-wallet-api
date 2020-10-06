@@ -6,6 +6,7 @@ const HttpError = require("../utils/HttpError");
 const Crypto = require('crypto');
 const expect = require("expect-runtime");
 const log = require("loglevel");
+const Transfer = require("./Transfer");
 
 class Wallet{
 
@@ -199,7 +200,19 @@ class Wallet{
   async acceptTransfer(transferId){
     //TODO check privilege
 
-    await this.transferRepository.getById(transferId);
+    const transfer = await this.transferRepository.getById(transferId);
+    transfer.state = Transfer.STATE.completed;
+    await this.transferRepository.update(transfer);
+  }
+
+  /*
+   * Get all transfers belongs to me
+   */
+  async getTransfers(){
+    const result = await this.transferRepository.getByFilter({
+      originator_entity_id: this._id,
+    });
+    return result;
   }
 }
 

@@ -128,7 +128,7 @@ describe('Route integration', () => {
             expect(res).to.have.property('statusCode', 200);
           })
 
-          it.only(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed`, async () => {
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed`, async () => {
             const res = await request(server)
               .get(`/transfers`)
               .set('treetracker-api-key', apiKey)

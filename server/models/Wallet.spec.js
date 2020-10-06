@@ -218,8 +218,22 @@ describe("Wallet", () => {
 
   describe("acceptTransfer", () => {
 
-    it.only("acceptTransfer", async () => {
+    it("acceptTransfer", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves([{id:1}]);  
+      const fn2 = sinon.stub(TransferRepository.prototype, "update");
       await wallet.acceptTransfer(1);
+      fn1.restore();
+      fn2.restore();
+    });
+  });
+
+  describe("getTransfers", () => {
+
+    it("getTransfers", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getByFilter").resolves([{id:1}]);
+      const result = await wallet.getTransfers();
+      expect(result).lengthOf(1);
+      fn1.restore();
     });
   });
 
