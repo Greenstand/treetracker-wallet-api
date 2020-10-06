@@ -8,6 +8,7 @@ const {expect} = chai;
 const WalletRepository = require("../repositories/WalletRepository");
 const TrustRepository = require("../repositories/TrustRepository");
 const WalletService = require("../services/WalletService");
+const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
 const TrustRelationship = require("../models/TrustRelationship");
 
@@ -24,6 +25,10 @@ describe("Wallet", () => {
     wallet = new Wallet(1);
     walletService = new WalletService();
   })
+
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it("authorize() with empty parameters should get 400 error", async () => {
     sinon.stub(WalletRepository.prototype, "getByName").resolves({id:1});
@@ -176,6 +181,28 @@ describe("Wallet", () => {
       fn1.restore();
     });
 
+  });
+
+  describe("Transfer", () => {
+
+    it("don't have trust, should throw 202, and created a transfer record", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "create");
+      const sender = new Wallet(2);
+      const receiver = new Wallet(3);
+      await jestExpect(async () => {
+        await wallet.transfer(sender, receiver);
+      }).rejects.toThrow(/saved/);
+      expect(fn1).to.have.been.calledWith();
+      fn1.restore();
+    });
+
+    it("have trust, should finish successfully", async () => {
+      const sender = new Wallet(2);
+      const receiver = new Wallet(3);
+      const fn1 = sinon.stub(wallet, "checkTrust");
+      await wallet.transfer(sender, receiver);
+      fn1.restore();
+    });
   });
 
 });

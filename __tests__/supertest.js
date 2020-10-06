@@ -80,6 +80,7 @@ describe('Route integration', () => {
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${token}`)
         .send({
+          tokens: ["a"],
           sender_wallet: seed.wallet.name,
           receiver_wallet: seed.walletB.name,
         });
@@ -138,16 +139,17 @@ describe('Route integration', () => {
             expect(res.body.trust_relationships[0]).property("id").a("number");
           });
 
-          it("Try to send a token to walletB again, this time, shouldn't throw 403", async () => {
+          it("Try to send a token to walletB again, this time, should success, 201", async () => {
             const res = await request(server)
               .post("/transfers")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${token}`)
               .send({
+                tokens: ["a"],
                 sender_wallet: seed.wallet.name,
                 receiver_wallet: seed.walletB.name,
               });
-            expect(res).property("statusCode").to.eq(200);
+            expect(res).property("statusCode").to.eq(201);
           });
         });
       });

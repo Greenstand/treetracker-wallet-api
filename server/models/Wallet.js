@@ -1,6 +1,7 @@
 const WalletRepository = require("../repositories/WalletRepository");
 const TrustRepository = require("../repositories/TrustRepository");
 const TrustRelationship = require("../models/TrustRelationship");
+const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
 const Crypto = require('crypto');
 const expect = require("expect-runtime");
@@ -15,6 +16,7 @@ class Wallet{
     this.walletRepository = new WalletRepository();
     this.trustRepository = new TrustRepository();
     this.walletService = new WalletService();
+    this.transferRepository = new TransferRepository();
   }
 
   getId(){
@@ -162,6 +164,24 @@ class Wallet{
       log.debug("check trust passed");
     }else{
       throw new HttpError(403, "Have no permission to do this action");
+    }
+  }
+
+  async transfer(sender, receiver, tokens){
+    try{
+      await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    }catch(e){
+      if(e instanceof HttpError && e.code === 403){
+        //OK, no permission, now pending it
+        await this.transferRepository.create({
+          originator_entity_id: this._id, 
+          source_entity_id: sender.getId(),
+          destination_entity_id: receiver.getId(),
+        });
+        throw new HttpError(202, "No trust, saved");
+      }else{
+        throw e;
+      }
     }
   }
 

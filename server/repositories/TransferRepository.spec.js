@@ -1,0 +1,46 @@
+const TransferRepository = require("./TransferRepository");
+const {expect} = require("chai");
+const knex = require("../database/knex");
+const mockKnex = require("mock-knex");
+const tracker = mockKnex.getTracker();
+
+
+describe("TransferRepository", () => {
+  let transferRepository;
+
+  beforeEach(() => {
+    mockKnex.mock(knex);
+    tracker.install();
+    transferRepository = new TransferRepository();
+  })
+
+  afterEach(() => {
+    tracker.uninstall();
+    mockKnex.unmock(knex);
+  });
+
+  it("create", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', function sendResult(query, step) {
+      [
+        function firstQuery() {
+          expect(query.sql).match(/insert.*transfer.*/);
+          query.response({});
+        },
+        function secondQuery() {
+          expect(query.sql).match(/select.*transfer.*order by.*/);
+          query.response([{id:1}]);
+        }
+      ][step - 1]();
+    });
+    const result = await transferRepository.create({
+      originator_entity_id: 1,
+      source_entity_id: 2,
+      destination_entity_id: 3,
+    });
+    expect(result).property('id').a('number');
+  });
+
+});
+
