@@ -193,6 +193,14 @@ class Wallet{
     return result;
   }
 
+  /*
+   * Accept a pending transfer, if I has the privilege to do so
+   */
+  async acceptTransfer(transferId){
+    //TODO check privilege
+
+    await this.transferRepository.getById(transferId);
+  }
 }
 
 Wallet.sha512 = (password, salt) => {

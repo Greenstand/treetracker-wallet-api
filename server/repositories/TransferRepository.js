@@ -1,9 +1,11 @@
 const knex = require("../database/knex");
 const Transfer = require("../models/Transfer");
+const BaseRepository = require("./BaseRepository");
 
-class TransferRepository{
+class TransferRepository extends BaseRepository{
 
   constructor(){
+    super("wallets.transfer");
   }
 
   async create(object){

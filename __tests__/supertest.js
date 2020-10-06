@@ -8,6 +8,7 @@ const server = require("../server/app");
 const { expect } = require('chai');
 const seed = require('./seed');
 const log = require('loglevel');
+const Transfer = require("../server/models/Transfer");
 
 const mockUser = {
   wallet: seed.wallet.name,
@@ -117,8 +118,27 @@ describe('Route integration', () => {
           expect(pendingTransfer).property("destination_entity_id").eq(seed.walletB.id);
         })
 
-        it.only("", () => {
+        describe("Accept the pending transfer", () => {
+
+          beforeEach(async () => {
+            const res = await request(server)
+              .post(`/transfers/${pendingTransfer.id}/accept`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${tokenB}`);
+            expect(res).to.have.property('statusCode', 200);
+          })
+
+          it.only(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed`, async () => {
+            const res = await request(server)
+              .get(`/transfers`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.transfers).lengthOf(1);
+            expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.completed);
+          });
         });
+
       });
 
     });

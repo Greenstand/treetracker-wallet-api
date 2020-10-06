@@ -208,11 +208,18 @@ describe("Wallet", () => {
 
   describe("getPendingTransfers", () => {
 
-    it.only("getPendingTransfers", async () => {
+    it("getPendingTransfers", async () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "getPendingTransfers").resolves([{id:1}]);
       const result = await wallet.getPendingTransfers();
       expect(result).lengthOf(1);
       fn1.restore();
+    });
+  });
+
+  describe("acceptTransfer", () => {
+
+    it.only("acceptTransfer", async () => {
+      await wallet.acceptTransfer(1);
     });
   });
 

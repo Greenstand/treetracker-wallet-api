@@ -31,6 +31,23 @@ transferRouter.post('/',
   })
 );
 
+transferRouter.post('/:transfer_id/accept',
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  helper.handlerWrapper(async (req, res) => {
+    Joi.assert(
+      req.params,
+      Joi.object({
+        transfer_id: Joi.number().required(),
+      })
+    );
+    const walletService = new WalletService();
+    const walletLogin = await walletService.getById(res.locals.wallet_id);
+    await walletLogin.acceptTransfer(req.params.transfer_id);
+    res.status(200).json({});
+  })
+);
+
 transferRouter.get("/pending", 
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
@@ -38,6 +55,17 @@ transferRouter.get("/pending",
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const result = await walletLogin.getPendingTransfers();
+    res.status(200).json({transfers: result});
+  })
+);
+
+transferRouter.get("/", 
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  helper.handlerWrapper(async (req, res) => {
+    const walletService = new WalletService();
+    const walletLogin = await walletService.getById(res.locals.wallet_id);
+    const result = await walletLogin.getTransfers();
     res.status(200).json({transfers: result});
   })
 );

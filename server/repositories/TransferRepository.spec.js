@@ -42,6 +42,21 @@ describe("TransferRepository", () => {
     expect(result).property('id').a('number');
   });
 
+  it("getById", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', function sendResult(query, step) {
+      [
+        function firstQuery() {
+          expect(query.sql).match(/select.*transfer.*/);
+          query.response({id:1});
+        },
+      ][step - 1]();
+    });
+    const result = await transferRepository.getById(1);
+    expect(result).property("id").eq(1);
+  });
+
   it("getPendingTransfers", async () => {
     tracker.uninstall();
     tracker.install();
