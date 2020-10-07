@@ -273,6 +273,29 @@ describe('Route integration', () => {
 
         });
       });
+
+      describe(`Cancel this request by wallet:${seed.wallet.name}`, () => {
+
+        beforeEach(async () => {
+          const res = await request(server)
+            .del(`/trust_relationships/${trustRelationship.id}`)
+            .set('treetracker-api-key', apiKey)
+            .set('Authorization', `Bearer ${token}`);
+          expect(res).property("statusCode").to.eq(200);
+        })
+
+        it("Wallet should be able to find the relationship, and it was cancelled", async () => {
+          const res = await request(server)
+            .get("/trust_relationships")
+            .set('treetracker-api-key', apiKey)
+            .set('Authorization', `Bearer ${token}`);
+          expect(res).property("statusCode").to.eq(200);
+          expect(res).property("body").property("trust_relationships").lengthOf(1);
+          expect(res.body.trust_relationships[0]).property("id").a("number");
+          expect(res.body.trust_relationships[0]).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.cancelled_by_originator);
+        });
+
+      });
     });
   });
 

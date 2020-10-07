@@ -154,9 +154,22 @@ class Wallet{
       }
     }, undefined);
     if(!trustRelationship){
-      throw new HttpError(403, "Have no permission to accept this relationship");
+      throw new HttpError(403, "Have no permission to decline this relationship");
     }
     trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.canceled_by_target;
+    await this.trustRepository.update(trustRelationship);
+  }
+
+  /*
+   * Cancel a trust relationship request
+   */
+  async cancelTrustRequestSentToMe(trustRelationshipId){
+    expect(trustRelationshipId).number();
+    const trustRelationship = await this.trustRepository.getById(trustRelationshipId);
+    if(trustRelationship.originator_entity_id !== this._id){
+      throw new HttpError(403, "Have no permission to cancel this relationship");
+    }
+    trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.cancelled_by_originator;
     await this.trustRepository.update(trustRelationship);
   }
 

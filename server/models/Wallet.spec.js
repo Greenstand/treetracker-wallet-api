@@ -186,6 +186,43 @@ describe("Wallet", () => {
     });
   });
 
+  describe("Cancel trust request", () => {
+    let wallet = new Wallet(1);
+
+    beforeEach(() => {
+      wallet = new Wallet(1);
+    })
+
+    it("Try to cancel but the requested trust whose originator id is not me, throw 403", async () => {
+      const trustRelationship = {
+        id: 1,
+        target_entity_id: wallet.getId(),
+      };
+      const fn1 = sinon.stub(TrustRepository.prototype, "getById").returns(trustRelationship);
+      const fn2 = sinon.stub(TrustRepository.prototype, "update");
+      await jestExpect(async () => {
+        await wallet.cancelTrustRequestSentToMe(2);
+      }).rejects.toThrow(/no permission/i);
+      fn1.restore();
+      fn2.restore();
+    });
+
+    it("cancel successfully", async () => {
+      const trustRelationship = {
+        id: 1,
+        originator_entity_id: wallet.getId(),
+      };
+      const fn1 = sinon.stub(TrustRepository.prototype, "getById").returns(trustRelationship);
+      const fn2 = sinon.stub(TrustRepository.prototype, "update");
+      await wallet.cancelTrustRequestSentToMe(trustRelationship.id);
+      fn1.restore();
+      fn2.restore();
+    });
+
+    itskip("TODO try to cancel but the state is inpropricate, should throw 403", () => {
+    });
+  });
+
   describe("checkTrust()", () => {
 
     it("checkTrust fails, should throw 403", async () => {
