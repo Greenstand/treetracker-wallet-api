@@ -219,7 +219,7 @@ describe("Wallet", () => {
       fn2.restore();
     });
 
-    itskip("TODO try to cancel but the state is inpropricate, should throw 403", () => {
+    it.skip("TODO try to cancel but the state is inpropricate, should throw 403", () => {
     });
   });
 
