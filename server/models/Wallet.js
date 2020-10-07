@@ -173,16 +173,46 @@ class Wallet{
       await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
     }catch(e){
       if(e instanceof HttpError && e.code === 403){
-        //OK, no permission, now pending it
-        await this.transferRepository.create({
-          originator_entity_id: this._id, 
-          source_entity_id: sender.getId(),
-          destination_entity_id: receiver.getId(),
-        });
-        throw new HttpError(202, "No trust, saved");
+        if(await this.hasControlOver(sender)){
+          log.debug("OK, no permission, source under control, now pending it");
+          await this.transferRepository.create({
+            originator_entity_id: this._id, 
+            source_entity_id: sender.getId(),
+            destination_entity_id: receiver.getId(),
+            state: Transfer.STATE.pending,
+          });
+          throw new HttpError(202, "No trust, saved");
+        }else if(await this.hasControlOver(receiver)){
+          log.debug("OK, no permission, receiver under control, now request it");
+          await this.transferRepository.create({
+            originator_entity_id: this._id, 
+            source_entity_id: sender.getId(),
+            destination_entity_id: receiver.getId(),
+            state: Transfer.STATE.requested,
+          });
+          throw new HttpError(202, "No trust, saved");
+        }else{
+          //TODO
+          expect.fail();
+        }
       }else{
         throw e;
       }
+    }
+  }
+
+  /*
+   * I have control over given wallet
+   */
+  async hasControlOver(wallet){
+    //if the given wallet is me, then pass
+    if(wallet.getId() === this._id){
+      log.debug("The same wallet, control");
+      return true;
+    }else{
+      //check sub wallet
+      //TODO
+      return false;
     }
   }
 
@@ -198,6 +228,17 @@ class Wallet{
    * Accept a pending transfer, if I has the privilege to do so
    */
   async acceptTransfer(transferId){
+    //TODO check privilege
+
+    const transfer = await this.transferRepository.getById(transferId);
+    transfer.state = Transfer.STATE.completed;
+    await this.transferRepository.update(transfer);
+  }
+
+  /*
+   * Fulfill a requested transfer, if I has the privilege to do so
+   */
+  async fulfillTransfer(transferId){
     //TODO check privilege
 
     const transfer = await this.transferRepository.getById(transferId);

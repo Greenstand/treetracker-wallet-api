@@ -11,6 +11,7 @@ const WalletService = require("../services/WalletService");
 const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
 const TrustRelationship = require("../models/TrustRelationship");
+const Transfer = require("./Transfer");
 
 describe("Wallet", () => {
   let walletService;
@@ -185,15 +186,40 @@ describe("Wallet", () => {
 
   describe("Transfer", () => {
 
-    it("don't have trust, should throw 202, and created a transfer record", async () => {
+    it("don't have trust, sender under control, should throw 202, and created a transfer pending record", async () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "create");
-      const sender = new Wallet(2);
-      const receiver = new Wallet(3);
+      const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
+      const sender = new Wallet(1);
+      const receiver = new Wallet(2);
       await jestExpect(async () => {
         await wallet.transfer(sender, receiver);
       }).rejects.toThrow(/saved/);
-      expect(fn1).to.have.been.calledWith();
+      expect(fn1).to.have.been.calledWith({
+        originator_entity_id: 1,
+        source_entity_id: 1,
+        destination_entity_id: 2,
+        state: Transfer.STATE.pending,
+      });
       fn1.restore();
+      fn2.restore();
+    });
+
+    it("don't have trust, receiver under control, should throw 202, and created a transfer request record", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "create");
+      const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
+      const sender = new Wallet(2);
+      const receiver = new Wallet(1);
+      await jestExpect(async () => {
+        await wallet.transfer(sender, receiver);
+      }).rejects.toThrow(/saved/);
+      expect(fn1).to.have.been.calledWith({
+        originator_entity_id: 1,
+        source_entity_id: 2,
+        destination_entity_id: 1,
+        state: Transfer.STATE.requested,
+      });
+      fn1.restore();
+      fn2.restore();
     });
 
     it("have trust, should finish successfully", async () => {
@@ -227,6 +253,17 @@ describe("Wallet", () => {
     });
   });
 
+  describe("fulfillTransfer", () => {
+
+    it("fulfillTransfer", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves([{id:1}]);  
+      const fn2 = sinon.stub(TransferRepository.prototype, "update");
+      await wallet.fulfillTransfer(1);
+      fn1.restore();
+      fn2.restore();
+    });
+  });
+
   describe("getTransfers", () => {
 
     it("getTransfers", async () => {
@@ -234,6 +271,14 @@ describe("Wallet", () => {
       const result = await wallet.getTransfers();
       expect(result).lengthOf(1);
       fn1.restore();
+    });
+  });
+
+  describe("hasControlOver", () => {
+
+    it("hasControlOver should pass if it is the same wallet", async () => {
+      const walletB = new Wallet(1);
+      await wallet.hasControlOver(walletB); 
     });
   });
 

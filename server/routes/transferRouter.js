@@ -48,6 +48,23 @@ transferRouter.post('/:transfer_id/accept',
   })
 );
 
+transferRouter.post('/:transfer_id/fulfill',
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  helper.handlerWrapper(async (req, res) => {
+    Joi.assert(
+      req.params,
+      Joi.object({
+        transfer_id: Joi.number().required(),
+      })
+    );
+    const walletService = new WalletService();
+    const walletLogin = await walletService.getById(res.locals.wallet_id);
+    await walletLogin.fulfillTransfer(req.params.transfer_id);
+    res.status(200).json({});
+  })
+);
+
 transferRouter.get("/", 
   helper.apiKeyHandler,
   helper.verifyJWTHandler,

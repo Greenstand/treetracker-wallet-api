@@ -10,7 +10,6 @@ class TransferRepository extends BaseRepository{
 
   async create(object){
     object.type = Transfer.TYPE.send;
-    object.state = Transfer.STATE.pending;
     object.active = true;
     await knex("wallets.transfer").insert(object);
     //get the inserted object, TODO there must be better way to do so.
