@@ -66,4 +66,21 @@ trustRouter.post('/:trustRelationshipId/accept',
   })
 );
 
+trustRouter.post('/:trustRelationshipId/decline',
+//  [
+//    check('token').isUUID()
+//  ],
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  helper.handlerWrapper(async (req, res) => {
+    expect(res.locals).property("wallet_id").number();
+    expect(req.params).property("trustRelationshipId").defined();
+    const trustRelationshipId = parseInt(req.params.trustRelationshipId);
+    const walletService = new WalletService();
+    const wallet = await walletService.getById(res.locals.wallet_id);
+    await wallet.declineTrustRequestSentToMe(trustRelationshipId);
+    res.status(200).json();
+  })
+);
+
 module.exports = trustRouter;

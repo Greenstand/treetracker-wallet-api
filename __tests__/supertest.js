@@ -3,12 +3,12 @@
  */
 
 const request = require('supertest');
-const assert = require ('assert');
 const server = require("../server/app");
 const { expect } = require('chai');
 const seed = require('./seed');
 const log = require('loglevel');
 const Transfer = require("../server/models/Transfer");
+const TrustRelationship = require("../server/models/TrustRelationship");
 
 const mockUser = {
   wallet: seed.wallet.name,
@@ -248,6 +248,29 @@ describe('Route integration', () => {
               });
             expect(res).property("statusCode").to.eq(201);
           });
+        });
+
+        describe("Decline this request", () => {
+
+          beforeEach(async () => {
+            const res = await request(server)
+              .post(`/trust_relationships/${trustRelationship.id}/decline`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${tokenB}`);
+            expect(res).property("statusCode").to.eq(200);
+          })
+
+          it("Wallet should be able to find the relationship, and it was cancelled", async () => {
+            const res = await request(server)
+              .get("/trust_relationships")
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).property("statusCode").to.eq(200);
+            expect(res).property("body").property("trust_relationships").lengthOf(1);
+            expect(res.body.trust_relationships[0]).property("id").a("number");
+            expect(res.body.trust_relationships[0]).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.canceled_by_target);
+          });
+
         });
       });
     });

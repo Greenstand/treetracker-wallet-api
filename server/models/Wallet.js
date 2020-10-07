@@ -118,6 +118,9 @@ class Wallet{
     //pass
   }
   
+  /*
+   * Accept a trust relationship request
+   */
   async acceptTrustRequestSentToMe(trustRelationshipId){
     expect(trustRelationshipId).number();
     const trustRelationships = await this.getTrustRelationshipsTargeted(this._id);
@@ -133,6 +136,27 @@ class Wallet{
       throw new HttpError(403, "Have no permission to accept this relationship");
     }
     trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted;
+    await this.trustRepository.update(trustRelationship);
+  }
+
+  /*
+   * Decline a trust relationship request
+   */
+  async declineTrustRequestSentToMe(trustRelationshipId){
+    expect(trustRelationshipId).number();
+    const trustRelationships = await this.getTrustRelationshipsTargeted(this._id);
+    const trustRelationship = trustRelationships.reduce((a,c) => {
+      expect(c.id).number();
+      if(c.id === trustRelationshipId){
+        return c;
+      }else{
+        return a;
+      }
+    }, undefined);
+    if(!trustRelationship){
+      throw new HttpError(403, "Have no permission to accept this relationship");
+    }
+    trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.canceled_by_target;
     await this.trustRepository.update(trustRelationship);
   }
 

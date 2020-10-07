@@ -152,6 +152,40 @@ describe("Wallet", () => {
     });
   });
 
+  describe("Decline trust", () => {
+    let wallet = new Wallet(1);
+
+    beforeEach(() => {
+      wallet = new Wallet(1);
+    })
+
+    it("decline but the requested trust whose target id is not me, throw 403", async () => {
+      const trustRelationship = {
+        id: 1,
+        target_entity_id: wallet.getId(),
+      };
+      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn2 = sinon.stub(TrustRepository.prototype, "update");
+      await jestExpect(async () => {
+        await wallet.declineTrustRequestSentToMe(2);
+      }).rejects.toThrow(/no permission/i);
+      fn1.restore();
+      fn2.restore();
+    });
+
+    it("decline successfully", async () => {
+      const trustRelationship = {
+        id: 1,
+        target_entity_id: wallet.getId(),
+      };
+      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn2 = sinon.stub(TrustRepository.prototype, "update");
+      await wallet.declineTrustRequestSentToMe(trustRelationship.id);
+      fn1.restore();
+      fn2.restore();
+    });
+  });
+
   describe("checkTrust()", () => {
 
     it("checkTrust fails, should throw 403", async () => {
