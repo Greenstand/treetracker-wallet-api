@@ -159,6 +159,27 @@ describe('Route integration', () => {
           });
         });
 
+        describe("Delete/cancel the pending transfer", () => {
+
+          beforeEach(async () => {
+            const res = await request(server)
+              .del(`/transfers/${pendingTransfer.id}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+          })
+
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
+            const res = await request(server)
+              .get(`/transfers`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.transfers).lengthOf(1);
+            expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
+          });
+        });
+
       });
 
     });

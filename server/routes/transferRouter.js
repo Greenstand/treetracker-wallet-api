@@ -65,6 +65,23 @@ transferRouter.post('/:transfer_id/decline',
   })
 );
 
+transferRouter.delete('/:transfer_id',
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  helper.handlerWrapper(async (req, res) => {
+    Joi.assert(
+      req.params,
+      Joi.object({
+        transfer_id: Joi.number().required(),
+      })
+    );
+    const walletService = new WalletService();
+    const walletLogin = await walletService.getById(res.locals.wallet_id);
+    await walletLogin.cancelTransfer(req.params.transfer_id);
+    res.status(200).json({});
+  })
+);
+
 transferRouter.post('/:transfer_id/fulfill',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,

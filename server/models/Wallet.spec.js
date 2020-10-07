@@ -270,6 +270,20 @@ describe("Wallet", () => {
     });
   });
 
+  describe("cancelTransfer", () => {
+
+    it("cancelTransfer", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+      const fn2 = sinon.stub(TransferRepository.prototype, "update");
+      await wallet.cancelTransfer(1);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.cancelled,
+      }));
+      fn1.restore();
+      fn2.restore();
+    });
+  });
+
   describe("fulfillTransfer", () => {
 
     it("fulfillTransfer successfully", async () => {
