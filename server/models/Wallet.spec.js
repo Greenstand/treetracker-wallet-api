@@ -245,9 +245,26 @@ describe("Wallet", () => {
   describe("acceptTransfer", () => {
 
     it("acceptTransfer", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves([{id:1}]);  
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       await wallet.acceptTransfer(1);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.completed,
+      }));
+      fn1.restore();
+      fn2.restore();
+    });
+  });
+
+  describe("declineTransfer", () => {
+
+    it("declineTransfer", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+      const fn2 = sinon.stub(TransferRepository.prototype, "update");
+      await wallet.declineTransfer(1);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.cancelled,
+      }));
       fn1.restore();
       fn2.restore();
     });

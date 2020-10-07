@@ -112,7 +112,6 @@ describe('Route integration', () => {
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${tokenB}`);
           expect(res).to.have.property('statusCode', 200);
-          console.warn("xxx", res.body.transfers);
           expect(res.body.transfers).lengthOf(1);
           pendingTransfer = res.body.transfers[0];
           expect(pendingTransfer).property("destination_entity_id").eq(seed.walletB.id);
@@ -139,11 +138,32 @@ describe('Route integration', () => {
           });
         });
 
+        describe("Decline the pending transfer", () => {
+
+          beforeEach(async () => {
+            const res = await request(server)
+              .post(`/transfers/${pendingTransfer.id}/decline`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${tokenB}`);
+            expect(res).to.have.property('statusCode', 200);
+          })
+
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
+            const res = await request(server)
+              .get(`/transfers`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.transfers).lengthOf(1);
+            expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
+          });
+        });
+
       });
 
     });
 
-    describe(`wallet:${seed.wallet.name} request trust relationship with walletB:${seed.walletB.name} & with type: send`, () => {
+    describe(`wallet:${seed.wallet.name} request "send" trust relationship with walletB:${seed.walletB.name} `, () => {
       let trustRelationship;
 
       beforeEach(async () => {

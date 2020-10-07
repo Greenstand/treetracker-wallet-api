@@ -236,6 +236,17 @@ class Wallet{
   }
 
   /*
+   * Decline a pending transfer, if I has the privilege to do so
+   */
+  async declineTransfer(transferId){
+    //TODO check privilege
+
+    const transfer = await this.transferRepository.getById(transferId);
+    transfer.state = Transfer.STATE.cancelled;
+    await this.transferRepository.update(transfer);
+  }
+
+  /*
    * Fulfill a requested transfer, if I has the privilege to do so
    */
   async fulfillTransfer(transferId){
