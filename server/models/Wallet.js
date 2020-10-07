@@ -205,28 +205,48 @@ class Wallet{
     }
   }
 
+  /*
+   * Transfer some tokens from the sender to receiver
+   */
   async transfer(sender, receiver, tokens){
     try{
       await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+      const transfer = await this.transferRepository.create({
+        originator_entity_id: this._id, 
+        source_entity_id: sender.getId(),
+        destination_entity_id: receiver.getId(),
+        state: Transfer.STATE.completed,
+      });
+      log.debug("now, deal with tokens");
+      for(let token of tokens){
+        token.completeTransfer(transfer);
+      }
+      
     }catch(e){
       if(e instanceof HttpError && e.code === 403){
         if(await this.hasControlOver(sender)){
           log.debug("OK, no permission, source under control, now pending it");
-          await this.transferRepository.create({
+          const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
             source_entity_id: sender.getId(),
             destination_entity_id: receiver.getId(),
             state: Transfer.STATE.pending,
           });
+          for(let token of tokens){
+            token.pendingTransfer(transfer);
+          }
           throw new HttpError(202, "No trust, saved");
         }else if(await this.hasControlOver(receiver)){
           log.debug("OK, no permission, receiver under control, now request it");
-          await this.transferRepository.create({
+          const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
             source_entity_id: sender.getId(),
             destination_entity_id: receiver.getId(),
             state: Transfer.STATE.requested,
           });
+          for(let token of tokens){
+            token.pendingTransfer(transfer);
+          }
           throw new HttpError(202, "No trust, saved");
         }else{
           //TODO

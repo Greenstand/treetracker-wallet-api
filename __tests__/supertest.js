@@ -81,7 +81,7 @@ describe('Route integration', () => {
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${token}`)
         .send({
-          tokens: ["a"],
+          tokens: [],
           sender_wallet: seed.wallet.name,
           receiver_wallet: seed.walletB.name,
         });
@@ -242,7 +242,7 @@ describe('Route integration', () => {
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${token}`)
               .send({
-                tokens: ["a"],
+                tokens: [],
                 sender_wallet: seed.wallet.name,
                 receiver_wallet: seed.walletB.name,
               });
@@ -307,7 +307,7 @@ describe('Route integration', () => {
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${token}`)
         .send({
-          tokens: ["a"],
+          tokens: [],
           sender_wallet: seed.walletB.name,
           receiver_wallet: seed.wallet.name,
         });

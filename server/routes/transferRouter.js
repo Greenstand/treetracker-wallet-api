@@ -26,7 +26,7 @@ transferRouter.post('/',
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const walletSender = await walletService.getByName(req.body.sender_wallet);
     const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
-    await walletLogin.transfer(walletSender, walletReceiver);
+    await walletLogin.transfer(walletSender, walletReceiver, req.body.tokens);
     res.status(201).json({});
   })
 );

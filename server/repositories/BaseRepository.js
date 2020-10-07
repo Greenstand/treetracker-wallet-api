@@ -23,7 +23,11 @@ class BaseRepository{
   }
 
   async update(object){
-    await knex(this._tableName).update(object).where("id", object.id);
+    return await knex(this._tableName).update(object).where("id", object.id).returning("*");
+  }
+
+  async create(object){
+    return await knex(this._tableName).insert(object).returning("*");
   }
 }
 

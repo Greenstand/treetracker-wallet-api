@@ -1,13 +1,19 @@
 const knex = require('../database/knex');
 const config = require('../../config/config');
+const HttpError = require("../utils/HttpError");
+const BaseRepository = require("./BaseRepository");
 
-class TokenRepository{
+class TokenRepository extends BaseRepository{
   constructor(){
+    super("token");
   }
 
   async getByUUID(uuid){
     const result = await knex("token").where("uuid", uuid)
       .first();
+    if(!result){
+      throw new HttpError(404, `can not found token by uuid:${uuid}`);
+    }
     return result;
   }
 

@@ -46,4 +46,37 @@ describe("BaseRepository", () => {
       expect(result[0]).property("id").eq(1);
     });
   });
+
+  describe("update", () => {
+
+    it("update", async () => {
+      tracker.uninstall();
+      tracker.install();
+      tracker.on("query", (query) => {
+        expect(query.sql).match(/update.*testTable.*/);
+        query.response({id:1});
+      });
+      const result = await baseRepository.update({
+        id: 1,
+        name: "testName",
+      });
+      expect(result).property("id").eq(1);
+    });
+  });
+
+  describe("create", () => {
+
+    it("create", async () => {
+      tracker.uninstall();
+      tracker.install();
+      tracker.on("query", (query) => {
+        expect(query.sql).match(/insert.*testTable.*returning.*/);
+        query.response({id:1});
+      });
+      const result = await baseRepository.create({
+        name: "testName",
+      });
+      expect(result).property("id").eq(1);
+    });
+  });
 });

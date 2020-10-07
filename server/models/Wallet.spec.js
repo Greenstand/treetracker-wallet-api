@@ -12,6 +12,7 @@ const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
 const TrustRelationship = require("../models/TrustRelationship");
 const Transfer = require("./Transfer");
+const Token = require("./Token");
 
 describe("Wallet", () => {
   let walletService;
@@ -262,8 +263,9 @@ describe("Wallet", () => {
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
       const sender = new Wallet(1);
       const receiver = new Wallet(2);
+      const token = new Token(1);
       await jestExpect(async () => {
-        await wallet.transfer(sender, receiver);
+        await wallet.transfer(sender, receiver, [token]);
       }).rejects.toThrow(/saved/);
       expect(fn1).to.have.been.calledWith({
         originator_entity_id: 1,
@@ -280,8 +282,9 @@ describe("Wallet", () => {
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
       const sender = new Wallet(2);
       const receiver = new Wallet(1);
+      const token = new Token(1);
       await jestExpect(async () => {
-        await wallet.transfer(sender, receiver);
+        await wallet.transfer(sender, receiver, [token]);
       }).rejects.toThrow(/saved/);
       expect(fn1).to.have.been.calledWith({
         originator_entity_id: 1,
@@ -297,8 +300,17 @@ describe("Wallet", () => {
       const sender = new Wallet(2);
       const receiver = new Wallet(3);
       const fn1 = sinon.stub(wallet, "checkTrust");
-      await wallet.transfer(sender, receiver);
+      const fn2 = sinon.stub(TransferRepository.prototype, "create");
+      const fn3 = sinon.stub(Token.prototype, "completeTransfer");
+      const token = new Token(1);
+      await wallet.transfer(sender, receiver, [token]);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.completed,
+      }));
+      expect(fn3).calledWith();
       fn1.restore();
+      fn2.restore();
+      fn3.restore();
     });
 
   });
