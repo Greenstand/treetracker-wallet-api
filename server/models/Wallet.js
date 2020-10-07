@@ -242,6 +242,12 @@ class Wallet{
     //TODO check privilege
 
     const transfer = await this.transferRepository.getById(transferId);
+    if(transfer.source_entity_id !== this._id){
+      throw new HttpError(403, "Have no permission to do this operation");
+    }
+    if(transfer.state !== Transfer.STATE.requested){
+      throw new HttpError(403, "Operation forbidden, the transfer state is wrong");
+    }
     transfer.state = Transfer.STATE.completed;
     await this.transferRepository.update(transfer);
   }

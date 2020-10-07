@@ -266,7 +266,7 @@ describe('Route integration', () => {
               expect(res).property("statusCode").to.eq(200);
             })
 
-            it(`wallet:${seed.wallet.name} should be able to find reqeusted transfer has been completed`, async () => {
+            it(`wallet:${seed.wallet.name} should be able to find requested transfer has been completed`, async () => {
               const res = await request(server)
                 .get("/transfers?state=completed")
                 .set('treetracker-api-key', apiKey)

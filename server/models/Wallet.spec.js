@@ -255,12 +255,38 @@ describe("Wallet", () => {
 
   describe("fulfillTransfer", () => {
 
-    it("fulfillTransfer", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves([{id:1}]);  
+    it("fulfillTransfer successfully", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+      });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       await wallet.fulfillTransfer(1);
       fn1.restore();
       fn2.restore();
+    });
+
+    it("the transfer's sender is not me, should throw 403 no permission", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves([{
+        id:1,
+        source_entity_id: wallet.getId() + 1,
+      }]);  
+      await jestExpect(async () => {
+        await wallet.fulfillTransfer(1);
+      }).rejects.toThrow(/permission/);
+      fn1.restore();
+    });
+
+    it("the transfer's state is not requested, should throw 403 forbidden", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+      });  
+      await jestExpect(async () => {
+        await wallet.fulfillTransfer(1);
+      }).rejects.toThrow(/forbidden/);
+      fn1.restore();
     });
   });
 
