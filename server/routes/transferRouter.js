@@ -48,24 +48,14 @@ transferRouter.post('/:transfer_id/accept',
   })
 );
 
-transferRouter.get("/pending", 
-  helper.apiKeyHandler,
-  helper.verifyJWTHandler,
-  helper.handlerWrapper(async (req, res) => {
-    const walletService = new WalletService();
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const result = await walletLogin.getPendingTransfers();
-    res.status(200).json({transfers: result});
-  })
-);
-
 transferRouter.get("/", 
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
+    const {state, wallet} = req.query;
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const result = await walletLogin.getTransfers();
+    const result = await walletLogin.getTransfers(state, wallet);
     res.status(200).json({transfers: result});
   })
 );

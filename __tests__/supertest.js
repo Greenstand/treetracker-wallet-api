@@ -108,7 +108,7 @@ describe('Route integration', () => {
 
         beforeEach(async () => {
           const res = await request(server)
-            .get('/transfers/pending')
+            .get('/transfers?state=pending')
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${tokenB}`);
           expect(res).to.have.property('statusCode', 200);

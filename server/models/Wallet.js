@@ -208,10 +208,14 @@ class Wallet{
   /*
    * Get all transfers belongs to me
    */
-  async getTransfers(){
-    const result = await this.transferRepository.getByFilter({
-      originator_entity_id: this._id,
-    });
+  async getTransfers(state, wallet){
+    const filter = {
+    };
+    if(state){
+      //TODO check the state parameter
+      filter.state = state;
+    }
+    const result = await this.transferRepository.getByFilter(filter);
     return result;
   }
 }
