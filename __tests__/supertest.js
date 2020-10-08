@@ -70,7 +70,7 @@ describe('Route integration', () => {
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${token}`);
     expect(res).to.have.property('statusCode', 200);
-    expect(res.body).to.have.property('token').eq(seed.token.uuid);
+    expect(res.body).to.have.property('uuid').eq(seed.token.uuid);
   });
 
   describe(`Before request trust, try to send token:#${seed.token.id} from wallet:${seed.wallet.name} to walletB:${seed.walletB.name} should get 202`, () => {

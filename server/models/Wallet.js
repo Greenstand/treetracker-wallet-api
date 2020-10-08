@@ -10,9 +10,15 @@ const Transfer = require("./Transfer");
 
 class Wallet{
 
-  constructor(id){
-    expect(id).number();
-    this._id = id;
+  constructor(idOrJSON){
+    if(typeof idOrJSON === "number"){
+      this._id = idOrJSON;
+    }else if(typeof idOrJSON === "object" && typeof idOrJSON.id === "number"){
+      this._id = idOrJSON.id;
+      this._JSON = idOrJSON;
+    }else{
+      throw new HttpError(500);
+    }
     const WalletService = require("../services/WalletService");
     this.walletRepository = new WalletRepository();
     this.trustRepository = new TrustRepository();
@@ -65,7 +71,12 @@ class Wallet{
   }
 
   async toJSON(){
-    return await this.walletRepository.getById(this._id);
+    if(this._JSON){
+      return this._JSON;
+    }else{
+      this._JSON = await this.walletRepository.getById(this._id);
+      return this._JSON;
+    }
   }
 
   /*

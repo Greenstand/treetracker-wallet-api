@@ -157,9 +157,10 @@ Because we are not using ORM (Object Relationship Mapping) and not using object 
 
 Thanks Knex, we can use it to easily retrieve objects from SQL DB, but they are simple value object, not model.
 
-So the trade-off way we are using is building model object JUST with the identity (e.g. primary key), but don't have any other properties, if we want to visit them, require the DB(repository) at the moment, the reason that we don't cache the properties value is because it's too hard to maintain the state of object (sync with the DB), this might lead us to build a kinda ORM.
+So the trade-off way we are using is building model object JUST with the identity (e.g. primary key), but don't have any other properties, if we want to visit them, require the DB(repository) at the moment. 
 
-So the things is: create model object with identity, as a Class, they have methods to do stuff, and request DB when we need to visit the state/data which was stored in DB.
+In some case, to reduce the traffic to the DB, model can cache the JSON object from DB by contructor the model object with it. In this case, the outside code which is using this model should be responsible for keep the cached JSON (in model object) consistent with the DB status. 
+
 
 ### About Class vs literal object
 

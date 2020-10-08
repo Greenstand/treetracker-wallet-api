@@ -6,14 +6,14 @@ const HttpError = require("../utils/HttpError");
 
 class Token{
   
-  constructor(idOrObject){
-    if(typeof idOrObject === "number"){
-      this._id = idOrObject;
-    }else if(typeof idOrObject === "object" && typeof idOrObject.id === "number"){
-      this._id = idOrObject.id;
-      this._json = idOrObject;
+  constructor(idOrJSON){
+    if(typeof idOrJSON === "number"){
+      this._id = idOrJSON;
+    }else if(typeof idOrJSON === "object" && typeof idOrJSON.id === "number"){
+      this._id = idOrJSON.id;
+      this._JSON = idOrJSON;
     }else{
-      throw new HttpError(500, `wrong contructor:${idOrObject}`);
+      throw new HttpError(500, `wrong contructor:${idOrJSON}`);
     }
     this.tokenRepository = new TokenRepository();
     this.transactionRepository = new TransactionRepository();
@@ -24,8 +24,16 @@ class Token{
   }
 
   async toJSON(){
-    const token = await this.tokenRepository.getById(this._id);
-    return token;
+    if(this._JSON){
+      return this._JSON;
+    }else{
+      const token = await this.tokenRepository.getById(this._id);
+      return token;
+    }
+  }
+
+  clearJSON(){
+    this._JSON = undefined;
   }
 
   /*
