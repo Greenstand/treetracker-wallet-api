@@ -18,6 +18,8 @@ class Wallet{
     this.trustRepository = new TrustRepository();
     this.walletService = new WalletService();
     this.transferRepository = new TransferRepository();
+    const TokenService = require("../services/TokenService");
+    this.tokenService = new TokenService();
   }
 
   getId(){
@@ -219,7 +221,7 @@ class Wallet{
       });
       log.debug("now, deal with tokens");
       for(let token of tokens){
-        token.completeTransfer(transfer);
+        await token.completeTransfer(transfer);
       }
       
     }catch(e){
@@ -233,7 +235,7 @@ class Wallet{
             state: Transfer.STATE.pending,
           });
           for(let token of tokens){
-            token.pendingTransfer(transfer);
+            await token.pendingTransfer(transfer);
           }
           throw new HttpError(202, "No trust, saved");
         }else if(await this.hasControlOver(receiver)){
@@ -245,7 +247,7 @@ class Wallet{
             state: Transfer.STATE.requested,
           });
           for(let token of tokens){
-            token.pendingTransfer(transfer);
+            await token.pendingTransfer(transfer);
           }
           throw new HttpError(202, "No trust, saved");
         }else{
@@ -290,6 +292,12 @@ class Wallet{
     const transfer = await this.transferRepository.getById(transferId);
     transfer.state = Transfer.STATE.completed;
     await this.transferRepository.update(transfer);
+
+    //deal with tokens
+    const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+    for(let token of tokens){
+      await token.completeTransfer(transfer);
+    }
   }
 
   /*

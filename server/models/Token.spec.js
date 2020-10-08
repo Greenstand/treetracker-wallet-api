@@ -14,6 +14,14 @@ describe("Token", () => {
   beforeEach(() => {
   })
 
+  it("constructor by object", () => {
+    const token = new Token({
+      id: 1,
+    });
+    expect(token).instanceOf(Token);
+    expect(token.getId()).eq(1);
+  });
+
   describe("pendingTransfer", () => {
 
     it("pendingTransfer successfully", async () => {
@@ -22,6 +30,7 @@ describe("Token", () => {
       const fn1 = sinon.stub(TokenRepository.prototype, "update");
       await token.pendingTransfer(transfer);
       expect(fn1).calledWith({
+        id: 1,
         transfer_pending: true,
         transfer_pending_id: 1,
       });
@@ -42,6 +51,8 @@ describe("Token", () => {
       const fn2 = sinon.stub(TransactionRepository.prototype, "create");
       await token.completeTransfer(transfer);
       expect(fn1).calledWith({
+        id: 1,
+        entity_id: 2,
         transfer_pending: false,
         transfer_pending_id: 1,
       });

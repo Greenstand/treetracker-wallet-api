@@ -64,16 +64,16 @@ describe('Route integration', () => {
 
   // Tests that require logged-in authorization
 
-  it(`[GET /token/${seed.token.uuid}] Should be able to get a token `, async () => {
+  it(`[GET /tokens/${seed.token.uuid}] Should be able to get a token `, async () => {
     const res = await request(server)
-      .get(`/token/${seed.token.uuid}`)
+      .get(`/tokens/${seed.token.uuid}`)
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${token}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('token').eq(seed.token.uuid);
   });
 
-  describe(`Before request trust, try to send token from wallet:${seed.wallet.name} to walletB:${seed.walletB.name} should get 202`, () => {
+  describe(`Before request trust, try to send token:#${seed.token.id} from wallet:${seed.wallet.name} to walletB:${seed.walletB.name} should get 202`, () => {
 
     beforeEach(async () => {
       const res = await request(server)
@@ -81,7 +81,7 @@ describe('Route integration', () => {
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${token}`)
         .send({
-          tokens: [],
+          tokens: [seed.token.uuid],
           sender_wallet: seed.wallet.name,
           receiver_wallet: seed.walletB.name,
         });
@@ -135,6 +135,15 @@ describe('Route integration', () => {
             expect(res).to.have.property('statusCode', 200);
             expect(res.body.transfers).lengthOf(1);
             expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.completed);
+          });
+
+          it(`Token:#${seed.token.id} now should belong to walletB:${seed.walletB.name}`, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.entity_id).eq(seed.walletB.id);
           });
         });
 

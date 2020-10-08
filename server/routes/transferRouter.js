@@ -6,6 +6,7 @@ const TrustRelationship = require("../models/TrustRelationship");
 const expect = require("expect-runtime");
 const helper = require("./utils");
 const Joi = require("joi");
+const TokenService = require("../services/TokenService");
 
 
 transferRouter.post('/',
@@ -26,7 +27,12 @@ transferRouter.post('/',
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const walletSender = await walletService.getByName(req.body.sender_wallet);
     const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
-    await walletLogin.transfer(walletSender, walletReceiver, req.body.tokens);
+    const tokens = [];
+    const tokenService = new TokenService();
+    for(let uuid of req.body.tokens){
+      tokens.push(await tokenService.getByUUID(uuid));
+    }
+    await walletLogin.transfer(walletSender, walletReceiver, tokens);
     res.status(201).json({});
   })
 );

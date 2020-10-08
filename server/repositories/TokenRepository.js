@@ -2,6 +2,7 @@ const knex = require('../database/knex');
 const config = require('../../config/config');
 const HttpError = require("../utils/HttpError");
 const BaseRepository = require("./BaseRepository");
+const expect = require("expect-runtime");
 
 class TokenRepository extends BaseRepository{
   constructor(){
@@ -11,9 +12,9 @@ class TokenRepository extends BaseRepository{
   async getByUUID(uuid){
     const result = await knex("token").where("uuid", uuid)
       .first();
-    if(!result){
-      throw new HttpError(404, `can not found token by uuid:${uuid}`);
-    }
+    expect(result,() => new HttpError(404, `can not found token by uuid:${uuid}`)).match({
+      id: expect.any(Number),
+    });
     return result;
   }
 
@@ -37,6 +38,8 @@ class TokenRepository extends BaseRepository{
     const token = result.rows[0];
 
     let treeItem = {
+      id: token.id,
+      entity_id: token.entity_id,
       token: token.uuid,
       map_url: config.map_url + "?treeid="+token.tree_id,
       image_url: token.image_url,

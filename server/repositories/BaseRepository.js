@@ -27,7 +27,11 @@ class BaseRepository{
   }
 
   async create(object){
-    return await knex(this._tableName).insert(object).returning("*");
+    const result = await knex(this._tableName).insert(object).returning("*");
+    expect(result).match([{
+      id: expect.anything(),
+    }]);
+    return result[0];
   }
 }
 

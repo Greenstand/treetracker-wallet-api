@@ -1,5 +1,6 @@
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
+const expect = require("expect-runtime");
 
 class TokenService{
 
@@ -9,8 +10,18 @@ class TokenService{
 
   async getByUUID(uuid){
     const tokenObject = await this.tokenRepository.getByUUID(uuid);
-    const token = new Token(tokenObject.id);
+    const token = new Token(tokenObject);
     return token;
+  }
+
+  async getTokensByPendingTransferId(transferId){
+    expect(transferId).number();
+    const result = await this.tokenRepository.getByFilter({
+      transfer_pending_id: transferId,
+    });
+    return result.map(object => {
+      return new Token(object);
+    });
   }
 
 }

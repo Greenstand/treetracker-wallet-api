@@ -9,6 +9,8 @@ const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 const HttpError = require("../utils/HttpError");
+const Token = require("../models/Token");
+const TokenService = require("../services/TokenService");
 
 describe("authRouter", () => {
   let app;
@@ -16,7 +18,7 @@ describe("authRouter", () => {
     id: 1,
   }
 
-  before(() => {
+  beforeEach(() => {
     sinon.stub(ApiKeyService.prototype, "check");
     sinon.stub(JWTService.prototype, "verify").returns({
       id: walletLogin.id,
@@ -25,6 +27,7 @@ describe("authRouter", () => {
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: () => {},
     });
+    sinon.stub(TokenService.prototype, "getByUUID").resolves(new Token(1));
     app = express();
     app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
     app.use(bodyParser.json()); // parse application/json
@@ -32,7 +35,7 @@ describe("authRouter", () => {
     app.use(errorHandler);
   })
 
-  after(() => {
+  afterEach(() => {
     sinon.restore();
   })
 

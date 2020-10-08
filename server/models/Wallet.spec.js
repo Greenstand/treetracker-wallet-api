@@ -13,6 +13,7 @@ const HttpError = require("../utils/HttpError");
 const TrustRelationship = require("../models/TrustRelationship");
 const Transfer = require("./Transfer");
 const Token = require("./Token");
+const TokenService = require("../services/TokenService");
 
 describe("Wallet", () => {
   let walletService;
@@ -259,7 +260,9 @@ describe("Wallet", () => {
   describe("Transfer", () => {
 
     it("don't have trust, sender under control, should throw 202, and created a transfer pending record", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "create");
+      const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
+        id: 1,
+      });
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
       const sender = new Wallet(1);
       const receiver = new Wallet(2);
@@ -278,7 +281,9 @@ describe("Wallet", () => {
     });
 
     it("don't have trust, receiver under control, should throw 202, and created a transfer request record", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "create");
+      const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
+        id: 1,
+      });
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
       const sender = new Wallet(2);
       const receiver = new Wallet(1);
@@ -330,12 +335,17 @@ describe("Wallet", () => {
     it("acceptTransfer", async () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
+      const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1)]);
+      const fn4 = sinon.stub(Token.prototype, "completeTransfer");
       await wallet.acceptTransfer(1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.completed,
       }));
+      expect(fn4).calledWith();
       fn1.restore();
       fn2.restore();
+      fn3.restore();
+      fn4.restore();
     });
   });
 
