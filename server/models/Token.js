@@ -3,6 +3,7 @@ const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
 const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
+const Wallet = require("./Wallet");
 
 class Token{
   
@@ -76,6 +77,16 @@ class Token{
       transfer_pending: false,
       transfer_pending_id: transfer.id,
     });
+  }
+
+  async belongsTo(wallet){
+    expect(wallet).instanceOf(Wallet);
+    const json = await this.toJSON();
+    if(json.entity_id === wallet.getId()){
+      return true;
+    }else{
+      return false;
+    }
   }
 
 }

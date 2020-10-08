@@ -8,6 +8,7 @@ const sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 const {expect} = chai;
 const TransactionRepository = require("../repositories/TransactionRepository");
+const Wallet = require("./Wallet");
 
 describe("Token", () => {
 
@@ -87,6 +88,33 @@ describe("Token", () => {
       expect(fn2).not.calledWith();
       fn1.restore();
       fn2.restore();
+    });
+  });
+
+  describe("belongsTo", () => {
+
+    it("belongsTo", async () => {
+      const token = new Token(1);
+      const wallet = new Wallet(2);
+      const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
+        id: 1,
+        entity_id: 2,
+      });
+      expect(await token.belongsTo(wallet)).eq(true);
+      expect(fn1).calledWith();
+      fn1.restore();
+    });
+
+    it("not belongsTo", async () => {
+      const token = new Token(1);
+      const wallet = new Wallet(2);
+      const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
+        id: 1,
+        entity_id: 1,
+      });
+      expect(await token.belongsTo(wallet)).eq(false);
+      expect(fn1).calledWith();
+      fn1.restore();
     });
   });
 

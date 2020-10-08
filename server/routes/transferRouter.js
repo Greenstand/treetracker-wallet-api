@@ -7,6 +7,7 @@ const expect = require("expect-runtime");
 const helper = require("./utils");
 const Joi = require("joi");
 const TokenService = require("../services/TokenService");
+const HttpError = require("../utils/HttpError");
 
 
 transferRouter.post('/',
@@ -30,7 +31,11 @@ transferRouter.post('/',
     const tokens = [];
     const tokenService = new TokenService();
     for(let uuid of req.body.tokens){
-      tokens.push(await tokenService.getByUUID(uuid));
+      const token = await tokenService.getByUUID(uuid); 
+      if(!await token.belongsTo(walletSender)){
+        throw new HttpError(403, `The token ${uuid} do not belongs to sender wallet`);
+      }
+      tokens.push(token);
     }
     await walletLogin.transfer(walletSender, walletReceiver, tokens);
     res.status(201).json({});
