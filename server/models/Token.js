@@ -61,6 +61,15 @@ class Token{
     });
   }
 
+  async cancelTransfer(transfer){
+    log.debug("Token cancel transfer");
+    await this.tokenRepository.update({
+      id: this._id,
+      transfer_pending: false,
+      transfer_pending_id: transfer.id,
+    });
+  }
+
 }
 
 module.exports = Token;

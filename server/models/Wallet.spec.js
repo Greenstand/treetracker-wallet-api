@@ -354,12 +354,17 @@ describe("Wallet", () => {
     it("declineTransfer", async () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
+      const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1)]);
+      const fn4 = sinon.stub(Token.prototype, "cancelTransfer");
       await wallet.declineTransfer(1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.cancelled,
       }));
+      expect(fn4).calledWith();
       fn1.restore();
       fn2.restore();
+      fn3.restore();
+      fn4.restore();
     });
   });
 

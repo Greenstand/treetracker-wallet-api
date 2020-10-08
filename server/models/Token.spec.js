@@ -67,4 +67,27 @@ describe("Token", () => {
     });
   });
 
+  describe("cancelTransfer", () => {
+
+    it("cancelTransfer successfully", async () => {
+      const token = new Token(1);
+      const transfer = {
+        id:1,
+        source_entity_id: 1,
+        destination_entity_id: 2,
+      };
+      const fn1 = sinon.stub(TokenRepository.prototype, "update");
+      const fn2 = sinon.stub(TransactionRepository.prototype, "create");
+      await token.cancelTransfer(transfer);
+      expect(fn1).calledWith({
+        id: 1,
+        transfer_pending: false,
+        transfer_pending_id: 1,
+      });
+      expect(fn2).not.calledWith();
+      fn1.restore();
+      fn2.restore();
+    });
+  });
+
 });

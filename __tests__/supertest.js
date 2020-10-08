@@ -166,6 +166,15 @@ describe('Route integration', () => {
             expect(res.body.transfers).lengthOf(1);
             expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
           });
+
+          it(`Token:#${seed.token.id} now should still belong to wallet:${seed.wallet.name}`, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.entity_id).eq(seed.wallet.id);
+          });
         });
 
         describe("Delete/cancel the pending transfer", () => {

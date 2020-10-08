@@ -309,6 +309,12 @@ class Wallet{
     const transfer = await this.transferRepository.getById(transferId);
     transfer.state = Transfer.STATE.cancelled;
     await this.transferRepository.update(transfer);
+
+    //deal with tokens
+    const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+    for(let token of tokens){
+      await token.cancelTransfer(transfer);
+    }
   }
 
   async cancelTransfer(transferId){
