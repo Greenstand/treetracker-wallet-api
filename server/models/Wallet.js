@@ -222,6 +222,13 @@ class Wallet{
    * Transfer some tokens from the sender to receiver
    */
   async transfer(sender, receiver, tokens){
+    //check tokens belong to sender
+    for(const token of tokens){
+      if(!await token.belongsTo(sender)){
+        throw new HttpError(403, `The token ${token.toJSON().uuid} do not belongs to sender wallet`);
+      }
+    }
+
     try{
       await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
       const transfer = await this.transferRepository.create({

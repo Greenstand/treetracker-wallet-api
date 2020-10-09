@@ -32,9 +32,6 @@ transferRouter.post('/',
     const tokenService = new TokenService();
     for(let uuid of req.body.tokens){
       const token = await tokenService.getByUUID(uuid); 
-      if(!await token.belongsTo(walletSender)){
-        throw new HttpError(403, `The token ${uuid} do not belongs to sender wallet`);
-      }
       tokens.push(token);
     }
     await walletLogin.transfer(walletSender, walletReceiver, tokens);

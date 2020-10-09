@@ -101,30 +101,6 @@ describe("authRouter", () => {
     expect(res).property("statusCode").eq(202);
   });
 
-  it("Given token uuid do not belongs to sender wallet, should throw 403", async () => {
-    sinon.stub(WalletService.prototype, "getByName").resolves(new Wallet(1));
-    sinon.stub(WalletService.prototype, "getById").resolves({
-      transfer: () => {},
-    });
-    sinon.stub(TokenService.prototype, "getByUUID").resolves(new Token({
-      id:1,
-      entity_id: 2,
-    }));
-    WalletService.prototype.getById.restore();    
-    sinon.stub(WalletService.prototype, "getById").resolves({
-      transfer: async () => {
-        throw new HttpError(202);
-      },
-    });
-    const res = await request(app)
-      .post("/")
-      .send({
-        tokens: ["1"],
-        sender_wallet: "ssss",
-        receiver_wallet: "ssss",
-      });
-    expect(res).property("statusCode").eq(403);
-  });
 
 
 });
