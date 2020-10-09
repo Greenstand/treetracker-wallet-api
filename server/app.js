@@ -1,17 +1,15 @@
 const express = require('express');
 const Sentry = require('@sentry/node');
 const bodyParser = require('body-parser');
-const http = require('http');
-const pg = require('pg');
-const pool = require('./database/database.js');
-const router = require('./routes/router.js')
-const authController = require('./controllers/authController.js');
-
-const path = require('path');
 const asyncHandler = require('express-async-handler');
 const { check, validationResult } = require('express-validator');
 const { body } = require('express-validator');
-const HttpError = require("./models/HttpError");
+const HttpError = require("./utils/HttpError");
+const authRouter = require('./routes/authRouter.js')
+const trustRouter = require('./routes/trustRouter.js')
+const tokenRouter = require('./routes/tokenRouter.js')
+const transferRouter = require("./routes/transferRouter");
+const {errorHandler} = require("./routes/utils");
 
 
 const app = express();
@@ -23,7 +21,12 @@ Sentry.init({ dsn: config.sentry_dsn });
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
 
-app.use('/', router);
+//routers
+app.use('/auth', authRouter);
+app.use('/token', tokenRouter);
+app.use('/trust_relationships', trustRouter);
+app.use('/transfers', transferRouter);
+
 
 
 app.set('view engine','html');
@@ -50,15 +53,7 @@ app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next)
 }));
 
 // Global error handler
-app.use((err, req, res, next) => {
-  console.warn("caught the error:", err);
-  if (err instanceof HttpError) {
-    res.status(err.code).send(err.message);
-  } else {
-    res.status(err.status).send(err.message.err);
-  }
-});
-
+app.use(errorHandler);
 
 
 //do not run the express app by default

@@ -3,7 +3,6 @@ const pool = require('../database/database.js');
 const { check, validationResult } = require('express-validator');
 const config = require('../../config/config.js');
 const log = require("loglevel");
-log.setLevel("debug");
 const assert = require("assert");
 
 /* ________________________________________________________________________
@@ -756,7 +755,7 @@ userController.token = async (req, res, next) => {
   const {uuid} = req.params;
 
   if (!uuid) {
-    return next({
+    next({
       log: 'ERROR: No token supplied',
       status: 401,
       message: { err: 'ERROR: No token supplied' },
@@ -779,14 +778,14 @@ userController.token = async (req, res, next) => {
     ) tree_region
     ON tree_region.tree_id = trees.id 
     WHERE token.uuid = $1`,
-    values: [uuid],
-  };
+    values: [uuid]
+  }
   log.debug(query);
   const rval = await pool.query(query);
 
   const trees = [];
-  for(token of rval.rows) {
-    treeItem = {
+  for(let token of rval.rows){
+    let treeItem = {
       token: token.uuid,
       map_url: config.map_url + "?treeid="+token.tree_id,
       image_url: token.image_url,
@@ -797,11 +796,12 @@ userController.token = async (req, res, next) => {
     }
     trees.push(treeItem);
   }
+
   const response = {
     tokens: trees,
   };
   res.locals.response = response;
   next();
-};
+}
 
 module.exports = userController;
