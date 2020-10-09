@@ -2,8 +2,6 @@ const knex = require('../database/knex');
 const config = require('../../config/config');
 
 class TokenRepository{
-  constructor(){
-  }
 
   async getByUUID(uuid){
     const result = await knex("token").where("uuid", uuid)
