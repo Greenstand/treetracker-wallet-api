@@ -43,7 +43,7 @@ describe("authRouter", () => {
         receiver_wallet: "ssss",
       });
     expect(res).property("statusCode").eq(422);
-    expect(res.body.message[0].message).match(/token.*required/);
+    expect(res.body.message[0].message).match(/bundle.*required/);
   });
 
   it("missing sender wallet should throw error", async () => {
@@ -101,7 +101,7 @@ describe("authRouter", () => {
     expect(res).property("statusCode").eq(202);
   });
 
-  it.only("bundle case, success, should return 201", async () => {
+  it("bundle case, success, should return 201", async () => {
     sinon.stub(WalletService.prototype, "getByName").resolves(new Wallet(1));
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: () => {},

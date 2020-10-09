@@ -348,6 +348,88 @@ describe("Wallet", () => {
 
   });
 
+  describe("Bundle transfer", () => {
+
+    //TODO
+    it.skip("Hasn't enough token to send, should throw 403", async () => {
+    });
+
+    it("don't have trust, sender under control, should throw 202, and created a transfer pending record", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
+        id: 1,
+      });
+      const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
+      const sender = new Wallet(1);
+      const receiver = new Wallet(2);
+      await jestExpect(async () => {
+        await wallet.transferBundle(sender, receiver, 1);
+      }).rejects.toThrow(/saved/);
+      expect(fn1).to.have.been.calledWith({
+        originator_entity_id: 1,
+        source_entity_id: 1,
+        destination_entity_id: 2,
+        state: Transfer.STATE.pending,
+        parameters: {
+          bundle: {
+            bundleSize: 1,
+          }
+        },
+      });
+      fn1.restore();
+      fn2.restore();
+    });
+
+    it("don't have trust, receiver under control, should throw 202, and created a transfer request record", async () => {
+      const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
+      const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
+        id: 1,
+      });
+      const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
+      const sender = new Wallet(2);
+      const receiver = new Wallet(1);
+      await jestExpect(async () => {
+        await wallet.transferBundle(sender, receiver, 1);
+      }).rejects.toThrow(/saved/);
+      expect(fn1).to.have.been.calledWith({
+        originator_entity_id: 1,
+        source_entity_id: 2,
+        destination_entity_id: 1,
+        state: Transfer.STATE.requested,
+        parameters: {
+          bundle: {
+            bundleSize: 1,
+          }
+        },
+      });
+      fn0.restore();
+      fn1.restore();
+      fn2.restore();
+    });
+
+    it("have trust, should finish successfully", async () => {
+      const sender = new Wallet(2);
+      const receiver = new Wallet(3);
+      const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
+      const fn1 = sinon.stub(wallet, "checkTrust");
+      const fn2 = sinon.stub(TransferRepository.prototype, "create");
+      const fn3 = sinon.stub(Token.prototype, "completeTransfer");
+      const fn4 = sinon.stub(TokenService.prototype, "getTokensByBundle").resolves([
+        new Token(1)
+      ]);
+      await wallet.transferBundle(sender, receiver, 1);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.completed,
+      }));
+      expect(fn3).calledWith();
+      fn0.restore();
+      fn1.restore();
+      fn2.restore();
+      fn3.restore();
+      fn4.restore();
+    });
+
+  });
+
   describe("getPendingTransfers", () => {
 
     it("getPendingTransfers", async () => {
@@ -374,6 +456,30 @@ describe("Wallet", () => {
       fn2.restore();
       fn3.restore();
       fn4.restore();
+    });
+
+    it("acceptTransfer with bundle", async () => {
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        parameters: {
+          bundle: {
+            bundleSize: 1,
+          }
+        },
+      });  
+      const fn2 = sinon.stub(TransferRepository.prototype, "update");
+      const fn4 = sinon.stub(Token.prototype, "completeTransfer");
+      const fn5 = sinon.stub(TokenService.prototype, "getTokensByBundle").resolves([ new Token(1)]);
+      await wallet.acceptTransfer(1);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.completed,
+      }));
+      expect(fn5).calledWith(1);
+      expect(fn4).calledWith();
+      fn1.restore();
+      fn2.restore();
+      fn4.restore();
+      fn5.restore();
     });
   });
 

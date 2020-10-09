@@ -24,6 +24,12 @@ class TokenService{
     });
   }
 
+  async getTokensByBundle(wallet){
+  }
+
+  async countTokenByWallet(wallet){
+  }
+
 }
 
 module.exports = TokenService;

@@ -278,7 +278,65 @@ class Wallet{
     }
   }
 
-  async transferBundle(){
+  async transferBundle(sender, receiver, bundleSize){
+    //check has enough tokens to sender
+    const tokenCount = await this.tokenService.countTokenByWallet(sender);
+    if(tokenCount < bundleSize){
+      throw new HttpError(403, `Do not have enough tokens to send`);
+    }
+
+    try{
+      await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+      const transfer = await this.transferRepository.create({
+        originator_entity_id: this._id, 
+        source_entity_id: sender.getId(),
+        destination_entity_id: receiver.getId(),
+        state: Transfer.STATE.completed,
+      });
+      log.debug("now, deal with tokens");
+      const tokens = await this.tokenService.getTokensByBundle(bundleSize)
+      for(let token of tokens){
+        await token.completeTransfer(transfer);
+      }
+      
+    }catch(e){
+      if(e instanceof HttpError && e.code === 403){
+        if(await this.hasControlOver(sender)){
+          log.debug("OK, no permission, source under control, now pending it");
+          const transfer = await this.transferRepository.create({
+            originator_entity_id: this._id, 
+            source_entity_id: sender.getId(),
+            destination_entity_id: receiver.getId(),
+            state: Transfer.STATE.pending,
+            parameters: {
+              bundle: {
+                bundleSize: bundleSize,
+              }
+            }
+          });
+          throw new HttpError(202, "No trust, saved");
+        }else if(await this.hasControlOver(receiver)){
+          log.debug("OK, no permission, receiver under control, now request it");
+          const transfer = await this.transferRepository.create({
+            originator_entity_id: this._id, 
+            source_entity_id: sender.getId(),
+            destination_entity_id: receiver.getId(),
+            state: Transfer.STATE.requested,
+            parameters: {
+              bundle: {
+                bundleSize: bundleSize,
+              }
+            }
+          });
+          throw new HttpError(202, "No trust, saved");
+        }else{
+          //TODO
+          expect.fail();
+        }
+      }else{
+        throw e;
+      }
+    }
   }
 
   /*
@@ -315,9 +373,21 @@ class Wallet{
     await this.transferRepository.update(transfer);
 
     //deal with tokens
-    const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
-    for(let token of tokens){
-      await token.completeTransfer(transfer);
+    if(
+      transfer.parameters &&
+      transfer.parameters.bundle &&
+      transfer.parameters.bundle.bundleSize){
+      log.debug("transfer bundle of tokens");
+      const tokens = await this.tokenService.getTokensByBundle(transfer.parameters.bundle.bundleSize);
+      for(let token of tokens){
+        await token.completeTransfer(transfer);
+      }
+    }else{
+      log.debug("transfer tokens");
+      const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+      for(let token of tokens){
+        await token.completeTransfer(transfer);
+      }
     }
   }
 
