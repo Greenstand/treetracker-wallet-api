@@ -16,25 +16,44 @@ transferRouter.post('/',
   helper.handlerWrapper(async (req, res) => {
     Joi.assert(
       req.body,
-      Joi.object({
-        tokens: Joi.array().items(Joi.string()).required(),
-        sender_wallet: Joi.string()
+      Joi.alternatives()
+      //if there is tokens field
+      .conditional(Joi.object({
+        tokens: Joi.any().required(),
+      }).unknown(),{
+        then: Joi.object({
+          tokens: Joi.array().items(Joi.string()).required(),
+          sender_wallet: Joi.string()
           .required(),
-        receiver_wallet: Joi.string()
+          receiver_wallet: Joi.string()
           .required(),
+        }),
+        otherwise: Joi.object({
+          bundle: Joi.object({
+            bundle_size: Joi.number(),
+          }),
+          sender_wallet: Joi.string()
+          .required(),
+          receiver_wallet: Joi.string()
+          .required(),
+        }),
       })
     );
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const walletSender = await walletService.getByName(req.body.sender_wallet);
     const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
-    const tokens = [];
-    const tokenService = new TokenService();
-    for(let uuid of req.body.tokens){
-      const token = await tokenService.getByUUID(uuid); 
-      tokens.push(token);
+    if(req.body.tokens){
+      const tokens = [];
+      const tokenService = new TokenService();
+      for(let uuid of req.body.tokens){
+        const token = await tokenService.getByUUID(uuid); 
+        tokens.push(token);
+      }
+      await walletLogin.transfer(walletSender, walletReceiver, tokens);
+    }else{
+      await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
     }
-    await walletLogin.transfer(walletSender, walletReceiver, tokens);
     res.status(201).json({});
   })
 );

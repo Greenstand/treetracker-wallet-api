@@ -278,6 +278,9 @@ class Wallet{
     }
   }
 
+  async transferBundle(){
+  }
+
   /*
    * I have control over given wallet
    */

@@ -317,6 +317,27 @@ describe('Route integration', () => {
     });
   });
 
+  describe(`Bundle transfer tokens from wallet:${seed.wallet.name} to walletB:${seed.walletB.name}`, () => {
+
+    beforeEach(async () => {
+      const res = await request(server)
+        .post("/transfers")
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          bundle: {
+            bundle_size: 1,
+          },
+          sender_wallet: seed.wallet.name,
+          receiver_wallet: seed.walletB.name,
+        });
+      expect(res).property("statusCode").to.eq(202);
+    })
+
+    it("", () => {
+    });
+  });
+
   describe(`wallet:${seed.wallet.name} request a token from walletB:${seed.walletB.name}, should get 202`, () => {
 
     beforeEach(async () => {
