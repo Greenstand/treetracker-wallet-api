@@ -244,6 +244,7 @@ class Wallet{
       }
       
     }catch(e){
+      //haven't trust
       if(e instanceof HttpError && e.code === 403){
         if(await this.hasControlOver(sender)){
           log.debug("OK, no permission, source under control, now pending it");
@@ -376,6 +377,7 @@ class Wallet{
 
     //deal with tokens
     if(
+      //TODO optimize
       transfer.parameters &&
       transfer.parameters.bundle &&
       transfer.parameters.bundle.bundleSize){
