@@ -422,6 +422,12 @@ class Wallet{
     const transfer = await this.transferRepository.getById(transferId);
     transfer.state = Transfer.STATE.cancelled;
     await this.transferRepository.update(transfer);
+
+    //deal with tokens
+    const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+    for(let token of tokens){
+      await token.cancelTransfer(transfer);
+    }
   }
 
   /*
@@ -439,6 +445,29 @@ class Wallet{
     }
     transfer.state = Transfer.STATE.completed;
     await this.transferRepository.update(transfer);
+
+    //deal with tokens
+    if(
+      //TODO optimize
+      transfer.parameters &&
+      transfer.parameters.bundle &&
+      transfer.parameters.bundle.bundleSize){
+      log.debug("transfer bundle of tokens");
+      const {source_entity_id} = transfer;
+      expect(source_entity_id).number();
+      const senderWallet = new Wallet(source_entity_id);
+      const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
+      for(let token of tokens){
+        expect(token).defined();
+        await token.completeTransfer(transfer);
+      }
+    }else{
+      log.debug("transfer tokens");
+      const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+      for(let token of tokens){
+        await token.completeTransfer(transfer);
+      }
+    }
   }
 
   /*

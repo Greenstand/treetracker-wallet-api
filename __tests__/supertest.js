@@ -91,6 +91,15 @@ describe('Route integration', () => {
       expect(res).property("statusCode").to.eq(202);
     })
 
+    it(`Token:#${seed.token.id} now should be pending `, async () => {
+      const res = await request(server)
+        .get(`/tokens/${seed.token.uuid}`)
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${token}`);
+      expect(res).to.have.property('statusCode', 200);
+      expect(res.body.transfer_pending).eq(true);
+    });
+
     describe("Login with walletB:${seed.walletB.name}", () => {
       let tokenB;
 
@@ -106,7 +115,7 @@ describe('Route integration', () => {
         tokenB = res.body.token;
       })
 
-      describe("get all pending transfers belongs to walletB, should have one", () => {
+      describe("Get all pending transfers belongs to walletB, should have one", () => {
         let pendingTransfer;
 
         beforeEach(async () => {
@@ -178,6 +187,16 @@ describe('Route integration', () => {
             expect(res).to.have.property('statusCode', 200);
             expect(res.body.entity_id).eq(seed.wallet.id);
           });
+
+          it(`Token:#${seed.token.id} now shouldn't be pending `, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.transfer_pending).eq(false);
+          });
+
         });
 
         describe("Delete/cancel the pending transfer", () => {
@@ -198,6 +217,15 @@ describe('Route integration', () => {
             expect(res).to.have.property('statusCode', 200);
             expect(res.body.transfers).lengthOf(1);
             expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
+          });
+
+          it(`Token:#${seed.token.id} now shouldn't be pending `, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.transfer_pending).eq(false);
           });
         });
 
@@ -452,76 +480,88 @@ describe('Route integration', () => {
     });
   });
 
-  describe(`wallet:${seed.wallet.name} request a token from walletB:${seed.walletB.name}, should get 202`, () => {
+  describe.only("Login with walletB", () => {
+    let tokenB;
 
     beforeEach(async () => {
       const res = await request(server)
-        .post("/transfers")
+        .post('/auth')
         .set('treetracker-api-key', apiKey)
-        .set('Authorization', `Bearer ${token}`)
         .send({
-          tokens: [],
-          sender_wallet: seed.walletB.name,
-          receiver_wallet: seed.wallet.name,
+          wallet: seed.walletB.name,
+          password: seed.walletB.password,
         });
-      expect(res).property("statusCode").to.eq(202);
+      expect(res).to.have.property('statusCode', 200);
+      tokenB = res.body.token;
     })
 
-      describe("Login with walletB", () => {
-        let tokenB;
+    describe(`WalletB:${seed.walletB.name} request a token from wallet:${seed.wallet.name}, should get 202`, () => {
+
+      beforeEach(async () => {
+        const res = await request(server)
+          .post("/transfers")
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${tokenB}`)
+          .send({
+            tokens: [seed.token.uuid],
+            sender_wallet: seed.wallet.name,
+            receiver_wallet: seed.walletB.name,
+          });
+        expect(res).property("statusCode").to.eq(202);
+      })
+
+      describe(`wallet:${seed.wallet.name} should find a requested transfer sent to him`, () => {
+        let requestedTransferId;
 
         beforeEach(async () => {
           const res = await request(server)
-            .post('/auth')
+            .get("/transfers?state=requested")
             .set('treetracker-api-key', apiKey)
-            .send({
-              wallet: seed.walletB.name,
-              password: seed.walletB.password,
-            });
-          expect(res).to.have.property('statusCode', 200);
-          tokenB = res.body.token;
+            .set('Authorization', `Bearer ${token}`);
+          expect(res).property("statusCode").to.eq(200);
+          expect(res.body).property("transfers").lengthOf(1);
+          expect(res.body.transfers[0]).property("state").eq("requested");
+          expect(res.body.transfers[0]).property("id").a("number");
+          requestedTransferId = res.body.transfers[0].id;
         })
 
-        describe(`walletB:${seed.walletB.name} should find a requested transfer sent to him`, () => {
-          let requestedTransferId;
-
+        describe(`wallet:${seed.wallet.name} fulfill this requested transfer`, () => {
           beforeEach(async () => {
             const res = await request(server)
-              .get("/transfers?state=requested")
+              .post(`/transfers/${requestedTransferId}/fulfill`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).property("statusCode").to.eq(200);
+          })
+
+          it(`walletB:${seed.walletB.name} should be able to find requested transfer has been completed`, async () => {
+            const res = await request(server)
+              .get("/transfers?state=completed")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).property("statusCode").to.eq(200);
             expect(res.body).property("transfers").lengthOf(1);
-            expect(res.body.transfers[0]).property("state").eq("requested");
-            expect(res.body.transfers[0]).property("id").a("number");
-            requestedTransferId = res.body.transfers[0].id;
-          })
-
-          describe(`walletB:${seed.walletB.name} fulfill this requested transfer`, () => {
-            beforeEach(async () => {
-              const res = await request(server)
-                .post(`/transfers/${requestedTransferId}/fulfill`)
-                .set('treetracker-api-key', apiKey)
-                .set('Authorization', `Bearer ${tokenB}`);
-              expect(res).property("statusCode").to.eq(200);
-            })
-
-            it(`wallet:${seed.wallet.name} should be able to find requested transfer has been completed`, async () => {
-              const res = await request(server)
-                .get("/transfers?state=completed")
-                .set('treetracker-api-key', apiKey)
-                .set('Authorization', `Bearer ${token}`);
-              expect(res).property("statusCode").to.eq(200);
-              expect(res.body).property("transfers").lengthOf(1);
-              expect(res.body.transfers[0]).property("state").eq("completed");
-              expect(res.body.transfers[0]).property("id").eq(requestedTransferId);
-            });
+            expect(res.body.transfers[0]).property("state").eq("completed");
+            expect(res.body.transfers[0]).property("id").eq(requestedTransferId);
           });
 
+          it(`Token:#${seed.token.id} now should still belong to walletB:${seed.walletB.name}`, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${tokenB}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.entity_id).eq(seed.walletB.id);
+          });
         });
-      })
 
-  });
+      });
+
+
+    });
+
+  })
+
 
 
   describe("Relationship", () => {
