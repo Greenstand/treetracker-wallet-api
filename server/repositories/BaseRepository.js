@@ -35,8 +35,10 @@ class BaseRepository{
 
   async countByFilter(filter){
     const result = await knex.count().table(this._tableName).where(filter);
-    expect(result).number();
-    return result;
+    expect(result).match([{
+      count: expect.any(String),
+    }]);
+    return parseInt(result[0].count);
   }
 
   async update(object){

@@ -9,6 +9,7 @@ const seed = require('./seed');
 const log = require('loglevel');
 const Transfer = require("../server/models/Transfer");
 const TrustRelationship = require("../server/models/TrustRelationship");
+const sinon = require("sinon");
 
 const mockUser = {
   wallet: seed.wallet.name,
@@ -25,6 +26,8 @@ describe('Route integration', () => {
   let token;
 
   beforeEach(async () => {
+    //In case other sinon stub would affect me 
+    sinon.restore();
     //before all, seed data to DB
     await seed.clear();
     await seed.seed();
@@ -334,7 +337,118 @@ describe('Route integration', () => {
       expect(res).property("statusCode").to.eq(202);
     })
 
-    it("", () => {
+    describe("Login with walletB:${seed.walletB.name}", () => {
+      let tokenB;
+
+      beforeEach(async () => {
+        const res = await request(server)
+          .post('/auth')
+          .set('treetracker-api-key', apiKey)
+          .send({
+            wallet: seed.walletB.name,
+            password: seed.walletB.password,
+          });
+        expect(res).to.have.property('statusCode', 200);
+        tokenB = res.body.token;
+      })
+
+      describe("get all pending transfers belongs to walletB, should have one", () => {
+        let pendingTransfer;
+
+        beforeEach(async () => {
+          const res = await request(server)
+            .get('/transfers?state=pending')
+            .set('treetracker-api-key', apiKey)
+            .set('Authorization', `Bearer ${tokenB}`);
+          expect(res).to.have.property('statusCode', 200);
+          expect(res.body.transfers).lengthOf(1);
+          pendingTransfer = res.body.transfers[0];
+          expect(pendingTransfer).property("destination_entity_id").eq(seed.walletB.id);
+        })
+
+        describe("Accept the pending transfer", () => {
+
+          beforeEach(async () => {
+            const res = await request(server)
+              .post(`/transfers/${pendingTransfer.id}/accept`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${tokenB}`);
+            expect(res).to.have.property('statusCode', 200);
+          })
+
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed`, async () => {
+            const res = await request(server)
+              .get(`/transfers`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.transfers).lengthOf(1);
+            expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.completed);
+          });
+
+          it(`Token:#${seed.token.id} now should belong to walletB:${seed.walletB.name}`, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.entity_id).eq(seed.walletB.id);
+          });
+        });
+
+        describe("Decline the pending transfer", () => {
+
+          beforeEach(async () => {
+            const res = await request(server)
+              .post(`/transfers/${pendingTransfer.id}/decline`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${tokenB}`);
+            expect(res).to.have.property('statusCode', 200);
+          })
+
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
+            const res = await request(server)
+              .get(`/transfers`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.transfers).lengthOf(1);
+            expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
+          });
+
+          it(`Token:#${seed.token.id} now should still belong to wallet:${seed.wallet.name}`, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.entity_id).eq(seed.wallet.id);
+          });
+        });
+
+        describe("Delete/cancel the pending transfer", () => {
+
+          beforeEach(async () => {
+            const res = await request(server)
+              .del(`/transfers/${pendingTransfer.id}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+          })
+
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
+            const res = await request(server)
+              .get(`/transfers`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.transfers).lengthOf(1);
+            expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
+          });
+        });
+
+      });
+
     });
   });
 

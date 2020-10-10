@@ -355,6 +355,7 @@ describe("Wallet", () => {
     });
 
     it("don't have trust, sender under control, should throw 202, and created a transfer pending record", async () => {
+      const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
       });
@@ -375,12 +376,13 @@ describe("Wallet", () => {
           }
         },
       });
+      expect(fn0).calledWith(sender);
       fn1.restore();
       fn2.restore();
     });
 
     it("don't have trust, receiver under control, should throw 202, and created a transfer request record", async () => {
-      const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
+      const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
       });
@@ -461,6 +463,7 @@ describe("Wallet", () => {
     it("acceptTransfer with bundle", async () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
         id:1,
+        source_entity_id: 1,
         parameters: {
           bundle: {
             bundleSize: 1,
@@ -474,7 +477,7 @@ describe("Wallet", () => {
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.completed,
       }));
-      expect(fn5).calledWith(1);
+      expect(fn5).calledWith(sinon.match.any, 1);
       expect(fn4).calledWith();
       fn1.restore();
       fn2.restore();

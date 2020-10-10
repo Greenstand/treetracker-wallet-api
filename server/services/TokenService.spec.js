@@ -28,7 +28,9 @@ describe("Token", () => {
   it("getTokensByBundle", async () => {
     const wallet = new Wallet(1);
     const fn = sinon.stub(TokenRepository.prototype, "getByFilter").resolves([
-      new Token(1)
+      {
+        id: 1,
+      }
     ]);
     const result = await tokenService.getTokensByBundle(wallet, 1);
     expect(result).a("array").lengthOf(1);

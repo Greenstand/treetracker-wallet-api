@@ -33,7 +33,7 @@ class TokenService{
     },{
       limit: bundleSize,
     });
-    return result;
+    return result.map(json => new Token(json));
   }
 
   /*

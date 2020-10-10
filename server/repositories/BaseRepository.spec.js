@@ -103,7 +103,9 @@ describe("BaseRepository", () => {
       tracker.install();
       tracker.on("query", (query) => {
         expect(query.sql).match(/.*count.*column.*/);
-        query.response(1);
+        query.response([{
+          count: "1",
+        }]);
       });
       const result = await baseRepository.countByFilter({
         column: "testColumn",

@@ -7,6 +7,7 @@ const Crypto = require('crypto');
 const expect = require("expect-runtime");
 const log = require("loglevel");
 const Transfer = require("./Transfer");
+const Token = require("./Token");
 
 class Wallet{
 
@@ -281,6 +282,7 @@ class Wallet{
   async transferBundle(sender, receiver, bundleSize){
     //check has enough tokens to sender
     const tokenCount = await this.tokenService.countTokenByWallet(sender);
+    expect(tokenCount).number();
     if(tokenCount < bundleSize){
       throw new HttpError(403, `Do not have enough tokens to send`);
     }
@@ -378,8 +380,12 @@ class Wallet{
       transfer.parameters.bundle &&
       transfer.parameters.bundle.bundleSize){
       log.debug("transfer bundle of tokens");
-      const tokens = await this.tokenService.getTokensByBundle(transfer.parameters.bundle.bundleSize);
+      const {source_entity_id} = transfer;
+      expect(source_entity_id).number();
+      const senderWallet = new Wallet(source_entity_id);
+      const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       for(let token of tokens){
+        expect(token).defined();
         await token.completeTransfer(transfer);
       }
     }else{
