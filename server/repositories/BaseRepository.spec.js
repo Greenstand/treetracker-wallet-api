@@ -45,6 +45,22 @@ describe("BaseRepository", () => {
       expect(result).lengthOf(1);
       expect(result[0]).property("id").eq(1);
     });
+
+    it("getByFilter with limit", async () => {
+      tracker.uninstall();
+      tracker.install();
+      tracker.on("query", (query) => {
+        expect(query.sql).match(/select.*testTable.*limit.*/);
+        query.response([{id:1}]);
+      });
+      const result = await baseRepository.getByFilter({
+        name: "testName",
+      },{
+        limit: 1,
+      });
+      expect(result).lengthOf(1);
+      expect(result[0]).property("id").eq(1);
+    });
   });
 
   describe("update", () => {
@@ -71,12 +87,28 @@ describe("BaseRepository", () => {
       tracker.install();
       tracker.on("query", (query) => {
         expect(query.sql).match(/insert.*testTable.*returning.*/);
-        query.response({id:1});
+        query.response([{id:1}]);
       });
       const result = await baseRepository.create({
         name: "testName",
       });
       expect(result).property("id").eq(1);
+    });
+  });
+
+  describe("countByFilter", () => {
+
+    it("", async () => {
+      tracker.uninstall();
+      tracker.install();
+      tracker.on("query", (query) => {
+        expect(query.sql).match(/.*count.*column.*/);
+        query.response(1);
+      });
+      const result = await baseRepository.countByFilter({
+        column: "testColumn",
+      });
+      expect(result).eq(1);
     });
   });
 });

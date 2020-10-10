@@ -26,7 +26,7 @@ describe("TransferRepository", () => {
       [
         function firstQuery() {
           expect(query.sql).match(/insert.*transfer.*/);
-          query.response({id:1});
+          query.response([{id:1}]);
         }
       ][step - 1]();
     });

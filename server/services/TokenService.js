@@ -24,10 +24,26 @@ class TokenService{
     });
   }
 
-  async getTokensByBundle(wallet){
+  /*
+   * Get n tokens from a wallet
+   */
+  async getTokensByBundle(wallet, bundleSize){
+    const result = await this.tokenRepository.getByFilter({
+      entity_id: wallet.getId(),
+    },{
+      limit: bundleSize,
+    });
+    return result;
   }
 
+  /*
+   * Count how many tokens a wallet has
+   */
   async countTokenByWallet(wallet){
+    const result = await this.tokenRepository.countByFilter({
+      entity_id: wallet.getId(),
+    });
+    return result;
   }
 
 }

@@ -17,8 +17,25 @@ class BaseRepository{
     return object;
   }
 
-  async getByFilter(filter){
-    const result = await knex.select().table(this._tableName).where(filter);
+  /*
+   * select by filter
+   * options:
+   *  limit: number
+   */
+  async getByFilter(filter, options){
+    let result;
+    //TODO better way to support options
+    if(options && options.limit){
+      result = await knex.select().table(this._tableName).where(filter).limit(options && options.limit);
+    }else{
+      result = await knex.select().table(this._tableName).where(filter);
+    }
+    return result;
+  }
+
+  async countByFilter(filter){
+    const result = await knex.count().table(this._tableName).where(filter);
+    expect(result).number();
     return result;
   }
 
@@ -33,6 +50,7 @@ class BaseRepository{
     }]);
     return result[0];
   }
+
 }
 
 module.exports = BaseRepository;
