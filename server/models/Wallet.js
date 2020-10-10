@@ -113,6 +113,7 @@ class Wallet{
 
     //create this request
     const result = await this.trustRepository.create({
+      type: TrustRelationship.getTrustTypeByRequestType(requestType),
       request_type: requestType,
       actor_entity_id: this._id,
       originator_entity_id: this._id,
@@ -202,11 +203,12 @@ class Wallet{
         actor_entity_id: expect.any(Number),
         target_entity_id: expect.any(Number),
         request_type: expect.any(String),
+        type: expect.any(String),
       });
       if(
         trustRelationship.actor_entity_id === sourceWallet.getId() &&
         trustRelationship.target_entity_id === targetWallet.getId() &&
-        trustRelationship.request_type === trustType
+        trustRelationship.type === trustType
       ){
         return true;
       }else{

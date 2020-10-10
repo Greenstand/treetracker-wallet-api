@@ -107,11 +107,16 @@ describe("Wallet", () => {
       const fn1 = sinon.stub(WalletRepository.prototype, "getByName").resolves({id:2});
       const fn2 = sinon.stub(TrustRepository.prototype, "get").resolves([]);
       const fn3 = sinon.stub(TrustRepository.prototype, "create");
-      await wallet.requestTrustFromAWallet("send","test");
+      await wallet.requestTrustFromAWallet(
+        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        "test"
+      );
       expect(fn3).to.have.been.calledWith(
         sinon.match({
           actor_entity_id: 1,
           originator_entity_id: 1,
+          request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+          type: TrustRelationship.ENTITY_TRUST_TYPE.send,
         }),
       );
       fn1.restore();
@@ -244,11 +249,12 @@ describe("Wallet", () => {
       const walletReceiver = new Wallet(2);
       const fn1 = sinon.stub(TrustRepository.prototype, "getTrustedByOriginatorId").resolves([{
         request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
         actor_entity_id: wallet.getId(),
         target_entity_id: walletReceiver.getId(),
       }]);//no relationship
       await wallet.checkTrust(
-        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        TrustRelationship.ENTITY_TRUST_TYPE.send,
         wallet,
         walletReceiver,
       );

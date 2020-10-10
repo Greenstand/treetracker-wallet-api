@@ -480,7 +480,7 @@ describe('Route integration', () => {
     });
   });
 
-  describe.only("Login with walletB", () => {
+  describe("Login with walletB", () => {
     let tokenB;
 
     beforeEach(async () => {
@@ -564,7 +564,7 @@ describe('Route integration', () => {
 
 
 
-  describe("Relationship", () => {
+  describe.skip("Relationship", () => {
 
     beforeEach(async () => {
       const res = await request(server)
