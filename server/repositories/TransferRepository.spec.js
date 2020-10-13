@@ -3,6 +3,7 @@ const {expect} = require("chai");
 const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
 const tracker = mockKnex.getTracker();
+const Session = require("../models/Session");
 
 
 describe("TransferRepository", () => {
@@ -11,7 +12,7 @@ describe("TransferRepository", () => {
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    transferRepository = new TransferRepository();
+    transferRepository = new TransferRepository(new Session());
   })
 
   afterEach(() => {

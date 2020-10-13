@@ -10,9 +10,9 @@ const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS25
 const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
 
 
-class ApiKey{
-  constructor(){
-    this.apiKeyRepository = new ApiKeyRepository();
+class ApiKeyService{
+  constructor(session){
+    this.apiKeyRepository = new ApiKeyRepository(session);
   }
 
   async check(apiKey){
@@ -38,7 +38,7 @@ class ApiKey{
   }
 }
 
-module.exports = ApiKey;
+module.exports = ApiKeyService;
 
 //const authController = {};
 //authController.apiKey = async (req, res, next) => {

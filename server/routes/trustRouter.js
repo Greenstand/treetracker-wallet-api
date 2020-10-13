@@ -6,6 +6,7 @@ const WalletService = require("../services/WalletService");
 const Wallet = require("../models/Wallet");
 const expect = require("expect-runtime");
 const helper = require("./utils");
+const Session = require("../models/Session");
 
 trustRouter.get('/',
 //  [
@@ -15,7 +16,8 @@ trustRouter.get('/',
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
     expect(res.locals).property("wallet_id").number();
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const wallet = await walletService.getById(res.locals.wallet_id);
     res.locals.response = {
       trust_relationships: await wallet.getTrustRelationshipsRequested(),
@@ -39,7 +41,8 @@ trustRouter.post('/',
     expect(res.locals.wallet_id).number();
     expect(req).property("body").property("trust_request_type").a(expect.any(String));
     expect(req).property("body").property("wallet").a(expect.any(String));
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const wallet = await walletService.getById(res.locals.wallet_id);
     const trust_relationship = await wallet.requestTrustFromAWallet(
       req.body.trust_request_type,
@@ -59,7 +62,8 @@ trustRouter.post('/:trustRelationshipId/accept',
     expect(res.locals).property("wallet_id").number();
     expect(req.params).property("trustRelationshipId").defined();
     const trustRelationshipId = parseInt(req.params.trustRelationshipId);
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const wallet = await walletService.getById(res.locals.wallet_id);
     await wallet.acceptTrustRequestSentToMe(trustRelationshipId);
     res.status(200).json();
@@ -76,7 +80,8 @@ trustRouter.post('/:trustRelationshipId/decline',
     expect(res.locals).property("wallet_id").number();
     expect(req.params).property("trustRelationshipId").defined();
     const trustRelationshipId = parseInt(req.params.trustRelationshipId);
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const wallet = await walletService.getById(res.locals.wallet_id);
     await wallet.declineTrustRequestSentToMe(trustRelationshipId);
     res.status(200).json();
@@ -93,7 +98,8 @@ trustRouter.delete('/:trustRelationshipId',
     expect(res.locals).property("wallet_id").number();
     expect(req.params).property("trustRelationshipId").defined();
     const trustRelationshipId = parseInt(req.params.trustRelationshipId);
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const wallet = await walletService.getById(res.locals.wallet_id);
     await wallet.cancelTrustRequestSentToMe(trustRelationshipId);
     res.status(200).json();

@@ -7,7 +7,7 @@ const Wallet = require("./Wallet");
 
 class Token{
   
-  constructor(idOrJSON){
+  constructor(idOrJSON, session){
     if(typeof idOrJSON === "number"){
       this._id = idOrJSON;
     }else if(typeof idOrJSON === "object" && typeof idOrJSON.id === "number"){
@@ -16,8 +16,9 @@ class Token{
     }else{
       throw new HttpError(500, `wrong contructor:${idOrJSON}`);
     }
-    this.tokenRepository = new TokenRepository();
-    this.transactionRepository = new TransactionRepository();
+    this.tokenRepository = new TokenRepository(session);
+    this.transactionRepository = new TransactionRepository(session);
+    this._session = session;
   }
 
   getId(){

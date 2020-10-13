@@ -11,7 +11,7 @@ const Token = require("./Token");
 
 class Wallet{
 
-  constructor(idOrJSON){
+  constructor(idOrJSON, session){
     if(typeof idOrJSON === "number"){
       this._id = idOrJSON;
     }else if(typeof idOrJSON === "object" && typeof idOrJSON.id === "number"){
@@ -21,12 +21,13 @@ class Wallet{
       throw new HttpError(500);
     }
     const WalletService = require("../services/WalletService");
-    this.walletRepository = new WalletRepository();
-    this.trustRepository = new TrustRepository();
-    this.walletService = new WalletService();
-    this.transferRepository = new TransferRepository();
+    this.walletRepository = new WalletRepository(session);
+    this.trustRepository = new TrustRepository(session);
+    this.walletService = new WalletService(session);
+    this.transferRepository = new TransferRepository(session);
     const TokenService = require("../services/TokenService");
-    this.tokenService = new TokenService();
+    this.tokenService = new TokenService(session);
+    this._session = session;
   }
 
   getId(){
@@ -386,7 +387,7 @@ class Wallet{
       log.debug("transfer bundle of tokens");
       const {source_entity_id} = transfer;
       expect(source_entity_id).number();
-      const senderWallet = new Wallet(source_entity_id);
+      const senderWallet = new Wallet(source_entity_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       for(let token of tokens){
         expect(token).defined();
@@ -457,7 +458,7 @@ class Wallet{
       log.debug("transfer bundle of tokens");
       const {source_entity_id} = transfer;
       expect(source_entity_id).number();
-      const senderWallet = new Wallet(source_entity_id);
+      const senderWallet = new Wallet(source_entity_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       for(let token of tokens){
         expect(token).defined();

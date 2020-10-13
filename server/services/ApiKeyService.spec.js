@@ -3,12 +3,13 @@ const jestExpect = require("expect");
 const sinon = require("sinon");
 const ApiKeyRepository = require("../repositories/ApiKeyRepository");
 const HttpError = require("../utils/HttpError");
+const Session = require("../models/Session");
 
 describe("ApiKey", () => {
   let apiKey;
 
   before(() => {
-    apiKey = new ApiKeyService();
+    apiKey = new ApiKeyService(new Session());
   })
 
   it("empty key should throw error", async () => {

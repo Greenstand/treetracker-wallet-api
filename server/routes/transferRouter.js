@@ -8,6 +8,7 @@ const helper = require("./utils");
 const Joi = require("joi");
 const TokenService = require("../services/TokenService");
 const HttpError = require("../utils/HttpError");
+const Session = require("../models/Session");
 
 
 transferRouter.post('/',
@@ -39,13 +40,14 @@ transferRouter.post('/',
         }),
       })
     );
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const walletSender = await walletService.getByName(req.body.sender_wallet);
     const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
     if(req.body.tokens){
       const tokens = [];
-      const tokenService = new TokenService();
+      const tokenService = new TokenService(session);
       for(let uuid of req.body.tokens){
         const token = await tokenService.getByUUID(uuid); 
         tokens.push(token);
@@ -68,7 +70,8 @@ transferRouter.post('/:transfer_id/accept',
         transfer_id: Joi.number().required(),
       })
     );
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     await walletLogin.acceptTransfer(req.params.transfer_id);
     res.status(200).json({});
@@ -85,7 +88,8 @@ transferRouter.post('/:transfer_id/decline',
         transfer_id: Joi.number().required(),
       })
     );
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     await walletLogin.declineTransfer(req.params.transfer_id);
     res.status(200).json({});
@@ -102,7 +106,8 @@ transferRouter.delete('/:transfer_id',
         transfer_id: Joi.number().required(),
       })
     );
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     await walletLogin.cancelTransfer(req.params.transfer_id);
     res.status(200).json({});
@@ -119,7 +124,8 @@ transferRouter.post('/:transfer_id/fulfill',
         transfer_id: Joi.number().required(),
       })
     );
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     await walletLogin.fulfillTransfer(req.params.transfer_id);
     res.status(200).json({});
@@ -131,7 +137,8 @@ transferRouter.get("/",
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
     const {state, wallet} = req.query;
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const result = await walletLogin.getTransfers(state, wallet);
     res.status(200).json({transfers: result});

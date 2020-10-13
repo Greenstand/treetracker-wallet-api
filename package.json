@@ -12,7 +12,7 @@
     "test-seedDB": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './**/*.spec.js'",
     "test-integration": "NODE_ENV=test mocha --exit --timeout 20000 --require co-mocha './__tests__/supertest.js'",
     "test-watch": "NODE_ENV=test NODE_LOG_LEVEL=info mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/supertest.js'",
-    "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/supertest.js'"
+    "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/supertest.js' './__tests__/session.spec.js'"
   },
   "keywords": [],
   "author": "",

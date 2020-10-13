@@ -7,6 +7,7 @@ const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 const expect = require("expect-runtime");
 const Joi = require("joi");
+const Session = require("../models/Session");
 
 authRouter.post('/',
   helper.apiKeyHandler,
@@ -27,7 +28,8 @@ authRouter.post('/',
       })
     );
     const { wallet, password } = req.body;
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const walletModel = await walletService.getByName(wallet);
     const walletObject = await walletModel.authorize(password);
 

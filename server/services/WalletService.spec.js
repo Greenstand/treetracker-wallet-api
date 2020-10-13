@@ -3,12 +3,14 @@ const WalletRepository = require("../repositories/WalletRepository");
 const sinon = require("sinon");
 const {expect} = require("chai");
 const Wallet = require("../models/Wallet");
+const Session = require("../models/Session");
 
 describe("WalletService", () => {
   let walletService;
+  let session = new Session();
 
   beforeEach(() => {
-    walletService = new WalletService();
+    walletService = new WalletService(session);
   })
 
   it("getById", () => {
