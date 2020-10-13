@@ -1,4 +1,4 @@
-const EntityModel = require("./EntityModel");
+const WalletRepository = require("./WalletRepository");
 const {expect} = require("chai");
 const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
@@ -7,13 +7,13 @@ const jestExpect = require("expect");
 
 
 
-describe("EntityModel", () => {
-  let entityModel;
+describe("WalletRepository", () => {
+  let walletRepository;
 
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    entityModel = new EntityModel();
+    walletRepository = new WalletRepository();
   })
 
   afterEach(() => {
@@ -21,27 +21,26 @@ describe("EntityModel", () => {
     mockKnex.unmock(knex);
   });
 
-  it("getEntityByWalletName", async () => {
-    tracker.on("query", (query) => {
-      expect(query.sql).match(/select.*wallet.*/);
-      query.response([{
-        id:1,
-      }]);
-    });
-    const entity = await entityModel.getEntityByWalletName("Dadior");
-    expect(entity).to.be.a("object");
-  });
-
-  it("getEntityByWalletName can not find the wallet name", async () => {
+  it("getByName", async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on("query", (query) => {
-      console.log("xxx");
+      expect(query.sql).match(/select.*wallet.*/);
+      query.response([{id:1}]);
+    });
+    const entity = await walletRepository.getByName("Dadior");
+    expect(entity).to.be.a("object");
+  });
+
+  it("getByName can not find the wallet name", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on("query", (query) => {
       expect(query.sql).match(/select.*wallet.*/);
       query.response([]);
     });
     await jestExpect(async () => {
-      await entityModel.getEntityByWalletName("Dadior");
+      await walletRepository.getByName("Dadior");
     }).rejects.toThrow(/can not find entity/);
   });
 });
