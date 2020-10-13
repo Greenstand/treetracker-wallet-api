@@ -281,8 +281,7 @@ describe('Route integration', () => {
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${token}`);
             expect(res).property("statusCode").to.eq(200);
-            //TODO should be lengthOf 1, equaling 2 is because the API can not filter it correctly
-            expect(res).property("body").property("trust_relationships").lengthOf(2);
+            expect(res).property("body").property("trust_relationships").lengthOf(1);
             expect(res.body.trust_relationships[0]).property("id").a("number");
           });
 
@@ -316,10 +315,9 @@ describe('Route integration', () => {
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${token}`);
             expect(res).property("statusCode").to.eq(200);
-            //TODO should be lengthOf 1, equaling 2 is because the API can not filter it correctly
-            expect(res).property("body").property("trust_relationships").lengthOf(2);
-            expect(res.body.trust_relationships[1]).property("id").a("number");
-            expect(res.body.trust_relationships[1]).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.canceled_by_target);
+            expect(res).property("body").property("trust_relationships").lengthOf(1);
+            expect(res.body.trust_relationships[0]).property("id").a("number");
+            expect(res.body.trust_relationships[0]).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.canceled_by_target);
           });
 
         });
@@ -341,10 +339,9 @@ describe('Route integration', () => {
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${token}`);
           expect(res).property("statusCode").to.eq(200);
-          //TODO should be lengthOf 1, equaling 2 is because the API can not filter it correctly
-          expect(res).property("body").property("trust_relationships").lengthOf(2);
-          expect(res.body.trust_relationships[1]).property("id").a("number");
-          expect(res.body.trust_relationships[1]).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.cancelled_by_originator);
+          expect(res).property("body").property("trust_relationships").lengthOf(1);
+          expect(res.body.trust_relationships[0]).property("id").a("number");
+          expect(res.body.trust_relationships[0]).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.cancelled_by_originator);
         });
 
       });
@@ -564,6 +561,37 @@ describe('Route integration', () => {
     });
 
   })
+
+  describe("Login with walletB", () => {
+    let tokenB;
+
+    beforeEach(async () => {
+      const res = await request(server)
+        .post('/auth')
+        .set('treetracker-api-key', apiKey)
+        .send({
+          wallet: seed.walletB.name,
+          password: seed.walletB.password,
+        });
+      expect(res).to.have.property('statusCode', 200);
+      tokenB = res.body.token;
+    })
+
+    it(`${seed.walletC.name} can transfer token between ${seed.walletC.name} and others`, async () => {
+      const res = await request(server)
+        .post("/transfers")
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${tokenB}`)
+        .send({
+          bundle: {
+            bundle_size: 1,
+          },
+          sender_wallet: seed.wallet.name,
+          receiver_wallet: seed.walletC.name,
+        });
+      expect(res).property("statusCode").to.eq(202);
+    });
+  });
 
 
 

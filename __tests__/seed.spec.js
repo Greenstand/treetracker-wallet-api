@@ -131,7 +131,7 @@ describe("Seed data into DB", () => {
     it("walletC have manage relationship with wallet", async () => {
       const r = await knex.table("wallets.entity_trust").select()
         .where({
-          actor_entity_id: seed.wallet.id,
+          actor_entity_id: seed.walletB.id,
           target_entity_id: seed.walletC.id,
           type: "manage",
         });

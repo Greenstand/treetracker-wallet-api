@@ -354,8 +354,17 @@ class Wallet{
       return true;
     }else{
       //check sub wallet
-      //TODO
-      return false;
+      const result = await this.trustRepository.getByFilter({
+        actor_entity_id: this._id,
+        target_entity_id: wallet.getId(),
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      });
+      if(result.length > 0){
+        return true;
+      }else{
+        return false;
+      }
     }
   }
 
