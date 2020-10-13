@@ -53,6 +53,19 @@
     console.log(entity)
 
 
+    const roles = [
+      { entity_id: entity.id, role_name: 'list_trees', enabled: true },
+      { entity_id: entity.id, role_name: 'transfer', enabled: true },
+      { entity_id: entity.id, role_name: 'manage_accounts', enabled: true },
+      { entity_id: entity.id, role_name: 'transfer_bundle', enabled: true },
+      { entity_id: entity.id, role_name: 'accounts', enabled: true },
+    ]
+
+    for(role of roles){
+      await trx('entity_role').insert(role)
+    }
+
+
     // insert fake planters
     const planterData = {
       first_name: faker.name.firstName(),
