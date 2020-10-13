@@ -1,30 +1,28 @@
 
-const Knex = require('knex')
-const faker = require('faker');
-const { v4: uuidv4 } = require('uuid');
+(async () => {
+
+  const Knex = require('knex')
+  const faker = require('faker');
+  const { v4: uuidv4 } = require('uuid');
 
 
-const Config = require('./../../config/config.js');
-const knex = Knex({
-  client: 'pg',
-  connection:  Config.connectionString
-})
+  const Config = require('./../../config/config.js');
+  const knex = Knex({
+    client: 'pg',
+    connection:  Config.connectionString
+  })
 
-const Crypto = require('crypto');
-const sha512 = function(password, salt){
+  const Crypto = require('crypto');
+  const sha512 = function(password, salt){
     var hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
     hash.update(password);
     var value = hash.digest('hex');
     return value;
-};
+  };
 
-const salt = faker.internet.password() // not a secure salt
-const password = faker.internet.password() // not a secure password
-const passwordHash = sha512(password, salt)
-
-
-
-(async () => {
+  const salt = faker.internet.password() // not a secure salt
+  const password = faker.internet.password() // not a secure password
+  const passwordHash = sha512(password, salt)
 
   const trx = await knex.transaction();
 
@@ -47,7 +45,7 @@ const passwordHash = sha512(password, salt)
       type: 'p',
       first_name: faker.name.firstName(),
       last_name: faker.name.lastName(),
-      wallet: faker.internet.userName(),
+      wallet: username,
       password: passwordHash,
       salt: salt
     }).returning('*')
