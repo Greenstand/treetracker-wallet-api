@@ -7,9 +7,6 @@ const expect = require("expect-runtime");
 
 class WalletRepository {
 
-  constructor(){
-  }
-
   async getByName(wallet){
     expect(wallet, () => new HttpError(400, `invalid wallet name:${wallet}`))
       .match(/^\S+$/);

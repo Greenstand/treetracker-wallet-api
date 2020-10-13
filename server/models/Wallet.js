@@ -35,7 +35,7 @@ class Wallet{
 
   async authorize(password){
     if(!password){
-      throw new HttpError(400, 'Error: Invalid credential format');
+      throw new HttpError(400, 'No password supplied');
     }
 
     let walletObject = await this.toJSON();

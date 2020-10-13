@@ -39,7 +39,7 @@ describe("Wallet", () => {
     expect(wallet).instanceOf(Wallet);
     await jestExpect(async () => {
       await wallet.authorize(undefined);
-    }).rejects.toThrow(/invalid/i);
+    }).rejects.toThrow(/no password/i);
     WalletRepository.prototype.getByName.restore();
   });
 
