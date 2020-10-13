@@ -41,22 +41,37 @@ transferRouter.post('/',
       })
     );
     const session = new Session();
-    const walletService = new WalletService(session);
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const walletSender = await walletService.getByName(req.body.sender_wallet);
-    const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
-    if(req.body.tokens){
-      const tokens = [];
-      const tokenService = new TokenService(session);
-      for(let uuid of req.body.tokens){
-        const token = await tokenService.getByUUID(uuid); 
-        tokens.push(token);
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      const walletSender = await walletService.getByName(req.body.sender_wallet);
+      const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
+      if(req.body.tokens){
+        const tokens = [];
+        const tokenService = new TokenService(session);
+        for(let uuid of req.body.tokens){
+          const token = await tokenService.getByUUID(uuid); 
+          tokens.push(token);
+        }
+        await walletLogin.transfer(walletSender, walletReceiver, tokens);
+      }else{
+        await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
       }
-      await walletLogin.transfer(walletSender, walletReceiver, tokens);
-    }else{
-      await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
+      res.status(201).json({});
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
     }
-    res.status(201).json({});
   })
 );
 
@@ -71,10 +86,25 @@ transferRouter.post('/:transfer_id/accept',
       })
     );
     const session = new Session();
-    const walletService = new WalletService(session);
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    await walletLogin.acceptTransfer(req.params.transfer_id);
-    res.status(200).json({});
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      await walletLogin.acceptTransfer(req.params.transfer_id);
+      res.status(200).json({});
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
+    }
   })
 );
 
@@ -89,10 +119,25 @@ transferRouter.post('/:transfer_id/decline',
       })
     );
     const session = new Session();
-    const walletService = new WalletService(session);
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    await walletLogin.declineTransfer(req.params.transfer_id);
-    res.status(200).json({});
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      await walletLogin.declineTransfer(req.params.transfer_id);
+      res.status(200).json({});
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
+    }
   })
 );
 
@@ -107,10 +152,25 @@ transferRouter.delete('/:transfer_id',
       })
     );
     const session = new Session();
-    const walletService = new WalletService(session);
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    await walletLogin.cancelTransfer(req.params.transfer_id);
-    res.status(200).json({});
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      await walletLogin.cancelTransfer(req.params.transfer_id);
+      res.status(200).json({});
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
+    }
   })
 );
 
@@ -125,10 +185,25 @@ transferRouter.post('/:transfer_id/fulfill',
       })
     );
     const session = new Session();
-    const walletService = new WalletService(session);
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    await walletLogin.fulfillTransfer(req.params.transfer_id);
-    res.status(200).json({});
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      await walletLogin.fulfillTransfer(req.params.transfer_id);
+      res.status(200).json({});
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
+    }
   })
 );
 
