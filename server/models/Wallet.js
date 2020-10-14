@@ -272,6 +272,7 @@ class Wallet{
       for(let token of tokens){
         await token.completeTransfer(transfer);
       }
+      return transfer;
       
     }catch(e){
       //haven't trust
@@ -287,7 +288,7 @@ class Wallet{
           for(let token of tokens){
             await token.pendingTransfer(transfer);
           }
-          throw new HttpError(202, "No trust, saved");
+          return transfer;
         }else if(await this.hasControlOver(receiver)){
           log.debug("OK, no permission, receiver under control, now request it");
           const transfer = await this.transferRepository.create({
@@ -299,7 +300,7 @@ class Wallet{
           for(let token of tokens){
             await token.pendingTransfer(transfer);
           }
-          throw new HttpError(202, "No trust, saved");
+          return transfer;
         }else{
           //TODO
           expect.fail();

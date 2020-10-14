@@ -8,6 +8,7 @@ const helper = require("./utils");
 const Joi = require("joi");
 const TokenService = require("../services/TokenService");
 const HttpError = require("../utils/HttpError");
+const Transfer = require("../models/Transfer");
 
 
 transferRouter.post('/',
@@ -43,6 +44,7 @@ transferRouter.post('/',
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const walletSender = await walletService.getByName(req.body.sender_wallet);
     const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
+    let result;
     if(req.body.tokens){
       const tokens = [];
       const tokenService = new TokenService();
@@ -50,11 +52,19 @@ transferRouter.post('/',
         const token = await tokenService.getByUUID(uuid); 
         tokens.push(token);
       }
-      await walletLogin.transfer(walletSender, walletReceiver, tokens);
+      result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
     }else{
-      await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
+      result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
     }
-    res.status(201).json({});
+    if(result.state === Transfer.STATE.completed){
+      res.status(201).json({id: result.id});
+    }else if(
+      result.state === Transfer.STATE.pending || 
+      result.state === Transfer.STATE.requested){
+      res.status(202).json({id: result.id});
+    }else{
+      expect.fail();
+    }
   })
 );
 

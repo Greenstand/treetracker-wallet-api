@@ -283,10 +283,11 @@ describe("Wallet", () => {
       fn1.restore();
     });
 
-    it("don't have trust, sender under control, should throw 202, and created a transfer pending record", async () => {
+    it("don't have trust, sender under control, should return transfer with pending state", async () => {
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
+        state: Transfer.STATE.pending,
       });
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
       const sender = new Wallet(1);
@@ -295,9 +296,8 @@ describe("Wallet", () => {
         id: 1,
         uuid: "uu",
       });
-      await jestExpect(async () => {
-        await wallet.transfer(sender, receiver, [token]);
-      }).rejects.toThrow(/saved/);
+      const transfer = await wallet.transfer(sender, receiver, [token]);
+      expect(transfer).property("state").eq(Transfer.STATE.pending);
       expect(fn1).to.have.been.calledWith({
         originator_entity_id: 1,
         source_entity_id: 1,
@@ -313,6 +313,7 @@ describe("Wallet", () => {
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
+        state: Transfer.STATE.requested,
       });
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
       const sender = new Wallet(2);
@@ -321,9 +322,8 @@ describe("Wallet", () => {
         id: 1,
         uuid: "uu",
       });
-      await jestExpect(async () => {
-        await wallet.transfer(sender, receiver, [token]);
-      }).rejects.toThrow(/saved/);
+      const transfer = await wallet.transfer(sender, receiver, [token]);
+      expect(transfer).property("state").eq(Transfer.STATE.requested);
       expect(fn1).to.have.been.calledWith({
         originator_entity_id: 1,
         source_entity_id: 2,

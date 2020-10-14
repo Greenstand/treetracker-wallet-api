@@ -577,7 +577,7 @@ describe('Route integration', () => {
       tokenB = res.body.token;
     })
 
-    it(`${seed.walletC.name} can transfer token between ${seed.walletC.name} and others`, async () => {
+    it(`Via ${seed.walletB.name}, can transfer token between ${seed.walletC.name} and others`, async () => {
       const res = await request(server)
         .post("/transfers")
         .set('treetracker-api-key', apiKey)
@@ -591,6 +591,55 @@ describe('Route integration', () => {
         });
       expect(res).property("statusCode").to.eq(202);
     });
+  });
+
+  describe(`Send a token to ${seed.walletC.name}`, () => {
+
+    beforeEach(async () => {
+      const res = await request(server)
+        .post("/transfers")
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          tokens: [seed.token.uuid],
+          sender_wallet: seed.wallet.name,
+          receiver_wallet: seed.walletC.name,
+        });
+      expect(res).property("statusCode").to.eq(202);
+      expect(res.body).property("id").a("number");
+    })
+
+    describe("Login with walletB", () => {
+      let tokenB;
+
+      beforeEach(async () => {
+        const res = await request(server)
+          .post('/auth')
+          .set('treetracker-api-key', apiKey)
+          .send({
+            wallet: seed.walletB.name,
+            password: seed.walletB.password,
+          });
+        expect(res).to.have.property('statusCode', 200);
+        tokenB = res.body.token;
+      })
+
+      it(`${seed.walletB.name} can accept the transfer for ${seed.walletC.name}`, async () => {
+        const res = await request(server)
+          .post("/transfers")
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${tokenB}`)
+          .send({
+            bundle: {
+              bundle_size: 1,
+            },
+            sender_wallet: seed.wallet.name,
+            receiver_wallet: seed.walletC.name,
+          });
+        expect(res).property("statusCode").to.eq(202);
+      });
+    });
+
   });
 
 

@@ -12,6 +12,7 @@ const HttpError = require("../utils/HttpError");
 const Token = require("../models/Token");
 const TokenService = require("../services/TokenService");
 const Wallet = require("../models/Wallet");
+const Transfer = require("../models/Transfer");
 
 describe("authRouter", () => {
   let app;
@@ -59,13 +60,15 @@ describe("authRouter", () => {
 
   it("all parameters fine, should return 201", async () => {
     sinon.stub(WalletService.prototype, "getByName").resolves(new Wallet(1));
-    sinon.stub(WalletService.prototype, "getById").resolves({
-      transfer: () => {},
-    });
+    sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(2));
     sinon.stub(TokenService.prototype,"getByUUID").resolves(new Token({
       id: 1,
       entity_id: 1,
     }));
+    sinon.stub(Wallet.prototype, "transfer").resolves({
+      id: 1,
+      state: Transfer.STATE.completed,
+    });
     const res = await request(app)
       .post("/")
       .send({
