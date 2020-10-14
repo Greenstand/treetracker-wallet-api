@@ -8,31 +8,24 @@ const expect = require("expect-runtime");
 const helper = require("./utils");
 
 trustRouter.get('/',
-//  [
-//    check('token').isUUID()
-//  ],
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
     expect(res.locals).property("wallet_id").number();
     const walletService = new WalletService();
     const wallet = await walletService.getById(res.locals.wallet_id);
-    res.locals.response = {
-      trust_relationships: await wallet.getTrustRelationships(),
-    }
-    next();
+    const trust_relationships = await wallet.getTrustRelationships(
+      req.query.state,
+      req.query.type,
+      req.query.request_type,
+    );
+    res.status(200).json({
+      trust_relationships,
+    });
   }),
-  (_, res) => {
-    assert(res.locals);
-    assert(res.locals.response);
-    res.status(200).json(res.locals.response);
-  },
 );
 
 trustRouter.post('/',
-//  [
-//    check('token').isUUID()
-//  ],
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
