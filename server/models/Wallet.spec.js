@@ -460,6 +460,8 @@ describe("Wallet", () => {
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1)]);
       const fn4 = sinon.stub(Token.prototype, "completeTransfer");
+      const fn5 = sinon.stub(WalletService.prototype, "getById");
+      const fn6 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       await wallet.acceptTransfer(1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.completed,
@@ -469,6 +471,8 @@ describe("Wallet", () => {
       fn2.restore();
       fn3.restore();
       fn4.restore();
+      fn5.restore();
+      fn6.restore();
     });
 
     it("acceptTransfer with bundle", async () => {
@@ -484,6 +488,8 @@ describe("Wallet", () => {
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn4 = sinon.stub(Token.prototype, "completeTransfer");
       const fn5 = sinon.stub(TokenService.prototype, "getTokensByBundle").resolves([ new Token(1)]);
+      const fn6 = sinon.stub(WalletService.prototype, "getById");
+      const fn7 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       await wallet.acceptTransfer(1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.completed,
@@ -494,6 +500,8 @@ describe("Wallet", () => {
       fn2.restore();
       fn4.restore();
       fn5.restore();
+      fn6.restore();
+      fn7.restore();
     });
   });
 
@@ -504,6 +512,8 @@ describe("Wallet", () => {
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1)]);
       const fn4 = sinon.stub(Token.prototype, "cancelTransfer");
+      const fn5 = sinon.stub(WalletService.prototype, "getById");
+      const fn6 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       await wallet.declineTransfer(1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.cancelled,
@@ -513,6 +523,8 @@ describe("Wallet", () => {
       fn2.restore();
       fn3.restore();
       fn4.restore();
+      fn5.restore();
+      fn6.restore();
     });
   });
 

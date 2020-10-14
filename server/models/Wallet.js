@@ -409,9 +409,14 @@ class Wallet{
    * Accept a pending transfer, if I has the privilege to do so
    */
   async acceptTransfer(transferId){
-    //TODO check privilege
 
     const transfer = await this.transferRepository.getById(transferId);
+    const receiver = await this.walletService.getById(transfer.destination_entity_id);
+    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(receiver);
+    if(!doseCurrentAccountHasControlOverReceiver){
+      throw new HttpError(401, "Current account has no permission to accept this transfer");
+    }
+
     transfer.state = Transfer.STATE.completed;
     await this.transferRepository.update(transfer);
 
@@ -443,9 +448,12 @@ class Wallet{
    * Decline a pending transfer, if I has the privilege to do so
    */
   async declineTransfer(transferId){
-    //TODO check privilege
-
     const transfer = await this.transferRepository.getById(transferId);
+    const receiver = await this.walletService.getById(transfer.destination_entity_id);
+    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(receiver);
+    if(!doseCurrentAccountHasControlOverReceiver){
+      throw new HttpError(401, "Current account has no permission to decline this transfer");
+    }
     transfer.state = Transfer.STATE.cancelled;
     await this.transferRepository.update(transfer);
 

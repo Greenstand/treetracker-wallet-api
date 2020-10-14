@@ -594,6 +594,7 @@ describe('Route integration', () => {
   });
 
   describe(`Send a token to ${seed.walletC.name}`, () => {
+    let transferId = 0;
 
     beforeEach(async () => {
       const res = await request(server)
@@ -607,6 +608,7 @@ describe('Route integration', () => {
         });
       expect(res).property("statusCode").to.eq(202);
       expect(res.body).property("id").a("number");
+      transferId = res.body.id;
     })
 
     describe("Login with walletB", () => {
@@ -624,21 +626,26 @@ describe('Route integration', () => {
         tokenB = res.body.token;
       })
 
-      it(`${seed.walletB.name} can accept the transfer for ${seed.walletC.name}`, async () => {
-        const res = await request(server)
-          .post("/transfers")
-          .set('treetracker-api-key', apiKey)
-          .set('Authorization', `Bearer ${tokenB}`)
-          .send({
-            bundle: {
-              bundle_size: 1,
-            },
-            sender_wallet: seed.wallet.name,
-            receiver_wallet: seed.walletC.name,
-          });
-        expect(res).property("statusCode").to.eq(202);
+      describe(`${seed.walletB.name} can accept the transfer for ${seed.walletC.name}`, () => {
+        beforeEach(async () => {
+          const res = await request(server)
+            .post(`/transfers/${transferId}/accept`)
+            .set('treetracker-api-key', apiKey)
+            .set('Authorization', `Bearer ${tokenB}`);
+          expect(res).to.have.property('statusCode', 200);
+        })
+
+        it(`Token:#${seed.token.id} now should belong to walletC:${seed.walletC.name}`, async () => {
+          const res = await request(server)
+            .get(`/tokens/${seed.token.uuid}`)
+            .set('treetracker-api-key', apiKey)
+            .set('Authorization', `Bearer ${tokenB}`);
+          expect(res).to.have.property('statusCode', 200);
+          expect(res.body.entity_id).eq(seed.walletC.id);
+        });
       });
     });
+
 
   });
 
