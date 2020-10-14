@@ -585,4 +585,53 @@ describe("Wallet", () => {
     });
   });
 
+  describe("getTrustRelationships", () => {
+
+    it("successfully", async () => {
+      const fn = sinon.stub(TrustRepository.prototype, "getByFilter").resolves([{id:1}]);
+      const result = await wallet.getTrustRelationships(
+        TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+        TrustRelationship.ENTITY_TRUST_TYPE.send,
+        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+      );
+      expect(result).lengthOf(1);
+      expect(fn).calledWith({
+        and: [{
+          state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+        },{
+          type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        },{
+          request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        },{
+          or: [{
+            actor_entity_id: wallet.getId(),
+          },{
+            target_entity_id: wallet.getId(),
+          },{
+            originator_entity_id: wallet.getId(),
+          }]
+        }]
+      });
+      fn.restore();
+    });
+
+    it("without filters", async () => {
+      const fn = sinon.stub(TrustRepository.prototype, "getByFilter").resolves([{id:1}]);
+      const result = await wallet.getTrustRelationships();
+      expect(result).lengthOf(1);
+      expect(fn).calledWith({
+        and: [{
+          or: [{
+            actor_entity_id: wallet.getId(),
+          },{
+            target_entity_id: wallet.getId(),
+          },{
+            originator_entity_id: wallet.getId(),
+          }]
+        }]
+      });
+      fn.restore();
+    });
+  });
+
 });

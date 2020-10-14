@@ -36,7 +36,7 @@ describe("BaseRepository", () => {
       tracker.uninstall();
       tracker.install();
       tracker.on("query", (query) => {
-        expect(query.sql).match(/select.*testTable.*/);
+        expect(query.sql).match(/select.*testTable.*name.*/);
         query.response([{id:1}]);
       });
       const result = await baseRepository.getByFilter({
@@ -61,6 +61,94 @@ describe("BaseRepository", () => {
       expect(result).lengthOf(1);
       expect(result[0]).property("id").eq(1);
     });
+
+    describe("'and' 'or' phrase", () => {
+
+      it("{and: [{c:1}, {b:2}]}", async () => {
+        tracker.uninstall();
+        tracker.install();
+        tracker.on("query", (query) => {
+          expect(query.sql).match(/select.*testTable.*where.*c1.*=.*and.*c2.*=.*/);
+          query.response([{id:1}]);
+        });
+        const result = await baseRepository.getByFilter({
+          and: [{
+            c1: 1,
+          },{
+            c2: 2,
+          }],
+        });
+        expect(result).lengthOf(1);
+        expect(result[0]).property("id").eq(1);
+      });
+
+      it("{or: [{c:1}, {b:2}]}", async () => {
+        tracker.uninstall();
+        tracker.install();
+        tracker.on("query", (query) => {
+          expect(query.sql).match(/select.*testTable.*where.*c1.*=.*or.*c2.*=.*/);
+          query.response([{id:1}]);
+        });
+        const result = await baseRepository.getByFilter({
+          or: [{
+            c1: 1,
+          },{
+            c2: 2,
+          }],
+        });
+        expect(result).lengthOf(1);
+        expect(result[0]).property("id").eq(1);
+      });
+
+      it("{and: [{c:1}, {b:2}, {or: [{d:1}, {e:1}]]}", async () => {
+        tracker.uninstall();
+        tracker.install();
+        tracker.on("query", (query) => {
+          expect(query.sql).match(/select.*testTable.*where.*c1.*=.*and.*c2.*=.*and.*c3.*or.*c4.*/);
+          query.response([{id:1}]);
+        });
+        const result = await baseRepository.getByFilter({
+          and: [{
+            c1: 1,
+          },{
+            c2: 2,
+          },{
+            or: [{
+              c3: 1,
+            },{
+              c4: 1,
+            }]
+          }],
+        });
+        expect(result).lengthOf(1);
+        expect(result[0]).property("id").eq(1);
+      });
+
+      it("{or: [{c:1}, {b:2}, {and: [{d:1}, {e:1}]]}", async () => {
+        tracker.uninstall();
+        tracker.install();
+        tracker.on("query", (query) => {
+          expect(query.sql).match(/select.*testTable.*where.*c1.*=.*or.*c2.*=.*or.*c3.*and.*c4.*/);
+          query.response([{id:1}]);
+        });
+        const result = await baseRepository.getByFilter({
+          or: [{
+            c1: 1,
+          },{
+            c2: 2,
+          },{
+            and: [{
+              c3: 1,
+            },{
+              c4: 1,
+            }]
+          }],
+        });
+        expect(result).lengthOf(1);
+        expect(result[0]).property("id").eq(1);
+      });
+    });
+
   });
 
   describe("update", () => {

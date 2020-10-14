@@ -18,7 +18,7 @@ trustRouter.get('/',
     const walletService = new WalletService();
     const wallet = await walletService.getById(res.locals.wallet_id);
     res.locals.response = {
-      trust_relationships: await wallet.getTrustRelationshipsRequested(),
+      trust_relationships: await wallet.getTrustRelationships(),
     }
     next();
   }),

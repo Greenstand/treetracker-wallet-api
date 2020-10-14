@@ -50,6 +50,34 @@ class Wallet{
   }
 
   /*
+   * Get trust relationships by filters, setting filter to undefined to allow all data
+   */
+  async getTrustRelationships(state, type, request_type){
+    const filter = {
+      and: [],
+    }
+    if(state){
+      filter.and.push({state});
+    }
+    if(type){
+      filter.and.push({type});
+    }
+    if(request_type){
+      filter.and.push({request_type});
+    }
+    filter.and.push({
+      or: [{
+        actor_entity_id: this._id,
+      },{
+        target_entity_id: this._id,
+      },{
+        originator_entity_id: this._id,
+      }]
+    });
+    return await this.trustRepository.getByFilter(filter);
+  }
+
+  /*
    * Get all the trust relationships I have requested
    */
   async getTrustRelationshipsRequested(){
