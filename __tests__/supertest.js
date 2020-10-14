@@ -22,7 +22,7 @@ const newWallet = {
 
 const apiKey = seed.apiKey;
 
-describe('Route integration', () => {
+describe('Wallet integration tests', () => {
   let token;
 
   beforeEach(async () => {
@@ -51,7 +51,7 @@ describe('Route integration', () => {
   });
 
   // Authorization path
-  it(`[POST /auth] login with wallet:${seed.wallet.name}`, (done) => {
+  it(`[POST /auth] login with ${seed.wallet.name}`, (done) => {
     request(server)
       .post('/auth')
       .set('treetracker-api-key', apiKey)
@@ -76,7 +76,7 @@ describe('Route integration', () => {
     expect(res.body).to.have.property('uuid').eq(seed.token.uuid);
   });
 
-  describe(`Before request trust, try to send token:#${seed.token.id} from wallet:${seed.wallet.name} to walletB:${seed.walletB.name} should get 202`, () => {
+  describe(`Before request trust, try to send token:#${seed.token.id} from ${seed.wallet.name} to ${seed.walletB.name} should get 202`, () => {
 
     beforeEach(async () => {
       const res = await request(server)
@@ -100,7 +100,7 @@ describe('Route integration', () => {
       expect(res.body.transfer_pending).eq(true);
     });
 
-    describe("Login with walletB:${seed.walletB.name}", () => {
+    describe("Login with ${seed.walletB.name}", () => {
       let tokenB;
 
       beforeEach(async () => {
@@ -149,7 +149,7 @@ describe('Route integration', () => {
             expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.completed);
           });
 
-          it(`Token:#${seed.token.id} now should belong to walletB:${seed.walletB.name}`, async () => {
+          it(`Token:#${seed.token.id} now should belong to ${seed.walletB.name}`, async () => {
             const res = await request(server)
               .get(`/tokens/${seed.token.uuid}`)
               .set('treetracker-api-key', apiKey)
@@ -179,7 +179,7 @@ describe('Route integration', () => {
             expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
           });
 
-          it(`Token:#${seed.token.id} now should still belong to wallet:${seed.wallet.name}`, async () => {
+          it(`Token:#${seed.token.id} now should still belong to ${seed.wallet.name}`, async () => {
             const res = await request(server)
               .get(`/tokens/${seed.token.uuid}`)
               .set('treetracker-api-key', apiKey)
@@ -233,7 +233,7 @@ describe('Route integration', () => {
 
     });
 
-    describe(`wallet:${seed.wallet.name} request "send" trust relationship with walletB:${seed.walletB.name} `, () => {
+    describe(`${seed.wallet.name} request "send" trust relationship with ${seed.walletB.name} `, () => {
       let trustRelationship;
 
       beforeEach(async () => {
@@ -323,7 +323,7 @@ describe('Route integration', () => {
         });
       });
 
-      describe(`Cancel this request by wallet:${seed.wallet.name}`, () => {
+      describe(`Cancel this request by ${seed.wallet.name}`, () => {
 
         beforeEach(async () => {
           const res = await request(server)
@@ -348,7 +348,7 @@ describe('Route integration', () => {
     });
   });
 
-  describe(`Bundle transfer tokens from wallet:${seed.wallet.name} to walletB:${seed.walletB.name}`, () => {
+  describe(`Bundle transfer tokens from ${seed.wallet.name} to ${seed.walletB.name}`, () => {
 
     beforeEach(async () => {
       const res = await request(server)
@@ -365,7 +365,7 @@ describe('Route integration', () => {
       expect(res).property("statusCode").to.eq(202);
     })
 
-    describe("Login with walletB:${seed.walletB.name}", () => {
+    describe("Login with ${seed.walletB.name}", () => {
       let tokenB;
 
       beforeEach(async () => {
@@ -414,7 +414,7 @@ describe('Route integration', () => {
             expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.completed);
           });
 
-          it(`Token:#${seed.token.id} now should belong to walletB:${seed.walletB.name}`, async () => {
+          it(`Token:#${seed.token.id} now should belong to ${seed.walletB.name}`, async () => {
             const res = await request(server)
               .get(`/tokens/${seed.token.uuid}`)
               .set('treetracker-api-key', apiKey)
@@ -444,7 +444,7 @@ describe('Route integration', () => {
             expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
           });
 
-          it(`Token:#${seed.token.id} now should still belong to wallet:${seed.wallet.name}`, async () => {
+          it(`Token:#${seed.token.id} now should still belong to ${seed.wallet.name}`, async () => {
             const res = await request(server)
               .get(`/tokens/${seed.token.uuid}`)
               .set('treetracker-api-key', apiKey)
@@ -495,7 +495,7 @@ describe('Route integration', () => {
       tokenB = res.body.token;
     })
 
-    describe(`WalletB:${seed.walletB.name} request a token from wallet:${seed.wallet.name}, should get 202`, () => {
+    describe(`WalletB:${seed.walletB.name} request a token from ${seed.wallet.name}, should get 202`, () => {
 
       beforeEach(async () => {
         const res = await request(server)
@@ -510,7 +510,7 @@ describe('Route integration', () => {
         expect(res).property("statusCode").to.eq(202);
       })
 
-      describe(`wallet:${seed.wallet.name} should find a requested transfer sent to him`, () => {
+      describe(`${seed.wallet.name} should find a requested transfer sent to him`, () => {
         let requestedTransferId;
 
         beforeEach(async () => {
@@ -525,7 +525,7 @@ describe('Route integration', () => {
           requestedTransferId = res.body.transfers[0].id;
         })
 
-        describe(`wallet:${seed.wallet.name} fulfill this requested transfer`, () => {
+        describe(`${seed.wallet.name} fulfill this requested transfer`, () => {
           beforeEach(async () => {
             const res = await request(server)
               .post(`/transfers/${requestedTransferId}/fulfill`)
@@ -534,7 +534,7 @@ describe('Route integration', () => {
             expect(res).property("statusCode").to.eq(200);
           })
 
-          it(`walletB:${seed.walletB.name} should be able to find requested transfer has been completed`, async () => {
+          it(`${seed.walletB.name} should be able to find requested transfer has been completed`, async () => {
             const res = await request(server)
               .get("/transfers?state=completed")
               .set('treetracker-api-key', apiKey)
@@ -545,7 +545,7 @@ describe('Route integration', () => {
             expect(res.body.transfers[0]).property("id").eq(requestedTransferId);
           });
 
-          it(`Token:#${seed.token.id} now should still belong to walletB:${seed.walletB.name}`, async () => {
+          it(`Token:#${seed.token.id} now should still belong to ${seed.walletB.name}`, async () => {
             const res = await request(server)
               .get(`/tokens/${seed.token.uuid}`)
               .set('treetracker-api-key', apiKey)
