@@ -6,10 +6,10 @@
   const { v4: uuidv4 } = require('uuid');
 
 
-  const Config = require('./../../config/config.js');
+  const Config = require('./config/config');
   const knex = Knex({
     client: 'pg',
-    connection:  Config.connectionString
+    connection:  Config.connectionString[process.env.NODE_ENV]
   })
 
   const Crypto = require('crypto');
@@ -20,23 +20,25 @@
     return value;
   };
 
-  const salt = faker.internet.password() // not a secure salt
+  const username = faker.internet.userName()
   const password = faker.internet.password() // not a secure password
+  const apiKey = faker.internet.password()
+
+  const salt = faker.internet.password() // not a secure salt
   const passwordHash = sha512(password, salt)
 
   const trx = await knex.transaction();
 
   try {
 
-    const username = faker.internet.userName()
 
     // create API key
-    const apiKey = {
-      key: faker.internet.password(),
+    const apiKeyData = {
+      key: apiKey,
       tree_token_api_access: true,
       name: username
     }
-    const result0 = await trx('api_key').insert(apiKey).returning('*')
+    const result0 = await trx('api_key').insert(apiKeyData).returning('*')
     console.log(result0)
 
     // create wallet and password, salt
@@ -110,6 +112,10 @@
     await trx.commit();
 
     knex.destroy()
+
+    console.log('username ' + username);
+    console.log('password ' + password);
+    console.log('apiKey ' + apiKey);
 
   } catch (error) {
 
