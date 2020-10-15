@@ -265,10 +265,6 @@ describe("Wallet", () => {
 
   describe("Transfer", () => {
 
-    //TODO
-    it.skip("Given token array is empty, should throw 403", async () => {
-    });
-
     it("Given token uuid do not belongs to sender wallet, should throw 403", async () => {
       const fn1 = sinon.stub(Token.prototype, "belongsTo").resolves(false);
       const sender = new Wallet(1);
