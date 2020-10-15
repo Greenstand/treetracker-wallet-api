@@ -414,7 +414,7 @@ class Wallet{
     const receiver = await this.walletService.getById(transfer.destination_entity_id);
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(receiver);
     if(!doseCurrentAccountHasControlOverReceiver){
-      throw new HttpError(401, "Current account has no permission to accept this transfer");
+      throw new HttpError(403, "Current account has no permission to accept this transfer");
     }
 
     transfer.state = Transfer.STATE.completed;
@@ -452,7 +452,7 @@ class Wallet{
     const receiver = await this.walletService.getById(transfer.destination_entity_id);
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(receiver);
     if(!doseCurrentAccountHasControlOverReceiver){
-      throw new HttpError(401, "Current account has no permission to decline this transfer");
+      throw new HttpError(403, "Current account has no permission to decline this transfer");
     }
     transfer.state = Transfer.STATE.cancelled;
     await this.transferRepository.update(transfer);
@@ -469,7 +469,7 @@ class Wallet{
     const sender = await this.walletService.getById(transfer.source_entity_id);
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
     if(!doseCurrentAccountHasControlOverReceiver){
-      throw new HttpError(401, "Current account has no permission to cancel this transfer");
+      throw new HttpError(403, "Current account has no permission to cancel this transfer");
     }
     transfer.state = Transfer.STATE.cancelled;
     await this.transferRepository.update(transfer);
@@ -491,7 +491,7 @@ class Wallet{
     const sender = await this.walletService.getById(transfer.source_entity_id);
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
     if(!doseCurrentAccountHasControlOverReceiver){
-      throw new HttpError(401, "Current account has no permission to fulfill this transfer");
+      throw new HttpError(403, "Current account has no permission to fulfill this transfer");
     }
     if(transfer.source_entity_id !== this._id){
       throw new HttpError(403, "Have no permission to do this operation");

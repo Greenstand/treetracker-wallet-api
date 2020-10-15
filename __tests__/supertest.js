@@ -77,6 +77,7 @@ describe('Wallet integration tests', () => {
   });
 
   describe(`Before request trust, try to send token:#${seed.token.id} from ${seed.wallet.name} to ${seed.walletB.name} should get 202`, () => {
+    let transferId;
 
     beforeEach(async () => {
       const res = await request(server)
@@ -89,6 +90,8 @@ describe('Wallet integration tests', () => {
           receiver_wallet: seed.walletB.name,
         });
       expect(res).property("statusCode").to.eq(202);
+      expect(res).property("body").property("id").a("number");
+      transferId = res.body.id;
     })
 
     it(`Token:#${seed.token.id} now should be pending `, async () => {
@@ -231,6 +234,32 @@ describe('Wallet integration tests', () => {
 
       });
 
+    });
+
+    describe("Login with ${seed.walletC.name}", () => {
+      let tokenC;
+
+      beforeEach(async () => {
+        const res = await request(server)
+          .post('/auth')
+          .set('treetracker-api-key', apiKey)
+          .send({
+            wallet: seed.walletC.name,
+            password: seed.walletC.password,
+          });
+        expect(res).to.have.property('statusCode', 200);
+        expect(res).property('body').property("token").a("string");
+        tokenC = res.body.token;
+      })
+
+      it(`${seed.walletC.name} should not be able to accept the transfer (403)`, async () => {
+        const res = await request(server)
+          .post(`/transfers/${transferId}/accept`)
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${tokenC}`);
+        expect(res).to.have.property('statusCode', 403);
+        expect(res).property("body").property("message").match(/permission/i);
+      });
     });
 
     describe(`${seed.wallet.name} request "send" trust relationship with ${seed.walletB.name} `, () => {
@@ -576,6 +605,20 @@ describe('Wallet integration tests', () => {
       expect(res).to.have.property('statusCode', 200);
       tokenB = res.body.token;
     })
+
+    it(`Should be able to find the trust relationship: 'mange ${seed.walletC.name}`, async () => {
+      const res = await request(server)
+        .get("/trust_relationships")
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${tokenB}`);
+      expect(res).property("statusCode").to.eq(200);
+      expect(res).property("body").property("trust_relationships").lengthOf(1);
+      expect(res.body.trust_relationships[0]).property("id").a("number");
+      expect(res.body.trust_relationships.some(trust => {
+        return trust.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+          trust.target_entity_id === seed.walletC.id;
+      })).eq(true);
+    });
 
     it(`Via ${seed.walletB.name}, can transfer token between ${seed.walletC.name} and others`, async () => {
       const res = await request(server)
