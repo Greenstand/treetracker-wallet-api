@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test-unit; npm run test-integration;npm run test-repository",
-    "test-unit": "NODE_ENV=test mocha --exit ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
+    "test-unit": "NODE_ENV=test mocha --exit ./server/models/**/*.spec.js ./server/routes/**/*.spec.js ./server/repositories/**/*.spec.js ./server/services/**/*.spec.js",
     "test-repository": "NODE_ENV=test mocha --exit --require co-mocha  ./server/repositories/**/*.spec.js",
+    "test-services": "NODE_ENV=test mocha --exit --require co-mocha  ./server/services/**/*.spec.js",
+    "test-models": "NODE_ENV=test mocha --exit --require co-mocha  ./server/models/**/*.spec.js",
     "serverTest": "cd ./server && DEBUG=loopback:*,express:* nodemon server.js",
     "server": "cd ./server && nodemon server.js",
     "test-seedDB": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './**/*.spec.js'",
