@@ -40,7 +40,7 @@ cat jwtRS256.key.pub
 
 ### Database Setup
 
-To connect to the database, we need a username and a database name. We can either use the default `postgres` user, or create a new user. We then need to create a database associated with that user.
+To connect to the database, we need a user and a database. We can either use the default `postgres` user, or create a new user. We then need to create a database associated with that user.
 
 To create a new user (role):
 
