@@ -55,6 +55,12 @@ CREATE ROLE "username" WITH
 	CONNECTION LIMIT -1;
 `
 
+To set the password:
+
+`
+ALTER USER username WITH PASSWORD 'password';
+`
+
 To create a new database:
 
 `
@@ -67,14 +73,14 @@ CREATE DATABASE dbname
 We recommend setting up your Postgres server/database locally and exporting your connection string in ./config/config.js as such:
 
 ```
-exports.connectionString = "postgresql://[username]@localhost:5432/[dbname]";
-
-```
-
-By default, in a new postgres installation, the password is empty. If you want to provide another user with a password make sure to add that in your connectionString:
-
-```
 exports.connectionString = "postgresql://[your_username]:[password]@localhost:5432/[database_name]";
+
+```
+
+If you are using the postgres user:
+
+```
+exports.connectionString = "postgresql://postgres@localhost:5432/[database_name]";
 
 ```
 
