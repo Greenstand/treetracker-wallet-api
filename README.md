@@ -40,14 +40,45 @@ cat jwtRS256.key.pub
 
 ### Database Setup
 
+To connect to the database, we need a username and a database name. We can either use the default `postgres` user, or create a new user. We then need to create a database associated with that user.
+
+To create a new user (role):
+
+`
+CREATE ROLE "username" WITH
+	LOGIN
+	SUPERUSER
+	CREATEDB
+	CREATEROLE
+	INHERIT
+	NOREPLICATION
+	CONNECTION LIMIT -1;
+`
+
+To create a new database:
+
+`
+CREATE DATABASE dbname
+    WITH 
+    OWNER = username
+    ENCODING = 'UTF8'
+`
+
 We recommend setting up your Postgres server/database locally and exporting your connection string in ./config/config.js as such:
 
 ```
-exports.connectionString = "postgresql://[your_username]@localhost:5432/[database_name]";
+exports.connectionString = "postgresql://[username]@localhost:5432/[dbname]";
 
 ```
 
-Here are some resources to get started on local database set up and migration:
+By default, in a new postgres installation, the password is empty. If you want to provide another user with a password make sure to add that in your connectionString:
+
+```
+exports.connectionString = "postgresql://[your_username]:[password]@localhost:5432/[database_name]";
+
+```
+
+Here are some further resources to get started on local database set up and migration:
 * https://postgresapp.com
 * pgAdmin and DBeaver are great GUI options to use for navigating your local db 
 * https://www.postgresql.org/docs/9.1/app-pgdump.html
