@@ -30,6 +30,10 @@ describe("BaseRepository", () => {
     expect(entity).property("id").eq(1);
   });
 
+  //TODO
+  it.skip("getById can not find result, should throw 404", () => {
+  });
+
   describe("getByFilter", () => {
 
     it("getByFilter", async () => {
@@ -186,7 +190,7 @@ describe("BaseRepository", () => {
 
   describe("countByFilter", () => {
 
-    it("", async () => {
+    it("successfully", async () => {
       tracker.uninstall();
       tracker.install();
       tracker.on("query", (query) => {
@@ -199,6 +203,10 @@ describe("BaseRepository", () => {
         column: "testColumn",
       });
       expect(result).eq(1);
+    });
+
+    //TODO
+    describe.skip("count support and and or", () => {
     });
   });
 });

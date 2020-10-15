@@ -465,9 +465,12 @@ class Wallet{
   }
 
   async cancelTransfer(transferId){
-    //TODO check privilege
-
     const transfer = await this.transferRepository.getById(transferId);
+    const sender = await this.walletService.getById(transfer.source_entity_id);
+    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
+    if(!doseCurrentAccountHasControlOverReceiver){
+      throw new HttpError(401, "Current account has no permission to cancel this transfer");
+    }
     transfer.state = Transfer.STATE.cancelled;
     await this.transferRepository.update(transfer);
 
@@ -485,6 +488,11 @@ class Wallet{
     //TODO check privilege
 
     const transfer = await this.transferRepository.getById(transferId);
+    const sender = await this.walletService.getById(transfer.source_entity_id);
+    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
+    if(!doseCurrentAccountHasControlOverReceiver){
+      throw new HttpError(401, "Current account has no permission to fulfill this transfer");
+    }
     if(transfer.source_entity_id !== this._id){
       throw new HttpError(403, "Have no permission to do this operation");
     }
