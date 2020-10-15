@@ -11,7 +11,12 @@ describe("WalletService", () => {
     walletService = new WalletService();
   })
 
-  it("getById", () => {
+  it("getById", async () => {
+    sinon.stub(WalletRepository.prototype, "getById").resolves({id:1});
+    expect(walletService).instanceOf(WalletService);
+    const wallet = await walletService.getById(1);
+    expect(wallet).instanceOf(Wallet);
+    WalletRepository.prototype.getById.restore();
   });
 
   it("getByName", async () => {
