@@ -67,7 +67,7 @@ To create a new database:
 CREATE DATABASE dbname
     WITH 
     OWNER = username
-    ENCODING = 'UTF8'
+    ENCODING = 'UTF8';
 `
 
 We recommend setting up your Postgres server/database locally and exporting your connection string in ./config/config.js as such:
