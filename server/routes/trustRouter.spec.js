@@ -7,6 +7,7 @@ const sinon = require("sinon");
 const ApiKeyService = require("../services/ApiKeyService");
 const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");
+const TrustService = require("../services/TrustService");
 const JWTService = require("../services/JWTService");
 const HttpError = require("../utils/HttpError");
 const Token = require("../models/Token");
@@ -39,6 +40,7 @@ describe("trustRouter", () => {
   describe("get /trust_relationships", () => {
     it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
+      sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
       const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{}]);
       const res = await request(app)
         .get(`/?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}`);

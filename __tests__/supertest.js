@@ -272,7 +272,7 @@ describe('Wallet integration tests', () => {
           .set('Authorization', `Bearer ${token}`)
           .send({
             trust_request_type: 'send',
-            wallet: seed.walletB.name,
+            requestee_wallet: seed.walletB.name,
           });
         expect(res).property("statusCode").to.eq(200);
         trustRelationship = res.body;
@@ -616,7 +616,7 @@ describe('Wallet integration tests', () => {
       expect(res.body.trust_relationships[0]).property("id").a("number");
       expect(res.body.trust_relationships.some(trust => {
         return trust.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
-          trust.target_entity_id === seed.walletC.id;
+          trust.target_wallet === seed.walletC.name;
       })).eq(true);
     });
 

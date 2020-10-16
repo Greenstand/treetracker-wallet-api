@@ -70,7 +70,11 @@ class BaseRepository{
   }
 
   async update(object){
-    return await knex(this._tableName).update(object).where("id", object.id).returning("*");
+    const result = await knex(this._tableName).update(object).where("id", object.id).returning("*");
+    expect(result).match([{
+      id: expect.any(Number),
+    }]);
+    return result[0];
   }
 
   async create(object){

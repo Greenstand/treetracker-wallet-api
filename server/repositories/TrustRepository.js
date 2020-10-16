@@ -39,16 +39,6 @@ class TrustRepository extends BaseRepository{
     return list;
   }
 
-  async create(trustObject){
-    await knex("wallets.entity_trust").insert(trustObject);
-    //get the inserted object, TODO there must be better way to do so.
-    const result = await knex("wallets.entity_trust").orderBy("id", "desc").limit(1);
-    return result[0];
-  }
-
-  async update(trustObject){
-    await knex("wallets.entity_trust").update(trustObject).where("id", trustObject.id);
-  }
 }
 
 

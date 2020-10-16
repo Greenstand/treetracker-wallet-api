@@ -57,12 +57,14 @@ transferRouter.post('/',
     }else{
       result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
     }
+    const transferService = new TransferService();
+    result = await transferService.convertToResponse(result);
     if(result.state === Transfer.STATE.completed){
-      res.status(201).json({id: result.id});
+      res.status(201).json(result);
     }else if(
       result.state === Transfer.STATE.pending || 
       result.state === Transfer.STATE.requested){
-      res.status(202).json({id: result.id});
+      res.status(202).json(result);
     }else{
       expect.fail();
     }
@@ -81,8 +83,10 @@ transferRouter.post('/:transfer_id/accept',
     );
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    await walletLogin.acceptTransfer(req.params.transfer_id);
-    res.status(200).json({});
+    const transferJson = await walletLogin.acceptTransfer(req.params.transfer_id);
+    const transferService = new TransferService();
+    const transferJson2 = await transferService.convertToResponse(transferJson);
+    res.status(200).json(transferJson2);
   })
 );
 
@@ -98,8 +102,10 @@ transferRouter.post('/:transfer_id/decline',
     );
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    await walletLogin.declineTransfer(req.params.transfer_id);
-    res.status(200).json({});
+    const transferJson = await walletLogin.declineTransfer(req.params.transfer_id);
+    const transferService = new TransferService();
+    const transferJson2 = await transferService.convertToResponse(transferJson);
+    res.status(200).json(transferJson2);
   })
 );
 
@@ -115,8 +121,10 @@ transferRouter.delete('/:transfer_id',
     );
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    await walletLogin.cancelTransfer(req.params.transfer_id);
-    res.status(200).json({});
+    const transferJson = await walletLogin.cancelTransfer(req.params.transfer_id);
+    const transferService = new TransferService();
+    const transferJson2 = await transferService.convertToResponse(transferJson);
+    res.status(200).json(transferJson2);
   })
 );
 
@@ -132,8 +140,10 @@ transferRouter.post('/:transfer_id/fulfill',
     );
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    await walletLogin.fulfillTransfer(req.params.transfer_id);
-    res.status(200).json({});
+    const transferJson = await walletLogin.fulfillTransfer(req.params.transfer_id);
+    const transferService = new TransferService();
+    const transferJson2 = await transferService.convertToResponse(transferJson);
+    res.status(200).json(transferJson2);
   })
 );
 

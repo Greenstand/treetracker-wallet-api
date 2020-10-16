@@ -765,6 +765,9 @@ components:
       title: sendRequestProcessedResponse
       type: object
       properties:
+        id:
+          type: string
+          description: The unique ID for this transfer
         originating_wallet:
           type: string
         source_wallet:
@@ -949,11 +952,11 @@ components:
           type: string
         trust_type:
           type: string
-        approved:
-          type: boolean
+        state:
+          type: string
         trust_request_type:
           type: string
-        requestor_wallet:
+        orginating_wallet:
           type: string
         created_at:
           type: string

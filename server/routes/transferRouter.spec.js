@@ -13,6 +13,7 @@ const Token = require("../models/Token");
 const TokenService = require("../services/TokenService");
 const Wallet = require("../models/Wallet");
 const Transfer = require("../models/Transfer");
+const TransferService = require("../services/TransferService");
 
 describe("authRouter", () => {
   let app;
@@ -67,6 +68,10 @@ describe("authRouter", () => {
     }));
     sinon.stub(Wallet.prototype, "transfer").resolves({
       id: 1,
+      state: Transfer.STATE.completed,
+    });
+    sinon.stub(TransferService.prototype, "convertToResponse").resolves({
+      id:1,
       state: Transfer.STATE.completed,
     });
     const res = await request(app)

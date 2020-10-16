@@ -14,6 +14,14 @@ class TokenService{
     return token;
   }
 
+  async getByOwner(wallet){
+    const tokensObject = await this.tokenRepository.getByFilter({
+      entity_id: wallet.getId(),
+    });
+    const tokens = tokensObject.map(object => new Token(object));
+    return tokens;
+  }
+
   async getTokensByPendingTransferId(transferId){
     expect(transferId).number();
     const result = await this.tokenRepository.getByFilter({
