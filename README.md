@@ -40,10 +40,47 @@ cat jwtRS256.key.pub
 
 ### Database Setup
 
+To connect to the database, we need a user and a database. We can either use the default `postgres` user, or create a new user. We then need to create a database associated with that user.
+
+To create a new user (role):
+
+`
+CREATE ROLE "username" WITH
+	LOGIN
+	SUPERUSER
+	CREATEDB
+	CREATEROLE
+	INHERIT
+	NOREPLICATION
+	CONNECTION LIMIT -1;
+`
+
+To set the password:
+
+`
+ALTER USER username WITH PASSWORD 'password';
+`
+
+To create a new database:
+
+`
+CREATE DATABASE dbname
+    WITH 
+    OWNER = username
+    ENCODING = 'UTF8'
+`
+
 We recommend setting up your Postgres server/database locally and exporting your connection string in ./config/config.js as such:
 
 ```
-exports.connectionString = "postgresql://[your_username]@localhost:5432/[database_name]";
+exports.connectionString = "postgresql://[your_username]:[password]@localhost:5432/[database_name]";
+
+```
+
+If you are using the postgres user:
+
+```
+exports.connectionString = "postgresql://postgres@localhost:5432/[database_name]";
 
 ```
 
