@@ -129,7 +129,7 @@ describe('Wallet integration tests', () => {
           expect(res).to.have.property('statusCode', 200);
           expect(res.body.transfers).lengthOf(1);
           pendingTransfer = res.body.transfers[0];
-          expect(pendingTransfer).property("destination_entity_id").eq(seed.walletB.id);
+          expect(pendingTransfer).property("destination_wallet").eq(seed.walletB.name);
         })
 
         describe("Accept the pending transfer", () => {
@@ -420,7 +420,7 @@ describe('Wallet integration tests', () => {
           expect(res).to.have.property('statusCode', 200);
           expect(res.body.transfers).lengthOf(1);
           pendingTransfer = res.body.transfers[0];
-          expect(pendingTransfer).property("destination_entity_id").eq(seed.walletB.id);
+          expect(pendingTransfer).property("destination_wallet").eq(seed.walletB.name);
         })
 
         describe("Accept the pending transfer", () => {

@@ -126,7 +126,7 @@ describe("Wallet", () => {
   });
 
   describe("Accept trust", () => {
-    let wallet = new Wallet(1);
+    let wallet; 
 
     beforeEach(() => {
       wallet = new Wallet(1);
@@ -160,7 +160,7 @@ describe("Wallet", () => {
   });
 
   describe("Decline trust", () => {
-    let wallet = new Wallet(1);
+    let wallet;
 
     beforeEach(() => {
       wallet = new Wallet(1);
@@ -194,7 +194,7 @@ describe("Wallet", () => {
   });
 
   describe("Cancel trust request", () => {
-    let wallet = new Wallet(1);
+    let wallet;
 
     beforeEach(() => {
       wallet = new Wallet(1);
@@ -371,7 +371,7 @@ describe("Wallet", () => {
       const receiver = new Wallet(2);
       await jestExpect(async () => {
         await wallet.transferBundle(sender, receiver, 1);
-      }).rejects.toThrow(/saved/);
+      }).rejects.toThrow(/no trust/i);
       expect(fn1).to.have.been.calledWith({
         originator_entity_id: 1,
         source_entity_id: 1,
@@ -398,7 +398,7 @@ describe("Wallet", () => {
       const receiver = new Wallet(1);
       await jestExpect(async () => {
         await wallet.transferBundle(sender, receiver, 1);
-      }).rejects.toThrow(/saved/);
+      }).rejects.toThrow(/no trust/i);
       expect(fn1).to.have.been.calledWith({
         originator_entity_id: 1,
         source_entity_id: 2,

@@ -348,7 +348,7 @@ class Wallet{
               }
             }
           });
-          throw new HttpError(202, "No trust, saved");
+          throw new HttpError(202, "No trust relationship, the transfer is in pending state.");
         }else if(await this.hasControlOver(receiver)){
           log.debug("OK, no permission, receiver under control, now request it");
           const transfer = await this.transferRepository.create({
@@ -362,7 +362,7 @@ class Wallet{
               }
             }
           });
-          throw new HttpError(202, "No trust, saved");
+          throw new HttpError(202, "No trust relationship, the transfer is in requested state.");
         }else{
           //TODO
           expect.fail();

@@ -714,9 +714,9 @@ components:
               items:
                 type: string
                 description: "optional list of tags that trees must match ALL of"
-        source_wallet:
+        sender_wallet:
           type: string
-        destination_wallet:
+        receiver_wallet:
           type: string
       example:
         tokens:

@@ -44,7 +44,7 @@ describe("authRouter", () => {
         receiver_wallet: "ssss",
       });
     expect(res).property("statusCode").eq(422);
-    expect(res.body.message[0].message).match(/bundle.*required/);
+    expect(res.body.message).match(/bundle.*required/);
   });
 
   it("missing sender wallet should throw error", async () => {
@@ -55,7 +55,7 @@ describe("authRouter", () => {
         receiver_wallet: "ssss",
       });
     expect(res).property("statusCode").eq(422);
-    expect(res.body.message[0].message).match(/sender.*required/);
+    expect(res.body.message).match(/sender.*required/);
   });
 
   it("all parameters fine, should return 201", async () => {

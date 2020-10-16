@@ -1,6 +1,7 @@
 const express = require('express');
 const transferRouter = express.Router();
 const WalletService = require("../services/WalletService");
+const TransferService = require("../services/TransferService");
 const Wallet = require("../models/Wallet");
 const TrustRelationship = require("../models/TrustRelationship");
 const expect = require("expect-runtime");
@@ -144,7 +145,13 @@ transferRouter.get("/",
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const result = await walletLogin.getTransfers(state, wallet);
-    res.status(200).json({transfers: result});
+    const transferService = new TransferService();
+    const json = [];
+    for(let t of result){
+      const j = await transferService.convertToResponse(t);
+      json.push(j);
+    }
+    res.status(200).json({transfers: json});
   })
 );
 
