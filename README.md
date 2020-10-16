@@ -299,6 +299,18 @@ By running test with this command, the tests would re-run if any code change hap
 
 NOTE: There is another command: `test-watch-debug`, it is the same with `test-watch`, except it set log's level to `debug`.
 
+## Postman
+
+Can also use Postman to test the API in a more real environment. Import the API spec from [here](https://github.com/Greenstand/treetracker-wallet-api/blob/master/docs/api/spec/treetracker-token-api.yaml).
+
+To run a local server with some seed data, run command:
+
+```
+npm run server-test
+```
+
+This command would run a API server locally, and seed some basic data into DB (the same with the data we used in the integration test).
+
 # Troubleshooting
 
 ## Be aware of dependency circle
