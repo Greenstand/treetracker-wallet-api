@@ -146,6 +146,7 @@ class Wallet{
       actor_entity_id: this._id,
       originator_entity_id: this._id,
       target_entity_id: targetWallet.getId(),
+      state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
     });
     return result;
   }

@@ -277,6 +277,7 @@ describe('Wallet integration tests', () => {
         expect(res).property("statusCode").to.eq(200);
         trustRelationship = res.body;
         expect(trustRelationship).property("id").a("number");
+        expect(trustRelationship).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested);
       });
 
       describe("Login with walletB", () => {
