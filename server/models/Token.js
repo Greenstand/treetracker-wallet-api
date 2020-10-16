@@ -3,7 +3,6 @@ const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
 const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
-const Wallet = require("./Wallet");
 
 class Token{
   
@@ -80,7 +79,7 @@ class Token{
   }
 
   async belongsTo(wallet){
-    expect(wallet).instanceOf(Wallet);
+    expect(wallet).defined();
     const json = await this.toJSON();
     if(json.entity_id === wallet.getId()){
       return true;
