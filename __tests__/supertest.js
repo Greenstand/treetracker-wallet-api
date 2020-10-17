@@ -329,6 +329,21 @@ describe('Wallet integration tests', () => {
             expect(res).property("statusCode").to.eq(201);
             expect(res).property("body").property("parameters").property("tokens").lengthOf(0);
           });
+
+          it("Try to send bundle token to walletB again, should success, 201", async () => {
+            const res = await request(server)
+              .post("/transfers")
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${token}`)
+              .send({
+                bundle: {
+                  bundle_size: 1,
+                },
+                sender_wallet: seed.wallet.name,
+                receiver_wallet: seed.walletB.name,
+              });
+            expect(res).property("statusCode").to.eq(201);
+          });
         });
 
         describe("Decline this request", () => {

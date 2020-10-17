@@ -346,11 +346,11 @@ class Wallet{
         }
       });
       log.debug("now, deal with tokens");
-      const tokens = await this.tokenService.getTokensByBundle(bundleSize)
+      const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize)
       for(let token of tokens){
         await token.completeTransfer(transfer);
       }
-      
+      return transfer;
     }catch(e){
       if(e instanceof HttpError && e.code === 403){
         if(await this.hasControlOver(sender)){
