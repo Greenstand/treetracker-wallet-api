@@ -3,6 +3,7 @@ const pool = require("../server/database/database");
 const {expect} = require("chai");
 const Crypto = require('crypto');
 const log = require("loglevel");
+const knex = require("../server/database/knex");
 
 describe("Seed data into DB", () => {
 
@@ -117,6 +118,24 @@ describe("Seed data into DB", () => {
       expect(result)
         .to.have.property("rows")
         .to.have.lengthOf(1);
+    });
+  });
+
+  describe("walletC", () => {
+
+    it("walletC exists", async () => {
+      const r = await knex.table("wallets.wallet").select().where("name", seed.walletC.name);
+      expect(r).lengthOf(1);
+    });
+
+    it("walletC have manage relationship with wallet", async () => {
+      const r = await knex.table("wallets.entity_trust").select()
+        .where({
+          actor_entity_id: seed.walletB.id,
+          target_entity_id: seed.walletC.id,
+          type: "manage",
+        });
+      expect(r).lengthOf(1); 
     });
   });
 

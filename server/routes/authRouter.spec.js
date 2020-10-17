@@ -36,7 +36,8 @@ describe("authRouter", () => {
         password: "xxx",
       });
     expect(res).property("statusCode").eq(422);
-    expect(res.body.message[0].message).match(/required/);
+    expect(res.body.code).eq(422);
+    expect(res.body.message).match(/wallet.*required/);
   });
 
   it("password too long should throw error", async () => {
@@ -47,7 +48,7 @@ describe("authRouter", () => {
         password: "123456789012345678901234567890123456789012345678901234567890",
       });
     expect(res).property("statusCode").eq(422);
-    expect(res.body.message[0].message).match(/less/);
+    expect(res.body.message).match(/less/);
   });
 
 });

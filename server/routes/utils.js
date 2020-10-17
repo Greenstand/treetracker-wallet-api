@@ -34,13 +34,20 @@ exports.handlerWrapper = fn =>
 exports.errorHandler = (err, req, res, next) => {
   log.debug("catch error:", err);
   if(err instanceof HttpError){
-    res.status(err.code).send(err.message);
+    res.status(err.code).send({
+      code: err.code,
+      message: err.message,
+    });
   }else if(err instanceof ValidationError){
     res.status(422).send({
-      message: err.details,
+      code: 422,
+      message: err.details.map(m => m.message).join(";"),
     });
   }else{
-    res.status(500).send("Unknown error");
+    res.status(500).send({
+      code: 500,
+      message: `Unknown error (${err.message})`,
+    });
   }
 };
 

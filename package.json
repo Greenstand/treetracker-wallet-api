@@ -7,7 +7,7 @@
     "test": "npm run test-unit; npm run test-integration;npm run test-repository",
     "test-unit": "NODE_ENV=test mocha --exit ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
     "test-repository": "NODE_ENV=test mocha --exit --require co-mocha  ./server/repositories/**/*.spec.js",
-    "serverTest": "cd ./server && DEBUG=loopback:*,express:* nodemon server.js",
+    "server-test": "cd ./server && DEBUG=loopback:*,express:* NODE_LOG_LEVEL=debug nodemon serverTest.js",
     "server": "cd ./server && nodemon server.js",
     "test-seedDB": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './**/*.spec.js'",
     "test-integration": "NODE_ENV=test mocha --exit --timeout 20000 --require co-mocha './__tests__/supertest.js'",
