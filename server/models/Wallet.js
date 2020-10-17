@@ -271,6 +271,9 @@ class Wallet{
         source_entity_id: sender.getId(),
         destination_entity_id: receiver.getId(),
         state: Transfer.STATE.completed,
+        parameters: {
+          tokens: tokens.map(token => token.getId()),
+        },
       });
       log.debug("now, deal with tokens");
       for(let token of tokens){
@@ -288,6 +291,9 @@ class Wallet{
             source_entity_id: sender.getId(),
             destination_entity_id: receiver.getId(),
             state: Transfer.STATE.pending,
+            parameters: {
+              tokens: tokens.map(token => token.getId()),
+            },
           });
           for(let token of tokens){
             await token.pendingTransfer(transfer);
@@ -300,6 +306,9 @@ class Wallet{
             source_entity_id: sender.getId(),
             destination_entity_id: receiver.getId(),
             state: Transfer.STATE.requested,
+            parameters: {
+              tokens: tokens.map(token => token.getId()),
+            },
           });
           for(let token of tokens){
             await token.pendingTransfer(transfer);
@@ -330,6 +339,11 @@ class Wallet{
         source_entity_id: sender.getId(),
         destination_entity_id: receiver.getId(),
         state: Transfer.STATE.completed,
+        parameters: {
+          bundle: {
+            bundleSize: bundleSize,
+          }
+        }
       });
       log.debug("now, deal with tokens");
       const tokens = await this.tokenService.getTokensByBundle(bundleSize)
@@ -352,7 +366,7 @@ class Wallet{
               }
             }
           });
-          throw new HttpError(202, "No trust relationship, the transfer is in pending state.");
+          return transfer;
         }else if(await this.hasControlOver(receiver)){
           log.debug("OK, no permission, receiver under control, now request it");
           const transfer = await this.transferRepository.create({
@@ -366,7 +380,7 @@ class Wallet{
               }
             }
           });
-          throw new HttpError(202, "No trust relationship, the transfer is in requested state.");
+          return transfer;
         }else{
           //TODO
           expect.fail();

@@ -299,13 +299,16 @@ describe("Wallet", () => {
         source_entity_id: 1,
         destination_entity_id: 2,
         state: Transfer.STATE.pending,
+        parameters: {
+          tokens: [1],
+        }
       });
       fn0.restore();
       fn1.restore();
       fn2.restore();
     });
 
-    it("don't have trust, receiver under control, should throw 202, and created a transfer request record", async () => {
+    it("don't have trust, receiver under control, should created a transfer request record", async () => {
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
@@ -325,6 +328,9 @@ describe("Wallet", () => {
         source_entity_id: 2,
         destination_entity_id: 1,
         state: Transfer.STATE.requested,
+        parameters: {
+          tokens: [1],
+        }
       });
       fn0.restore();
       fn1.restore();
@@ -361,17 +367,17 @@ describe("Wallet", () => {
     it.skip("Hasn't enough token to send, should throw 403", async () => {
     });
 
-    it("don't have trust, sender under control, should throw 202, and created a transfer pending record", async () => {
+    it("don't have trust, sender under control, should created a transfer pending record", async () => {
       const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
+        state: Transfer.STATE.pending,
       });
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
       const sender = new Wallet(1);
       const receiver = new Wallet(2);
-      await jestExpect(async () => {
-        await wallet.transferBundle(sender, receiver, 1);
-      }).rejects.toThrow(/no trust/i);
+      const transfer = await wallet.transferBundle(sender, receiver, 1);
+      expect(transfer).property("state").eq(Transfer.STATE.pending);
       expect(fn1).to.have.been.calledWith({
         originator_entity_id: 1,
         source_entity_id: 1,
@@ -388,17 +394,17 @@ describe("Wallet", () => {
       fn2.restore();
     });
 
-    it("don't have trust, receiver under control, should throw 202, and created a transfer request record", async () => {
+    it("don't have trust, receiver under control, should created a transfer request record", async () => {
       const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
+        state: Transfer.STATE.requested,
       });
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
       const sender = new Wallet(2);
       const receiver = new Wallet(1);
-      await jestExpect(async () => {
-        await wallet.transferBundle(sender, receiver, 1);
-      }).rejects.toThrow(/no trust/i);
+      const transfer = await wallet.transferBundle(sender, receiver, 1);
+      expect(transfer).property("state").eq(Transfer.STATE.requested);
       expect(fn1).to.have.been.calledWith({
         originator_entity_id: 1,
         source_entity_id: 2,

@@ -76,7 +76,7 @@ describe('Wallet integration tests', () => {
     expect(res.body).to.have.property('uuid').eq(seed.token.uuid);
   });
 
-  describe(`Before request trust, try to send token:#${seed.token.id} from ${seed.wallet.name} to ${seed.walletB.name} should get 202`, () => {
+  describe(`Before request trust, try to send token:#${seed.token.id} from ${seed.wallet.name} to ${seed.walletB.name} should be pending (202)`, () => {
     let transferId;
 
     beforeEach(async () => {
@@ -91,6 +91,7 @@ describe('Wallet integration tests', () => {
         });
       expect(res).property("statusCode").to.eq(202);
       expect(res).property("body").property("id").a("number");
+      expect(res).property("body").property("parameters").property("tokens").lengthOf(1);
       transferId = res.body.id;
     })
 
@@ -103,7 +104,7 @@ describe('Wallet integration tests', () => {
       expect(res.body.transfer_pending).eq(true);
     });
 
-    describe("Login with ${seed.walletB.name}", () => {
+    describe(`Login with ${seed.walletB.name}`, () => {
       let tokenB;
 
       beforeEach(async () => {
@@ -326,6 +327,7 @@ describe('Wallet integration tests', () => {
                 receiver_wallet: seed.walletB.name,
               });
             expect(res).property("statusCode").to.eq(201);
+            expect(res).property("body").property("parameters").property("tokens").lengthOf(0);
           });
         });
 
@@ -393,6 +395,7 @@ describe('Wallet integration tests', () => {
           receiver_wallet: seed.walletB.name,
         });
       expect(res).property("statusCode").to.eq(202);
+      expect(res).property("body").property("parameters").property("bundle").property("bundleSize").eq(1);
     })
 
     describe("Login with ${seed.walletB.name}", () => {
