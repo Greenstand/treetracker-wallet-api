@@ -19,7 +19,7 @@ TrustRelationship.ENTITY_TRUST_STATE_TYPE = {
 
 TrustRelationship.ENTITY_TRUST_REQUEST_TYPE = {
   send: "send",
-  received: "received",
+  receive: "receive",
   manage: "manage",
   yield: "yield",
   deduct: "deduct",
@@ -28,7 +28,7 @@ TrustRelationship.ENTITY_TRUST_REQUEST_TYPE = {
 
 TrustRelationship.getTrustTypeByRequestType = function(requestType){
   switch(requestType){
-    case TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.received:
+    case TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive:
     case TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send:{
       return TrustRelationship.ENTITY_TRUST_TYPE.send;
     }

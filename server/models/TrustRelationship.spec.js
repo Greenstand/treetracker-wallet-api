@@ -14,8 +14,8 @@ describe("TrustRelationship", () => {
       expect(TrustRelationship.getTrustTypeByRequestType(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send)).eq(TrustRelationship.ENTITY_TRUST_TYPE.send);
     });
 
-    it("Request received should get send", () => {
-      expect(TrustRelationship.getTrustTypeByRequestType(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.received)).eq(TrustRelationship.ENTITY_TRUST_TYPE.send);
+    it("Request receive should get send", () => {
+      expect(TrustRelationship.getTrustTypeByRequestType(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive)).eq(TrustRelationship.ENTITY_TRUST_TYPE.send);
     });
   });
 });
