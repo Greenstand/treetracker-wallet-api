@@ -65,6 +65,20 @@ describe('Wallet integration tests', () => {
       });
   });
 
+  it(`[POST /auth] login with using wallet id: ${seed.wallet.id}`, (done) => {
+    request(server)
+      .post('/auth')
+      .set('treetracker-api-key', apiKey)
+      .send({wallet: seed.wallet.id, password: seed.wallet.password})
+      .expect('Content-Type', /application\/json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        expect(res.body).to.have.property('token');
+        done();
+      });
+  });
+
   // Tests that require logged-in authorization
 
   it(`[GET /tokens/${seed.token.uuid}] Should be able to get a token `, async () => {
