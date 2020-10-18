@@ -9,7 +9,7 @@ paths:
       tags: 
       - Authentication
       summary: "Authenticate account"
-      description: "Authenticate the client using wallet name and password, and respond with a bearer token"
+      description: "Authenticate the client using wallet name or id and password, and respond with a bearer token"
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -19,7 +19,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/authrequest'
-            example:
+            examples:
+              ById:
+                value:
+                  wallet: 1
+                  password: walnut
+              ByName:
+                value:
               wallet: zaven
               password: walnut
         required: true
@@ -58,10 +64,12 @@ paths:
             items: 
               type: string
         - name: wallet
-          description: "Wallet can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet"
+          description: "Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet"
           in: query
           schema:
-            type: string
+            oneOf:
+              - type: string
+              - type: number
             example: zaven2
         - name: token
           description: ""
@@ -604,7 +612,9 @@ components:
       type: object
       properties:
         wallet:
-          type: string
+          oneOf:
+          - type: string
+          - type: number
         password:
           type: string
       example:
