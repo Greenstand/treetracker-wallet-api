@@ -26,8 +26,8 @@ paths:
                   password: walnut
               ByName:
                 value:
-              wallet: zaven
-              password: walnut
+                  wallet: zaven
+                  password: walnut
         required: true
       responses:
         '200':
@@ -158,7 +158,7 @@ paths:
       tags: 
       - Transfers
       summary: 'Move, request, and send tokens between wallets'
-      description: 'Move, request, and send tokens between wallets as allowed by trust relationships.  Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer.  The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debut, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval'
+      description: 'Move, request, and send tokens between wallets (by name or id) as allowed by trust relationships.  Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer.  The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debut, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -175,7 +175,7 @@ paths:
                     - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
                     - e533653e-2dbf-48cd-940a-a87e5a393158
                   sender_wallet: zaven4
-                  receiver_wallet: zaven
+                  receiver_wallet: 2
               Bundle:
                 value:
                   bundle:
@@ -202,7 +202,7 @@ paths:
       tags:
       - Transfers
       summary: 'Get requested, pending, completed, cancelled, and failed transfers'
-      description: 'Get requested, pending, completed, cancelled and failed transfers for wallets the authenticated wallet is either the source, destination, or originating wallet entity.'
+      description: 'Get requested, pending, completed, cancelled and failed transfers for wallets (by name or id). The authenticated wallet is either the source, destination, or originating wallet entity.'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -215,9 +215,11 @@ paths:
         - in: query
           name: wallet
           schema:
-            type: string
+            oneOf:
+              - type: string
+              - type: number
           required: false
-          description: filter transfers matches the source, destination, or originating wallet of a transfer
+          description: filter transfers matches the source, destination, or originating wallet (by name or id) of a transfer
       responses:
         '200':
           description: 'Return array of matching transfers'
@@ -402,10 +404,12 @@ paths:
             format: timestamp
             example: 2019-10-12T07:20:50.52Z
         - name: wallet
-          description: "Wallet can be specified if the authenticated wallet manages other wallets.  The default is to return events matching the authenticated wallet"
+          description: "Wallet (by name or id) can be specified if the authenticated wallet manages other wallets.  The default is to return events matching the authenticated wallet"
           in: query
           schema:
-            type: string
+            oneOf:
+              - type: string
+              - type: number
             example: zaven2
       responses:
         '200':
@@ -593,7 +597,7 @@ components:
       required: true
       style: simple
       schema:
-        type: string
+          type: string
     contentTypeJsonHeader:
       name: Content-Type
       in: header
@@ -725,9 +729,13 @@ components:
                 type: string
                 description: "optional list of tags that trees must match ALL of"
         sender_wallet:
-          type: string
+          oneOf:
+          - type: string
+          - type: number
         receiver_wallet:
-          type: string
+          oneOf:
+          - type: string
+          - type: number
       example:
         tokens:
           - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
@@ -745,9 +753,13 @@ components:
         parameters:
           $ref: "#/components/schemas/requestBundleRequestParameters"
         sender_wallet:
-          type: string
+          oneOf:
+          - type: string
+          - type: number
         receiver_wallet:
-          type: string
+          oneOf:
+          - type: string
+          - type: number
       example:
         bundle_size: 500
         sender_wallet: zaven
@@ -765,7 +777,9 @@ components:
             type: string
           description: ''
         receiver_wallet:
-          type: string
+          oneOf:
+          - type: string
+          - type: number
       example:
         tokens:
           - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
