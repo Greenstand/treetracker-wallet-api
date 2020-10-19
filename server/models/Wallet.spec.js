@@ -64,11 +64,13 @@ describe("Wallet", () => {
 
 
   it("getTrustRelationshipsRequested", async () => {
-    const fnGet = sinon.stub(TrustRepository.prototype, "getByOriginatorId").resolves([]);
+    const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+      id: 1,
+      originator_entity_id: 1,
+    }]);
     const trust_relationships = await wallet.getTrustRelationshipsRequested();
-    expect(trust_relationships).lengthOf(0);
-    expect(fnGet).to.have.been.calledWith(wallet.getId());
-    fnGet.restore();
+    expect(trust_relationships).lengthOf(1);
+    fn.restore();
   });
 
   describe("Request trust", () => {
@@ -90,7 +92,7 @@ describe("Wallet", () => {
       }).rejects.toThrow(/name/i);
     });
 
-    it.only("request with trust which has existed should throw 403", async () => {
+    it("request with trust which has existed should throw 403", async () => {
       const wallet2 = new Wallet(2);
       const getByName = sinon.stub(WalletService.prototype, "getByName").resolves(wallet2);
       const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
@@ -250,11 +252,12 @@ describe("Wallet", () => {
 
     it("checkTrust successfully", async () => {
       const walletReceiver = new Wallet(2);
-      const fn1 = sinon.stub(TrustRepository.prototype, "getTrustedByOriginatorId").resolves([{
+      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
         request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
         type: TrustRelationship.ENTITY_TRUST_TYPE.send,
         actor_entity_id: wallet.getId(),
         target_entity_id: walletReceiver.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
       }]);//no relationship
       await wallet.checkTrust(
         TrustRelationship.ENTITY_TRUST_TYPE.send,

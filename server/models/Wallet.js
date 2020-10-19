@@ -81,7 +81,10 @@ class Wallet{
    * Get all the trust relationships I have requested
    */
   async getTrustRelationshipsRequested(){
-    return await this.trustRepository.getByOriginatorId(this._id);
+    const result = await this.getTrustRelationships();
+    return result.filter(trustRelationship => {
+      return trustRelationship.originator_entity_id === this._id
+    });
   }
 
   /*
@@ -98,7 +101,7 @@ class Wallet{
   async getTrustRelationshipsTrusted(){
     const result = await this.getTrustRelationships();
     return result.filter(trustRelationship => {
-      return trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+      return trustRelationship.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
     });
   }
 
