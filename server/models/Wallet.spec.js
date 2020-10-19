@@ -90,17 +90,20 @@ describe("Wallet", () => {
       }).rejects.toThrow(/name/i);
     });
 
-    it("request with trust which has existed should throw 403", async () => {
-      const getByName = sinon.stub(WalletRepository.prototype, "getByName").resolves({id:2});
-      const getByOriginatorId = sinon.stub(TrustRepository.prototype, "getByOriginatorId").resolves([{
-        type:'send',
-        target_entity_id: 2,
+    it.only("request with trust which has existed should throw 403", async () => {
+      const wallet2 = new Wallet(2);
+      const getByName = sinon.stub(WalletService.prototype, "getByName").resolves(wallet2);
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        actor_entity_id: wallet.getId(),
+        target_entity_id: wallet2.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
       }]);
       await jestExpect(async () => {
         await wallet.requestTrustFromAWallet("send","test");
       }).rejects.toThrow(/existed/i);
       getByName.restore();
-      getByOriginatorId.restore();
+      fn.restore();
     });
 
     it("request successfully", async () => {

@@ -124,13 +124,15 @@ class Wallet{
     const targetWallet = await this.walletService.getByName(targetWalletName);
 
     //check if I (current wallet) can add a new trust like this
-    const trustRelationships = await this.getTrustRelationshipsRequested();
+    const trustRelationships = await this.getTrustRelationships();
     if(trustRelationships.some(trustRelationship => {
       expect(trustRelationship).property("type").defined();
       expect(trustRelationship).property("target_entity_id").number();
       return (
-        trustRelationship.type === requestType &&
-        trustRelationship.target_entity_id === targetWallet.getId()
+        trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.send &&
+        trustRelationship.request_type === requestType &&
+        trustRelationship.target_entity_id === targetWallet.getId() &&
+        trustRelationship.actor_entity_id === this._id
       )
     })){
       throw new HttpError(403, "The trust requested has existed");
