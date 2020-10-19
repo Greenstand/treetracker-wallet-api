@@ -322,7 +322,7 @@ describe("Wallet", () => {
         destination_entity_id: 2,
         state: Transfer.STATE.pending,
         parameters: {
-          tokens: [1],
+          tokens: ["uu"],
         }
       });
       fn0.restore();
@@ -351,7 +351,7 @@ describe("Wallet", () => {
         destination_entity_id: 1,
         state: Transfer.STATE.requested,
         parameters: {
-          tokens: [1],
+          tokens: ["uu"],
         }
       });
       fn0.restore();

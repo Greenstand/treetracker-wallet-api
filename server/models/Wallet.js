@@ -294,13 +294,18 @@ class Wallet{
 
     try{
       await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+      const tokensUUID = [];
+      for(let token of tokens){
+        const json = await token.toJSON();
+        tokensUUID.push(json.uuid);
+      }
       const transfer = await this.transferRepository.create({
         originator_entity_id: this._id, 
         source_entity_id: sender.getId(),
         destination_entity_id: receiver.getId(),
         state: Transfer.STATE.completed,
         parameters: {
-          tokens: tokens.map(token => token.getId()),
+          tokens: tokensUUID,
         },
       });
       log.debug("now, deal with tokens");
@@ -314,13 +319,18 @@ class Wallet{
       if(e instanceof HttpError && e.code === 403){
         if(await this.hasControlOver(sender)){
           log.debug("OK, no permission, source under control, now pending it");
+          const tokensUUID = [];
+          for(let token of tokens){
+            const json = await token.toJSON();
+            tokensUUID.push(json.uuid);
+          }
           const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
             source_entity_id: sender.getId(),
             destination_entity_id: receiver.getId(),
             state: Transfer.STATE.pending,
             parameters: {
-              tokens: tokens.map(token => token.getId()),
+              tokens: tokensUUID,
             },
           });
           for(let token of tokens){
@@ -329,13 +339,18 @@ class Wallet{
           return transfer;
         }else if(await this.hasControlOver(receiver)){
           log.debug("OK, no permission, receiver under control, now request it");
+          const tokensUUID = [];
+          for(let token of tokens){
+            const json = await token.toJSON();
+            tokensUUID.push(json.uuid);
+          }
           const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
             source_entity_id: sender.getId(),
             destination_entity_id: receiver.getId(),
             state: Transfer.STATE.requested,
             parameters: {
-              tokens: tokens.map(token => token.getId()),
+              tokens: tokensUUID,
             },
           });
           for(let token of tokens){

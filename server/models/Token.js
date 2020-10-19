@@ -27,8 +27,8 @@ class Token{
     if(this._JSON){
       return this._JSON;
     }else{
-      const token = await this.tokenRepository.getById(this._id);
-      return token;
+      this._JSON = await this.tokenRepository.getById(this._id);
+      return this._JSON;
     }
   }
 
