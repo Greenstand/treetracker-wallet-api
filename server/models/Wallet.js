@@ -224,29 +224,49 @@ class Wallet{
    * To check if the indicated trust relationship exist between the source and 
    * target wallet
    */
-  async checkTrust(trustType, sourceWallet, targetWallet){
+  async checkTrust(trustType, senderWallet, receiveWallet){
     expect(trustType).oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
-    expect(sourceWallet).instanceOf(Wallet);
-    expect(targetWallet).instanceOf(Wallet);
+    expect(senderWallet).instanceOf(Wallet);
+    expect(receiveWallet).instanceOf(Wallet);
     const trustRelationships = await this.getTrustRelationshipsTrusted();
     //check if the trust exist
-    if(trustRelationships.some(trustRelationship => {
-      expect(trustRelationship).match({
-        actor_entity_id: expect.any(Number),
-        target_entity_id: expect.any(Number),
-        request_type: expect.any(String),
-        type: expect.any(String),
-      });
-      if(
-        trustRelationship.actor_entity_id === sourceWallet.getId() &&
-        trustRelationship.target_entity_id === targetWallet.getId() &&
-        trustRelationship.type === trustType
-      ){
-        return true;
-      }else{
-        return false;
-      }
-    })){
+    if(
+      trustRelationships.some(trustRelationship => {
+        expect(trustRelationship).match({
+          actor_entity_id: expect.any(Number),
+          target_entity_id: expect.any(Number),
+          request_type: expect.any(String),
+          type: expect.any(String),
+        });
+        if(
+          trustRelationship.actor_entity_id === senderWallet.getId() &&
+          trustRelationship.target_entity_id === receiveWallet.getId() &&
+          trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
+        ){
+          return true;
+        }else{
+          return false;
+        }
+      })
+      ||
+      trustRelationships.some(trustRelationship => {
+        expect(trustRelationship).match({
+          actor_entity_id: expect.any(Number),
+          target_entity_id: expect.any(Number),
+          request_type: expect.any(String),
+          type: expect.any(String),
+        });
+        if(
+          trustRelationship.actor_entity_id === receiveWallet.getId() &&
+          trustRelationship.target_entity_id === senderWallet.getId() &&
+          trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive
+        ){
+          return true;
+        }else{
+          return false;
+        }
+      })
+    ){
       log.debug("check trust passed");
     }else{
       throw new HttpError(403, "Have no permission to do this action");

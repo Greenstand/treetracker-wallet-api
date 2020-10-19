@@ -261,6 +261,22 @@ describe("Wallet", () => {
       fn1.restore();
     });
 
+    it("checkTrust successfully with recieve case", async () => {
+      const wallet2 = new Wallet(2);
+      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([{
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        actor_entity_id: wallet2.getId(),
+        target_entity_id: wallet.getId(),
+      }]);//no relationship
+      await wallet.checkTrust(
+        TrustRelationship.ENTITY_TRUST_TYPE.send,
+        wallet,
+        wallet2,
+      );
+      fn1.restore();
+    });
+
   });
 
   describe("Transfer", () => {
