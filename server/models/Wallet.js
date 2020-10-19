@@ -96,7 +96,10 @@ class Wallet{
    * Get all relationships which has been accepted
    */
   async getTrustRelationshipsTrusted(){
-    return await this.trustRepository.getTrustedByOriginatorId(this._id);
+    const result = await this.getTrustRelationships();
+    return result.filter(trustRelationship => {
+      return trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+    });
   }
 
   async toJSON(){
