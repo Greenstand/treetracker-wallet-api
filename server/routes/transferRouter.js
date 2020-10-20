@@ -26,11 +26,11 @@ transferRouter.post(
           tokens: Joi.array().items(Joi.string()).required(),
           sender_wallet: Joi.alternatives().try(
             Joi.string().alphanum().min(4).max(32),
-            Joi.number().min(4).max(32)
+            Joi.number().min(1).max(32)
           ).required(),
           receiver_wallet: Joi.alternatives().try(
             Joi.string().alphanum().min(4).max(32),
-            Joi.number().min(4).max(32)
+            Joi.number().min(1).max(32)
           ).required(),
         }),
         otherwise: Joi.object({
