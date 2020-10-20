@@ -2,7 +2,6 @@
     "env": {
         "node": true
     },
-    "plugins": ["prettier"],
     "extends": [
         "airbnb-base",
         "prettier"
