@@ -101,7 +101,7 @@ describe('Wallet integration tests', () => {
         .send({
           tokens: [seed.token.uuid],
           sender_wallet: seed.wallet.name,
-          receiver_wallet: seed.walletB.id,
+          receiver_wallet: seed.walletB.name,
         });
       expect(res).property("statusCode").to.eq(202);
       expect(res).property("body").property("id").a("number");
