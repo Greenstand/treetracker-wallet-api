@@ -363,8 +363,14 @@ describe("Wallet", () => {
 
   describe("Bundle transfer", () => {
 
-    //TODO
-    it.skip("Hasn't enough token to send, should throw 403", async () => {
+    it("Sender doesn't have enough tokens to send, should throw 403", async () => {
+      const sender = new Wallet(2);
+      const receiver = new Wallet(3);
+      const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
+      await jestExpect(async () => {
+        await wallet.transferBundle(sender, receiver, 2);
+      }).rejects.toThrow(/enough/);
+      fn0.restore();
     });
 
     it("don't have trust, sender under control, should created a transfer pending record", async () => {
