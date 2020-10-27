@@ -12,7 +12,7 @@ class BaseRepository{
   async getById(id){
     const object = await knex.select().table(this._tableName).where('id', id).first();
     if(!object){
-      throw new HttpError(404, `Can not found ${this._tableName} by id`);
+      throw new HttpError(404, `Can not found ${this._tableName} by id:${id}`);
     }
     return object;
   }
@@ -58,6 +58,7 @@ class BaseRepository{
       promise = promise.limit(options && options.limit);
     }
     const result = await promise;
+    expect(result).a(expect.any(Array));
     return result;
   }
 

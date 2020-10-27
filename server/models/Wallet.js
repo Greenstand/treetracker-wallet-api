@@ -81,7 +81,10 @@ class Wallet{
    * Get all the trust relationships I have requested
    */
   async getTrustRelationshipsRequested(){
-    return await this.trustRepository.getByOriginatorId(this._id);
+    const result = await this.getTrustRelationships();
+    return result.filter(trustRelationship => {
+      return trustRelationship.originator_entity_id === this._id
+    });
   }
 
   /*
@@ -96,7 +99,10 @@ class Wallet{
    * Get all relationships which has been accepted
    */
   async getTrustRelationshipsTrusted(){
-    return await this.trustRepository.getTrustedByOriginatorId(this._id);
+    const result = await this.getTrustRelationships();
+    return result.filter(trustRelationship => {
+      return trustRelationship.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+    });
   }
 
   async toJSON(){
@@ -124,13 +130,15 @@ class Wallet{
     const targetWallet = await this.walletService.getByName(targetWalletName);
 
     //check if I (current wallet) can add a new trust like this
-    const trustRelationships = await this.getTrustRelationshipsRequested();
+    const trustRelationships = await this.getTrustRelationships();
     if(trustRelationships.some(trustRelationship => {
       expect(trustRelationship).property("type").defined();
       expect(trustRelationship).property("target_entity_id").number();
       return (
-        trustRelationship.type === requestType &&
-        trustRelationship.target_entity_id === targetWallet.getId()
+        trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.send &&
+        trustRelationship.request_type === requestType &&
+        trustRelationship.target_entity_id === targetWallet.getId() &&
+        trustRelationship.actor_entity_id === this._id
       )
     })){
       throw new HttpError(403, "The trust requested has existed");
@@ -224,29 +232,49 @@ class Wallet{
    * To check if the indicated trust relationship exist between the source and 
    * target wallet
    */
-  async checkTrust(trustType, sourceWallet, targetWallet){
+  async checkTrust(trustType, senderWallet, receiveWallet){
     expect(trustType).oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
-    expect(sourceWallet).instanceOf(Wallet);
-    expect(targetWallet).instanceOf(Wallet);
+    expect(senderWallet).instanceOf(Wallet);
+    expect(receiveWallet).instanceOf(Wallet);
     const trustRelationships = await this.getTrustRelationshipsTrusted();
     //check if the trust exist
-    if(trustRelationships.some(trustRelationship => {
-      expect(trustRelationship).match({
-        actor_entity_id: expect.any(Number),
-        target_entity_id: expect.any(Number),
-        request_type: expect.any(String),
-        type: expect.any(String),
-      });
-      if(
-        trustRelationship.actor_entity_id === sourceWallet.getId() &&
-        trustRelationship.target_entity_id === targetWallet.getId() &&
-        trustRelationship.type === trustType
-      ){
-        return true;
-      }else{
-        return false;
-      }
-    })){
+    if(
+      trustRelationships.some(trustRelationship => {
+        expect(trustRelationship).match({
+          actor_entity_id: expect.any(Number),
+          target_entity_id: expect.any(Number),
+          request_type: expect.any(String),
+          type: expect.any(String),
+        });
+        if(
+          trustRelationship.actor_entity_id === senderWallet.getId() &&
+          trustRelationship.target_entity_id === receiveWallet.getId() &&
+          trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
+        ){
+          return true;
+        }else{
+          return false;
+        }
+      })
+      ||
+      trustRelationships.some(trustRelationship => {
+        expect(trustRelationship).match({
+          actor_entity_id: expect.any(Number),
+          target_entity_id: expect.any(Number),
+          request_type: expect.any(String),
+          type: expect.any(String),
+        });
+        if(
+          trustRelationship.actor_entity_id === receiveWallet.getId() &&
+          trustRelationship.target_entity_id === senderWallet.getId() &&
+          trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive
+        ){
+          return true;
+        }else{
+          return false;
+        }
+      })
+    ){
       log.debug("check trust passed");
     }else{
       throw new HttpError(403, "Have no permission to do this action");
@@ -266,13 +294,18 @@ class Wallet{
 
     try{
       await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+      const tokensUUID = [];
+      for(let token of tokens){
+        const json = await token.toJSON();
+        tokensUUID.push(json.uuid);
+      }
       const transfer = await this.transferRepository.create({
         originator_entity_id: this._id, 
         source_entity_id: sender.getId(),
         destination_entity_id: receiver.getId(),
         state: Transfer.STATE.completed,
         parameters: {
-          tokens: tokens.map(token => token.getId()),
+          tokens: tokensUUID,
         },
       });
       log.debug("now, deal with tokens");
@@ -286,13 +319,18 @@ class Wallet{
       if(e instanceof HttpError && e.code === 403){
         if(await this.hasControlOver(sender)){
           log.debug("OK, no permission, source under control, now pending it");
+          const tokensUUID = [];
+          for(let token of tokens){
+            const json = await token.toJSON();
+            tokensUUID.push(json.uuid);
+          }
           const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
             source_entity_id: sender.getId(),
             destination_entity_id: receiver.getId(),
             state: Transfer.STATE.pending,
             parameters: {
-              tokens: tokens.map(token => token.getId()),
+              tokens: tokensUUID,
             },
           });
           for(let token of tokens){
@@ -301,13 +339,18 @@ class Wallet{
           return transfer;
         }else if(await this.hasControlOver(receiver)){
           log.debug("OK, no permission, receiver under control, now request it");
+          const tokensUUID = [];
+          for(let token of tokens){
+            const json = await token.toJSON();
+            tokensUUID.push(json.uuid);
+          }
           const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
             source_entity_id: sender.getId(),
             destination_entity_id: receiver.getId(),
             state: Transfer.STATE.requested,
             parameters: {
-              tokens: tokens.map(token => token.getId()),
+              tokens: tokensUUID,
             },
           });
           for(let token of tokens){

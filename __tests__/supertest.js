@@ -92,6 +92,7 @@ describe('Wallet integration tests', () => {
       expect(res).property("statusCode").to.eq(202);
       expect(res).property("body").property("id").a("number");
       expect(res).property("body").property("parameters").property("tokens").lengthOf(1);
+      expect(res.body.parameters.tokens[0]).eq(seed.token.uuid);
       transferId = res.body.id;
     })
 
