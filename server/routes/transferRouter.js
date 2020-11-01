@@ -1,18 +1,17 @@
-const express = require('express');
+const express = require("express");
 const transferRouter = express.Router();
 const WalletService = require("../services/WalletService");
 const TransferService = require("../services/TransferService");
 const Wallet = require("../models/Wallet");
 const TrustRelationship = require("../models/TrustRelationship");
-const expect = require("expect-runtime");
 const helper = require("./utils");
 const Joi = require("joi");
 const TokenService = require("../services/TokenService");
 const HttpError = require("../utils/HttpError");
 const Transfer = require("../models/Transfer");
 
-
-transferRouter.post('/',
+transferRouter.post(
+  "/",
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
@@ -25,10 +24,14 @@ transferRouter.post('/',
       }).unknown(),{
         then: Joi.object({
           tokens: Joi.array().items(Joi.string()).required(),
-          sender_wallet: Joi.string()
-          .required(),
-          receiver_wallet: Joi.string()
-          .required(),
+          sender_wallet: Joi.alternatives().try(
+            Joi.string().alphanum().min(4).max(32),
+            Joi.number().min(1).max(32)
+          ).required(),
+          receiver_wallet: Joi.alternatives().try(
+            Joi.string().alphanum().min(4).max(32),
+            Joi.number().min(1).max(32)
+          ).required(),
         }),
         otherwise: Joi.object({
           bundle: Joi.object({
@@ -43,8 +46,10 @@ transferRouter.post('/',
     );
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const walletSender = await walletService.getByName(req.body.sender_wallet);
-    const walletReceiver = await walletService.getByName(req.body.receiver_wallet);
+
+    const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
+    const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
+
     let result;
     if(req.body.tokens){
       const tokens = [];
@@ -151,10 +156,26 @@ transferRouter.get("/",
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
+    Joi.assert(
+      req.query,
+      Joi.object({
+        state: Joi.string()
+          .valid(...Object.values(Transfer.STATE)),
+        wallet: Joi.alternatives().try(
+          Joi.string().alphanum().min(4).max(32),
+          Joi.number().min(4).max(32)
+        ),
+      })
+    );
     const {state, wallet} = req.query;
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const result = await walletLogin.getTransfers(state, wallet);
+    let walletObject;
+    if(wallet){
+      walletObject = await walletService.getByIdOrName(wallet);
+    }
+    
+    const result = await walletLogin.getTransfers(state, walletObject);
     const transferService = new TransferService();
     const json = [];
     for(let t of result){
@@ -164,6 +185,5 @@ transferRouter.get("/",
     res.status(200).json({transfers: json});
   })
 );
-
 
 module.exports = transferRouter;

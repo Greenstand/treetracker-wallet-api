@@ -59,33 +59,78 @@ describe("authRouter", () => {
     expect(res.body.message).match(/sender.*required/);
   });
 
-  it("all parameters fine, should return 201", async () => {
-    sinon.stub(WalletService.prototype, "getByName").resolves(new Wallet(1));
-    sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(2));
-    sinon.stub(TokenService.prototype,"getByUUID").resolves(new Token({
-      id: 1,
-      entity_id: 1,
-    }));
-    sinon.stub(Wallet.prototype, "transfer").resolves({
+  it('transfer using sender and receiver name, should return 201', async () => {
+    sinon
+      .stub(WalletService.prototype, 'getById')
+      .resolves(new Wallet(1));
+    sinon
+      .stub(WalletService.prototype, 'getByIdOrName')
+      .onFirstCall()
+      .resolves(new Wallet(1))
+      .onSecondCall()
+      .resolves(new Wallet(2));
+    sinon.stub(TokenService.prototype, 'getByUUID').resolves(
+      new Token({
+        id: 1,
+        entity_id: 1,
+      }),
+    );
+    sinon.stub(Wallet.prototype, 'transfer').resolves({
       id: 1,
       state: Transfer.STATE.completed,
     });
-    sinon.stub(TransferService.prototype, "convertToResponse").resolves({
-      id:1,
+    sinon.stub(TransferService.prototype, 'convertToResponse').resolves({
+      id: 1,
       state: Transfer.STATE.completed,
     });
     const res = await request(app)
-      .post("/")
+      .post('/')
       .send({
-        tokens: ["1"],
-        sender_wallet: "ssss",
-        receiver_wallet: "ssss",
+        tokens: ['1'],
+        sender_wallet: 'wallet1',
+        receiver_wallet: 'wallet2',
       });
-    expect(res).property("statusCode").eq(201);
+    expect(res).property('statusCode').eq(201);
+  });
+
+  it('Transfer using sender and receiver id, should return 201', async () => {
+    sinon
+      .stub(WalletService.prototype, 'getById')
+      .onFirstCall()
+      .resolves(new Wallet(1));
+    sinon
+      .stub(WalletService.prototype, 'getByIdOrName')
+      .onFirstCall()
+      .resolves(new Wallet(1))
+      .onSecondCall()
+      .resolves(new Wallet(2));
+
+    sinon.stub(TokenService.prototype, 'getByUUID').resolves(
+      new Token({
+        id: 1,
+        entity_id: 1,
+      }),
+    );
+    sinon.stub(Wallet.prototype, 'transfer').resolves({
+      id: 1,
+      state: Transfer.STATE.completed,
+    });
+    sinon.stub(TransferService.prototype, 'convertToResponse').resolves({
+      id: 1,
+      state: Transfer.STATE.completed,
+    });
+    const res = await request(app)
+      .post('/')
+      .send({
+        tokens: ['1'],
+        sender_wallet: 1,
+        receiver_wallet: 2,
+      });
+    expect(res).property('statusCode').eq(201);
   });
 
   it("all parameters fine, but no trust relationship, should return 202", async () => {
-    sinon.stub(WalletService.prototype, "getByName").resolves(new Wallet(1));
+    sinon.stub(WalletService.prototype, "getByIdOrName").resolves(new Wallet(1));
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: () => {},
     });
@@ -110,7 +155,7 @@ describe("authRouter", () => {
   });
 
   it("bundle case, success, should return 201", async () => {
-    sinon.stub(WalletService.prototype, "getByName").resolves(new Wallet(1));
+    sinon.stub(WalletService.prototype, "getByIdOrName").resolves(new Wallet(1));
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: () => {},
     });

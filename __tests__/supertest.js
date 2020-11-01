@@ -65,6 +65,20 @@ describe('Wallet integration tests', () => {
       });
   });
 
+  it(`[POST /auth] login with using wallet id: ${seed.wallet.id}`, (done) => {
+    request(server)
+      .post('/auth')
+      .set('treetracker-api-key', apiKey)
+      .send({wallet: seed.wallet.id, password: seed.wallet.password})
+      .expect('Content-Type', /application\/json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        expect(res.body).to.have.property('token');
+        done();
+      });
+  });
+
   // Tests that require logged-in authorization
 
   it(`[GET /tokens/${seed.token.uuid}] Should be able to get a token `, async () => {
@@ -144,7 +158,7 @@ describe('Wallet integration tests', () => {
             expect(res).to.have.property('statusCode', 200);
           })
 
-          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed`, async () => {
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed 1`, async () => {
             const res = await request(server)
               .get(`/transfers`)
               .set('treetracker-api-key', apiKey)
@@ -453,7 +467,7 @@ describe('Wallet integration tests', () => {
             expect(res).to.have.property('statusCode', 200);
           })
 
-          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed`, async () => {
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed 2`, async () => {
             const res = await request(server)
               .get(`/transfers`)
               .set('treetracker-api-key', apiKey)
