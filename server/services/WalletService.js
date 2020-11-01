@@ -29,7 +29,7 @@ class WalletService {
     } else if (typeof idOrName === 'string') {
       walletObject = await this.walletRepository.getByName(idOrName);
     } else {
-      throw new HttpError(404, `Could not find wallet by id or name: ${idOrName}`);
+      throw new HttpError(404, `Type must be number or string: ${idOrName}`);
     }
 
     expect(walletObject).match({ id: expect.any(Number) });
