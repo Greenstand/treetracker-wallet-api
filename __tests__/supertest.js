@@ -157,7 +157,7 @@ describe('Wallet integration tests', () => {
             expect(res).to.have.property('statusCode', 200);
           })
 
-          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed`, async () => {
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed 1`, async () => {
             const res = await request(server)
               .get(`/transfers`)
               .set('treetracker-api-key', apiKey)
@@ -466,7 +466,7 @@ describe('Wallet integration tests', () => {
             expect(res).to.have.property('statusCode', 200);
           })
 
-          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed`, async () => {
+          it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed 2`, async () => {
             const res = await request(server)
               .get(`/transfers`)
               .set('treetracker-api-key', apiKey)

@@ -47,19 +47,8 @@ transferRouter.post(
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
 
-    let walletSender;
-    if (isNaN(req.body.sender_wallet)) {
-      walletSender = await walletService.getByName(req.body.sender_wallet);
-    } else {
-      walletSender = await walletService.getById(req.body.sender_wallet);
-    }
-
-    let walletReceiver;
-    if (isNaN(req.body.receiver_wallet)) {
-      walletReceiver = await walletService.getByName(req.body.receiver_wallet);
-    } else {
-      walletReceiver = await walletService.getById(req.body.receiver_wallet);
-    }
+    const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
+    const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
 
     let result;
     if(req.body.tokens){
@@ -181,16 +170,10 @@ transferRouter.get("/",
     const {state, wallet} = req.query;
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-
     let walletObject;
     if(wallet){
-      if (isNaN(wallet)) {
-        walletObject = await walletService.getByName(wallet);
-      } else {
-        walletObject = await walletService.getById(wallet);
-      }
+      walletObject = await walletService.getByIdOrName(wallet);
     }
-    
     
     const result = await walletLogin.getTransfers(state, walletObject);
     const transferService = new TransferService();

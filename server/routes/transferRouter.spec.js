@@ -64,7 +64,7 @@ describe("authRouter", () => {
       .stub(WalletService.prototype, 'getById')
       .resolves(new Wallet(1));
     sinon
-      .stub(WalletService.prototype, 'getByName')
+      .stub(WalletService.prototype, 'getByIdOrName')
       .onFirstCall()
       .resolves(new Wallet(1))
       .onSecondCall()
@@ -97,11 +97,13 @@ describe("authRouter", () => {
     sinon
       .stub(WalletService.prototype, 'getById')
       .onFirstCall()
+      .resolves(new Wallet(1));
+    sinon
+      .stub(WalletService.prototype, 'getByIdOrName')
+      .onFirstCall()
       .resolves(new Wallet(1))
       .onSecondCall()
-      .resolves(new Wallet(2))
-      .onThirdCall()
-      .resolves(new Wallet(3))
+      .resolves(new Wallet(2));
 
     sinon.stub(TokenService.prototype, 'getByUUID').resolves(
       new Token({
@@ -128,7 +130,7 @@ describe("authRouter", () => {
   });
 
   it("all parameters fine, but no trust relationship, should return 202", async () => {
-    sinon.stub(WalletService.prototype, "getByName").resolves(new Wallet(1));
+    sinon.stub(WalletService.prototype, "getByIdOrName").resolves(new Wallet(1));
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: () => {},
     });
@@ -153,7 +155,7 @@ describe("authRouter", () => {
   });
 
   it("bundle case, success, should return 201", async () => {
-    sinon.stub(WalletService.prototype, "getByName").resolves(new Wallet(1));
+    sinon.stub(WalletService.prototype, "getByIdOrName").resolves(new Wallet(1));
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: () => {},
     });

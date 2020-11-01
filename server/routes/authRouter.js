@@ -27,13 +27,7 @@ authRouter.post(
     const { wallet, password } = req.body;
     const walletService = new WalletService();
     
-    let walletObject;
-    if (isNaN(wallet)) {
-      walletObject = await walletService.getByName(wallet);
-    }
-    else{
-      walletObject = await walletService.getById(wallet);
-    }
+    let walletObject = await walletService.getByIdOrName(wallet);
     walletObject = await walletObject.authorize(password);
 
     const jwtService = new JWTService();
