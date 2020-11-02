@@ -287,6 +287,13 @@ describe("Wallet", () => {
 
   describe("Transfer", () => {
 
+    it("If it is deduct, throw 403, do not support it yet", async () => {
+      sinon.stub(Wallet.prototype, "checkDeduct").rejects(new HttpError(403, "deduct"));
+      await jestExpect(async () => {
+        await wallet.transfer();
+      }).rejects.toThrow(/deduct/);
+    });
+
     it("Given token uuid do not belongs to sender wallet, should throw 403", async () => {
       const fn1 = sinon.stub(Token.prototype, "belongsTo").resolves(false);
       const sender = new Wallet(1);
@@ -330,7 +337,8 @@ describe("Wallet", () => {
       fn2.restore();
     });
 
-    it("don't have trust, receiver under control, should created a transfer request record", async () => {
+    //This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
+    it.skip("don't have trust, receiver under control, should created a transfer request record", async () => {
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
@@ -359,7 +367,8 @@ describe("Wallet", () => {
       fn2.restore();
     });
 
-    it("have trust, should finish successfully", async () => {
+    //This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
+    it.skip("have trust, should finish successfully", async () => {
       const sender = new Wallet(2);
       const receiver = new Wallet(3);
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
@@ -683,6 +692,34 @@ describe("Wallet", () => {
         }]
       });
       fn.restore();
+    });
+  });
+
+  describe("Deduct", () => {
+
+    it("the sender is me, should be able to pass", async () => {
+      const wallet = new Wallet(1);
+      const sender = wallet;
+      const receiver = new Wallet(2);
+      await wallet.checkDeduct(sender, receiver);
+    });
+
+    it("The sender is my sub wallet, should be able to pass", async () => {
+      const wallet = new Wallet(1);
+      const sender = new Wallet(2);
+      const receiver = new Wallet(3);
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await wallet.checkDeduct(sender, receiver);
+    });
+
+    it("The sender isn't my sub wallet, should throw 403", async () => {
+      const wallet = new Wallet(1);
+      const sender = new Wallet(2);
+      const receiver = new Wallet(3);
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(false);
+      await jestExpect(async () => {
+        await wallet.checkDeduct(sender, receiver);
+      }).rejects.toThrow(/deduct/);
     });
   });
 
