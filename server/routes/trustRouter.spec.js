@@ -37,6 +37,35 @@ describe("trustRouter", () => {
     sinon.restore();
   })
 
+  describe("post /trust_relationships", () => {
+
+    it("successfully", async () => {
+      const wallet = new Wallet(1);
+      const wallet2 = new Wallet(2);
+      sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+      sinon.stub(WalletService.prototype, "getByName").resolves(wallet2);
+      const fn = sinon.stub(Wallet.prototype, "requestTrustFromAWallet");
+      sinon.stub(TrustService.prototype, "convertToResponse").resolves({});
+      const res = await request(app)
+        .post("/")
+        .send({
+          trust_request_type: "send",
+          target_wallet: "test",
+        });
+      expect(res).property("statusCode").eq(200);
+      expect(fn).calledWith(
+        "send",
+        wallet,
+        wallet2,
+      )
+    });
+    
+    //TODO check the schema validation
+    it.skip("", () => {
+    });
+
+  });
+
   describe("get /trust_relationships", () => {
     it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));

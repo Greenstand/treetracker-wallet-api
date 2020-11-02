@@ -38,13 +38,19 @@ trustRouter.post('/',
   helper.handlerWrapper(async (req, res) => {
     expect(res.locals.wallet_id).number();
     expect(req).property("body").property("trust_request_type").a(expect.any(String));
-    expect(req).property("body").property("requestee_wallet").a(expect.any(String));
+    expect(req).property("body").property("target_wallet").a(expect.any(String));
     const walletService = new WalletService();
     const trustService = new TrustService();
     const wallet = await walletService.getById(res.locals.wallet_id);
+    const targetWallet = await walletService.getByName(req.body.target_wallet);
+    let actorWallet = wallet;
+    if(req.body.actor_wallet){
+      actorWallet = await walletService.getByName(req.body.target_wallet);
+    }
     const trust_relationship = await wallet.requestTrustFromAWallet(
       req.body.trust_request_type,
-      req.body.requestee_wallet,
+      actorWallet,
+      targetWallet,
     );
     const trust_relationship_json = await trustService.convertToResponse(trust_relationship);
     res.status(200).json(trust_relationship_json);
