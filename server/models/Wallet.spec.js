@@ -121,6 +121,26 @@ describe("Wallet", () => {
       fn2.restore();
       fn3.restore();
     });
+
+    describe("Request trust for sub wallet", () => {
+
+      it("To request sub wallet to which I don't have permission, throw 403", async () => {
+        const wallet2 = new Wallet(2);
+        const wallet3 = new Wallet(3);
+        sinon.stub(Wallet.prototype, "hasControlOver").resolves(false);
+        await jestExpect(async () => {
+          await wallet.requestTrustFromAWallet("send",wallet2, wallet3);
+        }).rejects.toThrow(/permission.*actor/i);
+      });
+
+      it("Successful", async () => {
+        const wallet2 = new Wallet(2);
+        const wallet3 = new Wallet(3);
+        sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+        sinon.stub(TrustRepository.prototype, "create").resolves({});
+        await wallet.requestTrustFromAWallet("send",wallet2, wallet3);
+      });
+    });
   });
 
   describe("Accept trust", () => {

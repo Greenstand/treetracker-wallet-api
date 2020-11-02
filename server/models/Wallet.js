@@ -146,7 +146,10 @@ class Wallet{
     }
     
     //check if the orginator can control the actor
-    await this.hasControlOver(actorWallet);
+    const hasControl = await this.hasControlOver(actorWallet);
+    if(!hasControl){
+      throw new HttpError(403, "Have no permission to deal with this actor");
+    }
     
     //check if the target wallet can accept the request
     await targetWallet.checkTrustRequestSentToMe(requestType, this.id);
