@@ -117,17 +117,17 @@ class Wallet{
   /*
    * send a trust request to another wallet
    */
-  async requestTrustFromAWallet(requestType, targetWalletName){
+  async requestTrustFromAWallet(
+    requestType, 
+    actorWallet,
+    targetWallet,
+  ){
     log.debug("request trust...");
     expect(
       requestType, 
       () => new HttpError(400, `The trust request type must be one of ${Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE).join(',')}`)
     )
       .oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
-    expect(targetWalletName, () => new HttpError(400, "Invalid wallet name"))
-      .match(/\S+/);
-
-    const targetWallet = await this.walletService.getByName(targetWalletName);
 
     //check if I (current wallet) can add a new trust like this
     const trustRelationships = await this.getTrustRelationships();
@@ -138,10 +138,17 @@ class Wallet{
         trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.send &&
         trustRelationship.request_type === requestType &&
         trustRelationship.target_entity_id === targetWallet.getId() &&
-        trustRelationship.actor_entity_id === this._id
+        trustRelationship.originator_entity_id === this._id &&
+        trustRelationship.actor_entity_id === actorWallet._id
       )
     })){
       throw new HttpError(403, "The trust requested has existed");
+    }
+    
+    //check if the orginator can control the actor
+    const hasControl = await this.hasControlOver(actorWallet);
+    if(!hasControl){
+      throw new HttpError(403, "Have no permission to deal with this actor");
     }
     
     //check if the target wallet can accept the request

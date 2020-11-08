@@ -907,7 +907,10 @@ components:
       properties:
         trust_request_type:
           type: string
-        requestee_wallet:
+        actor_wallet:
+          type: string
+          description: "This is optional, if ignore the actor_wallet, then the defaul actor_wallet should be the current logged in wallet"
+        target_wallet:
           type: string
     historyResponse:
       title: History Response

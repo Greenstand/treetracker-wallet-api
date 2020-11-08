@@ -288,7 +288,7 @@ describe('Wallet integration tests', () => {
           .set('Authorization', `Bearer ${token}`)
           .send({
             trust_request_type: 'send',
-            requestee_wallet: seed.walletB.name,
+            target_wallet: seed.walletB.name,
           });
         expect(res).property("statusCode").to.eq(200);
         trustRelationship = res.body;
