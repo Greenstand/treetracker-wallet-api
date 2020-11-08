@@ -285,6 +285,7 @@ class Wallet{
    * Transfer some tokens from the sender to receiver
    */
   async transfer(sender, receiver, tokens){
+    await this.checkDeduct(sender, receiver);
     //check tokens belong to sender
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
@@ -603,6 +604,21 @@ class Wallet{
     }
     const result = await this.transferRepository.getByFilter(filter);
     return result;
+  }
+
+  /*
+   * Check if it is deduct, if ture, throw 403, cuz we do not support it yet
+   */
+  async checkDeduct(sender, receiver){
+    if(this._id === sender.getId()){
+      return;
+    }
+    const result = await this.hasControlOver(sender);
+    if(result){
+      return;
+    }else{
+      throw new HttpError(403, "Do not support deduct yet");
+    }
   }
 }
 

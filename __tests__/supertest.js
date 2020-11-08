@@ -558,7 +558,8 @@ describe('Wallet integration tests', () => {
       tokenB = res.body.token;
     })
 
-    describe(`WalletB:${seed.walletB.name} request a token from ${seed.wallet.name}, should get 202`, () => {
+    //This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
+    describe.skip(`WalletB:${seed.walletB.name} request a token from ${seed.wallet.name}, should get 202`, () => {
 
       beforeEach(async () => {
         const res = await request(server)
