@@ -9,6 +9,7 @@ const authRouter = require('./routes/authRouter.js')
 const trustRouter = require('./routes/trustRouter.js')
 const tokenRouter = require('./routes/tokenRouter.js')
 const transferRouter = require("./routes/transferRouter");
+const walletRouter = require("./routes/walletRouter");
 const {errorHandler} = require("./routes/utils");
 
 
@@ -26,6 +27,7 @@ app.use('/auth', authRouter);
 app.use('/tokens', tokenRouter);
 app.use('/trust_relationships', trustRouter);
 app.use('/transfers', transferRouter);
+app.use('/wallet', walletRouter);
 
 
 
