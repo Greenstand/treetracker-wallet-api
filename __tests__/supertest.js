@@ -107,6 +107,14 @@ describe('Wallet integration tests', () => {
       expect(res.body).to.have.property('uuid').eq(seed.token.uuid);
     });
 
+    it(`walletA, GET /tokens/${seed.tokenB.uuid} Should be forbidden`, async () => {
+      const res = await request(server)
+        .get(`/tokens/${seed.tokenB.uuid}`)
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${bearerToken}`);
+      expect(res).to.have.property('statusCode', 401);
+    });
+
     it(`walletA, GET /tokens Should be able to get a token `, async () => {
       const res = await request(server)
         .get(`/tokens`)
@@ -123,6 +131,15 @@ describe('Wallet integration tests', () => {
         .set('Authorization', `Bearer ${bearerTokenB}`);
       expect(res).to.have.property('statusCode', 200);
       expect(res.body.tokens[0]).to.have.property('uuid').eq(seed.tokenB.uuid);
+    });
+
+    it(`walletB, GET /tokens/${seed.tokenB.uuid} Should be able to get a token (tokenB) `, async () => {
+      const res = await request(server)
+        .get(`/tokens/${seed.tokenB.uuid}`)
+        .set('treetracker-api-key', apiKey)
+        .set('Authorization', `Bearer ${bearerTokenB}`);
+      expect(res).to.have.property('statusCode', 200);
+      expect(res.body).to.have.property('uuid').eq(seed.tokenB.uuid);
     });
   });
 
@@ -208,7 +225,7 @@ describe('Wallet integration tests', () => {
             const res = await request(server)
               .get(`/tokens/${seed.token.uuid}`)
               .set('treetracker-api-key', apiKey)
-              .set('Authorization', `Bearer ${bearerToken}`);
+              .set('Authorization', `Bearer ${bearerTokenB}`);
             expect(res).to.have.property('statusCode', 200);
             expect(res.body.entity_id).eq(seed.walletB.id);
           });
@@ -517,7 +534,7 @@ describe('Wallet integration tests', () => {
             const res = await request(server)
               .get(`/tokens/${seed.token.uuid}`)
               .set('treetracker-api-key', apiKey)
-              .set('Authorization', `Bearer ${bearerToken}`);
+              .set('Authorization', `Bearer ${bearerTokenB}`);
             expect(res).to.have.property('statusCode', 200);
             expect(res.body.entity_id).eq(seed.walletB.id);
           });
