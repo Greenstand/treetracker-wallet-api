@@ -237,7 +237,9 @@ describe('Wallet integration tests', () => {
               .set('Authorization', `Bearer ${bearerTokenB}`);
             expect(res).to.have.property('statusCode', 200);
             expect(res.body.history).lengthOf(1);
-            expect(res.body.history[0]).property("destination_entity_id").eq(seed.walletB.id);
+            expect(res.body.history[0]).property("token").eq(seed.token.uuid);
+            expect(res.body.history[0]).property("sender_wallet").eq(seed.wallet.name);
+            expect(res.body.history[0]).property("receiver_wallet").eq(seed.walletB.name);
           });
         });
 

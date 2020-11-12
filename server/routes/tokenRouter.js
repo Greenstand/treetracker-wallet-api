@@ -28,8 +28,13 @@ tokenRouter.get('/:uuid/transactions',
       throw new HttpError(401, "Have no permission to visit this token");
     }
     const transactions = await token.getTransactions();
+    const response = [];
+    for(const t of transactions){
+      const transaction = await tokenService.convertToResponse(t);
+      response.push(transaction);
+    }
     res.status(200).json({
-      history: transactions,
+      history: response,
     });
   })
 )

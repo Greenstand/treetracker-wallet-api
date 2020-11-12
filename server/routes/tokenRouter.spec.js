@@ -48,10 +48,18 @@ describe("tokenRouter", () => {
       id: 1,
     }]);
     sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+    sinon.stub(TokenService.prototype, "convertToResponse").resolves({
+      token: "xxx",
+      sender_wallet: "test",
+      receiver_wallet: "test",
+    });
     const res = await request(app)
       .get("/xxxx/transactions");
     expect(res).property("statusCode").eq(200);
     expect(res.body.history).lengthOf(1);
+    expect(res.body.history[0]).property("token").eq("xxx");
+    expect(res.body.history[0]).property("sender_wallet").eq("test");
+    expect(res.body.history[0]).property("receiver_wallet").eq("test");
   });
 
 });
