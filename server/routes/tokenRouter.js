@@ -24,9 +24,18 @@ tokenRouter.get('/',
     const tokenService = new TokenService();
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const tokens = await tokenService.getByOwner(walletLogin);
+    let tokens = await tokenService.getByOwner(walletLogin);
+
+    /*
+     * sub wallet
+     */
+    const subWallets = await walletLogin.getSubWallets();
+    for(const wallet of subWallets){
+      const tokensSub = await tokenService.getByOwner(wallet);
+      tokens = [...tokens, ...tokensSub];
+    }
     const tokensJson = [];
-    for(let token of tokens){
+    for(const token of tokens){
       const json = await token.toJSON();
       tokensJson.push(json);
     }

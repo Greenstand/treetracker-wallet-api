@@ -627,6 +627,29 @@ class Wallet{
       throw new HttpError(403, "Do not support deduct yet");
     }
   }
+
+  /*
+   * Get all wallet managed by me
+   */
+  async getSubWallets(){
+    let trustRelationships = await this.getTrustRelationships();
+    trustRelationships = trustRelationships.filter(e => {
+      if(e.actor_entity_id === this._id &&
+        e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+        e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+      ){
+        return true;
+      }else{
+        return false;
+      }
+    });
+    const subWallets = [];
+    for(let e of trustRelationships){
+      const wallet = await this.walletService.getById(e.target_entity_id);
+      subWallets.push(wallet);
+    }
+    return subWallets;
+  }
 }
 
 Wallet.sha512 = (password, salt) => {
