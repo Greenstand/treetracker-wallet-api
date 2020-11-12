@@ -152,5 +152,12 @@ describe("Seed data into DB", () => {
 
   });
 
+  it("TokenB", async () => {
+      const r = await knex.table("wallets.token").select()
+        .where("id", seed.tokenB.id);
+      expect(r).lengthOf(1); 
+      expect(r[0]).property("tree_id").eq(seed.treeB.id);
+  });
+
 });
 

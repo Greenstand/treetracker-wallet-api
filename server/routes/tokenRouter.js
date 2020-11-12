@@ -20,7 +20,7 @@ tokenRouter.get('/:uuid',
 tokenRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
-  helper.handlerWrapper(async (req, res, next) => {
+  helper.handlerWrapper(async (_req, res, _next) => {
     const tokenService = new TokenService();
     const walletService = new WalletService();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
