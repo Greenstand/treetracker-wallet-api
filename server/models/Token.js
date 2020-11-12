@@ -88,6 +88,13 @@ class Token{
     }
   }
 
+  async getTransactions(){
+    const transactions = await this.transactionRepository.getByFilter({
+      token_id: this._id,
+    });
+    return transactions;
+  }
+
 }
 
 module.exports = Token;

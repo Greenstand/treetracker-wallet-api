@@ -229,6 +229,16 @@ describe('Wallet integration tests', () => {
             expect(res).to.have.property('statusCode', 200);
             expect(res.body.entity_id).eq(seed.walletB.id);
           });
+
+          it(`Token:#${seed.token.id} now should have some transaction history`, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}/transactions`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${bearerTokenB}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.history).lengthOf(1);
+            expect(res.body.history[0]).property("destination_entity_id").eq(seed.walletB.id);
+          });
         });
 
         describe("Decline the pending transfer", () => {
