@@ -6,10 +6,18 @@ class TokenService{
 
   constructor(){
     this.tokenRepository = new TokenRepository();
+    const WalletService  = require("../services/WalletService");
+    this.walletService = new WalletService();
   }
 
   async getByUUID(uuid){
     const tokenObject = await this.tokenRepository.getByUUID(uuid);
+    const token = new Token(tokenObject);
+    return token;
+  }
+
+  async getById(id){
+    const tokenObject = await this.tokenRepository.getById(id);
     const token = new Token(tokenObject);
     return token;
   }
@@ -51,6 +59,39 @@ class TokenService{
     const result = await this.tokenRepository.countByFilter({
       entity_id: wallet.getId(),
     });
+    return result;
+  }
+
+  async convertToResponse(transactionObject){
+    expect(transactionObject).match({
+      token_id: expect.any(Number),
+      source_entity_id: expect.any(Number),
+      destination_entity_id: expect.any(Number),
+    });
+    const {
+      token_id,
+      source_entity_id,
+      destination_entity_id,
+      processed_at,
+    } = transactionObject;
+    const result = {
+      processed_at,
+    };
+    {
+      const token = await this.getById(token_id);
+      const json = await token.toJSON();
+      result.token = json.uuid;
+    }
+    {
+      const wallet = await this.walletService.getById(source_entity_id);
+      const json = await wallet.toJSON();
+      result.sender_wallet = await json.name;
+    }
+    {
+      const wallet = await this.walletService.getById(destination_entity_id);
+      const json = await wallet.toJSON();
+      result.receiver_wallet = await json.name;
+    }
     return result;
   }
 
