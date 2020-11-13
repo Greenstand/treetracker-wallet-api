@@ -88,6 +88,28 @@ class Wallet{
   }
 
   /*
+   * Get all the trust relationships request to me
+   */
+  async getTrustRelationshipsRequestedToMe(){
+    const result = await this.getTrustRelationships();
+    return result.filter(trustRelationship => {
+      if(
+        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send ||
+        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage
+      ){
+        return trustRelationship.target_entity_id === this._id
+      }else if(
+        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
+        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield
+      ){
+        return trustRelationship.actor_entity_id === this._id
+      }else{
+        throw new Error("not support yet");
+      }
+    });
+  }
+
+  /*
    * Get all the trust relationships targeted to me, means request
    * the trust from me
    */
@@ -119,8 +141,8 @@ class Wallet{
    */
   async requestTrustFromAWallet(
     requestType, 
-    actorWallet,
-    targetWallet,
+    requesterWallet,
+    requesteeWallet,
   ){
     log.debug("request trust...");
     expect(
@@ -128,6 +150,19 @@ class Wallet{
       () => new HttpError(400, `The trust request type must be one of ${Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE).join(',')}`)
     )
       .oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
+
+    /*
+     * Translate the requester/ee to actor/target
+     */
+    let actorWallet = requesterWallet; //case of: manage/send
+    let targetWallet = requesteeWallet; //case of: mange/send
+    if(
+      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
+      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
+      actorWallet = requesteeWallet;
+      targetWallet = requesterWallet;
+    }
+
 
     //check if I (current wallet) can add a new trust like this
     const trustRelationships = await this.getTrustRelationships();
@@ -146,19 +181,19 @@ class Wallet{
     }
     
     //check if the orginator can control the actor
-    const hasControl = await this.hasControlOver(actorWallet);
+    const hasControl = await this.hasControlOver(requesterWallet);
     if(!hasControl){
       throw new HttpError(403, "Have no permission to deal with this actor");
     }
     
     //check if the target wallet can accept the request
-    await targetWallet.checkTrustRequestSentToMe(requestType, this.id);
+    await requesteeWallet.checkTrustRequestSentToMe(requestType, this.id);
 
     //create this request
     const result = await this.trustRepository.create({
       type: TrustRelationship.getTrustTypeByRequestType(requestType),
       request_type: requestType,
-      actor_entity_id: this._id,
+      actor_entity_id: actorWallet.getId(),
       originator_entity_id: this._id,
       target_entity_id: targetWallet.getId(),
       state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
@@ -182,7 +217,7 @@ class Wallet{
    */
   async acceptTrustRequestSentToMe(trustRelationshipId){
     expect(trustRelationshipId).number();
-    const trustRelationships = await this.getTrustRelationshipsTargeted(this._id);
+    const trustRelationships = await this.getTrustRelationshipsRequestedToMe(this._id);
     const trustRelationship = trustRelationships.reduce((a,c) => {
       expect(c.id).number();
       if(c.id === trustRelationshipId){
