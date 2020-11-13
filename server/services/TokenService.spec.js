@@ -68,6 +68,7 @@ describe("Token", () => {
     sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: 1,
       uuid: "xxx",
+      tree_id: 1,
     }));
     sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
       id: 1,

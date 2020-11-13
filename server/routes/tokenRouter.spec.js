@@ -37,6 +37,29 @@ describe("tokenRouter", () => {
     sinon.restore();
   })
 
+  it("/test-uuid successfully", async () => {
+    const token = new Token({
+      id: 1,
+      token: "test-uuid",
+      entity_id: 1,
+      tree_id: 1,
+    });
+    const wallet = new Wallet(1);
+    sinon.stub(TokenService.prototype, "getByUUID").resolves(token);
+    sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+    sinon.stub(TokenService.prototype, "convertToResponse").resolves({
+      token: "xxx",
+      sender_wallet: "test",
+      receiver_wallet: "test",
+    });
+    const res = await request(app)
+      .get("/test-uuid");
+    expect(res).property("statusCode").eq(200);
+    expect(res.body).property("token").eq("test-uuid");
+    expect(res.body).property("links").property("capture").eq("/capture/1");
+    expect(res.body).property("links").property("tree").eq("/capture/1/tree");
+  });
+
   it("/xxx/transactions successfully", async () => {
     const token = new Token(1);
     const wallet = new Wallet(1);

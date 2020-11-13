@@ -25,11 +25,18 @@ class Token{
 
   async toJSON(){
     if(this._JSON){
-      return this._JSON;
     }else{
       this._JSON = await this.tokenRepository.getById(this._id);
-      return this._JSON;
     }
+    //deal with tree links
+    const result = {
+      ...this._JSON,
+      links: {
+        capture: `/capture/${this._JSON.tree_id}`,
+        tree: `/capture/${this._JSON.tree_id}/tree`,
+      }
+    }
+    return result;
   }
 
   clearJSON(){
