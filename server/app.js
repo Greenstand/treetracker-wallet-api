@@ -23,7 +23,7 @@ app.use(bodyParser.json()); // parse application/json
 
 //routers
 app.use('/auth', authRouter);
-app.use('/token', tokenRouter);
+app.use('/tokens', tokenRouter);
 app.use('/trust_relationships', trustRouter);
 app.use('/transfers', transferRouter);
 

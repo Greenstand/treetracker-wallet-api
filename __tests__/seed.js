@@ -15,7 +15,7 @@ const knex = require('knex')({
 const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
 const wallet = {
   id: 10,
-  name: 'fortest',
+  name: 'walletA',
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
@@ -33,7 +33,16 @@ const token = {
 
 const walletB = {
   id: 11,
-  name: 'fortestB',
+  name: 'walletB',
+  password: 'test1234',
+  passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+  type: 'p',
+};
+
+const walletC = {
+  id: 12,
+  name: 'walletC',
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
@@ -57,8 +66,12 @@ const storyOfThisSeed = `
 
     wallet #${wallet.id} planted a tree #${tree.id}, get a token #${token.id}
 
-    another wallet: 
+    walletB: 
       ${JSON.stringify(walletB, undefined, 2)}
+
+    walletC (walletC was managed by walletB:#{walletB.id}): 
+      ${JSON.stringify(walletC, undefined, 2)}
+
 `;
 console.debug(
 '--------------------------story of database ----------------------------------',
@@ -96,6 +109,27 @@ async function seed() {
       name: walletB.name,
       password: walletB.passwordHash,
       salt: walletB.salt,
+    });
+
+  //walletC
+  await knex('wallets.wallet')
+    .insert({
+      id: walletC.id,
+      type: walletC.type,
+      name: walletC.name,
+      password: walletC.passwordHash,
+      salt: walletC.salt,
+    });
+
+  //relationships: 'walletB' manage 'walletC'
+  await knex('wallets.entity_trust')
+    .insert({
+      type: "manage",
+      actor_entity_id: walletB.id,
+      target_entity_id: walletC.id,
+      originator_entity_id: walletB.id,
+      request_type: "manage",
+      state: "trusted",
     });
 
   //entity
@@ -149,22 +183,18 @@ async function seed() {
 }
 
 async function clear() {
-  log.debug('clear all api keys');
+  log.debug('clear tables');
   await knex('wallets.api_key').del();
-  log.debug('clear all transaction');
   await knex('wallets.transaction').del();
-  log.debug('clear all tokens');
   await knex('wallets.token').del();
-  log.debug('clear all trees');
   await knex('trees').del();
-  log.debug('clear all wallets');
   await knex('wallets.wallet').del();
-  log.debug('clear all entity_trust');
   await knex('wallets.entity_trust').del();
-  log.debug('clear entity_roles');
   await knex('entity_role').del();
-  log.debug('clear entities');
   await knex('entity').del();
+  await knex('wallets.entity_trust').del();
+  await knex('wallets.transfer').del();
+  await knex('wallets.entity_trust').del();
 }
 
-module.exports = {seed, clear, apiKey, wallet, walletB, tree, token};
+module.exports = {seed, clear, apiKey, wallet, walletB, walletC, tree, token};
