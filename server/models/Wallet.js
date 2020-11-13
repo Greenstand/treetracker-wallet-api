@@ -604,10 +604,30 @@ class Wallet{
    */
   async getTransfers(state, wallet){
     const filter = {
-    };
+      and: [],
+    }
+    filter.and.push({
+      or: [{
+        source_entity_id: this._id,
+      },{
+        destination_entity_id: this._id,
+      },{
+        originator_entity_id: this._id,
+      }]
+    });
     if(state){
-      //TODO check the state parameter
-      filter.state = state;
+      filter.and.push({state});
+    }
+    if(wallet){
+      filter.and.push({
+        or: [{
+          source_entity_id: wallet.getId(),
+        },{
+          destination_entity_id: wallet.getId(),
+        },{
+          originator_entity_id: wallet.getId(),
+        }]
+      });
     }
     const result = await this.transferRepository.getByFilter(filter);
     return result;

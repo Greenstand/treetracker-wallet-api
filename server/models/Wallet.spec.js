@@ -650,11 +650,43 @@ describe("Wallet", () => {
   describe("getTransfers", () => {
 
     it("getTransfers", async () => {
+      const wallet2 = new Wallet(2);
       const fn1 = sinon.stub(TransferRepository.prototype, "getByFilter").resolves([{id:1}]);
-      const result = await wallet.getTransfers();
+      const result = await wallet.getTransfers(
+        Transfer.STATE.requested,
+        wallet2,
+      );
       expect(result).lengthOf(1);
+      expect(fn1).calledWith(
+        {
+          and: [{
+            or: [
+              {
+                source_entity_id: 1,
+              },{
+                destination_entity_id: 1,
+              },{
+                originator_entity_id: 1,
+              }
+            ],
+          },{
+            state: Transfer.STATE.requested,
+          },{
+            or: [
+              {
+                source_entity_id: 2,
+              },{
+                destination_entity_id: 2,
+              },{
+                originator_entity_id: 2,
+              }
+            ],
+          }]
+        }
+      );
       fn1.restore();
     });
+
   });
 
   describe("hasControlOver", () => {
