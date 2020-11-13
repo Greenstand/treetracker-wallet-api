@@ -634,6 +634,7 @@ class Wallet{
   async getSubWallets(){
     let trustRelationships = await this.getTrustRelationships();
     trustRelationships = trustRelationships.filter(e => {
+      // where logged in wallet is the actor wallet
       if(e.actor_entity_id === this._id &&
         e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
         e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
@@ -644,9 +645,13 @@ class Wallet{
       }
     });
     const subWallets = [];
+    // include logged in wallet in response 
+    let loggedInWallet = await this.toJSON();
+    subWallets.push(loggedInWallet);
     for(let e of trustRelationships){
-      const wallet = await this.walletService.getById(e.target_entity_id);
-      subWallets.push(wallet);
+      const subWallet = await this.walletService.getById(e.target_entity_id);
+      const subWalletJson = await subWallet.toJSON();
+      subWallets.push(subWalletJson);
     }
     return subWallets;
   }

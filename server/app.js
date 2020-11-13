@@ -27,7 +27,7 @@ app.use('/auth', authRouter);
 app.use('/tokens', tokenRouter);
 app.use('/trust_relationships', trustRouter);
 app.use('/transfers', transferRouter);
-app.use('/wallet', walletRouter);
+app.use('/wallets', walletRouter);
 
 
 
