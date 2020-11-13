@@ -646,12 +646,11 @@ class Wallet{
     });
     const subWallets = [];
     // include logged in wallet in response 
-    let loggedInWallet = await this.toJSON();
-    subWallets.push(loggedInWallet);
+    subWallets.push(this);
+
     for(let e of trustRelationships){
       const subWallet = await this.walletService.getById(e.target_entity_id);
-      const subWalletJson = await subWallet.toJSON();
-      subWallets.push(subWalletJson);
+      subWallets.push(subWallet);
     }
     return subWallets;
   }

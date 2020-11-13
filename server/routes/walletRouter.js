@@ -41,7 +41,14 @@ walletRouter.get('/',
   helper.handlerWrapper(async (req, res, next) => {
     const walletService = new WalletService();
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
-    const walletsJson = await loggedInWallet.getSubWallets();
+    const subWallets = await loggedInWallet.getSubWallets();
+    
+    const walletsJson = [];
+
+    for (const wallet of subWallets) {
+      const json = await wallet.toJSON();
+      walletsJson.push(json);
+    }
 
     res.status(200).json({
       wallets: walletsJson
