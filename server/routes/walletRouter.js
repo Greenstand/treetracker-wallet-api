@@ -92,12 +92,11 @@ walletRouter.post('/',
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
     const walletService = new WalletService();
-    const trustService = new TrustService();
-    const wallet = await walletService.getById(res.locals.wallet_id);
-    const json = ['postCheck'];
+    const loggedInWallet = await walletService.getById(res.locals.wallet_id);
+    const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);
 
     res.status(200).json({
-      wallet: json
+      wallet: addedWallet.id
     });
   })
 )
