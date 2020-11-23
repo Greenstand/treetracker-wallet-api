@@ -96,7 +96,7 @@ walletRouter.post('/',
     const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);
 
     res.status(200).json({
-      wallet: addedWallet.id
+      wallet: addedWallet.name
     });
   })
 )

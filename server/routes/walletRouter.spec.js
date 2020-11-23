@@ -18,6 +18,9 @@ describe("walletRouter", ()=> {
   const walletLogin = {
     id: 1,
   }
+  const walletSub = {
+    id: 2,
+  }
 
   beforeEach(() => {
     sinon.stub(ApiKeyService.prototype, "check");
@@ -35,7 +38,7 @@ describe("walletRouter", ()=> {
     sinon.restore();
   })
 
-  describe("post /wallets", () => {
+  // describe("post /wallets", () => {
 
     // it("successfully", async () => {
     //   const wallet = new Wallet(1);
@@ -57,25 +60,18 @@ describe("walletRouter", ()=> {
     //     wallet2,
     //   )
     // });
-  });
+  // });
 
   describe("get /wallets", () => {
 
-    // it("successfully", async () => {
-    //   sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
-    //   sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
-    //   const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{}]);
-    //   const res = await request(app)
-    //     .get(`/?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}`);
-    //   expect(res).property("statusCode").eq(200);
-    //   expect(res.body.trust_relationships).lengthOf(1);
-    //   expect(fn).calledWith(
-    //     TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
-    //     TrustRelationship.ENTITY_TRUST_TYPE.send,
-    //     TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
-    //   )
-    // });
-    
-  });
-
+    it.only("successfully", async () => {
+      sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
+      sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
+      const fn = sinon.stub(Wallet.prototype, "getSubWallets").resolves([new Wallet({id:1}), new Wallet({id:2})]);
+      const res = await request(app)
+        .get('/');
+      expect(res).property("statusCode").eq(200);
+      expect(res.body.wallets).lengthOf(2);
+    });
+  })
 })

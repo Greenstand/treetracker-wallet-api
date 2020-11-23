@@ -59,8 +59,7 @@ class Wallet{
     // TO DO: Need to check account permissions -> manage accounts
     // need to create a wallet object
     const newWallet = await this.walletRepository.create({
-      name: wallet,
-      password: "password"
+      name: wallet
     });
 
     // Is this how to check if db action was successful?
