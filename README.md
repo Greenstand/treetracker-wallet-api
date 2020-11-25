@@ -12,7 +12,7 @@ To view the specs for the new API we are currently building, go to https://edito
 * https://youtu.be/H6levADLJ4E    Greenstand - Permission Access Tutorial Video
 
 # Getting Started
- 
+  
 ## Project Setup
 
 Open terminal and navigate to a folder to install this project:
