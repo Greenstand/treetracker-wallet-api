@@ -6,8 +6,8 @@ const ApiKeyRepository = require("../repositories/ApiKeyRepository");
 const expect = require("expect-runtime");
 
 // PRIVATE and PUBLIC key
-const privateKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
-const publicKEY = FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
+const privateKEY = process.env.PRIVATE_KEY // FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
+const publicKEY = process.env.PUBLIC_KEY // FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
 
 
 class ApiKey{
