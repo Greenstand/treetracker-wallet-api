@@ -58,10 +58,9 @@ walletRouter.post('/',
     const walletService = new WalletService();
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
     const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);
-    const addedWalletJson = await addedWallet.toJSON();
 
     res.status(200).json({
-      wallet: addedWalletJson.name
+      wallet: addedWallet.name
     });
   })
 )

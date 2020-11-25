@@ -69,7 +69,7 @@ describe("walletRouter", ()=> {
 
     it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
-      const fn = sinon.stub(Wallet.prototype, "addManagedWallet").resolves(new Wallet({id: 2, name: "test"}));
+      const fn = sinon.stub(Wallet.prototype, "addManagedWallet").resolves({id: 2, name: "test"});
       const res = await request(app)
         .post("/")
         .send({

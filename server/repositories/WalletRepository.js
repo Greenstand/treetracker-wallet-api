@@ -36,10 +36,6 @@ class WalletRepository extends BaseRepository {
     return object;
   }
 
-  async addWallet(wallet) {
-
-
-  }
 
 }
 
