@@ -20,11 +20,16 @@ spec:
         ports:
         - containerPort: 80
         env:
-          - name: JWT_SECRET
+          - name: PRIVATE_KEY
             valueFrom:
               secretKeyRef:
-                name: treetracker-api-jwt
-                key: jwt
+                name: treetracker-wallet-jwt-keys
+                key: private-key
+          - name: PUBLIC_KEY
+            valueFrom:
+              secretKeyRef:
+                name: treetracker-wallet-jwt-keys
+                key: public-key
           - name: DATABASE_URL
             valueFrom:
               secretKeyRef:
