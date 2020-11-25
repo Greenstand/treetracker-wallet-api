@@ -5,7 +5,7 @@ const knex = require('knex')({
   client: 'pg',
   debug: process.env.NODE_LOG_LEVEL === "debug"? true:false,
   connection,
-  searchPath: ['wallets', 'public'],
+  searchPath: ['wallets'],
   pool: { min:0, max: 100},
 });
 
