@@ -35,3 +35,5 @@ spec:
               secretKeyRef:
                 name: treetracker-api-database-connection
                 key: db
+          - name: NODE_LOG_LEVEL
+            value: trace
