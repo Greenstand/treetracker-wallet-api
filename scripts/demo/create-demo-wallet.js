@@ -38,34 +38,21 @@
       tree_token_api_access: true,
       name: username
     }
-    const result0 = await trx('api_key').insert(apiKeyData).returning('*')
+    const result0 = await trx('wallets.api_key').insert(apiKeyData).returning('*')
     console.log(result0)
 
     // create wallet and password, salt
 
-    const result = await trx('entity').insert({
+    const result = await trx('wallets.wallet').insert({
       type: 'p',
       first_name: faker.name.firstName(),
       last_name: faker.name.lastName(),
-      wallet: username,
+      name: username,
       password: passwordHash,
       salt: salt
     }).returning('*')
     const entity = result[0]
     console.log(entity)
-
-
-    const roles = [
-      { entity_id: entity.id, role_name: 'list_trees', enabled: true },
-      { entity_id: entity.id, role_name: 'transfer', enabled: true },
-      { entity_id: entity.id, role_name: 'manage_accounts', enabled: true },
-      { entity_id: entity.id, role_name: 'transfer_bundle', enabled: true },
-      { entity_id: entity.id, role_name: 'accounts', enabled: true },
-    ]
-
-    for(role of roles){
-      await trx('entity_role').insert(role)
-    }
 
 
     // insert fake planters
@@ -75,7 +62,7 @@
       email: faker.internet.email(),
       phone: faker.phone.phoneNumber()
     }
-    const result2 = await trx('planter').insert(planterData).returning('*')
+    const result2 = await trx('public.planter').insert(planterData).returning('*')
     const planter = result2[0]
     console.log(planter)
 
@@ -92,7 +79,7 @@
         uuid: uuidv4(),
         approved: true,
       }
-      const result3 = await trx('trees').insert(captureData).returning('*')
+      const result3 = await trx('public.trees').insert(captureData).returning('*')
       const capture = result3[0]
       trees.push(capture.id)
       console.log(capture.id)
@@ -104,7 +91,7 @@
         tree_id: treeId,
         entity_id: entity.id
       }
-      const result4 = await trx('token').insert(tokenData).returning('*')
+      const result4 = await trx('wallets.token').insert(tokenData).returning('*')
       const token = result4[0]
       console.log(token.uuid)
     }
