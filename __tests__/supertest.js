@@ -192,7 +192,7 @@ describe('Wallet integration tests', () => {
 
         beforeEach(async () => {
           const res = await request(server)
-            .get('/transfers?state=pending')
+            .get(`/transfers?state=pending&wallet=${seed.wallet.name}`)
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${tokenB}`);
           expect(res).to.have.property('statusCode', 200);
