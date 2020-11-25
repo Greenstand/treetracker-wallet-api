@@ -5,36 +5,6 @@ const TrustService = require("../services/TrustService");
 
 const walletRouter = express.Router();
 
-/* Get response
-
-{
-  "wallets": [
-    {
-      "type": "string",
-      "wallet": "string",
-      "email": "string",
-      "phone": "string",
-      "access": "string",
-      "tokens_in_wallet": 0,
-      "trust_relationships": [
-        {
-          "id": 0,
-          "actor_wallet": "string",
-          "target_wallet": "string",
-          "trust_type": "string",
-          "state": "string",
-          "trust_request_type": "string",
-          "orginating_wallet": "string",
-          "created_at": "string"
-        }
-      ]
-    }
-  ]
-}
-
-*/
-
-
 walletRouter.get('/', 
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
@@ -80,12 +50,6 @@ walletRouter.get('/:wallet_id/trust_relationships',
     });
   })
 ); 
-
-/* 
-{
-  "wallet": "sprinter_van_2004"
-}
-*/
 
 walletRouter.post('/', 
   helper.apiKeyHandler,

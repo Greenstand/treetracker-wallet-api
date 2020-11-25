@@ -18,7 +18,7 @@ describe("walletRouter", ()=> {
   const walletLogin = {
     id: 1,
   }
-  const walletSub = {
+  const subWallet = {
     id: 2,
   }
 
@@ -38,33 +38,9 @@ describe("walletRouter", ()=> {
     sinon.restore();
   })
 
-  // describe("post /wallets", () => {
-
-    // it("successfully", async () => {
-    //   const wallet = new Wallet(1);
-    //   const wallet2 = new Wallet(2);
-    //   sinon.stub(WalletService.prototype, "getById").resolves(wallet);
-    //   sinon.stub(WalletService.prototype, "getByName").resolves(wallet2);
-    //   const fn = sinon.stub(Wallet.prototype, "requestTrustFromAWallet");
-    //   sinon.stub(TrustService.prototype, "convertToResponse").resolves({});
-    //   const res = await request(app)
-    //     .post("/")
-    //     .send({
-    //       trust_request_type: "send",
-    //       target_wallet: "test",
-    //     });
-    //   expect(res).property("statusCode").eq(200);
-    //   expect(fn).calledWith(
-    //     "send",
-    //     wallet,
-    //     wallet2,
-    //   )
-    // });
-  // });
-
   describe("get /wallets", () => {
 
-    it.only("successfully", async () => {
+    it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
       const fn = sinon.stub(Wallet.prototype, "getSubWallets").resolves([new Wallet({id:1}), new Wallet({id:2})]);
@@ -74,4 +50,38 @@ describe("walletRouter", ()=> {
       expect(res.body.wallets).lengthOf(2);
     });
   })
+
+
+  describe("get /wallets/:wallet_id/trust_relationships", () => {
+
+    it("successfully", async () => {
+      sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
+      sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([new Wallet({id: 2})]);
+      const res = await request(app)
+        .get('/1/trust_relationships');
+      expect(res).property("statusCode").eq(200);
+      expect(res.body.trust_relationships).lengthOf(1);
+    });
+  })
+
+  describe("post /wallets", () => {
+
+    it("successfully", async () => {
+      sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
+      const fn = sinon.stub(Wallet.prototype, "addManagedWallet").resolves([new Wallet({id: 2})]);
+      const res = await request(app)
+        .post("/")
+        .send({
+          wallet: "subWallet"
+        });
+      expect(res).property("statusCode").eq(200);
+      // expect(res.body).to.have.property("wallet")
+      // expect(fn).calledWith(
+      //   "send",
+      //   subWallet
+      // )
+    });
+  });
+
 })
