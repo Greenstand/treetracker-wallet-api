@@ -69,18 +69,15 @@ describe("walletRouter", ()=> {
 
     it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
-      const fn = sinon.stub(Wallet.prototype, "addManagedWallet").resolves([new Wallet({id: 2})]);
+      const fn = sinon.stub(Wallet.prototype, "addManagedWallet").resolves(new Wallet({id: 2, name: "test"}));
       const res = await request(app)
         .post("/")
         .send({
           wallet: "subWallet"
         });
       expect(res).property("statusCode").eq(200);
-      // expect(res.body).to.have.property("wallet")
-      // expect(fn).calledWith(
-      //   "send",
-      //   subWallet
-      // )
+      expect(res.body).to.have.property("wallet").eq("test");
+      expect(fn).calledWith("subWallet");
     });
   });
 
