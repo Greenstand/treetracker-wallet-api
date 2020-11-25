@@ -71,7 +71,7 @@ jobs:
         context: ./
         file: ./Dockerfile
         push: true
-        tags: greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }}-latest
+        tags: greenstand/treetracker-wallet-api:latest
 
   deploy:
     name: Deploy latest to development environment

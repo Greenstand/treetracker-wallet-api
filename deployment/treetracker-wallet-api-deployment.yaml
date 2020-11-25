@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: treetracker-wallet-api
-        image: greenstand/treetracker-wallet-api:1.0.0-f0fc325
+        image: greenstand/treetracker-wallet-api:latest
         ports:
         - containerPort: 80
         env:
