@@ -4,8 +4,21 @@
 const HttpError = require("../utils/HttpError");
 const knex = require('../database/knex');
 const expect = require("expect-runtime");
+const BaseRepository = require("./BaseRepository");
 
-class WalletRepository {
+class WalletRepository extends BaseRepository {
+
+  constructor() {
+    super("wallets.wallet");
+  }
+
+  async create(object){
+    const result = await super.create(object);
+    expect(result).match({
+      id: expect.any(Number),
+    });
+    return result;
+  }
 
   async getByName(wallet){
     expect(wallet, () => new HttpError(400, `invalid wallet name:${wallet}`))
@@ -22,6 +35,7 @@ class WalletRepository {
     }
     return object;
   }
+
 
 }
 
