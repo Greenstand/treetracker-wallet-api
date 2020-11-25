@@ -89,4 +89,4 @@ jobs:
       run: doctl kubernetes cluster kubeconfig save ${{ secrets.CLUSTER_NAME }}
     - name: Update kubernetes resources
       if: github.event_name == 'push' && github.repository == 'Greenstand/treetracker-wallet-api'
-      run: kubectl -n development apply --wait -f ./server/deployment/
+      run: kubectl -n development apply --wait -f ./deployment/
