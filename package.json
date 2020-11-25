@@ -2,7 +2,7 @@
   "name": "treetracker",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server/server.js",
   "scripts": {
     "test": "npm run test-unit; npm run test-integration;npm run test-repository",
     "test-unit": "NODE_ENV=test mocha --exit ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
