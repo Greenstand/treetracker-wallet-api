@@ -9,13 +9,18 @@ chai.use(sinonChai);
 const {expect} = chai;
 const Wallet = require("../models/Wallet");
 const Token = require("../models/Token");
+const WalletService = require("../services/WalletService");
 
 describe("Token", () => {
   let tokenService;
 
   beforeEach(() => {
     tokenService = new TokenService();
-  })
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it("getByUUID() with id which doesn't exist, should throw 404", async () => {
     sinon.stub(TokenRepository.prototype, "getByUUID").rejects(new HttpError(404, "not found"));
@@ -51,6 +56,28 @@ describe("Token", () => {
       entity_id: 1,
     });
     fn.restore();
+  });
+
+  it("convertToResponse", async () => {
+    const transactionObject = {
+      id: 1,
+      token_id: 1,
+      source_entity_id: 1,
+      destination_entity_id: 1,
+    }
+    sinon.stub(TokenService.prototype, "getById").resolves(new Token({
+      id: 1,
+      uuid: "xxx",
+      tree_id: 1,
+    }));
+    sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
+      id: 1,
+      name: "testName",
+    }));
+    const result = await tokenService.convertToResponse(transactionObject);
+    expect(result).property("token").eq("xxx");
+    expect(result).property("sender_wallet").eq("testName");
+    expect(result).property("receiver_wallet").eq("testName");
   });
 
 });

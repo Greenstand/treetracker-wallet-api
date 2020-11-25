@@ -742,4 +742,21 @@ describe("Wallet", () => {
     });
   });
 
+  describe("getSubWallet", () => {
+
+    it("get sub wallet successfully", async () => {
+      const wallet = new Wallet(1);
+      const subWallet = new Wallet(2);
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        actor_entity_id: wallet.getId(),
+        target_entity_id: subWallet.getId(),
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      }]);
+      sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
+      const wallets = await wallet.getSubWallets();
+      expect(wallets).lengthOf(1);
+    });
+  });
+
 });
