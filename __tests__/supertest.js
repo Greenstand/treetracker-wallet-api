@@ -878,7 +878,7 @@ describe('Wallet integration tests', () => {
         const res = await request(server)
           .post(`/trust_relationships/${trustRelationshipId}/accept`)
           .set('treetracker-api-key', apiKey)
-          .set('Authorization', `Bearer ${token}`);
+          .set('Authorization', `Bearer ${bearerToken}`);
         expect(res).property("statusCode").to.eq(200);
         expect(res.body).property("state").eq("trusted");
         expect(res.body).property("type").eq("manage");
@@ -922,7 +922,7 @@ describe('Wallet integration tests', () => {
         const res = await request(server)
           .post(`/trust_relationships/${trustRelationshipId}/accept`)
           .set('treetracker-api-key', apiKey)
-          .set('Authorization', `Bearer ${token}`);
+          .set('Authorization', `Bearer ${bearerToken}`);
         expect(res).property("statusCode").to.eq(200);
         expect(res.body).property("state").eq("trusted");
         expect(res.body).property("type").eq("manage");
