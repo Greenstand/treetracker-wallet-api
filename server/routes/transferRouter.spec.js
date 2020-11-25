@@ -14,9 +14,12 @@ const TokenService = require("../services/TokenService");
 const Wallet = require("../models/Wallet");
 const Transfer = require("../models/Transfer");
 const TransferService = require("../services/TransferService");
+const Session = require("../models/Session");
 
 describe("authRouter", () => {
   let app;
+  let session = new Session();
+
   const walletLogin = {
     id: 1,
   }
@@ -137,7 +140,7 @@ describe("authRouter", () => {
     sinon.stub(TokenService.prototype, "getByUUID").resolves(new Token({
       id:1,
       entity_id: 1,
-    }));
+    }, session));
     WalletService.prototype.getById.restore();    
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: async () => {
@@ -162,7 +165,7 @@ describe("authRouter", () => {
     sinon.stub(TokenService.prototype, "getByUUID").resolves(new Token({
       id:1,
       entity_id: 1,
-    }));
+    }, session));
     WalletService.prototype.getById.restore();    
     sinon.stub(WalletService.prototype, "getById").resolves({
       transferBundle: async () => {

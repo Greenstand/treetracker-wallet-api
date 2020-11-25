@@ -1,16 +1,17 @@
-const knex = require("../database/knex");
+const Session = require("../models/Session");
 const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
 
 class BaseRepository{
 
-  constructor(tableName){
+  constructor(tableName, session){
     expect(tableName).defined();
     this._tableName = tableName;
+    this._session = session;
   }
 
   async getById(id){
-    const object = await knex.select().table(this._tableName).where('id', id).first();
+    const object = await this._session.getDB().select().table(this._tableName).where('id', id).first();
     if(!object){
       throw new HttpError(404, `Can not found ${this._tableName} by id:${id}`);
     }
@@ -53,7 +54,7 @@ class BaseRepository{
       }
       return result;
     }
-    let promise = knex.select().table(this._tableName).where(builder => whereBuilder(filter, builder));
+    let promise = this._session.getDB().select().table(this._tableName).where(builder => whereBuilder(filter, builder));
     if(options && options.limit){
       promise = promise.limit(options && options.limit);
     }
@@ -63,7 +64,7 @@ class BaseRepository{
   }
 
   async countByFilter(filter){
-    const result = await knex.count().table(this._tableName).where(filter);
+    const result = await this._session.getDB().count().table(this._tableName).where(filter);
     expect(result).match([{
       count: expect.any(String),
     }]);
@@ -71,7 +72,7 @@ class BaseRepository{
   }
 
   async update(object){
-    const result = await knex(this._tableName).update(object).where("id", object.id).returning("*");
+    const result = await this._session.getDB()(this._tableName).update(object).where("id", object.id).returning("*");
     expect(result).match([{
       id: expect.any(Number),
     }]);
@@ -79,7 +80,7 @@ class BaseRepository{
   }
 
   async create(object){
-    const result = await knex(this._tableName).insert(object).returning("*");
+    const result = await this._session.getDB()(this._tableName).insert(object).returning("*");
     expect(result).match([{
       id: expect.anything(),
     }]);

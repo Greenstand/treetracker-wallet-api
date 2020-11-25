@@ -10,9 +10,11 @@ const {expect} = chai;
 const Wallet = require("../models/Wallet");
 const Token = require("../models/Token");
 const WalletService = require("../services/WalletService");
+const Session = require("../models/Session");
 
 describe("Token", () => {
   let tokenService;
+  let session = new Session();
 
   beforeEach(() => {
     tokenService = new TokenService();
@@ -31,12 +33,12 @@ describe("Token", () => {
   });
 
   it("getTokensByBundle", async () => {
-    const wallet = new Wallet(1);
+    const wallet = new Wallet(1, session);
     const fn = sinon.stub(TokenRepository.prototype, "getByFilter").resolves([
       {
         id: 1,
       }
-    ]);
+    ], session);
     const result = await tokenService.getTokensByBundle(wallet, 1);
     expect(result).a("array").lengthOf(1);
     expect(result[0]).instanceOf(Token);
@@ -48,7 +50,7 @@ describe("Token", () => {
   });
 
   it("countTokenByWallet", async () => {
-    const wallet = new Wallet(1);
+    const wallet = new Wallet(1, session);
     const fn = sinon.stub(TokenRepository.prototype, "countByFilter").resolves(1);
     const result = await tokenService.countTokenByWallet(wallet);
     expect(result).eq(1);

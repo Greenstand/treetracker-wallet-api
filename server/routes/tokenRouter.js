@@ -4,7 +4,7 @@ const helper = require("./utils");
 const TokenService = require("../services/TokenService");
 const WalletService = require("../services/WalletService");
 const HttpError = require("../utils/HttpError");
-
+const Session = require("../models/Session");
 
 const tokenRouter = express.Router();
 
@@ -14,8 +14,9 @@ tokenRouter.get('/:uuid',
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
     const {uuid} = req.params;
-    const tokenService = new TokenService();
-    const walletService = new WalletService();
+    const session = new Session();
+    const tokenService = new TokenService(session);
+    const walletService = new WalletService(session);
     const token = await tokenService.getByUUID(uuid);
     //check permission
     const json = await token.toJSON();
@@ -37,8 +38,9 @@ tokenRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (_req, res, _next) => {
-    const tokenService = new TokenService();
-    const walletService = new WalletService();
+    const session = new Session();
+    const tokenService = new TokenService(session);
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     let tokens = await tokenService.getByOwner(walletLogin);
 
@@ -65,9 +67,10 @@ tokenRouter.get('/:uuid/transactions',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    const session = new Session();
     const {uuid} = req.params;
-    const tokenService = new TokenService();
-    const walletService = new WalletService();
+    const tokenService = new TokenService(session);
+    const walletService = new WalletService(session);
     const token = await tokenService.getByUUID(uuid);
     //check permission
     const json = await token.toJSON();

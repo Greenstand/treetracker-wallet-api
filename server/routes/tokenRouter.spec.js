@@ -47,6 +47,7 @@ describe("tokenRouter", () => {
     const wallet = new Wallet(1);
     sinon.stub(TokenService.prototype, "getByUUID").resolves(token);
     sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+    sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
     sinon.stub(TokenService.prototype, "convertToResponse").resolves({
       token: "xxx",
       sender_wallet: "test",
@@ -76,6 +77,7 @@ describe("tokenRouter", () => {
       sender_wallet: "test",
       receiver_wallet: "test",
     });
+    sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
     const res = await request(app)
       .get("/xxxx/transactions");
     expect(res).property("statusCode").eq(200);
