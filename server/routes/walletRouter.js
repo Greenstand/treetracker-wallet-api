@@ -57,10 +57,12 @@ walletRouter.post('/',
   helper.handlerWrapper(async (req, res, next) => {
     const walletService = new WalletService();
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
+    console.error("xxxx:", req.body);
     const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);
+    const addedWalletJson = await addedWallet.toJSON();
 
     res.status(200).json({
-      wallet: addedWallet.name
+      wallet: addedWalletJson.name
     });
   })
 )
