@@ -307,7 +307,7 @@ class Wallet{
    * To check if the indicated trust relationship exist between the source and 
    * target wallet
    */
-  async checkTrust(trustType, senderWallet, receiveWallet){
+  async hasTrust(trustType, senderWallet, receiveWallet){
     expect(trustType).oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
     expect(senderWallet).instanceOf(Wallet);
     expect(receiveWallet).instanceOf(Wallet);
@@ -351,8 +351,9 @@ class Wallet{
       })
     ){
       log.debug("check trust passed");
+      return true;
     }else{
-      throw new HttpError(403, "Have no permission to do this action");
+      return false;
     }
   }
 
@@ -368,8 +369,10 @@ class Wallet{
       }
     }
 
-    try{
-      await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const isDeduct = await this.isDeduct(sender,receiver);
+    const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    //If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
+    if(hasTrust && !isDeduct){
       const tokensUUID = [];
       for(let token of tokens){
         const json = await token.toJSON();
@@ -390,9 +393,7 @@ class Wallet{
       }
       return transfer;
       
-    }catch(e){
-      //haven't trust
-      if(e instanceof HttpError && e.code === 403){
+    }else{
         if(await this.hasControlOver(sender)){
           log.debug("OK, no permission, source under control, now pending it");
           const tokensUUID = [];
@@ -437,9 +438,6 @@ class Wallet{
           //TODO
           expect.fail();
         }
-      }else{
-        throw e;
-      }
     }
   }
 
@@ -451,8 +449,10 @@ class Wallet{
       throw new HttpError(403, `Do not have enough tokens to send`);
     }
 
-    try{
-      await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const isDeduct = await this.isDeduct(sender,receiver);
+    //If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
+    const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    if(hasTrust && !isDeduct){
       const transfer = await this.transferRepository.create({
         originator_entity_id: this._id, 
         source_entity_id: sender.getId(),
@@ -470,8 +470,7 @@ class Wallet{
         await token.completeTransfer(transfer);
       }
       return transfer;
-    }catch(e){
-      if(e instanceof HttpError && e.code === 403){
+    }else{
         if(await this.hasControlOver(sender)){
           log.debug("OK, no permission, source under control, now pending it");
           const transfer = await this.transferRepository.create({
@@ -504,9 +503,6 @@ class Wallet{
           //TODO
           expect.fail();
         }
-      }else{
-        throw e;
-      }
     }
   }
 
@@ -759,20 +755,20 @@ class Wallet{
     return result;
   }
 
-//  /*
-//   * Check if it is deduct, if ture, throw 403, cuz we do not support it yet
-//   */
-//  async checkDeduct(sender, receiver){
-//    if(this._id === sender.getId()){
-//      return;
-//    }
-//    const result = await this.hasControlOver(sender);
-//    if(result){
-//      return;
-//    }else{
-//      throw new HttpError(403, "Do not support deduct yet");
-//    }
-//  }
+  /*
+   * Check if it is deduct, if ture, throw 403, cuz we do not support it yet
+   */
+  async isDeduct(sender, receiver){
+    if(this._id === sender.getId()){
+      return false;
+    }
+    const result = await this.hasControlOver(sender);
+    if(result){
+      return false;
+    }else{
+      return true;
+    }
+  }
 
   /*
    * Get all wallet managed by me
