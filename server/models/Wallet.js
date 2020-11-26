@@ -125,17 +125,19 @@ class Wallet{
    */
   async getTrustRelationshipsRequestedToMe(){
     const result = await this.getTrustRelationships();
+    const subWallets = await this.getSubWallets();
+    const walletIds = [this._id, ...subWallets.map(e => e.getId())];
     return result.filter(trustRelationship => {
       if(
         trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send ||
         trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage
       ){
-        return trustRelationship.target_entity_id === this._id
+        return walletIds.includes(trustRelationship.target_entity_id);
       }else if(
         trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
         trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield
       ){
-        return trustRelationship.actor_entity_id === this._id
+        return walletIds.includes(trustRelationship.actor_entity_id);
       }else{
         throw new Error("not support yet");
       }

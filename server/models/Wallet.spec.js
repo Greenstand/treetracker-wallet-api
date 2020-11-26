@@ -960,4 +960,33 @@ describe("Wallet", () => {
     });
   });
 
+  describe("getTrustRelationshipsRequestedToMe", () => {
+
+    it("get one", async () => {
+      const wallet = new Wallet(1);
+      const wallet2 = new Wallet(2);
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        actor_entity_id: wallet2.getId(),
+        target_entity_id: wallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+      }]);
+      const list = await wallet.getTrustRelationshipsRequestedToMe()
+      expect(list).lengthOf(1);
+    });
+
+    it("get one requested to my sub wallet", async () => {
+      const wallet = new Wallet(1);
+      const wallet2 = new Wallet(2);
+      const subWallet = new Wallet(3);
+      sinon.stub(Wallet.prototype, "getSubWallets").resolves([subWallet]);
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        actor_entity_id: wallet2.getId(),
+        target_entity_id: subWallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+      }]);
+      const list = await wallet.getTrustRelationshipsRequestedToMe()
+      expect(list).lengthOf(1);
+    });
+  });
+
 });
