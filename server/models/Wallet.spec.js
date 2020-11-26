@@ -531,8 +531,26 @@ describe("Wallet", () => {
 
   describe("acceptTransfer", () => {
 
+    it("can not accept transfer who's state isn't pending", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.requested,
+      });  
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
+      sinon.stub(Token.prototype, "completeTransfer");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await jestExpect(async () => {
+        await wallet.acceptTransfer(1);
+      }).rejects.toThrow(/pending/);
+    });
+
     it("acceptTransfer", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.pending,
+      });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
       const fn4 = sinon.stub(Token.prototype, "completeTransfer");
@@ -555,6 +573,7 @@ describe("Wallet", () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
         id:1,
         source_entity_id: 1,
+        state: Transfer.STATE.pending,
         parameters: {
           bundle: {
             bundleSize: 1,
@@ -583,8 +602,23 @@ describe("Wallet", () => {
 
   describe("declineTransfer", () => {
 
+    it("can't decline if transfer state is neither the pending nor requested", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
+      sinon.stub(Token.prototype, "cancelTransfer");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await jestExpect(async () => {
+        await wallet.declineTransfer(1);
+      }).rejects.toThrow(/state/);
+    });
+
     it("declineTransfer", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.pending,
+      });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
       const fn4 = sinon.stub(Token.prototype, "cancelTransfer");
@@ -607,7 +641,10 @@ describe("Wallet", () => {
   describe("cancelTransfer", () => {
 
     it("cancelTransfer", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.requested,
+      });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(WalletService.prototype, "getById");
       const fn4 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);

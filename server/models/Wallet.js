@@ -549,6 +549,9 @@ class Wallet{
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to accept this transfer");
     }
+    if(transfer.state !== Transfer.STATE.pending){
+      throw new HttpError(403, "The transfer state is not pending");
+    }
 
     transfer.state = Transfer.STATE.completed;
     const transferJson = await this.transferRepository.update(transfer);
@@ -588,6 +591,9 @@ class Wallet{
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to decline this transfer");
     }
+    if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
+      throw new HttpError(403, "The transfer state is not pending and requested");
+    }
     transfer.state = Transfer.STATE.cancelled;
     const transferJson = await this.transferRepository.update(transfer);
 
@@ -605,6 +611,9 @@ class Wallet{
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to cancel this transfer");
+    }
+    if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
+      throw new HttpError(403, "The transfer state is not pending and requested");
     }
     transfer.state = Transfer.STATE.cancelled;
     const transferJson = await this.transferRepository.update(transfer);
