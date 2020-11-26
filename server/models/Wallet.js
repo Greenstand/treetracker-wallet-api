@@ -49,6 +49,38 @@ class Wallet{
     }
   }
 
+  async addManagedWallet(wallet){
+    if(!wallet){
+      throw new HttpError(400, 'No wallet supplied');
+    }
+
+    // TO DO: check if wallet is expected format type?
+
+    // TO DO: Need to check account permissions -> manage accounts
+    // need to create a wallet object
+    const newWallet = await this.walletRepository.create({
+      name: wallet
+    });
+
+    // Is this how to check if db action was successful?
+    if (!newWallet) {
+      throw new HttpError(403, "The wallet already exists");
+    }
+
+    const newTrustRelationship = await this.trustRepository.create({
+      actor_entity_id: this._id,
+      originator_entity_id: this._id,
+      target_entity_id: newWallet.id,
+      request_type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+      type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+      state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+    });
+
+    const managedWallet = await this.walletRepository.getById(newWallet.id);
+
+    return managedWallet;
+  }
+
   /*
    * Get trust relationships by filters, setting filter to undefined to allow all data
    */
@@ -689,6 +721,7 @@ class Wallet{
   async getSubWallets(){
     let trustRelationships = await this.getTrustRelationships();
     trustRelationships = trustRelationships.filter(e => {
+      // where logged in wallet is the actor wallet
       if(e.actor_entity_id === this._id &&
         e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
         e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
@@ -699,9 +732,12 @@ class Wallet{
       }
     });
     const subWallets = [];
+    // include logged in wallet in response 
+    subWallets.push(this);
+
     for(let e of trustRelationships){
-      const wallet = await this.walletService.getById(e.target_entity_id);
-      subWallets.push(wallet);
+      const subWallet = await this.walletService.getById(e.target_entity_id);
+      subWallets.push(subWallet);
     }
     return subWallets;
   }

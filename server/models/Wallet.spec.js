@@ -787,7 +787,7 @@ describe("Wallet", () => {
       }]);
       sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
       const wallets = await wallet.getSubWallets();
-      expect(wallets).lengthOf(1);
+      expect(wallets).lengthOf(2);
     });
   });
 
