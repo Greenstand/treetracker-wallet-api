@@ -169,7 +169,7 @@ describe("Wallet", () => {
         id: 1,
         target_entity_id: wallet.getId(),
       };
-      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsRequestedToMe").returns([trustRelationship]);
       const fn2 = sinon.stub(TrustRepository.prototype, "update");
       await wallet.acceptTrustRequestSentToMe(trustRelationship.id);
       fn1.restore();
