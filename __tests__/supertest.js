@@ -117,7 +117,7 @@ describe('Wallet integration tests', () => {
 
     it(`walletA, GET /tokens Should be able to get a token `, async () => {
       const res = await request(server)
-        .get(`/tokens`)
+        .get(`/tokens?limit=10`)
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${bearerToken}`);
       expect(res).to.have.property('statusCode', 200);
@@ -126,7 +126,7 @@ describe('Wallet integration tests', () => {
 
     it(`walletB, GET /tokens Should be able to get a token, which actually belongs to walletC`, async () => {
       const res = await request(server)
-        .get(`/tokens`)
+        .get(`/tokens?limit=10&wallet=walletC`)
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${bearerTokenB}`);
       expect(res).to.have.property('statusCode', 200);
