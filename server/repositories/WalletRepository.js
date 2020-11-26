@@ -10,6 +10,7 @@ class WalletRepository extends BaseRepository {
 
   constructor(session){
     super("wallets.wallet", session);
+    this._tableName = "wallets.wallet";
     this._session = session;
   }
 
@@ -24,13 +25,13 @@ class WalletRepository extends BaseRepository {
   async getByName(wallet){
     expect(wallet, () => new HttpError(400, `invalid wallet name:${wallet}`))
       .match(/^\S+$/);
-    const list = await this._session.getDB().select().table('wallets.wallet').where('name', wallet);
+    const list = await this._session.getDB().select().table(this._tableName).where('name', wallet);
     expect(list, () => new HttpError(404, `Could not find entity by wallet name: ${wallet}`)).defined().lengthOf(1);
     return list[0];
   }
 
   async getById(id){
-    const object = await this._session.getDB().select().table('wallets.wallet').where('id', id).first();
+    const object = await this._session.getDB().select().table(this._tableName).where('id', id).first();
     if(!object){
       throw new HttpError(404, `Could not find wallet by id: ${id}`);
     }

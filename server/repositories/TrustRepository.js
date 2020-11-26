@@ -6,33 +6,34 @@ const Session = require("../models/Session");
 class TrustRepository extends BaseRepository{
   constructor(session){
     super("wallets.entity_trust", session);
+    this._tableName = "wallets.entity_trust";
     this._session = session;
   }
 
   async get(){
     //const trust_relationship_instance = new trust_relationship(1);
     const list = await this._session.getDB().select()
-      .table("wallets.entity_trust");
+      .table(this._tableName);
     return list;
   }
 
   async getByOriginatorId(id){
     const list = await this._session.getDB().select()
-      .table("wallets.entity_trust")
+      .table(this._tableName)
       .where("originator_entity_id", id);
     return list;
   }
 
   async getByTargetId(id){
     const list = await this._session.getDB().select()
-      .table("wallets.entity_trust")
+      .table(this._tableName)
       .where("target_entity_id", id);
     return list;
   }
 
   async getTrustedByOriginatorId(id){
     const list = await this._session.getDB().select()
-      .table("wallets.entity_trust")
+      .table(this._tableName)
       .where({
         originator_entity_id: id,
         state: require("../models/TrustRelationship").ENTITY_TRUST_STATE_TYPE.trusted,

@@ -8,6 +8,7 @@ class TransferRepository extends BaseRepository{
 
   constructor(session){
     super("wallets.transfer", session);
+    this._tableName = "wallets.transfer";
     this._session = session;
   }
 
@@ -22,7 +23,7 @@ class TransferRepository extends BaseRepository{
   }
 
   async getPendingTransfers(id){
-    return await this._session.getDB()("wallets.transfer").where({
+    return await this._session.getDB()(this._tableName).where({
       destination_entity_id: id,
       state: Transfer.STATE.pending,
     });
