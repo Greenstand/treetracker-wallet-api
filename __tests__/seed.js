@@ -26,10 +26,15 @@ const tree = {
   id: 999999,
 };
 
+const treeB = {
+  id: 999998,
+};
+
 const token = {
   id: 9,
   uuid: uuid.v4(),
 };
+
 
 const walletB = {
   id: 11,
@@ -47,6 +52,13 @@ const walletC = {
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
   type: 'p',
+};
+
+const tokenB = {
+  id: 10,
+  uuid: uuid.v4(),
+  tree_id: treeB.id,
+  entity_id: walletC.id,
 };
 
 const storyOfThisSeed = `
@@ -71,6 +83,12 @@ const storyOfThisSeed = `
 
     walletC (walletC was managed by walletB:#{walletB.id}): 
       ${JSON.stringify(walletC, undefined, 2)}
+
+    Another token, belongs to walletC:
+      ${JSON.stringify(tokenB, undefined, 2)}
+
+    Another tree: #${treeB.id}
+
 
 `;
 console.debug(
@@ -180,6 +198,9 @@ async function seed() {
       entity_id: wallet.id,
       uuid: token.uuid,
     });
+
+  await knex('wallets.token')
+    .insert(tokenB);
 }
 
 async function clear() {
@@ -197,4 +218,15 @@ async function clear() {
   await knex('wallets.entity_trust').del();
 }
 
-module.exports = {seed, clear, apiKey, wallet, walletB, walletC, tree, token};
+module.exports = {
+  seed, 
+  clear, 
+  apiKey, 
+  wallet, 
+  walletB, 
+  walletC, 
+  tree, 
+  token,
+  tokenB,
+  treeB,
+};
