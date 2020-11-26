@@ -2,6 +2,7 @@ const express = require('express');
 const helper = require('./utils');
 const WalletService = require("../services/WalletService");
 const TrustService = require("../services/TrustService");
+const Joi = require("joi");
 
 const walletRouter = express.Router();
 
@@ -55,6 +56,12 @@ walletRouter.post('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    Joi.assert(
+      req.body,
+      Joi.object({
+        wallet: Joi.string().required(),
+      })
+    );
     const walletService = new WalletService();
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
     const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);

@@ -79,6 +79,14 @@ describe("walletRouter", ()=> {
       expect(res.body).to.have.property("wallet").eq("test");
       expect(fn).calledWith("subWallet");
     });
+
+    it("missed parameter", async () => {
+      const res = await request(app)
+        .post("/")
+        .send({
+        });
+      expect(res).property("statusCode").eq(422);
+    });
   });
 
 })

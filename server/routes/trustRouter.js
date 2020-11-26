@@ -8,6 +8,7 @@ const Wallet = require("../models/Wallet");
 const expect = require("expect-runtime");
 const helper = require("./utils");
 const Session = require("../models/Session");
+const Joi = require("joi");
 
 trustRouter.get('/',
   helper.apiKeyHandler,
@@ -39,9 +40,14 @@ trustRouter.post('/',
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
     expect(res.locals.wallet_id).number();
-    expect(req).property("body").property("trust_request_type").a(expect.any(String));
+    Joi.assert(
+      req.body,
+      Joi.object({
+        trust_request_type: Joi.string().required(),
+        requestee_wallet: Joi.string().required(),
+      })
+    );
     const session = new Session();
-    expect(req).property("body").property("requestee_wallet").a(expect.any(String));
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
     const wallet = await walletService.getById(res.locals.wallet_id);
