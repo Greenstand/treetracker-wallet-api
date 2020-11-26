@@ -126,21 +126,13 @@ class Wallet{
   async getTrustRelationshipsRequestedToMe(){
     const result = await this.getTrustRelationships();
     const subWallets = await this.getSubWallets();
+    for(const subWallet of subWallets){
+      const list = await subWallet.getTrustRelationships();
+      result.push(...list);
+    }
     const walletIds = [this._id, ...subWallets.map(e => e.getId())];
     return result.filter(trustRelationship => {
-      if(
-        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send ||
-        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage
-      ){
-        return walletIds.includes(trustRelationship.target_entity_id);
-      }else if(
-        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
-        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield
-      ){
-        return walletIds.includes(trustRelationship.actor_entity_id);
-      }else{
-        throw new Error("not support yet");
-      }
+      return walletIds.includes(trustRelationship.target_entity_id);
     });
   }
 
@@ -191,12 +183,12 @@ class Wallet{
      */
     let actorWallet = requesterWallet; //case of: manage/send
     let targetWallet = requesteeWallet; //case of: mange/send
-    if(
-      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
-      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
-      actorWallet = requesteeWallet;
-      targetWallet = requesterWallet;
-    }
+//    if(
+//      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
+//      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
+//      actorWallet = requesteeWallet;
+//      targetWallet = requesterWallet;
+//    }
 
 
     //check if I (current wallet) can add a new trust like this
@@ -274,7 +266,7 @@ class Wallet{
    */
   async declineTrustRequestSentToMe(trustRelationshipId){
     expect(trustRelationshipId).number();
-    const trustRelationships = await this.getTrustRelationshipsTargeted(this._id);
+    const trustRelationships = await this.getTrustRelationshipsRequestedToMe(this._id);
     const trustRelationship = trustRelationships.reduce((a,c) => {
       expect(c.id).number();
       if(c.id === trustRelationshipId){

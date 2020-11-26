@@ -206,7 +206,7 @@ describe("Wallet", () => {
         id: 1,
         target_entity_id: wallet.getId(),
       };
-      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsRequestedToMe").returns([trustRelationship]);
       const fn2 = sinon.stub(TrustRepository.prototype, "update");
       await wallet.declineTrustRequestSentToMe(trustRelationship.id);
       fn1.restore();
@@ -965,6 +965,7 @@ describe("Wallet", () => {
     it("get one", async () => {
       const wallet = new Wallet(1);
       const wallet2 = new Wallet(2);
+      sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
       sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
         actor_entity_id: wallet2.getId(),
         target_entity_id: wallet.getId(),
@@ -979,13 +980,19 @@ describe("Wallet", () => {
       const wallet2 = new Wallet(2);
       const subWallet = new Wallet(3);
       sinon.stub(Wallet.prototype, "getSubWallets").resolves([subWallet]);
-      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships")
+      fn.onCall(0).resolves([{
+        actor_entity_id: wallet2.getId(),
+        target_entity_id: wallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+      }]);
+      fn.onCall(1).resolves([{
         actor_entity_id: wallet2.getId(),
         target_entity_id: subWallet.getId(),
         request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
       }]);
       const list = await wallet.getTrustRelationshipsRequestedToMe()
-      expect(list).lengthOf(1);
+      expect(list).lengthOf(2);
     });
   });
 

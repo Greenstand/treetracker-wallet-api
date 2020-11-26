@@ -995,8 +995,8 @@ describe('Wallet integration tests', () => {
         expect(res).property("statusCode").to.eq(200);
         expect(res.body).property("state").eq("trusted");
         expect(res.body).property("type").eq("manage");
-        expect(res.body).property("actor_wallet").eq(seed.wallet.name);
-        expect(res.body).property("target_wallet").eq(seed.walletB.name);
+        expect(res.body).property("actor_wallet").eq(seed.walletB.name);
+        expect(res.body).property("target_wallet").eq(seed.wallet.name);
       });
     });
 
