@@ -644,6 +644,113 @@ describe("Wallet", () => {
     });
   });
 
+  describe("fulfillTransferWithTokens", () => {
+
+    it("fulfillTransfer successfully", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+          bundle: {
+            bundleSize: 1,
+          }
+        }
+      });  
+      const token = new Token({id:1});
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      sinon.stub(Token.prototype, "toJSON").resolves({uuid:"xxx"});
+      sinon.stub(Token.prototype, "belongsTo").resolves(true);
+      sinon.stub(Token.prototype, "completeTransfer");
+      await wallet.fulfillTransferWithTokens(1, [token]);
+    });
+
+    it("Should not set tokens for non-bundle case", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+        }
+      });  
+      const token = new Token({id:1});
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await jestExpect(async () => {
+        await wallet.fulfillTransferWithTokens(1, [token]);
+      }).rejects.toThrow(/no need/i);
+    });
+
+    it("Too many tokens", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+          bundle: {
+            bundleSize: 1,
+          }
+        }
+      });  
+      const token = new Token({id:1});
+      const token2 = new Token({id:2});
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      sinon.stub(Token.prototype, "toJSON").resolves({uuid:"xxx"});
+      sinon.stub(Token.prototype, "belongsTo").resolves(true);
+      sinon.stub(Token.prototype, "completeTransfer");
+      await jestExpect(async () => {
+        await wallet.fulfillTransferWithTokens(1, [token, token2]);
+      }).rejects.toThrow(/too many/i);
+    });
+
+    it("Too few tokens", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+          bundle: {
+            bundleSize: 1,
+          }
+        }
+      });  
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await jestExpect(async () => {
+        await wallet.fulfillTransferWithTokens(1, []);
+      }).rejects.toThrow(/too few/i);
+    });
+
+    it("Specified token do not belongs to the wallet", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+          bundle: {
+            bundleSize: 1,
+          }
+        }
+      });  
+      const token = new Token({id:1});
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      sinon.stub(Token.prototype, "toJSON").resolves({uuid:"xxx"});
+      sinon.stub(Token.prototype, "belongsTo").resolves(false);
+      await jestExpect(async () => {
+        await wallet.fulfillTransferWithTokens(1, [token]);
+      }).rejects.toThrow(/belongs to/i);
+    });
+
+  });
+
   describe("getTransfers", () => {
 
     it("getTransfers", async () => {

@@ -668,6 +668,64 @@ class Wallet{
   }
 
   /*
+   * Fulfill a requested transfer, if I has the privilege to do so
+   * Specify tokens
+   */
+  async fulfillTransferWithTokens(transferId, tokens){
+    //TODO check privilege
+
+    const transfer = await this.transferRepository.getById(transferId);
+    const sender = await this.walletService.getById(transfer.source_entity_id);
+    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
+    if(!doseCurrentAccountHasControlOverReceiver){
+      throw new HttpError(403, "Current account has no permission to fulfill this transfer");
+    }
+    if(transfer.source_entity_id !== this._id){
+      throw new HttpError(403, "Have no permission to do this operation");
+    }
+    if(transfer.state !== Transfer.STATE.requested){
+      throw new HttpError(403, "Operation forbidden, the transfer state is wrong");
+    }
+    transfer.state = Transfer.STATE.completed;
+    const transferJson = await this.transferRepository.update(transfer);
+
+    //deal with tokens
+    if(
+      //TODO optimize
+      transfer.parameters &&
+      transfer.parameters.bundle &&
+      transfer.parameters.bundle.bundleSize){
+      log.debug("transfer bundle of tokens");
+      const {source_entity_id} = transfer;
+      expect(source_entity_id).number();
+      const senderWallet = new Wallet(source_entity_id, this._session);
+      //check it
+      if(tokens.length > transfer.parameters.bundle.bundleSize){
+        throw new HttpError(403, `Too many tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`);
+      }
+      if(tokens.length < transfer.parameters.bundle.bundleSize){
+        throw new HttpError(403, `Too few tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`);
+      }
+      for(const token of tokens){
+        const belongsTo = await token.belongsTo(senderWallet);
+        if(!belongsTo){
+          const json = await token.toJSON();
+          throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`);
+        }
+      }
+
+      //transfer
+      for(let token of tokens){
+        expect(token).defined();
+        await token.completeTransfer(transfer);
+      }
+    }else{
+      throw new HttpError(403, "No need to specify tokens");
+    }
+    return transferJson;
+  }
+
+  /*
    * Get all transfers belongs to me
    */
   async getTransfers(state, wallet){

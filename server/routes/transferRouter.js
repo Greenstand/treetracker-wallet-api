@@ -208,14 +208,37 @@ transferRouter.post('/:transfer_id/fulfill',
         transfer_id: Joi.number().required(),
       })
     );
+    Joi.assert(
+      req.body,
+      Joi.alternatives().try(
+        Joi.object({
+          tokens: Joi.array().items(Joi.string()).required(),
+        }),
+        Joi.object({
+          implicit: Joi.boolean().truthy().required(),
+        }),
+      )
+    );
     const session = new Session();
     //begin transaction
     try{
       await session.beginTransaction();
       const walletService = new WalletService(session);
-      const walletLogin = await walletService.getById(res.locals.wallet_id);
-      const transferJson = await walletLogin.fulfillTransfer(req.params.transfer_id);
       const transferService = new TransferService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      let transferJson;
+      if(req.body.implicit){
+        transferJson = await walletLogin.fulfillTransfer(req.params.transfer_id);
+      }else{
+        //load tokens
+        const tokens = [];
+        const tokenService = new TokenService(session);
+        for(let uuid of req.body.tokens){
+          const token = await tokenService.getByUUID(uuid); 
+          tokens.push(token);
+        }
+        transferJson = await walletLogin.fulfillTransferWithTokens(req.params.transfer_id, tokens);
+      }
       const transferJson2 = await transferService.convertToResponse(transferJson);
       res.status(200).json(transferJson2);
       await session.commitTransaction();
