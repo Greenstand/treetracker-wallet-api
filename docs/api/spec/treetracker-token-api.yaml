@@ -71,12 +71,6 @@ paths:
               - type: string
               - type: number
             example: zaven2
-        - name: token
-          description: ""
-          in: query
-          schema:
-            type: string
-            example: "496ffa8e-2fa2-488c-98e1-acf9b57c230b"
       responses:
         '200':
           description: ''
