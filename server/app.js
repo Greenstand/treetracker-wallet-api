@@ -55,10 +55,9 @@ app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next)
 // Global error handler
 app.use(errorHandler);
 
+app.get('*',function (req, res) {
+  res.status(200).send('v1.0')
+});
 
-//do not run the express app by default
-//app.listen(port,()=>{
-//    console.log('listening on port ' + port);
-//});
 
 module.exports = app; 
