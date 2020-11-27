@@ -861,7 +861,40 @@ describe("Wallet", () => {
 
     it("hasControlOver should pass if it is the same wallet", async () => {
       const walletB = new Wallet(1, session);
-      await wallet.hasControlOver(walletB); 
+      const result = await wallet.hasControlOver(walletB); 
+      expect(result).eq(true);
+    });
+
+    it("hasControlOver should pass if manage/yield trust exists", async () => {
+      const wallet2 = new Wallet(2, session);
+      const fn = sinon.stub(TrustRepository.prototype, "getByFilter").resolves([{}]);
+      const result = await wallet.hasControlOver(wallet2); 
+      expect(result).eq(true);
+      expect(fn).calledWith({
+        or: [
+          {
+            and: [{
+              actor_entity_id: wallet.getId(),
+            },{
+              request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+            },{
+              target_entity_id: wallet2.getId(),
+            },{
+              state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+            }],
+          },{
+            and: [{
+              actor_entity_id: wallet2.getId(),
+            },{
+            request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+            },{
+            target_entity_id: wallet.getId(),
+            },{
+            state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+            }]
+          }
+        ]
+      });
     });
   });
 
@@ -951,12 +984,27 @@ describe("Wallet", () => {
       sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
         actor_entity_id: wallet.getId(),
         target_entity_id: subWallet.getId(),
-        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
         state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
       }]);
       sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
       const wallets = await wallet.getSubWallets();
       expect(wallets).lengthOf(2);
+    });
+
+    it("get sub wallet which is state of yield", async () => {
+      const wallet = new Wallet(1);
+      const subWallet = new Wallet(2);
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        actor_entity_id: subWallet.getId(),
+        target_entity_id: wallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      }]);
+      sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
+      const wallets = await wallet.getSubWallets();
+      expect(wallets).lengthOf(2);
+      expect(wallets.map(w => w.getId())).have.members([1,2]);
     });
   });
 

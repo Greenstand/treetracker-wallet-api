@@ -359,14 +359,20 @@ class Wallet{
     //check tokens belong to sender
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
-        throw new HttpError(403, `The token ${token.toJSON().uuid} do not belongs to sender wallet`);
+        const json = await token.toJSON();
+        throw new HttpError(403, `The token ${json.uuid} do not belongs to sender wallet`);
       }
     }
 
     const isDeduct = await this.isDeduct(sender,receiver);
     const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const hasControlOverSender = await this.hasControlOver(sender);
+    const hasControlOverReceiver = await this.hasControlOver(receiver);
     //If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
-    if(hasTrust && !isDeduct){
+    if(
+      (hasControlOverSender && hasControlOverReceiver) ||
+      (!isDeduct && hasTrust)
+    ){
       const tokensUUID = [];
       for(let token of tokens){
         const json = await token.toJSON();
@@ -388,7 +394,7 @@ class Wallet{
       return transfer;
       
     }else{
-        if(await this.hasControlOver(sender)){
+        if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
           const tokensUUID = [];
           for(let token of tokens){
@@ -408,7 +414,7 @@ class Wallet{
             await token.pendingTransfer(transfer);
           }
           return transfer;
-        }else if(await this.hasControlOver(receiver)){
+        }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
           const tokensUUID = [];
           for(let token of tokens){
@@ -446,7 +452,12 @@ class Wallet{
     const isDeduct = await this.isDeduct(sender,receiver);
     //If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
     const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
-    if(hasTrust && !isDeduct){
+    const hasControlOverSender = await this.hasControlOver(sender);
+    const hasControlOverReceiver = await this.hasControlOver(receiver);
+    if(
+      (hasControlOverSender && hasControlOverReceiver) ||
+      (!isDeduct && hasTrust)
+    ){
       const transfer = await this.transferRepository.create({
         originator_entity_id: this._id, 
         source_entity_id: sender.getId(),
@@ -465,7 +476,7 @@ class Wallet{
       }
       return transfer;
     }else{
-        if(await this.hasControlOver(sender)){
+        if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
           const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
@@ -479,7 +490,7 @@ class Wallet{
             }
           });
           return transfer;
-        }else if(await this.hasControlOver(receiver)){
+        }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
           const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
@@ -504,6 +515,7 @@ class Wallet{
    * I have control over given wallet
    */
   async hasControlOver(wallet){
+    console.log("check control");
     //if the given wallet is me, then pass
     if(wallet.getId() === this._id){
       log.debug("The same wallet, control");
@@ -511,10 +523,30 @@ class Wallet{
     }else{
       //check sub wallet
       const result = await this.trustRepository.getByFilter({
-        actor_entity_id: this._id,
-        target_entity_id: wallet.getId(),
-        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
-        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+        or: [
+          {
+            and: [{
+              actor_entity_id: this._id,
+            },{
+              request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+            },{
+              target_entity_id: wallet.getId(),
+            },{
+              state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+            }],
+          },
+          {
+            and: [{
+              actor_entity_id: wallet.getId(),
+            },{
+              request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+            },{
+              target_entity_id: this._id,
+            },{
+              state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+            }]
+          }
+        ]
       });
       if(result.length > 0){
         return true;
@@ -778,25 +810,26 @@ class Wallet{
    */
   async getSubWallets(){
     let trustRelationships = await this.getTrustRelationships();
-    trustRelationships = trustRelationships.filter(e => {
-      // where logged in wallet is the actor wallet
-      if(e.actor_entity_id === this._id &&
-        e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+    const subWallets = [];
+    for(let e of trustRelationships){
+      if(
+        e.actor_entity_id === this._id &&
+        e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
         e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
       ){
-        return true;
-      }else{
-        return false;
+        const subWallet = await this.walletService.getById(e.target_entity_id);
+        subWallets.push(subWallet);
+      }else if(
+        e.target_entity_id === this._id &&
+        e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
+        e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+      ){
+        const subWallet = await this.walletService.getById(e.actor_entity_id);
+        subWallets.push(subWallet);
       }
-    });
-    const subWallets = [];
+    }
     // include logged in wallet in response 
     subWallets.push(this);
-
-    for(let e of trustRelationships){
-      const subWallet = await this.walletService.getById(e.target_entity_id);
-      subWallets.push(subWallet);
-    }
     return subWallets;
   }
 }
