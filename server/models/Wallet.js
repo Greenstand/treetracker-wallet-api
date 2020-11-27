@@ -55,6 +55,19 @@ class Wallet{
       throw new HttpError(400, 'No wallet supplied');
     }
 
+    //check name
+    try{
+      await this.walletRepository.getByName(wallet);
+      throw new HttpError(403, `The wallet '${wallet}' has been existed`);
+    }catch(e){
+      if(e instanceof HttpError && e.code === 404){
+        //fine
+      }else{
+        throw e;
+      }
+    }
+    
+
     // TO DO: check if wallet is expected format type?
 
     // TO DO: Need to check account permissions -> manage accounts
