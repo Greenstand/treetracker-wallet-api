@@ -49,6 +49,38 @@ class Wallet{
     }
   }
 
+  async addManagedWallet(wallet){
+    if(!wallet){
+      throw new HttpError(400, 'No wallet supplied');
+    }
+
+    // TO DO: check if wallet is expected format type?
+
+    // TO DO: Need to check account permissions -> manage accounts
+    // need to create a wallet object
+    const newWallet = await this.walletRepository.create({
+      name: wallet
+    });
+
+    // Is this how to check if db action was successful?
+    if (!newWallet) {
+      throw new HttpError(403, "The wallet already exists");
+    }
+
+    const newTrustRelationship = await this.trustRepository.create({
+      actor_entity_id: this._id,
+      originator_entity_id: this._id,
+      target_entity_id: newWallet.id,
+      request_type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+      type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+      state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+    });
+
+    const managedWallet = await this.walletRepository.getById(newWallet.id);
+
+    return managedWallet;
+  }
+
   /*
    * Get trust relationships by filters, setting filter to undefined to allow all data
    */
@@ -88,6 +120,28 @@ class Wallet{
   }
 
   /*
+   * Get all the trust relationships request to me
+   */
+  async getTrustRelationshipsRequestedToMe(){
+    const result = await this.getTrustRelationships();
+    return result.filter(trustRelationship => {
+      if(
+        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send ||
+        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage
+      ){
+        return trustRelationship.target_entity_id === this._id
+      }else if(
+        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
+        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield
+      ){
+        return trustRelationship.actor_entity_id === this._id
+      }else{
+        throw new Error("not support yet");
+      }
+    });
+  }
+
+  /*
    * Get all the trust relationships targeted to me, means request
    * the trust from me
    */
@@ -119,8 +173,8 @@ class Wallet{
    */
   async requestTrustFromAWallet(
     requestType, 
-    actorWallet,
-    targetWallet,
+    requesterWallet,
+    requesteeWallet,
   ){
     log.debug("request trust...");
     expect(
@@ -128,6 +182,19 @@ class Wallet{
       () => new HttpError(400, `The trust request type must be one of ${Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE).join(',')}`)
     )
       .oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
+
+    /*
+     * Translate the requester/ee to actor/target
+     */
+    let actorWallet = requesterWallet; //case of: manage/send
+    let targetWallet = requesteeWallet; //case of: mange/send
+    if(
+      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
+      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
+      actorWallet = requesteeWallet;
+      targetWallet = requesterWallet;
+    }
+
 
     //check if I (current wallet) can add a new trust like this
     const trustRelationships = await this.getTrustRelationships();
@@ -146,19 +213,19 @@ class Wallet{
     }
     
     //check if the orginator can control the actor
-    const hasControl = await this.hasControlOver(actorWallet);
+    const hasControl = await this.hasControlOver(requesterWallet);
     if(!hasControl){
       throw new HttpError(403, "Have no permission to deal with this actor");
     }
     
     //check if the target wallet can accept the request
-    await targetWallet.checkTrustRequestSentToMe(requestType, this.id);
+    await requesteeWallet.checkTrustRequestSentToMe(requestType, this.id);
 
     //create this request
     const result = await this.trustRepository.create({
       type: TrustRelationship.getTrustTypeByRequestType(requestType),
       request_type: requestType,
-      actor_entity_id: this._id,
+      actor_entity_id: actorWallet.getId(),
       originator_entity_id: this._id,
       target_entity_id: targetWallet.getId(),
       state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
@@ -182,7 +249,7 @@ class Wallet{
    */
   async acceptTrustRequestSentToMe(trustRelationshipId){
     expect(trustRelationshipId).number();
-    const trustRelationships = await this.getTrustRelationshipsTargeted(this._id);
+    const trustRelationships = await this.getTrustRelationshipsRequestedToMe(this._id);
     const trustRelationship = trustRelationships.reduce((a,c) => {
       expect(c.id).number();
       if(c.id === trustRelationshipId){
@@ -604,10 +671,30 @@ class Wallet{
    */
   async getTransfers(state, wallet){
     const filter = {
-    };
+      and: [],
+    }
+    filter.and.push({
+      or: [{
+        source_entity_id: this._id,
+      },{
+        destination_entity_id: this._id,
+      },{
+        originator_entity_id: this._id,
+      }]
+    });
     if(state){
-      //TODO check the state parameter
-      filter.state = state;
+      filter.and.push({state});
+    }
+    if(wallet){
+      filter.and.push({
+        or: [{
+          source_entity_id: wallet.getId(),
+        },{
+          destination_entity_id: wallet.getId(),
+        },{
+          originator_entity_id: wallet.getId(),
+        }]
+      });
     }
     const result = await this.transferRepository.getByFilter(filter);
     return result;
@@ -626,6 +713,33 @@ class Wallet{
     }else{
       throw new HttpError(403, "Do not support deduct yet");
     }
+  }
+
+  /*
+   * Get all wallet managed by me
+   */
+  async getSubWallets(){
+    let trustRelationships = await this.getTrustRelationships();
+    trustRelationships = trustRelationships.filter(e => {
+      // where logged in wallet is the actor wallet
+      if(e.actor_entity_id === this._id &&
+        e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+        e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+      ){
+        return true;
+      }else{
+        return false;
+      }
+    });
+    const subWallets = [];
+    // include logged in wallet in response 
+    subWallets.push(this);
+
+    for(let e of trustRelationships){
+      const subWallet = await this.walletService.getById(e.target_entity_id);
+      subWallets.push(subWallet);
+    }
+    return subWallets;
   }
 }
 

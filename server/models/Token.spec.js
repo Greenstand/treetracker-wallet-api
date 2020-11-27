@@ -118,4 +118,15 @@ describe("Token", () => {
     });
   });
 
+  describe("Transactions", () => {
+
+    it("getTransactions", async () => {
+      const token = new Token(1);
+      sinon.stub(TransactionRepository.prototype, "getByFilter").resolves([{}]);
+      const transactions = await token.getTransactions();
+      expect(transactions).lengthOf(1);
+    });
+
+  });
+
 });

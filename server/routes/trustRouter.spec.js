@@ -50,7 +50,7 @@ describe("trustRouter", () => {
         .post("/")
         .send({
           trust_request_type: "send",
-          target_wallet: "test",
+          requestee_wallet: "test",
         });
       expect(res).property("statusCode").eq(200);
       expect(fn).calledWith(

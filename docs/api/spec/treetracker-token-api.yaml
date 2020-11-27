@@ -901,11 +901,12 @@ components:
       properties:
         trust_request_type:
           type: string
-        actor_wallet:
+        requester_wallet:
           type: string
-          description: "This is optional, if ignore the actor_wallet, then the defaul actor_wallet should be the current logged in wallet"
-        target_wallet:
+          description: "This is optional, if ignore it, then the default requester_wallet should be the current logged in wallet"
+        requestee_wallet:
           type: string
+          description: "The wallet to who this request are targetting"
     historyResponse:
       title: History Response
       type: object
