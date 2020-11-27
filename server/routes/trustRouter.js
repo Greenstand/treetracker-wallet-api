@@ -44,6 +44,7 @@ trustRouter.post('/',
       req.body,
       Joi.object({
         trust_request_type: Joi.string().required(),
+        requester_wallet: Joi.string(),
         requestee_wallet: Joi.string().required(),
       })
     );
