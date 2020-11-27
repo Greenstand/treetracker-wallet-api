@@ -41,9 +41,9 @@ describe("walletRouter", ()=> {
   describe("get /wallets", () => {
 
     it("successfully", async () => {
-      sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
+      sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({id:1}));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
-      const fn = sinon.stub(Wallet.prototype, "getSubWallets").resolves([new Wallet({id:1}), new Wallet({id:2})]);
+      const fn = sinon.stub(Wallet.prototype, "getSubWallets").resolves([ new Wallet({id:2})]);
       const res = await request(app)
         .get('/');
       expect(res).property("statusCode").eq(200);

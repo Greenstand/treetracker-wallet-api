@@ -24,6 +24,19 @@ trustRouter.get('/',
       req.query.type,
       req.query.request_type,
     );
+    const subWallets = await wallet.getSubWallets();
+    for(const sw of subWallets){
+      const trustRelationships = await sw.getTrustRelationships(
+        req.query.state,
+        req.query.type,
+        req.query.request_type,
+      );
+      for(tr of trustRelationships){
+        if(trust_relationships.every(e => e.id !== tr.id)){
+          trust_relationships.push(tr);
+        }
+      }
+    }
     const trust_relationships_json = [];
     for(let t of trust_relationships){
       const j = await trustService.convertToResponse(t);

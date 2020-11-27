@@ -989,7 +989,7 @@ describe("Wallet", () => {
       }]);
       sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
       const wallets = await wallet.getSubWallets();
-      expect(wallets).lengthOf(2);
+      expect(wallets).lengthOf(1);
     });
 
     it("get sub wallet which is state of yield", async () => {
@@ -1003,8 +1003,7 @@ describe("Wallet", () => {
       }]);
       sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
       const wallets = await wallet.getSubWallets();
-      expect(wallets).lengthOf(2);
-      expect(wallets.map(w => w.getId())).have.members([1,2]);
+      expect(wallets).lengthOf(1);
     });
   });
 

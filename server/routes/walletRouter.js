@@ -15,6 +15,8 @@ walletRouter.get('/',
     const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
     const subWallets = await loggedInWallet.getSubWallets();
+    //myself
+    subWallets.push(loggedInWallet);
     
     const walletsJson = [];
 

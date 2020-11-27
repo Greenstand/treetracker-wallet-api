@@ -822,8 +822,6 @@ class Wallet{
         subWallets.push(subWallet);
       }
     }
-    // include logged in wallet in response 
-    subWallets.push(this);
     return subWallets;
   }
 }
