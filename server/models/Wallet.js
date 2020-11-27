@@ -660,9 +660,6 @@ class Wallet{
 
     const transfer = await this.transferRepository.getById(transferId);
     const sender = await this.walletService.getById(transfer.source_entity_id);
-    if(transfer.source_entity_id !== this._id){
-      throw new HttpError(403, "Have no permission to do this operation");
-    }
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to fulfill this transfer");
@@ -711,9 +708,6 @@ class Wallet{
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to fulfill this transfer");
     }
-    if(transfer.source_entity_id !== this._id){
-      throw new HttpError(403, "Have no permission to do this operation");
-    }
     if(transfer.state !== Transfer.STATE.requested){
       throw new HttpError(403, "Operation forbidden, the transfer state is wrong");
     }
@@ -732,10 +726,10 @@ class Wallet{
       const senderWallet = new Wallet(source_entity_id, this._session);
       //check it
       if(tokens.length > transfer.parameters.bundle.bundleSize){
-        throw new HttpError(403, `Too many tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`);
+        throw new HttpError(403, `Too many tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`, true);
       }
       if(tokens.length < transfer.parameters.bundle.bundleSize){
-        throw new HttpError(403, `Too few tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`);
+        throw new HttpError(403, `Too few tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`, true);
       }
       for(const token of tokens){
         const belongsTo = await token.belongsTo(senderWallet);
@@ -751,7 +745,7 @@ class Wallet{
         await token.completeTransfer(transfer);
       }
     }else{
-      throw new HttpError(403, "No need to specify tokens");
+      throw new HttpError(403, "No need to specify tokens", true);
     }
     return transferJson;
   }

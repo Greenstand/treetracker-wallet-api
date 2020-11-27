@@ -677,13 +677,13 @@ describe("Wallet", () => {
       fn4.restore();
     });
 
-    it("the transfer's sender is not me, should throw 403 no permission", async () => {
+    it("have no control over the transfer's sender , should throw 403 no permission", async () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves([{
         id:1,
         source_entity_id: wallet.getId() + 1,
       }]);  
       const fn2 = sinon.stub(WalletService.prototype, "getById");
-      const fn3 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      const fn3 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(false);
       await jestExpect(async () => {
         await wallet.fulfillTransfer(1);
       }).rejects.toThrow(/permission/);

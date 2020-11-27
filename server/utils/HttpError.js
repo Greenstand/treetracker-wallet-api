@@ -10,7 +10,8 @@ class HttpError extends Error {
     super(message);
     this.code = code;
     //set rollback flag, so the transaction of db would rollback when catch this error
-    this._toRollback = toRollback;
+    //set default to true
+    this._toRollback = toRollback || true;
   }
 
   shouldRollback(){
