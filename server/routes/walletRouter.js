@@ -2,6 +2,8 @@ const express = require('express');
 const helper = require('./utils');
 const WalletService = require("../services/WalletService");
 const TrustService = require("../services/TrustService");
+const Joi = require("joi");
+const Session = require("../models/Session");
 
 const walletRouter = express.Router();
 
@@ -9,9 +11,12 @@ walletRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
     const subWallets = await loggedInWallet.getSubWallets();
+    //myself
+    subWallets.push(loggedInWallet);
     
     const walletsJson = [];
 
@@ -32,8 +37,9 @@ walletRouter.get('/:wallet_id/trust_relationships',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
-    const trustService = new TrustService();
-    const walletService = new WalletService();
+    const session = new Session();
+    const trustService = new TrustService(session);
+    const walletService = new WalletService(session);
     const wallet = await walletService.getById(req.params.wallet_id);
     const trust_relationships = await wallet.getTrustRelationships(
       req.query.state,
@@ -55,7 +61,14 @@ walletRouter.post('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
-    const walletService = new WalletService();
+    Joi.assert(
+      req.body,
+      Joi.object({
+        wallet: Joi.string().required(),
+      })
+    );
+    const session = new Session();
+    const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
     const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);
 

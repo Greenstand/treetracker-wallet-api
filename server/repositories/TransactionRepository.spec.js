@@ -4,6 +4,7 @@ const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
 const tracker = mockKnex.getTracker();
 const jestExpect = require("expect");
+const Session = require("../models/Session");
 
 describe("TransactionRepository", () => {
   let transactionRepository;
@@ -11,7 +12,7 @@ describe("TransactionRepository", () => {
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    transactionRepository = new TransactionRepository();
+    transactionRepository = new TransactionRepository(new Session());
   })
 
   afterEach(() => {

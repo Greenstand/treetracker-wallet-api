@@ -4,7 +4,8 @@ const helper = require("./utils");
 const TokenService = require("../services/TokenService");
 const WalletService = require("../services/WalletService");
 const HttpError = require("../utils/HttpError");
-
+const Session = require("../models/Session");
+const Joi = require("joi");
 
 const tokenRouter = express.Router();
 
@@ -14,8 +15,9 @@ tokenRouter.get('/:uuid',
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
     const {uuid} = req.params;
-    const tokenService = new TokenService();
-    const walletService = new WalletService();
+    const session = new Session();
+    const tokenService = new TokenService(session);
+    const walletService = new WalletService(session);
     const token = await tokenService.getByUUID(uuid);
     //check permission
     const json = await token.toJSON();
@@ -36,20 +38,33 @@ tokenRouter.get('/:uuid',
 tokenRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
-  helper.handlerWrapper(async (_req, res, _next) => {
-    const tokenService = new TokenService();
-    const walletService = new WalletService();
+  helper.handlerWrapper(async (req, res, _next) => {
+    Joi.assert(
+      req.query,
+      Joi.object({
+        limit: Joi.number().required(),
+        wallet: Joi.string(),
+      })
+    );
+    const {limit, wallet} = req.query;
+    const session = new Session();
+    const tokenService = new TokenService(session);
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    let tokens = await tokenService.getByOwner(walletLogin);
-
-    /*
-     * sub wallet
-     */
-    const subWallets = await walletLogin.getSubWallets();
-    for(const wallet of subWallets){
-      const tokensSub = await tokenService.getByOwner(wallet);
-      tokens = [...tokens, ...tokensSub];
+    let tokens = [];
+    if(wallet){
+      const walletInstance = await walletService.getByName(wallet);
+      const isSub = await walletLogin.hasControlOver(walletInstance);
+      if(!isSub){
+        throw new HttpError(403, "Wallet do not belongs to wallet logged in");
+      }
+      tokens = await tokenService.getByOwner(walletInstance);
+    }else{
+      tokens = await tokenService.getByOwner(walletLogin);
     }
+
+    //filter tokens by query, TODO optimization required
+    tokens = tokens.slice(0, limit);
     const tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();
@@ -65,9 +80,10 @@ tokenRouter.get('/:uuid/transactions',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    const session = new Session();
     const {uuid} = req.params;
-    const tokenService = new TokenService();
-    const walletService = new WalletService();
+    const tokenService = new TokenService(session);
+    const walletService = new WalletService(session);
     const token = await tokenService.getByUUID(uuid);
     //check permission
     const json = await token.toJSON();

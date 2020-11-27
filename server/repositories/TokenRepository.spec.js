@@ -4,6 +4,7 @@ const sinon = require("sinon");
 const {expect} = require("chai");
 const mockKnex = require("mock-knex");
 const tracker = mockKnex.getTracker();
+const Session = require("../models/Session");
 
 describe("TokenRepository", () => {
   let tokenRepository;
@@ -11,7 +12,7 @@ describe("TokenRepository", () => {
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    tokenRepository = new TokenRepository();
+    tokenRepository = new TokenRepository(new Session());
   })
 
   afterEach(() => {

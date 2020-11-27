@@ -7,11 +7,14 @@ const chai = require("chai");
 const sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 const {expect} = chai;
+const Session = require("../models/Session");
 
 describe("TransferService", () => {
-  let transferService = new TransferService();
-
+  let transferService ;
   describe("", () => {
+    let session = new Session();
+    transferService = new TransferService(session);
+
   });
 
   afterEach(() => {

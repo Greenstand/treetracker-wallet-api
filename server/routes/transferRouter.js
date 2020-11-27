@@ -9,6 +9,7 @@ const Joi = require("joi");
 const TokenService = require("../services/TokenService");
 const HttpError = require("../utils/HttpError");
 const Transfer = require("../models/Transfer");
+const Session = require("../models/Session");
 
 transferRouter.post(
   "/",
@@ -44,34 +45,50 @@ transferRouter.post(
         }),
       })
     );
-    const walletService = new WalletService();
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
+    const session = new Session();
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
 
-    const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
-    const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
+      const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
+      const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
 
-    let result;
-    if(req.body.tokens){
-      const tokens = [];
-      const tokenService = new TokenService();
-      for(let uuid of req.body.tokens){
-        const token = await tokenService.getByUUID(uuid); 
-        tokens.push(token);
+      let result;
+      if(req.body.tokens){
+        const tokens = [];
+        const tokenService = new TokenService(session);
+        for(let uuid of req.body.tokens){
+          const token = await tokenService.getByUUID(uuid); 
+          tokens.push(token);
+        }
+        result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
+      }else{
+        result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
       }
-      result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
-    }else{
-      result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
-    }
-    const transferService = new TransferService();
-    result = await transferService.convertToResponse(result);
-    if(result.state === Transfer.STATE.completed){
-      res.status(201).json(result);
-    }else if(
-      result.state === Transfer.STATE.pending || 
-      result.state === Transfer.STATE.requested){
-      res.status(202).json(result);
-    }else{
-      expect.fail();
+      const transferService = new TransferService(session);
+      result = await transferService.convertToResponse(result);
+      if(result.state === Transfer.STATE.completed){
+        res.status(201).json(result);
+      }else if(
+        result.state === Transfer.STATE.pending || 
+        result.state === Transfer.STATE.requested){
+        res.status(202).json(result);
+      }else{
+        expect.fail();
+      }
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError && !e.shouldRollback()){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
     }
   })
 );
@@ -86,12 +103,28 @@ transferRouter.post('/:transfer_id/accept',
         transfer_id: Joi.number().required(),
       })
     );
-    const walletService = new WalletService();
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const transferJson = await walletLogin.acceptTransfer(req.params.transfer_id);
-    const transferService = new TransferService();
-    const transferJson2 = await transferService.convertToResponse(transferJson);
-    res.status(200).json(transferJson2);
+    const session = new Session();
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      const transferJson = await walletLogin.acceptTransfer(req.params.transfer_id);
+      const transferService = new TransferService(session);
+      const transferJson2 = await transferService.convertToResponse(transferJson);
+      res.status(200).json(transferJson2);
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError && !e.shouldRollback()){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
+    }
   })
 );
 
@@ -105,12 +138,28 @@ transferRouter.post('/:transfer_id/decline',
         transfer_id: Joi.number().required(),
       })
     );
-    const walletService = new WalletService();
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const transferJson = await walletLogin.declineTransfer(req.params.transfer_id);
-    const transferService = new TransferService();
-    const transferJson2 = await transferService.convertToResponse(transferJson);
-    res.status(200).json(transferJson2);
+    const session = new Session();
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      const transferJson = await walletLogin.declineTransfer(req.params.transfer_id);
+      const transferService = new TransferService(session);
+      const transferJson2 = await transferService.convertToResponse(transferJson);
+      res.status(200).json(transferJson2);
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError && !e.shouldRollback()){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
+    }
   })
 );
 
@@ -124,12 +173,28 @@ transferRouter.delete('/:transfer_id',
         transfer_id: Joi.number().required(),
       })
     );
-    const walletService = new WalletService();
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const transferJson = await walletLogin.cancelTransfer(req.params.transfer_id);
-    const transferService = new TransferService();
-    const transferJson2 = await transferService.convertToResponse(transferJson);
-    res.status(200).json(transferJson2);
+    const session = new Session();
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      const transferJson = await walletLogin.cancelTransfer(req.params.transfer_id);
+      const transferService = new TransferService(session);
+      const transferJson2 = await transferService.convertToResponse(transferJson);
+      res.status(200).json(transferJson2);
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError && !e.shouldRollback()){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
+    }
   })
 );
 
@@ -143,12 +208,51 @@ transferRouter.post('/:transfer_id/fulfill',
         transfer_id: Joi.number().required(),
       })
     );
-    const walletService = new WalletService();
-    const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const transferJson = await walletLogin.fulfillTransfer(req.params.transfer_id);
-    const transferService = new TransferService();
-    const transferJson2 = await transferService.convertToResponse(transferJson);
-    res.status(200).json(transferJson2);
+    Joi.assert(
+      req.body,
+      Joi.alternatives().try(
+        Joi.object({
+          tokens: Joi.array().items(Joi.string()).required(),
+        }),
+        Joi.object({
+          implicit: Joi.boolean().truthy().required(),
+        }),
+      )
+    );
+    const session = new Session();
+    //begin transaction
+    try{
+      await session.beginTransaction();
+      const walletService = new WalletService(session);
+      const transferService = new TransferService(session);
+      const walletLogin = await walletService.getById(res.locals.wallet_id);
+      let transferJson;
+      if(req.body.implicit){
+        transferJson = await walletLogin.fulfillTransfer(req.params.transfer_id);
+      }else{
+        //load tokens
+        const tokens = [];
+        const tokenService = new TokenService(session);
+        for(let uuid of req.body.tokens){
+          const token = await tokenService.getByUUID(uuid); 
+          tokens.push(token);
+        }
+        transferJson = await walletLogin.fulfillTransferWithTokens(req.params.transfer_id, tokens);
+      }
+      const transferJson2 = await transferService.convertToResponse(transferJson);
+      res.status(200).json(transferJson2);
+      await session.commitTransaction();
+    }catch(e){
+      if(e instanceof HttpError && !e.shouldRollback()){
+        //if the error type is HttpError, means the exception has been handled
+        await session.commitTransaction();
+        throw e;
+      }else{
+        //unknown exception, rollback the transaction
+        await session.rollbackTransaction();
+        throw e;
+      }
+    }
   })
 );
 
@@ -168,15 +272,20 @@ transferRouter.get("/",
       })
     );
     const {state, wallet} = req.query;
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    let walletObject;
+//    let walletObject;
+//    if(wallet){
+//      walletObject = await walletService.getByIdOrName(wallet);
+//    }
+    let walletTransfer = walletLogin;
     if(wallet){
-      walletObject = await walletService.getByIdOrName(wallet);
+      walletTransfer = await walletService.getByIdOrName(wallet);
     }
     
-    const result = await walletLogin.getTransfers(state, walletObject);
-    const transferService = new TransferService();
+    const result = await walletTransfer.getTransfers(state);
+    const transferService = new TransferService(session);
     const json = [];
     for(let t of result){
       const j = await transferService.convertToResponse(t);

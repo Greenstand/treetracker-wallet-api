@@ -117,7 +117,7 @@ describe('Wallet integration tests', () => {
 
     it(`walletA, GET /tokens Should be able to get a token `, async () => {
       const res = await request(server)
-        .get(`/tokens`)
+        .get(`/tokens?limit=10`)
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${bearerToken}`);
       expect(res).to.have.property('statusCode', 200);
@@ -126,7 +126,7 @@ describe('Wallet integration tests', () => {
 
     it(`walletB, GET /tokens Should be able to get a token, which actually belongs to walletC`, async () => {
       const res = await request(server)
-        .get(`/tokens`)
+        .get(`/tokens?limit=10&wallet=walletC`)
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${bearerTokenB}`);
       expect(res).to.have.property('statusCode', 200);
@@ -623,8 +623,7 @@ describe('Wallet integration tests', () => {
       tokenB = res.body.token;
     })
 
-    //This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
-    describe.skip(`WalletB:${seed.walletB.name} request a token from ${seed.wallet.name}, should get 202`, () => {
+    describe(`WalletB:${seed.walletB.name} request a token from ${seed.wallet.name}, should get 202`, () => {
 
       beforeEach(async () => {
         const res = await request(server)
@@ -659,7 +658,77 @@ describe('Wallet integration tests', () => {
             const res = await request(server)
               .post(`/transfers/${requestedTransferId}/fulfill`)
               .set('treetracker-api-key', apiKey)
-              .set('Authorization', `Bearer ${bearerToken}`);
+              .set('Authorization', `Bearer ${bearerToken}`)
+              .send({
+                implicit: true,
+              });
+            expect(res).property("statusCode").to.eq(200);
+          })
+
+          it(`${seed.walletB.name} should be able to find requested transfer has been completed`, async () => {
+            const res = await request(server)
+              .get("/transfers?state=completed")
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${tokenB}`);
+            expect(res).property("statusCode").to.eq(200);
+            expect(res.body).property("transfers").lengthOf(1);
+            expect(res.body.transfers[0]).property("state").eq("completed");
+            expect(res.body.transfers[0]).property("id").eq(requestedTransferId);
+          });
+
+          it(`Token:#${seed.token.id} now should still belong to ${seed.walletB.name}`, async () => {
+            const res = await request(server)
+              .get(`/tokens/${seed.token.uuid}`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${tokenB}`);
+            expect(res).to.have.property('statusCode', 200);
+            expect(res.body.entity_id).eq(seed.walletB.id);
+          });
+        });
+      });
+    });
+
+    describe(`WalletB:${seed.walletB.name} request a bundle of token from ${seed.wallet.name}, should get 202`, () => {
+
+      beforeEach(async () => {
+        const res = await request(server)
+          .post("/transfers")
+          .set('treetracker-api-key', apiKey)
+          .set('Authorization', `Bearer ${tokenB}`)
+          .send({
+            bundle: {
+              bundle_size: 1,
+            },
+            sender_wallet: seed.wallet.name,
+            receiver_wallet: seed.walletB.name,
+          });
+        expect(res).property("statusCode").to.eq(202);
+      })
+
+      describe(`${seed.wallet.name} should find a requested transfer sent to him`, () => {
+        let requestedTransferId;
+
+        beforeEach(async () => {
+          const res = await request(server)
+            .get("/transfers?state=requested")
+            .set('treetracker-api-key', apiKey)
+            .set('Authorization', `Bearer ${bearerToken}`);
+          expect(res).property("statusCode").to.eq(200);
+          expect(res.body).property("transfers").lengthOf(1);
+          expect(res.body.transfers[0]).property("state").eq("requested");
+          expect(res.body.transfers[0]).property("id").a("number");
+          requestedTransferId = res.body.transfers[0].id;
+        })
+
+        describe(`${seed.wallet.name} fulfill this requested transfer with tokens`, () => {
+          beforeEach(async () => {
+            const res = await request(server)
+              .post(`/transfers/${requestedTransferId}/fulfill`)
+              .set('treetracker-api-key', apiKey)
+              .set('Authorization', `Bearer ${bearerToken}`)
+              .send({
+                tokens: [seed.token.uuid],
+              });
             expect(res).property("statusCode").to.eq(200);
           })
 
@@ -878,7 +947,7 @@ describe('Wallet integration tests', () => {
         const res = await request(server)
           .post(`/trust_relationships/${trustRelationshipId}/accept`)
           .set('treetracker-api-key', apiKey)
-          .set('Authorization', `Bearer ${token}`);
+          .set('Authorization', `Bearer ${bearerToken}`);
         expect(res).property("statusCode").to.eq(200);
         expect(res.body).property("state").eq("trusted");
         expect(res.body).property("type").eq("manage");
@@ -922,12 +991,12 @@ describe('Wallet integration tests', () => {
         const res = await request(server)
           .post(`/trust_relationships/${trustRelationshipId}/accept`)
           .set('treetracker-api-key', apiKey)
-          .set('Authorization', `Bearer ${token}`);
+          .set('Authorization', `Bearer ${bearerToken}`);
         expect(res).property("statusCode").to.eq(200);
         expect(res.body).property("state").eq("trusted");
         expect(res.body).property("type").eq("manage");
-        expect(res.body).property("actor_wallet").eq(seed.wallet.name);
-        expect(res.body).property("target_wallet").eq(seed.walletB.name);
+        expect(res.body).property("actor_wallet").eq(seed.walletB.name);
+        expect(res.body).property("target_wallet").eq(seed.wallet.name);
       });
     });
 

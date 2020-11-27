@@ -3,8 +3,9 @@ const expect = require("expect-runtime");
 
 class TransferService{
 
-  constructor(){
-    this.walletService = new WalletService();
+  constructor(session){
+    this._session = session;
+    this.walletService = new WalletService(session);
   }
 
   async convertToResponse(transferObject){

@@ -4,15 +4,16 @@ const expect = require("expect-runtime");
 
 class TokenService{
 
-  constructor(){
-    this.tokenRepository = new TokenRepository();
+  constructor(session){
+    this._session =  session
+    this.tokenRepository = new TokenRepository(session);
     const WalletService  = require("../services/WalletService");
-    this.walletService = new WalletService();
+    this.walletService = new WalletService(session);
   }
 
   async getByUUID(uuid){
     const tokenObject = await this.tokenRepository.getByUUID(uuid);
-    const token = new Token(tokenObject);
+    const token = new Token(tokenObject, this._session);
     return token;
   }
 
@@ -36,7 +37,7 @@ class TokenService{
       transfer_pending_id: transferId,
     });
     return result.map(object => {
-      return new Token(object);
+      return new Token(object, this._session);
     });
   }
 
@@ -46,10 +47,11 @@ class TokenService{
   async getTokensByBundle(wallet, bundleSize){
     const result = await this.tokenRepository.getByFilter({
       entity_id: wallet.getId(),
+      transfer_pending: false,
     },{
       limit: bundleSize,
     });
-    return result.map(json => new Token(json));
+    return result.map(json => new Token(json, this._session));
   }
 
   /*

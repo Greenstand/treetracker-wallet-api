@@ -11,7 +11,7 @@ const Token = require("./Token");
 
 class Wallet{
 
-  constructor(idOrJSON){
+  constructor(idOrJSON, session){
     if(typeof idOrJSON === "number"){
       this._id = idOrJSON;
     }else if(typeof idOrJSON === "object" && typeof idOrJSON.id === "number"){
@@ -21,12 +21,13 @@ class Wallet{
       throw new HttpError(500);
     }
     const WalletService = require("../services/WalletService");
-    this.walletRepository = new WalletRepository();
-    this.trustRepository = new TrustRepository();
-    this.walletService = new WalletService();
-    this.transferRepository = new TransferRepository();
+    this.walletRepository = new WalletRepository(session);
+    this.trustRepository = new TrustRepository(session);
+    this.walletService = new WalletService(session);
+    this.transferRepository = new TransferRepository(session);
     const TokenService = require("../services/TokenService");
-    this.tokenService = new TokenService();
+    this.tokenService = new TokenService(session);
+    this._session = session;
   }
 
   getId(){
@@ -124,20 +125,14 @@ class Wallet{
    */
   async getTrustRelationshipsRequestedToMe(){
     const result = await this.getTrustRelationships();
+    const subWallets = await this.getSubWallets();
+    for(const subWallet of subWallets){
+      const list = await subWallet.getTrustRelationships();
+      result.push(...list);
+    }
+    const walletIds = [this._id, ...subWallets.map(e => e.getId())];
     return result.filter(trustRelationship => {
-      if(
-        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send ||
-        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage
-      ){
-        return trustRelationship.target_entity_id === this._id
-      }else if(
-        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
-        trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield
-      ){
-        return trustRelationship.actor_entity_id === this._id
-      }else{
-        throw new Error("not support yet");
-      }
+      return walletIds.includes(trustRelationship.target_entity_id);
     });
   }
 
@@ -188,12 +183,12 @@ class Wallet{
      */
     let actorWallet = requesterWallet; //case of: manage/send
     let targetWallet = requesteeWallet; //case of: mange/send
-    if(
-      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
-      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
-      actorWallet = requesteeWallet;
-      targetWallet = requesterWallet;
-    }
+//    if(
+//      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
+//      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
+//      actorWallet = requesteeWallet;
+//      targetWallet = requesterWallet;
+//    }
 
 
     //check if I (current wallet) can add a new trust like this
@@ -271,7 +266,7 @@ class Wallet{
    */
   async declineTrustRequestSentToMe(trustRelationshipId){
     expect(trustRelationshipId).number();
-    const trustRelationships = await this.getTrustRelationshipsTargeted(this._id);
+    const trustRelationships = await this.getTrustRelationshipsRequestedToMe(this._id);
     const trustRelationship = trustRelationships.reduce((a,c) => {
       expect(c.id).number();
       if(c.id === trustRelationshipId){
@@ -306,7 +301,7 @@ class Wallet{
    * To check if the indicated trust relationship exist between the source and 
    * target wallet
    */
-  async checkTrust(trustType, senderWallet, receiveWallet){
+  async hasTrust(trustType, senderWallet, receiveWallet){
     expect(trustType).oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
     expect(senderWallet).instanceOf(Wallet);
     expect(receiveWallet).instanceOf(Wallet);
@@ -350,8 +345,9 @@ class Wallet{
       })
     ){
       log.debug("check trust passed");
+      return true;
     }else{
-      throw new HttpError(403, "Have no permission to do this action");
+      return false;
     }
   }
 
@@ -359,16 +355,28 @@ class Wallet{
    * Transfer some tokens from the sender to receiver
    */
   async transfer(sender, receiver, tokens){
-    await this.checkDeduct(sender, receiver);
+//    await this.checkDeduct(sender, receiver);
     //check tokens belong to sender
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
-        throw new HttpError(403, `The token ${token.toJSON().uuid} do not belongs to sender wallet`);
+        const uuid = await token.getUUID();
+        throw new HttpError(403, `The token ${uuid} do not belongs to sender wallet`);
+      }
+      if(!await token.beAbleToTransfer()){
+        const uuid = await token.getUUID();
+        throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
       }
     }
 
-    try{
-      await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const isDeduct = await this.isDeduct(sender,receiver);
+    const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const hasControlOverSender = await this.hasControlOver(sender);
+    const hasControlOverReceiver = await this.hasControlOver(receiver);
+    //If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
+    if(
+      (hasControlOverSender && hasControlOverReceiver) ||
+      (!isDeduct && hasTrust)
+    ){
       const tokensUUID = [];
       for(let token of tokens){
         const json = await token.toJSON();
@@ -389,10 +397,8 @@ class Wallet{
       }
       return transfer;
       
-    }catch(e){
-      //haven't trust
-      if(e instanceof HttpError && e.code === 403){
-        if(await this.hasControlOver(sender)){
+    }else{
+        if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
           const tokensUUID = [];
           for(let token of tokens){
@@ -412,7 +418,7 @@ class Wallet{
             await token.pendingTransfer(transfer);
           }
           return transfer;
-        }else if(await this.hasControlOver(receiver)){
+        }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
           const tokensUUID = [];
           for(let token of tokens){
@@ -436,9 +442,6 @@ class Wallet{
           //TODO
           expect.fail();
         }
-      }else{
-        throw e;
-      }
     }
   }
 
@@ -450,8 +453,15 @@ class Wallet{
       throw new HttpError(403, `Do not have enough tokens to send`);
     }
 
-    try{
-      await this.checkTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const isDeduct = await this.isDeduct(sender,receiver);
+    //If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
+    const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const hasControlOverSender = await this.hasControlOver(sender);
+    const hasControlOverReceiver = await this.hasControlOver(receiver);
+    if(
+      (hasControlOverSender && hasControlOverReceiver) ||
+      (!isDeduct && hasTrust)
+    ){
       const transfer = await this.transferRepository.create({
         originator_entity_id: this._id, 
         source_entity_id: sender.getId(),
@@ -469,9 +479,8 @@ class Wallet{
         await token.completeTransfer(transfer);
       }
       return transfer;
-    }catch(e){
-      if(e instanceof HttpError && e.code === 403){
-        if(await this.hasControlOver(sender)){
+    }else{
+        if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
           const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
@@ -485,7 +494,7 @@ class Wallet{
             }
           });
           return transfer;
-        }else if(await this.hasControlOver(receiver)){
+        }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
           const transfer = await this.transferRepository.create({
             originator_entity_id: this._id, 
@@ -503,9 +512,6 @@ class Wallet{
           //TODO
           expect.fail();
         }
-      }else{
-        throw e;
-      }
     }
   }
 
@@ -513,6 +519,7 @@ class Wallet{
    * I have control over given wallet
    */
   async hasControlOver(wallet){
+    console.log("check control");
     //if the given wallet is me, then pass
     if(wallet.getId() === this._id){
       log.debug("The same wallet, control");
@@ -520,10 +527,30 @@ class Wallet{
     }else{
       //check sub wallet
       const result = await this.trustRepository.getByFilter({
-        actor_entity_id: this._id,
-        target_entity_id: wallet.getId(),
-        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
-        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+        or: [
+          {
+            and: [{
+              actor_entity_id: this._id,
+            },{
+              request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+            },{
+              target_entity_id: wallet.getId(),
+            },{
+              state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+            }],
+          },
+          {
+            and: [{
+              actor_entity_id: wallet.getId(),
+            },{
+              request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+            },{
+              target_entity_id: this._id,
+            },{
+              state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+            }]
+          }
+        ]
       });
       if(result.length > 0){
         return true;
@@ -548,6 +575,9 @@ class Wallet{
 
     const transfer = await this.transferRepository.getById(transferId);
     const receiver = await this.walletService.getById(transfer.destination_entity_id);
+    if(transfer.state !== Transfer.STATE.pending){
+      throw new HttpError(403, "The transfer state is not pending");
+    }
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(receiver);
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to accept this transfer");
@@ -565,8 +595,11 @@ class Wallet{
       log.debug("transfer bundle of tokens");
       const {source_entity_id} = transfer;
       expect(source_entity_id).number();
-      const senderWallet = new Wallet(source_entity_id);
+      const senderWallet = new Wallet(source_entity_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
+      if(tokens.length < transfer.parameters.bundle.bundleSize){
+        throw new HttpError(403, "Do not have enough tokens");
+      }
       for(let token of tokens){
         expect(token).defined();
         await token.completeTransfer(transfer);
@@ -587,6 +620,9 @@ class Wallet{
   async declineTransfer(transferId){
     const transfer = await this.transferRepository.getById(transferId);
     const receiver = await this.walletService.getById(transfer.destination_entity_id);
+    if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
+      throw new HttpError(403, "The transfer state is not pending and requested");
+    }
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(receiver);
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to decline this transfer");
@@ -605,6 +641,9 @@ class Wallet{
   async cancelTransfer(transferId){
     const transfer = await this.transferRepository.getById(transferId);
     const sender = await this.walletService.getById(transfer.source_entity_id);
+    if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
+      throw new HttpError(403, "The transfer state is not pending and requested");
+    }
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to cancel this transfer");
@@ -632,8 +671,49 @@ class Wallet{
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to fulfill this transfer");
     }
-    if(transfer.source_entity_id !== this._id){
-      throw new HttpError(403, "Have no permission to do this operation");
+    if(transfer.state !== Transfer.STATE.requested){
+      throw new HttpError(403, "Operation forbidden, the transfer state is wrong");
+    }
+    transfer.state = Transfer.STATE.completed;
+    const transferJson = await this.transferRepository.update(transfer);
+
+    //deal with tokens
+    if(
+      //TODO optimize
+      transfer.parameters &&
+      transfer.parameters.bundle &&
+      transfer.parameters.bundle.bundleSize){
+      log.debug("transfer bundle of tokens");
+      const {source_entity_id} = transfer;
+      expect(source_entity_id).number();
+      const senderWallet = new Wallet(source_entity_id, this._session);
+      const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
+      for(let token of tokens){
+        expect(token).defined();
+        await token.completeTransfer(transfer);
+      }
+    }else{
+      log.debug("transfer tokens");
+      const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+      for(let token of tokens){
+        await token.completeTransfer(transfer);
+      }
+    }
+    return transferJson;
+  }
+
+  /*
+   * Fulfill a requested transfer, if I has the privilege to do so
+   * Specify tokens
+   */
+  async fulfillTransferWithTokens(transferId, tokens){
+    //TODO check privilege
+
+    const transfer = await this.transferRepository.getById(transferId);
+    const sender = await this.walletService.getById(transfer.source_entity_id);
+    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
+    if(!doseCurrentAccountHasControlOverReceiver){
+      throw new HttpError(403, "Current account has no permission to fulfill this transfer");
     }
     if(transfer.state !== Transfer.STATE.requested){
       throw new HttpError(403, "Operation forbidden, the transfer state is wrong");
@@ -650,18 +730,29 @@ class Wallet{
       log.debug("transfer bundle of tokens");
       const {source_entity_id} = transfer;
       expect(source_entity_id).number();
-      const senderWallet = new Wallet(source_entity_id);
-      const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
+      const senderWallet = new Wallet(source_entity_id, this._session);
+      //check it
+      if(tokens.length > transfer.parameters.bundle.bundleSize){
+        throw new HttpError(403, `Too many tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`, true);
+      }
+      if(tokens.length < transfer.parameters.bundle.bundleSize){
+        throw new HttpError(403, `Too few tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`, true);
+      }
+      for(const token of tokens){
+        const belongsTo = await token.belongsTo(senderWallet);
+        if(!belongsTo){
+          const json = await token.toJSON();
+          throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`, true);
+        }
+      }
+
+      //transfer
       for(let token of tokens){
         expect(token).defined();
         await token.completeTransfer(transfer);
       }
     }else{
-      log.debug("transfer tokens");
-      const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      throw new HttpError(403, "No need to specify tokens", true);
     }
     return transferJson;
   }
@@ -703,15 +794,15 @@ class Wallet{
   /*
    * Check if it is deduct, if ture, throw 403, cuz we do not support it yet
    */
-  async checkDeduct(sender, receiver){
+  async isDeduct(sender, receiver){
     if(this._id === sender.getId()){
-      return;
+      return false;
     }
     const result = await this.hasControlOver(sender);
     if(result){
-      return;
+      return false;
     }else{
-      throw new HttpError(403, "Do not support deduct yet");
+      return true;
     }
   }
 
@@ -720,24 +811,23 @@ class Wallet{
    */
   async getSubWallets(){
     let trustRelationships = await this.getTrustRelationships();
-    trustRelationships = trustRelationships.filter(e => {
-      // where logged in wallet is the actor wallet
-      if(e.actor_entity_id === this._id &&
-        e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+    const subWallets = [];
+    for(let e of trustRelationships){
+      if(
+        e.actor_entity_id === this._id &&
+        e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
         e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
       ){
-        return true;
-      }else{
-        return false;
+        const subWallet = await this.walletService.getById(e.target_entity_id);
+        subWallets.push(subWallet);
+      }else if(
+        e.target_entity_id === this._id &&
+        e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
+        e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+      ){
+        const subWallet = await this.walletService.getById(e.actor_entity_id);
+        subWallets.push(subWallet);
       }
-    });
-    const subWallets = [];
-    // include logged in wallet in response 
-    subWallets.push(this);
-
-    for(let e of trustRelationships){
-      const subWallet = await this.walletService.getById(e.target_entity_id);
-      subWallets.push(subWallet);
     }
     return subWallets;
   }

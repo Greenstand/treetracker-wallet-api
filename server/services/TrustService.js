@@ -1,10 +1,12 @@
 const WalletService = require("./WalletService");
 const expect = require("expect-runtime");
+const Session = require("../models/Session");
 
 class TrustService{
 
   constructor(){
-    this.walletService = new WalletService();
+    let session = new Session();
+    this.walletService = new WalletService(session);
   }
 
   async convertToResponse(trustObject){

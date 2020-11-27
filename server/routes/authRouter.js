@@ -5,6 +5,7 @@ const Wallet = require("../models/Wallet");
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 const Joi = require("joi");
+const Session = require("../models/Session");
 
 authRouter.post(
   "/",
@@ -25,7 +26,8 @@ authRouter.post(
       })
     );
     const { wallet, password } = req.body;
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     
     let walletObject = await walletService.getByIdOrName(wallet);
     walletObject = await walletObject.authorize(password);

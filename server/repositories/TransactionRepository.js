@@ -1,8 +1,10 @@
 const BaseRepository = require("./BaseRepository");
+const expect = require("expect-runtime");
 
 class TransferRepository extends BaseRepository{
-  constructor(){
-    super("transaction");
+  constructor(session){
+    super("wallets.transaction", session);
+    this._session = session;
   }
 }
 

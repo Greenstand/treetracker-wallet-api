@@ -4,6 +4,7 @@ const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
 const tracker = mockKnex.getTracker();
 const jestExpect = require("expect");
+const Session = require("../models/Session");
 
 describe("BaseRepository", () => {
   let baseRepository;
@@ -11,7 +12,8 @@ describe("BaseRepository", () => {
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    baseRepository = new BaseRepository("testTable");
+    const session = new Session();
+    baseRepository = new BaseRepository("testTable", session);
   })
 
   afterEach(() => {
@@ -34,7 +36,7 @@ describe("BaseRepository", () => {
   it.skip("getById can not find result, should throw 404", () => {
   });
 
-  describe("getByFilter", () => {
+  describe.only("getByFilter", () => {
 
     it("getByFilter", async () => {
       tracker.uninstall();
@@ -132,6 +134,7 @@ describe("BaseRepository", () => {
         tracker.uninstall();
         tracker.install();
         tracker.on("query", (query) => {
+          console.log("sql:",query.sql);
           expect(query.sql).match(/select.*testTable.*where.*c1.*=.*or.*c2.*=.*or.*c3.*and.*c4.*/);
           query.response([{id:1}]);
         });
@@ -143,6 +146,33 @@ describe("BaseRepository", () => {
           },{
             and: [{
               c3: 1,
+            },{
+              c4: 1,
+            }]
+          }],
+        });
+        expect(result).lengthOf(1);
+        expect(result[0]).property("id").eq(1);
+      });
+
+      it("(a=1 and b =2) or (a=2 and b=1)", async () => {
+        tracker.uninstall();
+        tracker.install();
+        tracker.on("query", (query) => {
+          console.log("sql:",query.sql);
+          expect(query.sql).match(/select.*testTable.*where.*c3.*=.*and.*c4.*=.*or.*c3.*and.*c4.*/);
+          query.response([{id:1}]);
+        });
+        const result = await baseRepository.getByFilter({
+          or: [{
+            and: [{
+              c3: 1,
+            },{
+              c4: 2,
+            }]
+          },{
+            and: [{
+              c3: 2,
             },{
               c4: 1,
             }]
