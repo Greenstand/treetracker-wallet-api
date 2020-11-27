@@ -96,6 +96,20 @@ class Token{
     }
   }
 
+  async beAbleToTransfer(){
+    const json = await this.toJSON();
+    if(json.transfer_pending === false){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+  async getUUID(){
+    const json = await this.toJSON();
+    return json.uuid;
+  }
+
   async getTransactions(){
     const transactions = await this.transactionRepository.getByFilter({
       token_id: this._id,

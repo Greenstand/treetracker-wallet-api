@@ -44,6 +44,7 @@ describe("Token", () => {
     expect(result[0]).instanceOf(Token);
     expect(fn).calledWith({
       entity_id: 1,
+      transfer_pending: false,
     },{
       limit: 1,
     });

@@ -320,6 +320,7 @@ describe("Wallet", () => {
 
     it("don't have trust, sender under control, should return transfer with pending state", async () => {
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
+      sinon.stub(Token.prototype, "beAbleToTransfer").resolves(true);
       sinon.stub(Token.prototype, "pendingTransfer");
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,

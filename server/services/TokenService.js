@@ -47,6 +47,7 @@ class TokenService{
   async getTokensByBundle(wallet, bundleSize){
     const result = await this.tokenRepository.getByFilter({
       entity_id: wallet.getId(),
+      transfer_pending: false,
     },{
       limit: bundleSize,
     });

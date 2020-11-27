@@ -359,8 +359,12 @@ class Wallet{
     //check tokens belong to sender
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
-        const json = await token.toJSON();
-        throw new HttpError(403, `The token ${json.uuid} do not belongs to sender wallet`);
+        const uuid = await token.getUUID();
+        throw new HttpError(403, `The token ${uuid} do not belongs to sender wallet`);
+      }
+      if(!await token.beAbleToTransfer()){
+        const uuid = await token.getUUID();
+        throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
       }
     }
 
@@ -593,6 +597,9 @@ class Wallet{
       expect(source_entity_id).number();
       const senderWallet = new Wallet(source_entity_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
+      if(tokens.length < transfer.parameters.bundle.bundleSize){
+        throw new HttpError(403, "Do not have enough tokens");
+      }
       for(let token of tokens){
         expect(token).defined();
         await token.completeTransfer(transfer);
