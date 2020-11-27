@@ -275,12 +275,16 @@ transferRouter.get("/",
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    let walletObject;
+//    let walletObject;
+//    if(wallet){
+//      walletObject = await walletService.getByIdOrName(wallet);
+//    }
+    let walletTransfer = walletLogin;
     if(wallet){
-      walletObject = await walletService.getByIdOrName(wallet);
+      walletTransfer = await walletService.getByIdOrName(wallet);
     }
     
-    const result = await walletLogin.getTransfers(state, walletObject);
+    const result = await walletTransfer.getTransfers(state);
     const transferService = new TransferService(session);
     const json = [];
     for(let t of result){
