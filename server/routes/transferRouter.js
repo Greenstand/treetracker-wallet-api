@@ -80,7 +80,7 @@ transferRouter.post(
       }
       await session.commitTransaction();
     }catch(e){
-      if(e instanceof HttpError){
+      if(e instanceof HttpError && !e.shouldRollback()){
         //if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
@@ -115,7 +115,7 @@ transferRouter.post('/:transfer_id/accept',
       res.status(200).json(transferJson2);
       await session.commitTransaction();
     }catch(e){
-      if(e instanceof HttpError){
+      if(e instanceof HttpError && !e.shouldRollback()){
         //if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
@@ -150,7 +150,7 @@ transferRouter.post('/:transfer_id/decline',
       res.status(200).json(transferJson2);
       await session.commitTransaction();
     }catch(e){
-      if(e instanceof HttpError){
+      if(e instanceof HttpError && !e.shouldRollback()){
         //if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
@@ -185,7 +185,7 @@ transferRouter.delete('/:transfer_id',
       res.status(200).json(transferJson2);
       await session.commitTransaction();
     }catch(e){
-      if(e instanceof HttpError){
+      if(e instanceof HttpError && !e.shouldRollback()){
         //if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
@@ -243,7 +243,7 @@ transferRouter.post('/:transfer_id/fulfill',
       res.status(200).json(transferJson2);
       await session.commitTransaction();
     }catch(e){
-      if(e instanceof HttpError){
+      if(e instanceof HttpError && !e.shouldRollback()){
         //if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;

@@ -741,7 +741,7 @@ class Wallet{
         const belongsTo = await token.belongsTo(senderWallet);
         if(!belongsTo){
           const json = await token.toJSON();
-          throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`);
+          throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`, true);
         }
       }
 
