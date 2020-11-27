@@ -27,7 +27,7 @@ exports.up = function(db) {
     phone: { type: 'string' },
     pwd_reset_required: { type: 'boolean', defaultValue: false },
     website: { type: 'string' },
-    password: { type: 'string', notNull: true },
+    password: { type: 'string' },
     salt: { type: 'string' },
     active_contract_id: { type: 'int' },
     offering_pay_to_plant: { type: 'boolean', defaultValue: false },

@@ -9,6 +9,7 @@ const authRouter = require('./routes/authRouter.js')
 const trustRouter = require('./routes/trustRouter.js')
 const tokenRouter = require('./routes/tokenRouter.js')
 const transferRouter = require("./routes/transferRouter");
+const walletRouter = require("./routes/walletRouter");
 const {errorHandler} = require("./routes/utils");
 
 
@@ -26,6 +27,7 @@ app.use('/auth', authRouter);
 app.use('/tokens', tokenRouter);
 app.use('/trust_relationships', trustRouter);
 app.use('/transfers', transferRouter);
+app.use('/wallets', walletRouter);
 
 
 
@@ -55,10 +57,9 @@ app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next)
 // Global error handler
 app.use(errorHandler);
 
+app.get('*',function (req, res) {
+  res.status(200).send('v1.0')
+});
 
-//do not run the express app by default
-//app.listen(port,()=>{
-//    console.log('listening on port ' + port);
-//});
 
 module.exports = app; 

@@ -169,7 +169,7 @@ describe("Wallet", () => {
         id: 1,
         target_entity_id: wallet.getId(),
       };
-      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsRequestedToMe").returns([trustRelationship]);
       const fn2 = sinon.stub(TrustRepository.prototype, "update");
       await wallet.acceptTrustRequestSentToMe(trustRelationship.id);
       fn1.restore();
@@ -650,11 +650,43 @@ describe("Wallet", () => {
   describe("getTransfers", () => {
 
     it("getTransfers", async () => {
+      const wallet2 = new Wallet(2);
       const fn1 = sinon.stub(TransferRepository.prototype, "getByFilter").resolves([{id:1}]);
-      const result = await wallet.getTransfers();
+      const result = await wallet.getTransfers(
+        Transfer.STATE.requested,
+        wallet2,
+      );
       expect(result).lengthOf(1);
+      expect(fn1).calledWith(
+        {
+          and: [{
+            or: [
+              {
+                source_entity_id: 1,
+              },{
+                destination_entity_id: 1,
+              },{
+                originator_entity_id: 1,
+              }
+            ],
+          },{
+            state: Transfer.STATE.requested,
+          },{
+            or: [
+              {
+                source_entity_id: 2,
+              },{
+                destination_entity_id: 2,
+              },{
+                originator_entity_id: 2,
+              }
+            ],
+          }]
+        }
+      );
       fn1.restore();
     });
+
   });
 
   describe("hasControlOver", () => {
@@ -739,6 +771,23 @@ describe("Wallet", () => {
       await jestExpect(async () => {
         await wallet.checkDeduct(sender, receiver);
       }).rejects.toThrow(/deduct/);
+    });
+  });
+
+  describe("getSubWallet", () => {
+
+    it("get sub wallet successfully", async () => {
+      const wallet = new Wallet(1);
+      const subWallet = new Wallet(2);
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        actor_entity_id: wallet.getId(),
+        target_entity_id: subWallet.getId(),
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      }]);
+      sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
+      const wallets = await wallet.getSubWallets();
+      expect(wallets).lengthOf(2);
     });
   });
 
