@@ -15,12 +15,10 @@ authRouter.post(
       req.body,
       Joi.object({
         wallet: Joi.alternatives().try(
-          Joi.string().alphanum().min(4).max(32),
+          Joi.string().min(4).max(32),
           Joi.number().min(4).max(32)
         ).required(),
         password: Joi.string()
-          .pattern(new RegExp("^[a-zA-Z0-9]+$"))
-          .min(8)
           .max(32)
           .required(),
       })
