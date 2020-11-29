@@ -1,3 +1,4 @@
+require('dotenv').config()
 const app = require("./app");
 //set the log level
 require("./setup");
