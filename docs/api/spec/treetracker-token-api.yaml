@@ -694,10 +694,6 @@ components:
           description: primary, managed
         tokens_in_wallet:
           type: integer
-        trust_relationships:
-          type: array
-          items:
-            $ref: "#/components/schemas/trustRelationshipItem"
     transferrequest:
       title: transferrequest
       required:
