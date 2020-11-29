@@ -26,11 +26,11 @@ transferRouter.post(
         then: Joi.object({
           tokens: Joi.array().items(Joi.string()).required(),
           sender_wallet: Joi.alternatives().try(
-            Joi.string().alphanum().min(4).max(32),
+            Joi.string(),
             Joi.number().min(1).max(32)
           ).required(),
           receiver_wallet: Joi.alternatives().try(
-            Joi.string().alphanum().min(4).max(32),
+            Joi.string(),
             Joi.number().min(1).max(32)
           ).required(),
         }),
@@ -266,7 +266,7 @@ transferRouter.get("/",
         state: Joi.string()
           .valid(...Object.values(Transfer.STATE)),
         wallet: Joi.alternatives().try(
-          Joi.string().alphanum().min(4).max(32),
+          Joi.string(),
           Joi.number().min(4).max(32)
         ),
       })
