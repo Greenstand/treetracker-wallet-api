@@ -36,7 +36,7 @@ transferRouter.post(
         }),
         otherwise: Joi.object({
           bundle: Joi.object({
-            bundle_size: Joi.number(),
+            bundle_size: Joi.number().min(1).max(10000).integer(),
           }).required(),
           sender_wallet: Joi.string()
           .required(),
