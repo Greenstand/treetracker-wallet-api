@@ -632,13 +632,21 @@ class Wallet{
    */
   async declineTransfer(transferId){
     const transfer = await this.transferRepository.getById(transferId);
-    const receiver = await this.walletService.getById(transfer.destination_entity_id);
+    const sourceWallet = await this.walletService.getById(transfer.source_entity_id);
+    const destWallet = await this.walletService.getById(transfer.destination_entity_id);
     if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
       throw new HttpError(403, "The transfer state is not pending and requested");
     }
-    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(receiver);
-    if(!doseCurrentAccountHasControlOverReceiver){
-      throw new HttpError(403, "Current account has no permission to decline this transfer");
+    if(transfer.state === Transfer.STATE.pending){
+      const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(destWallet);
+      if(!doseCurrentAccountHasControlOverReceiver){
+        throw new HttpError(403, "Current account has no permission to decline this transfer");
+      }
+    }else{
+      const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sourceWallet);
+      if(!doseCurrentAccountHasControlOverReceiver){
+        throw new HttpError(403, "Current account has no permission to decline this transfer");
+      }
     }
     transfer.state = Transfer.STATE.cancelled;
     const transferJson = await this.transferRepository.update(transfer);
@@ -653,13 +661,21 @@ class Wallet{
 
   async cancelTransfer(transferId){
     const transfer = await this.transferRepository.getById(transferId);
-    const sender = await this.walletService.getById(transfer.source_entity_id);
+    const sourceWallet = await this.walletService.getById(transfer.source_entity_id);
+    const destWallet = await this.walletService.getById(transfer.destination_entity_id);
     if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
       throw new HttpError(403, "The transfer state is not pending and requested");
     }
-    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
-    if(!doseCurrentAccountHasControlOverReceiver){
-      throw new HttpError(403, "Current account has no permission to cancel this transfer");
+    if(transfer.state === Transfer.STATE.pending){
+      const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sourceWallet);
+      if(!doseCurrentAccountHasControlOverReceiver){
+        throw new HttpError(403, "Current account has no permission to cancel this transfer");
+      }
+    }else{
+      const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(destWallet);
+      if(!doseCurrentAccountHasControlOverReceiver){
+        throw new HttpError(403, "Current account has no permission to cancel this transfer");
+      }
     }
     transfer.state = Transfer.STATE.cancelled;
     const transferJson = await this.transferRepository.update(transfer);
