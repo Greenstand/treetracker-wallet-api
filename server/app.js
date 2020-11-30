@@ -11,6 +11,7 @@ const tokenRouter = require('./routes/tokenRouter.js')
 const transferRouter = require("./routes/transferRouter");
 const walletRouter = require("./routes/walletRouter");
 const {errorHandler} = require("./routes/utils");
+const log = require("loglevel");
 
 
 const app = express();
@@ -58,6 +59,10 @@ app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next)
 app.use(errorHandler);
 
 app.get('*',function (req, res) {
+  log.error('error check')
+  log.warn('warn check')
+  log.debug('debug check')
+  log.info('info check')
   res.status(200).send('v1.0')
 });
 
