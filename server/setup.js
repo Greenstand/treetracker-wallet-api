@@ -15,7 +15,6 @@ var loglevelServerSend = function(logger,options) {
     if (!logger || !logger.methodFactory)
         throw new Error('loglevel instance has to be specified in order to be extended')
     
-    console.log('setting up server send');
     var _url             = options && options.url || 'http://localhost:8000/main/log',
         _callOriginal    = options && options.callOriginal || false,
         _prefix          = options && options.prefix,
@@ -23,10 +22,7 @@ var loglevelServerSend = function(logger,options) {
         _sendQueue       = [],
         _isSending       = false
 
-    console.log(_url)
-    
     logger.methodFactory = function (methodName, logLevel, loggerName) {
-        console.log('method factory  called ' + methodName);
         var rawMethod = _originalFactory(methodName, logLevel)
     
         return function (message) {
@@ -45,11 +41,9 @@ var loglevelServerSend = function(logger,options) {
         }
     }
     logger.setLevel(logger.levels.DEBUG)
-    console.log('hello setting up')
     
     var _sendNextMessage = function(message){
 
-        console.log('send next message called');
 /*        if (!_sendQueue.length || _isSending)
             console.log('skpping')
             return
@@ -85,7 +79,7 @@ var loglevelServerSend = function(logger,options) {
         }
 
         const req = http.request(options, res => {
-          console.log(`statusCode: ${res.statusCode}`)
+          //console.log(`statusCode: ${res.statusCode}`)
 
           res.on('data', d => {
             process.stdout.write(d)
@@ -101,9 +95,10 @@ var loglevelServerSend = function(logger,options) {
 
       req.end()
     }
-    console.log('hello')
 }
 
-loglevelServerSend(log,{url:'http://104.131.78.177:8000/treetracker-wallet-api/log'})
-console.log('ok')
-log.debug("debug log level!");
+if(process.env.REMOTE_LOG_URL){
+  console.log("Using remote log endpoint: " + process.env.REMOTE_LOG_URL)
+  loglevelServerSend(log,{url:process.env.REMOTE_LOG_URL})
+}
+
