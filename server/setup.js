@@ -107,36 +107,3 @@ var loglevelServerSend = function(logger,options) {
 loglevelServerSend(log,{url:'http://104.131.78.177:8000/treetracker-wallet-api/log'})
 console.log('ok')
 log.debug("debug log level!");
-//  ,prefix: function(logSev,message) {
-//   return '[' + new Date().toISOString() + '] ' + logSev + ': ' + message + '\n'
-//}})
-
-
-//const remote = require('loglevel-plugin-remote');
-
-/*
-const defaults = {
-  url: 'http://104.131.78.177:8000/treetracker-wallet-api/log',
-  method: 'POST',
-  headers: {},
-  token: '',
-  onUnauthorized: failedToken => {},
-  timeout: 0,
-  interval: 1000,
-  level: 'debug',
-  backoff: {
-    multiplier: 2,
-    jitter: 0.1,
-    limit: 30000,
-  },
-  capacity: 500,
-  stacktrace: {
-    levels: ['warn', 'error'],
-    depth: 3,
-    excess: 0,
-  },
-  timestamp: () => new Date().toISOString(),
-  format: remote.plain,
-};
-remote.apply(loglevel, options)
-*/

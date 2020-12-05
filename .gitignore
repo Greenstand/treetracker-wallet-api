@@ -6,3 +6,4 @@ jwtRS256.key
 jwtRS256.key.pub
 keygen.sh
 database.json
+.env
