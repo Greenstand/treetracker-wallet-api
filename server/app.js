@@ -28,7 +28,7 @@ app.use(helper.handlerWrapper(async (req, _res, next) => {
   console.warn("xxxx", req.headers);
   if(req.method === "POST" || req.method === "PATCH"  || req.method === "PUT" ){
     if(req.headers['content-type'] !== "application/json"){
-    throw new HttpError(400, "Welcome to Greenstand Wallet API, please set your request's header: content-type = application/json");
+    throw new HttpError(415, "Invalid content type. API only supports application/json");
     }
   }
   next();
