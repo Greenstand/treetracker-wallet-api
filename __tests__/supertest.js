@@ -1,7 +1,7 @@
 /*
  * The integration test to test the whole business, with DB
  */
-
+require('dotenv').config()
 const request = require('supertest');
 const server = require("../server/app");
 const { expect } = require('chai');
@@ -206,6 +206,7 @@ describe('Wallet integration tests', () => {
           beforeEach(async () => {
             const res = await request(server)
               .post(`/transfers/${pendingTransfer.id}/accept`)
+              .set('Content-Type', "application/json")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).to.have.property('statusCode', 200);
@@ -215,6 +216,7 @@ describe('Wallet integration tests', () => {
             const res = await request(server)
               .get(`/transfers`)
               .set('treetracker-api-key', apiKey)
+              .set('Content-Type', "application/json")
               .set('Authorization', `Bearer ${bearerToken}`);
             expect(res).to.have.property('statusCode', 200);
             expect(res.body.transfers).lengthOf(1);
@@ -248,6 +250,7 @@ describe('Wallet integration tests', () => {
           beforeEach(async () => {
             const res = await request(server)
               .post(`/transfers/${pendingTransfer.id}/decline`)
+              .set('Content-Type', "application/json")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).to.have.property('statusCode', 200);
@@ -336,6 +339,7 @@ describe('Wallet integration tests', () => {
       it(`${seed.walletC.name} should not be able to accept the transfer (403)`, async () => {
         const res = await request(server)
           .post(`/transfers/${transferId}/accept`)
+          .set('Content-Type', "application/json")
           .set('treetracker-api-key', apiKey)
           .set('Authorization', `Bearer ${tokenC}`);
         expect(res).to.have.property('statusCode', 403);
@@ -381,6 +385,7 @@ describe('Wallet integration tests', () => {
           beforeEach(async () => {
             const res = await request(server)
               .post(`/trust_relationships/${trustRelationship.id}/accept`)
+              .set('Content-Type', "application/json")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).property("statusCode").to.eq(200);
@@ -431,6 +436,7 @@ describe('Wallet integration tests', () => {
           beforeEach(async () => {
             const res = await request(server)
               .post(`/trust_relationships/${trustRelationship.id}/decline`)
+              .set('Content-Type', "application/json")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).property("statusCode").to.eq(200);
@@ -527,6 +533,7 @@ describe('Wallet integration tests', () => {
           beforeEach(async () => {
             const res = await request(server)
               .post(`/transfers/${pendingTransfer.id}/accept`)
+              .set('Content-Type', "application/json")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).to.have.property('statusCode', 200);
@@ -557,6 +564,7 @@ describe('Wallet integration tests', () => {
           beforeEach(async () => {
             const res = await request(server)
               .post(`/transfers/${pendingTransfer.id}/decline`)
+              .set('Content-Type', "application/json")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).to.have.property('statusCode', 200);
@@ -842,6 +850,7 @@ describe('Wallet integration tests', () => {
         beforeEach(async () => {
           const res = await request(server)
             .post(`/transfers/${transferId}/accept`)
+            .set('Content-Type', "application/json")
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${tokenB}`);
           expect(res).to.have.property('statusCode', 200);
@@ -946,6 +955,7 @@ describe('Wallet integration tests', () => {
       it("", async () => {
         const res = await request(server)
           .post(`/trust_relationships/${trustRelationshipId}/accept`)
+          .set('Content-Type', "application/json")
           .set('treetracker-api-key', apiKey)
           .set('Authorization', `Bearer ${bearerToken}`);
         expect(res).property("statusCode").to.eq(200);
@@ -990,6 +1000,7 @@ describe('Wallet integration tests', () => {
       it("", async () => {
         const res = await request(server)
           .post(`/trust_relationships/${trustRelationshipId}/accept`)
+          .set('Content-Type', "application/json")
           .set('treetracker-api-key', apiKey)
           .set('Authorization', `Bearer ${bearerToken}`);
         expect(res).property("statusCode").to.eq(200);
