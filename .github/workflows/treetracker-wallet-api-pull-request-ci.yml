@@ -52,8 +52,8 @@ jobs:
       env:  
         DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
 
-    - name: run all tests
-      run: npm run test
+    - name: run unit tests
+      run: npm run test-unit
       working-directory: ${{ env.project-directory }}
       env:  
         DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
