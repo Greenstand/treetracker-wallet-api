@@ -1,7 +1,7 @@
 /*
  * The integration test to test the whole business, with DB
  */
-
+require('dotenv').config()
 const request = require('supertest');
 const server = require("../server/app");
 const { expect } = require('chai');

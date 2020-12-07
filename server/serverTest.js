@@ -1,7 +1,7 @@
 /*
  * A test server for testing, seed some initial data into the DB
  */
-
+require('dotenv').config()
 const app = require("./app");
 const port = process.env.NODE_PORT || 3006;
 const seed = require('../__tests__/seed');
