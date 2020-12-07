@@ -49,10 +49,10 @@ jobs:
       run: npm run db-migrate-ci
       working-directory: ${{ env.project-directory }}
       env:  
-        DATABASE_URL: postgresql://postgres:postgres@postgres:5432/treetracker_test
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/treetracker_test
 
     - name: run all tests
       run: npm run test
       working-directory: ${{ env.project-directory }}
       env:  
-        DATABASE_URL: postgresql://postgres:postgres@postgres:5432/treetracker_test
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/treetracker_test
