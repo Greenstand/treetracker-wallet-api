@@ -57,3 +57,4 @@ jobs:
       working-directory: ${{ env.project-directory }}
       env:  
         DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
+        CI: true
