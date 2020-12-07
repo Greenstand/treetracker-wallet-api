@@ -20,7 +20,9 @@ walletRouter.get('/',
     
     const walletsJson = [];
 
+    const tokenService = new TokenService(session);
     for (const wallet of subWallets) {
+      wallet.tokens_in_wallet = await tokenService.countTokenByWallet(wallet); 
       const json = await wallet.toJSON();
       walletsJson.push(json);
     }

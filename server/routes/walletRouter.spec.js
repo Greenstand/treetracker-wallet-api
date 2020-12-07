@@ -7,6 +7,7 @@ const sinon = require("sinon");
 const bodyParser = require('body-parser');
 const ApiKeyService = require("../services/ApiKeyService");
 const WalletService = require("../services/WalletService");
+const TokenService = require("../services/TokenService");
 const TrustService = require("../services/TrustService");
 const JWTService = require("../services/JWTService");
 const HttpError = require("../utils/HttpError");
@@ -43,6 +44,7 @@ describe("walletRouter", ()=> {
     it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({id:1}));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
+      sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(10);
       const fn = sinon.stub(Wallet.prototype, "getSubWallets").resolves([ new Wallet({id:2})]);
       const res = await request(app)
         .get('/');
