@@ -1,6 +1,7 @@
 const express = require('express');
 const helper = require('./utils');
 const WalletService = require("../services/WalletService");
+const TokenService = require("../services/TokenService");
 const TrustService = require("../services/TrustService");
 const Joi = require("joi");
 const Session = require("../models/Session");
