@@ -16,7 +16,7 @@ const Transfer = require("../models/Transfer");
 const TransferService = require("../services/TransferService");
 const Session = require("../models/Session");
 
-describe("authRouter", () => {
+describe("transferRouter", () => {
   let app;
   let session = new Session();
 
@@ -60,6 +60,18 @@ describe("authRouter", () => {
       });
     expect(res).property("statusCode").eq(422);
     expect(res.body.message).match(/sender.*required/);
+  });
+
+  it("Duplicated token uuid should throw error", async () => {
+    const res = await request(app)
+      .post("/")
+      .send({
+        tokens: ["1", "1"],
+        receiver_wallet: "ssss",
+        sender_wallet: "ssss",
+      });
+    expect(res).property("statusCode").eq(422);
+    expect(res.body.message).match(/duplicate/i);
   });
 
   it('transfer using sender and receiver name, should return 201', async () => {
@@ -185,5 +197,17 @@ describe("authRouter", () => {
   });
 
 
+  describe("/fulfill", () => {
+
+    it("Duplicated token uuid should throw error", async () => {
+      const res = await request(app)
+        .post("/1/fulfill")
+        .send({
+          tokens: ["1", "1"],
+        });
+      expect(res).property("statusCode").eq(422);
+      expect(res.body.message).match(/duplicate/i);
+    });
+  });
 
 });

@@ -24,7 +24,7 @@ transferRouter.post(
         tokens: Joi.any().required(),
       }).unknown(),{
         then: Joi.object({
-          tokens: Joi.array().items(Joi.string()).required(),
+          tokens: Joi.array().items(Joi.string()).required().unique(),
           sender_wallet: Joi.alternatives().try(
             Joi.string(),
             Joi.number().min(1).max(32)
@@ -210,14 +210,18 @@ transferRouter.post('/:transfer_id/fulfill',
     );
     Joi.assert(
       req.body,
-      Joi.alternatives().try(
-        Joi.object({
-          tokens: Joi.array().items(Joi.string()).required(),
+      Joi.alternatives()
+      //if there is tokens field
+      .conditional(Joi.object({
+        tokens: Joi.any().required(),
+      }).unknown(),{
+        then: Joi.object({
+          tokens: Joi.array().items(Joi.string()).required().unique(),
         }),
-        Joi.object({
+        otherwise: Joi.object({
           implicit: Joi.boolean().truthy().required(),
         }),
-      )
+      })
     );
     const session = new Session();
     //begin transaction
