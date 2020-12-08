@@ -196,6 +196,48 @@ describe("transferRouter", () => {
     expect(res).property("statusCode").eq(202);
   });
 
+  it("bundle case, -1 should throw error", async () => {
+    const res = await request(app)
+      .post("/")
+      .send({
+        bundle: {
+          bundle_size: -1,
+        },
+        sender_wallet: "ssss",
+        receiver_wallet: "ssss",
+      });
+    expect(res).property("statusCode").eq(422);
+    expect(res.body.message).match(/greater/);
+  });
+
+  it("bundle case, 1.1 should throw error", async () => {
+    const res = await request(app)
+      .post("/")
+      .send({
+        bundle: {
+          bundle_size: 1.1,
+        },
+        sender_wallet: "ssss",
+        receiver_wallet: "ssss",
+      });
+    expect(res).property("statusCode").eq(422);
+    expect(res.body.message).match(/integer/);
+  });
+
+  it("bundle case, 10001 should throw error", async () => {
+    const res = await request(app)
+      .post("/")
+      .send({
+        bundle: {
+          bundle_size: 10001,
+        },
+        sender_wallet: "ssss",
+        receiver_wallet: "ssss",
+      });
+    expect(res).property("statusCode").eq(422);
+    expect(res.body.message).match(/less/);
+  });
+
 
   describe("/fulfill", () => {
 
