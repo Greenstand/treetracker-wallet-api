@@ -79,8 +79,6 @@ var loglevelServerSend = function(logger,options) {
         }
 
         const req = http.request(options, res => {
-          //console.log(`statusCode: ${res.statusCode}`)
-
           res.on('data', d => {
             process.stdout.write(d)
           })
