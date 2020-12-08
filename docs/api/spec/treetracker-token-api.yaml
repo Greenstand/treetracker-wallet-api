@@ -681,17 +681,12 @@ components:
     walletItem:
       title: Wallet Details
       properties:
-        type:
-          type: string
         wallet:
           type: string
         email:
           type: string
         phone:
           type: string
-        access:
-          type: string
-          description: primary, managed
         tokens_in_wallet:
           type: integer
     transferrequest:
