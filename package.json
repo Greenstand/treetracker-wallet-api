@@ -20,7 +20,9 @@
     "prettier-fix": "prettier ./ --write",
     "db-migrate-ci": "cd database; db-migrate up"
   },
-  "keywords": [],
+  "keywords": [
+    "ecology"
+  ],
   "author": "Greenstand Engineers",
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -44,6 +46,8 @@
     "uuid": "^8.2.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "chai": "3.5.0",
     "chai-http": "^4.3.0",
     "co-mocha": "1.1.2",
@@ -56,6 +60,7 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.2.0",
     "expect-runtime": "^0.7.0",
+    "husky": "^4.3.5",
     "mock-knex": "^0.4.9",
     "prettier": "^2.1.2",
     "sinon": "^9.0.3",
