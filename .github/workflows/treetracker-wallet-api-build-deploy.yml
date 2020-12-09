@@ -89,6 +89,11 @@ jobs:
     if: github.event_name == 'push' && github.repository == 'Greenstand/treetracker-wallet-api'
     steps:
     - uses: actions/checkout@v2
+    - name: get-npm-version
+      id: package-version
+      uses: martinbeentjes/npm-get-version-action@master
+      with:
+        path: ./
     - name: Set git sha
       id: git-sha
       run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
@@ -97,7 +102,7 @@ jobs:
     - name: Copy kustomize.yml
       run: cp deployment/kustomize/kustomization.yaml deployment/kustomization.yaml
     - name: Run kustomize
-      run: (cd deployment && ../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.git-sha.outputs.sha_short }} )
+      run: (cd deployment && ../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }}-${{ steps.git-sha.outputs.sha_short }} )
     - name: Install doctl for kubernetes
       uses: digitalocean/action-doctl@v2
       with:
