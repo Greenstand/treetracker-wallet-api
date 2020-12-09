@@ -1113,4 +1113,99 @@ describe("Wallet", () => {
     });
   });
 
+  describe("checkManageRecycle", () => {
+
+    it("A manage B, now B request to manage A, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipTrusted = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletB.getId(),
+        target_entity_id: walletA.getId(),
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([trustRelationshipTrusted]);
+      await jestExpect(async () => {
+        await walletA.checkManageCircle(trustRelationshipRequested);
+      }).rejects.toThrow(/circle/);
+    });
+
+    it("A manage B, now A request to yield B, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipTrusted = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([trustRelationshipTrusted]);
+      await jestExpect(async () => {
+        await walletA.checkManageCircle(trustRelationshipRequested);
+      }).rejects.toThrow(/circle/);
+    });
+
+    it("A yield B, now B request to yield A, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipTrusted = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletB.getId(),
+        target_entity_id: walletA.getId(),
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([trustRelationshipTrusted]);
+      await jestExpect(async () => {
+        await walletA.checkManageCircle(trustRelationshipRequested);
+      }).rejects.toThrow(/circle/);
+    });
+
+    it("A yield B, now A request to manage B, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipTrusted = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([trustRelationshipTrusted]);
+      await jestExpect(async () => {
+        await walletA.checkManageCircle(trustRelationshipRequested);
+      }).rejects.toThrow(/circle/);
+    });
+  });
+
 });
