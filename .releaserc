@@ -4,7 +4,10 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/github",
-      "@semantic-release/git",
+      ["@semantic-release/git", {
+        "assets": ["docs", "package.json", "CHANGELOG.md"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }]
       "@semantic-release/changelog",
       ["@semantic-release/exec", {
             "prepareCmd" : "echo '${nextRelease.version} run your custom shell script'",
