@@ -92,7 +92,6 @@ jobs:
     - name: Set git sha
       id: git-sha
       run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-    - name: Build snapshot with git sha and push on merge
     - name: Install kustomize
       run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - name: Copy kustomize.yml
