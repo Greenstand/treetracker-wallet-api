@@ -1,3 +1,11 @@
+## [1.1.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.3...v1.1.4) (2020-12-09)
+
+
+### Bug Fixes
+
+* change order of semver plugins ([acc00d3](https://github.com/Greenstand/treetracker-wallet-api/commit/acc00d390e2b2da8bf66a7904d5ad9e6ff7cd2e3))
+* do not include release notes - makes commit message too long ([ba8b705](https://github.com/Greenstand/treetracker-wallet-api/commit/ba8b705088ab19ff337f669b433e2064e2f884fd))
+
 ## [1.1.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.1...v1.1.2) (2020-12-09)
 
 
