@@ -1,7 +1,7 @@
 {
   "name": "treetracker",
   "version": "1.0.0",
-  "description": "",
+  "description": "https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest",
   "main": "server/server.js",
   "scripts": {
     "lint": "npm run eslint",
@@ -21,8 +21,8 @@
     "db-migrate-ci": "cd database; db-migrate up"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Greenstand Engineers",
+  "license": "GPL-3.0-or-later",
   "dependencies": {
     "@sentry/node": "^5.1.0",
     "bcryptjs": "^2.4.3",
@@ -61,5 +61,16 @@
     "sinon": "^9.0.3",
     "sinon-chai": "^2.14.0",
     "supertest": "^4.0.2"
-  }
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Greenstand/treetracker-wallet-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Greenstand/treetracker-wallet-api/issues"
+  },
+  "homepage": "https://github.com/Greenstand/treetracker-wallet-api#readme"
 }
