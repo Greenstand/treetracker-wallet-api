@@ -1,0 +1,14 @@
+{
+  "branches": ["master"],
+  "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/github",
+      "@semantic-release/git",
+      "@semantic-release/changelog",
+      ["@semantic-release/exec", {
+            "prepareCmd" : "echo '${nextRelease.version} run your custom shell script'",
+            "publishCmd" : "echo 'Published.......run your custom shell script'"
+            }]
+    ]
+}
