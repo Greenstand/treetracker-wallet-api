@@ -7,8 +7,8 @@ const Session = require("../models/Session");
 
 class TokenRepository extends BaseRepository{
   constructor(session){
-    super("wallets.token", session);
-    this._tableName = "wallets.token";
+    super("token", session);
+    this._tableName = "token";
     this._session = session;
   }
 
