@@ -25,7 +25,6 @@ Sentry.init({ dsn: config.sentry_dsn });
  * Check request
  */
 app.use(helper.handlerWrapper(async (req, _res, next) => {
-  console.warn("xxxx", req.headers);
   if(req.method === "POST" || req.method === "PATCH"  || req.method === "PUT" ){
     if(req.headers['content-type'] !== "application/json"){
     throw new HttpError(415, "Invalid content type. API only supports application/json");
