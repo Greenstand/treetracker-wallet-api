@@ -95,7 +95,7 @@ jobs:
     - name: Install kustomize
       run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - name: Copy kustomize.yml
-      run: cp deployment/kustomize/kustomization.yml deployment/kustomization.yml
+      run: cp deployment/kustomize/kustomization.yaml deployment/kustomization.yaml
     - name: Run kustomize
       run: (cd deployment && ../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.git-sha.outputs.sha_short }} )
     - name: Install doctl for kubernetes
