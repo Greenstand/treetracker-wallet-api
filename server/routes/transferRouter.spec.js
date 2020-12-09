@@ -241,6 +241,15 @@ describe("transferRouter", () => {
 
   describe("/fulfill", () => {
 
+    it("Nether tokens nor implicit is specified, should throw error", async () => {
+      const res = await request(app)
+        .post("/1/fulfill")
+        .send({
+        });
+      expect(res).property("statusCode").eq(422);
+      expect(res.body.message).match(/implicit.*required/i);
+    });
+
     it("Duplicated token uuid should throw error", async () => {
       const res = await request(app)
         .post("/1/fulfill")
