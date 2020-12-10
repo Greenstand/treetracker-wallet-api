@@ -1,3 +1,10 @@
+## [1.1.10](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.9...v1.1.10) (2020-12-10)
+
+
+### Bug Fixes
+
+* store image tag name in artifact between jobs ([2168464](https://github.com/Greenstand/treetracker-wallet-api/commit/21684642205f57592841b5d1de4e3cd8ffca35bb))
+
 ## [1.1.9](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.8...v1.1.9) (2020-12-10)
 
 
