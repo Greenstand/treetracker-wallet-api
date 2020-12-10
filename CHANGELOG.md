@@ -1,3 +1,11 @@
+## [1.1.8](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.7...v1.1.8) (2020-12-10)
+
+
+### Bug Fixes
+
+* release and build so we have the right release tag on the docker image ([d3c9a15](https://github.com/Greenstand/treetracker-wallet-api/commit/d3c9a154de766f9276a6c0d54e288a2b62a4fc91))
+* set up schema env var ([5af5cde](https://github.com/Greenstand/treetracker-wallet-api/commit/5af5cde813573d9fb8243178f377daf6cf0a1c10))
+
 ## [1.1.7](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.6...v1.1.7) (2020-12-10)
 
 
