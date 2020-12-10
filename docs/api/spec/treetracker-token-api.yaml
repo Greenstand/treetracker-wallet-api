@@ -71,6 +71,16 @@ paths:
               - type: string
               - type: number
             example: zaven2
+        - name: start
+          in: query
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
       responses:
         '200':
           description: ''

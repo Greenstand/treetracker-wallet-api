@@ -41,7 +41,7 @@ describe("walletRouter", ()=> {
 
   describe("get /wallets", () => {
 
-    it.only("successfully", async () => {
+    it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({id:1}));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
       sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(10);
