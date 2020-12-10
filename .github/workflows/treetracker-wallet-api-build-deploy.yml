@@ -76,30 +76,10 @@ jobs:
         push: true
         tags: greenstand/treetracker-wallet-api:latest
 
-  release:
-    name: Release semantic version
-    needs: build
-    runs-on: ubuntu-latest
-    if: |
-      !contains(github.event.head_commit.message, 'skip-ci') &&
-      github.event_name == 'push' &&
-      github.repository == 'Greenstand/treetracker-wallet-api'
-    steps:
-      # check out repository code and setup node
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: "12.x"
-      # install dependencies and run semantic-release
-      - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
-      - run: semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   deploy:
     name: Deploy latest to development environment
     runs-on: ubuntu-latest
-    needs: release
+    needs: build
     if: |
       !contains(github.event.head_commit.message, 'skip-ci') &&
       github.event_name == 'push' &&
