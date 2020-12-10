@@ -75,6 +75,15 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: greenstand/treetracker-wallet-api:latest
+    - shell: bash
+      run: |
+        echo '${{ steps.package-version.outputs.current-version }}-${{ steps.git-sha.outputs.sha_short }}' > image-tag
+    - name: persist tag name
+      uses: actions/upload-artifact@v1
+      with:
+        name: image-tag-${{github.sha}}
+        path: image-tag
+
 
   deploy:
     name: Deploy latest to development environment
@@ -91,15 +100,22 @@ jobs:
       uses: martinbeentjes/npm-get-version-action@master
       with:
         path: ./
-    - name: Set git sha
-      id: git-sha
-      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    - name: Download tag name
+      uses: actions/download-artifact@v1
+      with:
+        name: image-tag-${{github.sha}}
+
+    - name: Set image tag name 
+      id: image-tag-name
+      run: |
+        value=`cat image-tag-${{github.sha}}/image-tag`
+        echo "::set-output name=image-tag-name::$value"
     - name: Install kustomize
       run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - name: Copy kustomize.yml
       run: cp deployment/kustomize/kustomization.yaml deployment/kustomization.yaml
     - name: Run kustomize
-      run: (cd deployment && ../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }}-${{ steps.git-sha.outputs.sha_short }} )
+      run: (cd deployment && ../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.image-tag-name.outputs.image-tag-name }} )
     - name: Install doctl for kubernetes
       uses: digitalocean/action-doctl@v2
       with:
