@@ -1,3 +1,10 @@
+## [1.1.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.5...v1.1.6) (2020-12-10)
+
+
+### Bug Fixes
+
+* include all resources in kustomization ([0404bd3](https://github.com/Greenstand/treetracker-wallet-api/commit/0404bd3e15feec7f7f4d84e65a44c781fbc5d422))
+
 ## [1.1.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.4...v1.1.5) (2020-12-10)
 
 
