@@ -1,3 +1,11 @@
+## [1.1.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.4...v1.1.5) (2020-12-10)
+
+
+### Bug Fixes
+
+* attempt to fix contains syntax ([f6a0b73](https://github.com/Greenstand/treetracker-wallet-api/commit/f6a0b73b4268066681c74bda6dd345d1a498994f))
+* enable push to skip ci ([825b53b](https://github.com/Greenstand/treetracker-wallet-api/commit/825b53bb7a6e5b99f248d99ef8b7831d8519b434))
+
 ## [1.1.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.3...v1.1.4) (2020-12-09)
 
 
