@@ -89,25 +89,11 @@ describe("Wallet", () => {
       }).rejects.toThrow("type");
     });
 
-    it("request with trust which has existed should throw 403", async () => {
-      const wallet2 = new Wallet(2);
-      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
-        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
-        actor_entity_id: wallet.getId(),
-        target_entity_id: wallet2.getId(),
-        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
-        originator_entity_id: wallet.getId(),
-      }]);
-      await jestExpect(async () => {
-        await wallet.requestTrustFromAWallet("send",wallet, wallet2);
-      }).rejects.toThrow(/existed/i);
-      fn.restore();
-    });
-
     it("request successfully", async () => {
       const wallet2 = new Wallet(2);
       const fn2 = sinon.stub(TrustRepository.prototype, "get").resolves([]);
       const fn3 = sinon.stub(TrustRepository.prototype, "create");
+      sinon.stub(Wallet.prototype, "checkDuplicateRequest");
       await wallet.requestTrustFromAWallet(
         TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
         wallet,
@@ -1110,6 +1096,84 @@ describe("Wallet", () => {
       }]);
       const list = await wallet.getTrustRelationshipsRequestedToMe()
       expect(list).lengthOf(2);
+    });
+  });
+
+  describe("checkDuplicateRequest", () => {
+
+    it("A send B trust has been requested, now request again, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      const trustRelationshipRequesting = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([trustRelationshipRequested]);
+      await jestExpect(async () => {
+        await wallet.checkDuplicateRequest(trustRelationshipRequesting);
+      }).rejects.toThrow(/has been/);
+    });
+
+    it("A send B trust has been trusted, now request B receive A, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        request_type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      }
+      const trustRelationshipRequesting = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive,
+        actor_entity_id: walletB.getId(),
+        target_entity_id: walletA.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([trustRelationshipRequested]);
+      await jestExpect(async () => {
+        await wallet.checkDuplicateRequest(trustRelationshipRequesting);
+      }).rejects.toThrow(/has been/);
+    });
+
+    it("A manage B trust has been requested, now request B yield A, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      const trustRelationshipRequesting = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletB.getId(),
+        target_entity_id: walletA.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([trustRelationshipRequested]);
+      await jestExpect(async () => {
+        await wallet.checkDuplicateRequest(trustRelationshipRequesting);
+      }).rejects.toThrow(/has been/);
     });
   });
 
