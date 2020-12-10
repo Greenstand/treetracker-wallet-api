@@ -1,3 +1,10 @@
+## [1.1.9](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.8...v1.1.9) (2020-12-10)
+
+
+### Bug Fixes
+
+* remove separate release job ([0a3a568](https://github.com/Greenstand/treetracker-wallet-api/commit/0a3a5681240e9b9ee7076fad0a35683366d084b2))
+
 ## [1.1.8](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.7...v1.1.8) (2020-12-10)
 
 
