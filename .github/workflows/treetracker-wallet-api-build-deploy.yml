@@ -12,8 +12,18 @@ env:
   project-directory: ./
 
 jobs:
+  #  test:
+  #   - name: npm clean install
+  #    run: npm ci
+  #    working-directory: ${{ env.project-directory }}
+      #    - name: run ESLint
+      # run: npm run lint
+      #working-directory: ${{ env.project-directory }}
+      #- name: build server project
+      #run: npm run build
+      #working-directory: ${{ env.project-directory }}
   build:
-    name: Build Server Project
+    name: Release and Build
     runs-on: ubuntu-latest
     if: |
       !contains(github.event.head_commit.message, 'skip-ci') &&
@@ -25,15 +35,13 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: '12.x'
+    - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
+    - run: semantic-release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: npm clean install
       run: npm ci
       working-directory: ${{ env.project-directory }}
-      #    - name: run ESLint
-      # run: npm run lint
-      #working-directory: ${{ env.project-directory }}
-      #- name: build server project
-      #run: npm run build
-      #working-directory: ${{ env.project-directory }}
     - name: get-npm-version
       id: package-version
       uses: martinbeentjes/npm-get-version-action@master
