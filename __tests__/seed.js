@@ -100,7 +100,7 @@ storyOfThisSeed,
 async function seed() {
   log.debug('seed api key');
   //TODO should use appropriate hash & salt to populate this table
-  await knex('wallets.api_key')
+  await knex('api_key')
     .insert({
       key: apiKey,
       tree_token_api_access: true,
@@ -110,7 +110,7 @@ async function seed() {
     });
 
   // wallet
-  await knex('wallets.wallet')
+  await knex('wallet')
     .insert({
       id: wallet.id,
       type: wallet.type,
@@ -120,7 +120,7 @@ async function seed() {
     });
 
   //walletB
-  await knex('wallets.wallet')
+  await knex('wallet')
     .insert({
       id: walletB.id,
       type: walletB.type,
@@ -130,7 +130,7 @@ async function seed() {
     });
 
   //walletC
-  await knex('wallets.wallet')
+  await knex('wallet')
     .insert({
       id: walletC.id,
       type: walletC.type,
@@ -140,7 +140,7 @@ async function seed() {
     });
 
   //relationships: 'walletB' manage 'walletC'
-  await knex('wallets.entity_trust')
+  await knex('wallet_trust')
     .insert({
       type: "manage",
       actor_entity_id: walletB.id,
@@ -150,48 +150,48 @@ async function seed() {
       state: "trusted",
     });
 
-  //entity
-  await knex('entity')
-    .insert({
-      id: wallet.id,
-      type: wallet.type,
-      name: wallet.name,
-      wallet: wallet.name,
-      password: wallet.passwordHash,
-      salt: wallet.salt,
-    });
+//  //entity
+//  await knex('entity')
+//    .insert({
+//      id: wallet.id,
+//      type: wallet.type,
+//      name: wallet.name,
+//      wallet: wallet.name,
+//      password: wallet.passwordHash,
+//      salt: wallet.salt,
+//    });
 
 
   //entity role
-  log.debug('insert role');
-  await knex('entity_role')
-    .insert([{
-      entity_id: wallet.id,
-      role_name: 'list_trees',
-      enabled: true,
-    },{
-      entity_id: wallet.id,
-      role_name: 'manage_accounts',
-      enabled: true,
-    },{
-      entity_id: wallet.id,
-      role_name: 'accounts',
-      enabled: true,
-    }]);
+//  log.debug('insert role');
+//  await knex('entity_role')
+//    .insert([{
+//      entity_id: wallet.id,
+//      role_name: 'list_trees',
+//      enabled: true,
+//    },{
+//      entity_id: wallet.id,
+//      role_name: 'manage_accounts',
+//      enabled: true,
+//    },{
+//      entity_id: wallet.id,
+//      role_name: 'accounts',
+//      enabled: true,
+//    }]);
 
 
-  //tree
-  await knex('trees')
-    .insert({
-      id: tree.id,
-      time_created: new Date(),
-      time_updated: new Date(),
-    });
+//  //tree
+//  await knex('trees')
+//    .insert({
+//      id: tree.id,
+//      time_created: new Date(),
+//      time_updated: new Date(),
+//    });
 
 
   // token
   log.log('seed token');
-  await knex('wallets.token')
+  await knex('token')
     .insert({
       id: token.id,
       tree_id: tree.id,
@@ -199,23 +199,20 @@ async function seed() {
       uuid: token.uuid,
     });
 
-  await knex('wallets.token')
+  await knex('token')
     .insert(tokenB);
 }
 
 async function clear() {
   log.debug('clear tables');
-  await knex('wallets.api_key').del();
-  await knex('wallets.transaction').del();
-  await knex('wallets.token').del();
-  await knex('trees').del();
-  await knex('wallets.wallet').del();
-  await knex('wallets.entity_trust').del();
-  await knex('entity_role').del();
-  await knex('entity').del();
-  await knex('wallets.entity_trust').del();
-  await knex('wallets.transfer').del();
-  await knex('wallets.entity_trust').del();
+  await knex('api_key').del();
+  await knex('transaction').del();
+  await knex('token').del();
+  await knex('wallet').del();
+//  await knex('entity_role').del();
+//  await knex('entity').del();
+  await knex('wallet_trust').del();
+  await knex('transfer').del();
 }
 
 module.exports = {

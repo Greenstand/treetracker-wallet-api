@@ -5,8 +5,8 @@ const Session = require("../models/Session");
 
 class TrustRepository extends BaseRepository{
   constructor(session){
-    super("wallets.entity_trust", session);
-    this._tableName = "wallets.entity_trust";
+    super("wallet_trust", session);
+    this._tableName = "wallet_trust";
     this._session = session;
   }
 
