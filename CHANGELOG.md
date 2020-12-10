@@ -1,3 +1,10 @@
+## [1.1.7](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.6...v1.1.7) (2020-12-10)
+
+
+### Bug Fixes
+
+* use environment variable to specify schema ([8673862](https://github.com/Greenstand/treetracker-wallet-api/commit/8673862b3a2d4418e5527506bfdbab19413f749c))
+
 ## [1.1.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.5...v1.1.6) (2020-12-10)
 
 
