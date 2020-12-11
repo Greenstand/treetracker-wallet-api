@@ -1,3 +1,10 @@
+## [1.1.18](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.17...v1.1.18) (2020-12-11)
+
+
+### Bug Fixes
+
+* found another place where search_path was set ([31f11fe](https://github.com/Greenstand/treetracker-wallet-api/commit/31f11fee2d896bc35193c024152c8bc03e9e98a9))
+
 ## [1.1.17](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.16...v1.1.17) (2020-12-11)
 
 
