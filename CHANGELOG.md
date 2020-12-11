@@ -1,3 +1,18 @@
+## [1.1.13](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.12...v1.1.13) (2020-12-11)
+
+
+### Bug Fixes
+
+* bug on counting token in wallets ([3a7a3c8](https://github.com/Greenstand/treetracker-wallet-api/commit/3a7a3c82b3eab8e97832ff876690eb6bc8fb883e))
+* skiped tests ([ec8ac55](https://github.com/Greenstand/treetracker-wallet-api/commit/ec8ac550bb223fd623de2f76b91a7c56c051848b))
+
+## [1.1.12](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.11...v1.1.12) (2020-12-11)
+
+
+### Bug Fixes
+
+* dont use sha in image tag, and create first pass at manual dispatch event to deploy to test env ([7f30eb5](https://github.com/Greenstand/treetracker-wallet-api/commit/7f30eb54b3001a65b255c5b8c34190491b8af07f))
+
 ## [1.1.11](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.10...v1.1.11) (2020-12-10)
 
 

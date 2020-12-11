@@ -50,6 +50,7 @@ describe("walletRouter", ()=> {
         .get('/');
       expect(res).property("statusCode").eq(200);
       expect(res.body.wallets).lengthOf(2);
+      expect(res.body.wallets[0]).property("tokens_in_wallet").eq(10);
     });
   })
 
