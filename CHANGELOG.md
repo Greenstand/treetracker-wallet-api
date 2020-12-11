@@ -1,3 +1,10 @@
+## [1.1.12](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.11...v1.1.12) (2020-12-11)
+
+
+### Bug Fixes
+
+* dont use sha in image tag, and create first pass at manual dispatch event to deploy to test env ([7f30eb5](https://github.com/Greenstand/treetracker-wallet-api/commit/7f30eb54b3001a65b255c5b8c34190491b8af07f))
+
 ## [1.1.11](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.10...v1.1.11) (2020-12-10)
 
 
