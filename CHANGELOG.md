@@ -1,3 +1,10 @@
+## [1.1.15](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.14...v1.1.15) (2020-12-11)
+
+
+### Bug Fixes
+
+* remove sha from tag name ([e9fc33a](https://github.com/Greenstand/treetracker-wallet-api/commit/e9fc33a3d93360c9d01a755c6e6227462e94d076))
+
 ## [1.1.14](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.13...v1.1.14) (2020-12-11)
 
 
