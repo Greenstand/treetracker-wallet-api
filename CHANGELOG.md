@@ -1,3 +1,39 @@
+## [1.1.11](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.10...v1.1.11) (2020-12-10)
+
+
+### Bug Fixes
+
+* trigger build ([d44df59](https://github.com/Greenstand/treetracker-wallet-api/commit/d44df59c7b54c691ea3d72c27787c2857db18616))
+
+## [1.1.10](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.9...v1.1.10) (2020-12-10)
+
+
+### Bug Fixes
+
+* store image tag name in artifact between jobs ([2168464](https://github.com/Greenstand/treetracker-wallet-api/commit/21684642205f57592841b5d1de4e3cd8ffca35bb))
+
+## [1.1.9](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.8...v1.1.9) (2020-12-10)
+
+
+### Bug Fixes
+
+* remove separate release job ([0a3a568](https://github.com/Greenstand/treetracker-wallet-api/commit/0a3a5681240e9b9ee7076fad0a35683366d084b2))
+
+## [1.1.8](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.7...v1.1.8) (2020-12-10)
+
+
+### Bug Fixes
+
+* release and build so we have the right release tag on the docker image ([d3c9a15](https://github.com/Greenstand/treetracker-wallet-api/commit/d3c9a154de766f9276a6c0d54e288a2b62a4fc91))
+* set up schema env var ([5af5cde](https://github.com/Greenstand/treetracker-wallet-api/commit/5af5cde813573d9fb8243178f377daf6cf0a1c10))
+
+## [1.1.7](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.6...v1.1.7) (2020-12-10)
+
+
+### Bug Fixes
+
+* use environment variable to specify schema ([8673862](https://github.com/Greenstand/treetracker-wallet-api/commit/8673862b3a2d4418e5527506bfdbab19413f749c))
+
 ## [1.1.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.5...v1.1.6) (2020-12-10)
 
 
