@@ -1,3 +1,10 @@
+## [1.1.19](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.18...v1.1.19) (2020-12-11)
+
+
+### Bug Fixes
+
+* set search path correctly for knex ([853c23e](https://github.com/Greenstand/treetracker-wallet-api/commit/853c23e6e58b9850155a124a88e6be4000cd45a6))
+
 ## [1.1.18](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.17...v1.1.18) (2020-12-11)
 
 
