@@ -71,12 +71,13 @@ app.post('/wallet/:wallet_id/trust/approve', asyncHandler(async (req, res, next)
 // Global error handler
 app.use(errorHandler);
 
+const version = require('../package.json').version
 app.get('*',function (req, res) {
   log.error('error check')
   log.warn('warn check')
   log.debug('debug check')
-  log.info('info check')
-  res.status(200).send('v1.0')
+  log.info('info check ' + version)
+  res.status(200).send(version)
 });
 
 
