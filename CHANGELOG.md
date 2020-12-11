@@ -1,3 +1,10 @@
+## [1.1.14](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.13...v1.1.14) (2020-12-11)
+
+
+### Bug Fixes
+
+* remove dependency from dispatch job ([803d90d](https://github.com/Greenstand/treetracker-wallet-api/commit/803d90d90796a378fb8fe81af8fc27955179cf3b))
+
 ## [1.1.13](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.12...v1.1.13) (2020-12-11)
 
 
