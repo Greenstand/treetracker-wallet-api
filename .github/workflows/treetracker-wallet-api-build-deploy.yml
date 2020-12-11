@@ -74,7 +74,7 @@ jobs:
         tags: greenstand/treetracker-wallet-api:latest
     - shell: bash
       run: |
-        echo '${{ steps.package-version.outputs.current-version }}-${{ steps.git-sha.outputs.sha_short }}' > image-tag
+        echo '${{ steps.package-version.outputs.current-version }}' > image-tag
     - name: persist tag name
       uses: actions/upload-artifact@v1
       with:
@@ -101,7 +101,6 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: image-tag-${{github.sha}}
-
     - name: Set image tag name 
       id: image-tag-name
       run: |
