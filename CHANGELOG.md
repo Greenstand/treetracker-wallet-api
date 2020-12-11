@@ -1,3 +1,10 @@
+## [1.1.17](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.16...v1.1.17) (2020-12-11)
+
+
+### Bug Fixes
+
+* fix reference to dispatch tag ([29d34d6](https://github.com/Greenstand/treetracker-wallet-api/commit/29d34d69a0987a2bc75c89e4a9a40647a7d545d2))
+
 ## [1.1.16](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.15...v1.1.16) (2020-12-11)
 
 
