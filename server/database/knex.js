@@ -10,7 +10,7 @@ let knexConfig = {
 }
 
 if(process.env.DATABASE_SCHEMA){
-  knexConfig.search_path = [process.env.DATABASE_SCHEMA]
+  knexConfig.searchPath = [process.env.DATABASE_SCHEMA]
 }
 
 const knex = require('knex')(knexConfig);
