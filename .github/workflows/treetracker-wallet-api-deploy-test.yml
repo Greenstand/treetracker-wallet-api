@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: github.event.inputs.git-tag
+          ref: ${{ github.event.inputs.git-tag }}
       - name: get-npm-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@master
