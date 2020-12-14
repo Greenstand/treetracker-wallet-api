@@ -1,9 +1,9 @@
 require('dotenv').config()
-const app = require("./app");
-//set the log level
-require("./setup");
-const port = process.env.NODE_PORT || 3006;
 const log = require("loglevel");
+//setup log level
+require("./setup");
+const app = require("./app");
+const port = process.env.NODE_PORT || 3006;
 
 app.listen(port,()=>{
     log.info('listening on port:' + port);

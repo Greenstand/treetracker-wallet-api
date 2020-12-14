@@ -1,6 +1,7 @@
 const expect = require('expect-runtime');
 const connection = require('../../config/config').connectionString;
 expect(connection).to.match(/^postgresql:\//);
+const log = require("loglevel");
 
 let knexConfig = {
   client: 'pg',
@@ -9,9 +10,12 @@ let knexConfig = {
   pool: { min:0, max: 100},
 }
 
+log.debug('hello')
+log.info(process.env.DATABASE_SCHEMA)
 if(process.env.DATABASE_SCHEMA){
   knexConfig.searchPath = [process.env.DATABASE_SCHEMA]
 }
+log.info(knexConfig.searchPath)
 
 const knex = require('knex')(knexConfig);
 
