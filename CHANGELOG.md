@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.3...v1.2.4) (2020-12-15)
+
+
+### Bug Fixes
+
+* no need to use secret for db schema name ([bfca513](https://github.com/Greenstand/treetracker-wallet-api/commit/bfca513f0cec66c6583f5c6ca3eaf98eb8a0914d))
+
 ## [1.2.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.2...v1.2.3) (2020-12-15)
 
 
