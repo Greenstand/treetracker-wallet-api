@@ -204,21 +204,6 @@ class Wallet{
 //    }
 
 
-    //check if I (current wallet) can add a new trust like this
-    const trustRelationships = await this.getTrustRelationships();
-    if(trustRelationships.some(trustRelationship => {
-      expect(trustRelationship).property("type").defined();
-      expect(trustRelationship).property("target_entity_id").number();
-      return (
-        trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.send &&
-        trustRelationship.request_type === requestType &&
-        trustRelationship.target_entity_id === targetWallet.getId() &&
-        trustRelationship.originator_entity_id === this._id &&
-        trustRelationship.actor_entity_id === actorWallet._id
-      )
-    })){
-      throw new HttpError(403, "The trust requested has existed");
-    }
     
     //check if the orginator can control the actor
     const hasControl = await this.hasControlOver(requesterWallet);
@@ -230,15 +215,60 @@ class Wallet{
     await requesteeWallet.checkTrustRequestSentToMe(requestType, this.id);
 
     //create this request
-    const result = await this.trustRepository.create({
+    const trustRelationship = {
       type: TrustRelationship.getTrustTypeByRequestType(requestType),
       request_type: requestType,
       actor_entity_id: actorWallet.getId(),
       originator_entity_id: this._id,
       target_entity_id: targetWallet.getId(),
       state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
-    });
+    }
+    await this.checkDuplicateRequest(trustRelationship);
+    const result = await this.trustRepository.create(trustRelationship);
     return result;
+  }
+
+  //check if I (current wallet) can add a new trust like this
+  async checkDuplicateRequest(trustRelationship){
+    const trustRelationships = await this.getTrustRelationships();
+    if(
+      trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.send || 
+      trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.manage
+    ){
+      if(
+        trustRelationships.some(e => {
+          if(
+            (
+              e.request_type === trustRelationship.request_type &&
+              (
+                e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested ||
+                e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+              ) &&
+              e.actor_entity_id === trustRelationship.actor_entity_id &&
+              e.target_entity_id === trustRelationship.target_entity_id
+            ) || (
+              e.request_type !== trustRelationship.request_type &&
+              (
+                e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested ||
+                e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+              ) &&
+              e.actor_entity_id === trustRelationship.target_entity_id &&
+              e.target_entity_id === trustRelationship.actor_entity_id
+            )
+          ){
+            return true;
+          }else{
+            return false;
+          }
+        })
+      ){
+        log.debug("Has duplicated trust");
+        throw new HttpError(403, "The trust relationship has been requested or trusted");
+      }
+    }else{
+      throw HttpError(500, "Not supported type");
+    }
+    log.debug("Has no duplicated trust");
   }
   
   /*
