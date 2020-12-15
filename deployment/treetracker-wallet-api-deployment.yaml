@@ -43,3 +43,5 @@ spec:
                 key: schema
           - name: NODE_LOG_LEVEL
             value: trace
+          - name: REMOTE_LOG_URL
+            value: http://104.131.78.177:8000
