@@ -279,7 +279,7 @@ describe("transferRouter", () => {
     });
   });
 
-  describe.only("GET /{transfer_id}/tokens", () => {
+  describe("GET /{transfer_id}/tokens", () => {
 
     it("Successfully", async () => {
       const wallet = new Wallet(1);

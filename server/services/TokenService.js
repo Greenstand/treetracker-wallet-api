@@ -103,9 +103,12 @@ class TokenService{
     const result = await this.transactionRepository.getByFilter({
       transfer_id: transferId,
     });
-    return result.map(object => {
-      return new Token(object, this._session);
-    });
+    const tokens = [];
+    for(const r of result){
+      const token = await this.getById(r.token_id);
+      tokens.push(token);
+    }
+    return tokens;
   }
 
 }
