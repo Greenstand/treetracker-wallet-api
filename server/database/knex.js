@@ -13,6 +13,7 @@ let knexConfig = {
 log.debug('hello')
 log.info(process.env.DATABASE_SCHEMA)
 if(process.env.DATABASE_SCHEMA){
+  log.info('setting a schema')
   knexConfig.searchPath = [process.env.DATABASE_SCHEMA]
 }
 log.info(knexConfig.searchPath)
