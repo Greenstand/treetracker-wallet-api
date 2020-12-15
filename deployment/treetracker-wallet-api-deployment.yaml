@@ -37,10 +37,7 @@ spec:
                 name: treetracker-api-database-connection
                 key: db
           - name: DATABASE_SCHEMA
-            valueFrom:
-              secretKeyRef:
-                name: treetracker-api-database-connection
-                key: schema
+            value: wallets
           - name: NODE_LOG_LEVEL
             value: trace
           - name: REMOTE_LOG_URL

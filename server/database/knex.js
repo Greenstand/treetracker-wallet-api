@@ -10,14 +10,12 @@ let knexConfig = {
   pool: { min:0, max: 100},
 }
 
-log.debug('hello')
 log.debug(process.env.DATABASE_SCHEMA)
 if(process.env.DATABASE_SCHEMA){
   log.info('setting a schema')
-  knexConfig.searchPath = ['wallets']
+  knexConfig.searchPath = [process.env.DATABASE_SCHEMA]
 }
 log.debug(knexConfig.searchPath)
-log.debug(knexConfig.searchPath[0])
 
 const knex = require('knex')(knexConfig);
 
