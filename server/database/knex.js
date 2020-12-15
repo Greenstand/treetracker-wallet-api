@@ -17,7 +17,7 @@ if(process.env.DATABASE_SCHEMA){
   knexConfig.searchPath = ['wallets']
 }
 log.debug(knexConfig.searchPath)
-log.debug(knexConfig.seachPath[0])
+log.debug(knexConfig.searchPath[0])
 
 const knex = require('knex')(knexConfig);
 
