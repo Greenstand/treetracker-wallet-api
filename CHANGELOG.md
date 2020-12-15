@@ -1,3 +1,11 @@
+## [1.2.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.0...v1.2.1) (2020-12-15)
+
+
+### Bug Fixes
+
+* add debug message about schema ([6413131](https://github.com/Greenstand/treetracker-wallet-api/commit/6413131d77b2096b975e772db4bcd2ca29ff11c7))
+* remove root path debug messages ([d5e45c3](https://github.com/Greenstand/treetracker-wallet-api/commit/d5e45c38a7c7b2aa568f1a0cacec4c1e20fad063))
+
 # [1.2.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.20...v1.2.0) (2020-12-15)
 
 
