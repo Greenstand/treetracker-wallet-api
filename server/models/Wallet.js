@@ -850,6 +850,32 @@ class Wallet{
     return result;
   }
 
+  async getTransferById(id){
+    const transfers = await this.getTransfers();
+    const transfer = transfers.reduce((a,c) => {
+      if(c.id === id){
+        return c;
+      }else{
+        return a;
+      }
+    }, undefined);
+    if(!transfer){
+      throw new HttpError(404, "Can not find this transfer or it is related to this wallet");
+    }
+    return transfer;
+  }
+
+  async getTokensByTransferId(id){
+    const transfer = await this.getTransferById(id);
+    let tokens;
+    if(transfer.state === Transfer.STATE.completed){
+      tokens = await this.tokenService.getTokensByTransferId(transfer.id);
+    }else{
+      tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+    }
+    return tokens;
+  }
+
   /*
    * Check if it is deduct, if ture, throw 403, cuz we do not support it yet
    */

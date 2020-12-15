@@ -261,4 +261,39 @@ describe("transferRouter", () => {
     });
   });
 
+  describe("GET /{transfer_id}", () => {
+
+    it("Successfully", async () => {
+      const wallet = new Wallet(1);
+      const transfer = {id:2};
+      const fn = sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+      const fn2 = sinon.stub(Wallet.prototype, "getTransferById").resolves(transfer);
+      const fn3 = sinon.stub(TransferService.prototype, "convertToResponse").resolves(transfer);
+      const res = await request(app)
+        .get("/2");
+      expect(fn).calledWith(1);
+      expect(fn2).calledWith(2);
+      expect(fn3).calledWith(transfer);
+      expect(res).property("statusCode").eq(200);
+      expect(res.body).property("id").eq(2);
+    });
+  });
+
+  describe.only("GET /{transfer_id}/tokens", () => {
+
+    it("Successfully", async () => {
+      const wallet = new Wallet(1);
+      const transfer = {id:2};
+      const token = new Token({id:3});
+      const fn = sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+      const fn2 = sinon.stub(Wallet.prototype, "getTokensByTransferId").resolves([token]);
+      const res = await request(app)
+        .get("/2/tokens");
+      expect(fn).calledWith(1);
+      expect(fn2).calledWith(2);
+      expect(res).property("statusCode").eq(200);
+      expect(res.body).property("tokens").lengthOf(1);
+    });
+  })
+
 });

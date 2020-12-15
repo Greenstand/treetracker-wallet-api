@@ -299,4 +299,49 @@ transferRouter.get("/",
   })
 );
 
+transferRouter.get('/:transfer_id',
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  helper.handlerWrapper(async (req, res) => {
+    Joi.assert(
+      req.params,
+      Joi.object({
+        transfer_id: Joi.number().required(),
+      })
+    );
+    const session = new Session();
+    const walletService = new WalletService(session);
+    const transferService = new TransferService(session);
+    const walletLogin = await walletService.getById(res.locals.wallet_id);
+    const transferObject = await walletLogin.getTransferById(parseInt(req.params.transfer_id));
+    const transferJson = await transferService.convertToResponse(transferObject);
+    res.status(200).json(transferJson);
+  })
+);
+
+transferRouter.get('/:transfer_id/tokens',
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  helper.handlerWrapper(async (req, res) => {
+    Joi.assert(
+      req.params,
+      Joi.object({
+        transfer_id: Joi.number().required(),
+      })
+    );
+    const session = new Session();
+    const walletService = new WalletService(session);
+    const walletLogin = await walletService.getById(res.locals.wallet_id);
+    const tokens = await walletLogin.getTokensByTransferId(parseInt(req.params.transfer_id));
+    const tokensJson = [];
+    for(const token of tokens){
+      const json = await token.toJSON();
+      tokensJson.push(json);
+    }
+    res.status(200).json({
+      tokens: tokensJson,
+    });
+  })
+);
+
 module.exports = transferRouter;
