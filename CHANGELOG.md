@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.1...v1.2.2) (2020-12-15)
+
+
+### Bug Fixes
+
+* debug wallet search path ([a7c4cf6](https://github.com/Greenstand/treetracker-wallet-api/commit/a7c4cf61e9ac3635ed4fd1f02e841e8d3cc09a95))
+
 ## [1.2.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.0...v1.2.1) (2020-12-15)
 
 
