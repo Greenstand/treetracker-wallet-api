@@ -1,3 +1,17 @@
+# [1.2.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.20...v1.2.0) (2020-12-15)
+
+
+### Bug Fixes
+
+* add catch all remote log endpoint ([2cce047](https://github.com/Greenstand/treetracker-wallet-api/commit/2cce047b4929485ccd261d7ac47903a33c0bfdb1))
+* include debugging for missing schema env ([713ea9e](https://github.com/Greenstand/treetracker-wallet-api/commit/713ea9ea69768818f97707a619976dbeec0b76d9))
+* trigger CI ([fc2e36e](https://github.com/Greenstand/treetracker-wallet-api/commit/fc2e36e2e321a0aff3073ea43ac34957defb1ddc))
+
+
+### Features
+
+* added check for duplicate trust request ([e36d226](https://github.com/Greenstand/treetracker-wallet-api/commit/e36d2263ada51590b72a1df2aa0f82ad6448dc3d))
+
 ## [1.1.20](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.1.19...v1.1.20) (2020-12-11)
 
 
