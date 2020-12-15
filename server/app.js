@@ -73,10 +73,6 @@ app.use(errorHandler);
 
 const version = require('../package.json').version
 app.get('*',function (req, res) {
-  log.error('error check')
-  log.warn('warn check')
-  log.debug('debug check')
-  log.info('info check ' + version)
   res.status(200).send(version)
 });
 
