@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.4...v1.2.5) (2020-12-15)
+
+
+### Bug Fixes
+
+* add locations to fake trees ([70d5ef9](https://github.com/Greenstand/treetracker-wallet-api/commit/70d5ef90a6e9fb0478baa15967f0580e80abc17b))
+
 ## [1.2.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.3...v1.2.4) (2020-12-15)
 
 
