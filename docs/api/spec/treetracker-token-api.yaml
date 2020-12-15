@@ -265,6 +265,7 @@ paths:
       deprecated: false
   
   
+  
   /transfers/{transfer_id}:
     get:
       tags:
@@ -285,8 +286,6 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  
-  /transfers/{transfer_id}:
     delete:
       tags:
       - Transfers
