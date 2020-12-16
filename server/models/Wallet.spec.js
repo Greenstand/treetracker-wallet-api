@@ -1177,4 +1177,52 @@ describe("Wallet", () => {
     });
   });
 
+  describe("getTransferById", () => {
+
+    it("Successfully", async () => {
+      sinon.stub(Wallet.prototype, "getTransfers").resolves([{
+        id: 1,
+      }]);
+      const transfer = await wallet.getTransferById(1);
+      expect(transfer).property("id").eq(1);
+    });
+
+    it("Not fond", async () => {
+      sinon.stub(Wallet.prototype, "getTransfers").resolves([]);
+      await jestExpect(async () => {
+        await wallet.getTransferById(1);
+      }).rejects.toThrow(/not find/);
+    });
+  });
+
+  describe("getTokensByTransferId", () => {
+
+    it("Completed transfer", async () => {
+      const transfer = { 
+        id: 1,
+        state: Transfer.STATE.completed,
+      };
+      const token = new Token(1);
+      sinon.stub(Wallet.prototype, "getTransferById").resolves(transfer);
+      const fn = sinon.stub(TokenService.prototype, "getTokensByTransferId").resolves([token]);
+      const tokens = await wallet.getTokensByTransferId(1);
+      expect(tokens).lengthOf(1);
+      expect(fn).calledWith(1);
+    });
+
+    it("Pending/requested transfer", async () => {
+      const transfer = { 
+        id: 1,
+        state: Transfer.STATE.pending,
+      };
+      const token = new Token(1);
+      sinon.stub(Wallet.prototype, "getTransferById").resolves(transfer);
+      const fn = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([token]);
+      const tokens = await wallet.getTokensByTransferId(1);
+      expect(tokens).lengthOf(1);
+      expect(fn).calledWith(1);
+    });
+
+  });
+
 });

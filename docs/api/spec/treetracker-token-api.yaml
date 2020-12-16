@@ -267,6 +267,25 @@ paths:
   
   
   /transfers/{transfer_id}:
+    get:
+      tags:
+      - Transfers
+      summary: 'Get information of a single transfer'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: ''
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     delete:
       tags:
       - Transfers
@@ -368,6 +387,28 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  /transfers/{transfer_id}/tokens:
+    get:
+      tags:
+      - Transfers
+      summary: 'Get all tokens linked to a single transfer'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: ''
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /events:
     get:
       tags: 
