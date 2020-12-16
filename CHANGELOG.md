@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.3.0...v1.4.0) (2020-12-16)
+
+
+### Features
+
+* add constraintion on circle management relationship ([c733ea8](https://github.com/Greenstand/treetracker-wallet-api/commit/c733ea8d7ee8f40c3570fcf6d64f59c892dbaa93))
+
 # [1.3.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.5...v1.3.0) (2020-12-16)
 
 
