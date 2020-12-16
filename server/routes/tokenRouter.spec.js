@@ -52,15 +52,22 @@ describe("tokenRouter", () => {
         entity_id: 1,
         tree_id: 1,
       });
+      const token2 = new Token({
+        id: 2,
+        token: "test-uuid2",
+        entity_id: 2,
+        tree_id: 2,
+      });
       const wallet = new Wallet(1);
-      sinon.stub(TokenService.prototype, "getByOwner").resolves([token]);
+      sinon.stub(TokenService.prototype, "getByOwner").resolves([token, token2]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const res = await request(app)
-        .get("/?limit=10");
+        .get("/?limit=10&start=2");
       expect(res).property("statusCode").eq(200);
-      expect(res.body.tokens[0]).property("token").eq("test-uuid");
-      expect(res.body.tokens[0]).property("links").property("capture").eq("/capture/1");
-      expect(res.body.tokens[0]).property("links").property("tree").eq("/capture/1/tree");
+      expect(res.body.tokens).lengthOf(1);
+      expect(res.body.tokens[0]).property("token").eq("test-uuid2");
+      expect(res.body.tokens[0]).property("links").property("capture").eq("/capture/2");
+      expect(res.body.tokens[0]).property("links").property("tree").eq("/capture/2/tree");
     });
 
     it("successfully, sub wallet", async () => {

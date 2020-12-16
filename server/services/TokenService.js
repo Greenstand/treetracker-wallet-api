@@ -1,5 +1,6 @@
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
+const TransactionRepository = require("../repositories/TransactionRepository");
 const expect = require("expect-runtime");
 
 class TokenService{
@@ -7,6 +8,7 @@ class TokenService{
   constructor(session){
     this._session =  session
     this.tokenRepository = new TokenRepository(session);
+    this.transactionRepository = new TransactionRepository(session);
     const WalletService  = require("../services/WalletService");
     this.walletService = new WalletService(session);
   }
@@ -95,6 +97,18 @@ class TokenService{
       result.receiver_wallet = await json.name;
     }
     return result;
+  }
+
+  async getTokensByTransferId(transferId){
+    const result = await this.transactionRepository.getByFilter({
+      transfer_id: transferId,
+    });
+    const tokens = [];
+    for(const r of result){
+      const token = await this.getById(r.token_id);
+      tokens.push(token);
+    }
+    return tokens;
   }
 
 }

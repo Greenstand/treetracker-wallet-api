@@ -1,3 +1,31 @@
+# [1.4.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.3.0...v1.4.0) (2020-12-16)
+
+
+### Features
+
+* add constraintion on circle management relationship ([c733ea8](https://github.com/Greenstand/treetracker-wallet-api/commit/c733ea8d7ee8f40c3570fcf6d64f59c892dbaa93))
+
+# [1.3.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.5...v1.3.0) (2020-12-16)
+
+
+### Bug Fixes
+
+* wrong doing when get the token info on /transfer/tokens API ([ca89d4c](https://github.com/Greenstand/treetracker-wallet-api/commit/ca89d4c26f07edac907acff72007a0e63ba3ba45))
+* yaml wrong typing ([5030d05](https://github.com/Greenstand/treetracker-wallet-api/commit/5030d056ae7b40bdeccc686a9db166026a6ba597))
+
+
+### Features
+
+* add GET /transer_id & GET /transfer_id/tokens ([ab8aaf6](https://github.com/Greenstand/treetracker-wallet-api/commit/ab8aaf61de85e17bb2ce1baa83b534d5f49a9f9f))
+* tokens list support 'start' parameter ([a46f50d](https://github.com/Greenstand/treetracker-wallet-api/commit/a46f50d22e2976224c243d85e892995f1f4dc4e1))
+
+## [1.2.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.4...v1.2.5) (2020-12-15)
+
+
+### Bug Fixes
+
+* add locations to fake trees ([70d5ef9](https://github.com/Greenstand/treetracker-wallet-api/commit/70d5ef90a6e9fb0478baa15967f0580e80abc17b))
+
 ## [1.2.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.2.3...v1.2.4) (2020-12-15)
 
 
