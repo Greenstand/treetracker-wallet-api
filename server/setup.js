@@ -51,21 +51,8 @@ var loglevelServerSend = function(logger,options) {
         _isSending = true
         */
          
-      /*
+   /*
         var msg = _sendQueue.shift(),
-            req = new XMLHttpRequest()
-        
-        req.open("POST", _url, true)
-        console.log('posting to' + _url)
-        req.setRequestHeader('Content-Type', 'text/plain')
-        req.onreadystatechange = function() {
-            if(req.readyState == 4) 
-            {
-                _isSending = false
-                setTimeout(_sendNextMessage, 0)
-            }
-        }
-        req.send(msg)
         */
 
         const options = {
@@ -84,7 +71,7 @@ var loglevelServerSend = function(logger,options) {
           })
         })
 
-      req.write(message)
+        req.write(message)
 
 
         req.on('error', error => {
