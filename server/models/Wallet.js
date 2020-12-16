@@ -299,9 +299,63 @@ class Wallet{
     if(!trustRelationship){
       throw new HttpError(403, "Have no permission to accept this relationship");
     }
+    await this.checkManageCircle(trustRelationship);
     trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted;
     const json = await this.trustRepository.update(trustRelationship);
     return json;
+  }
+
+  async checkManageCircle(trustRelationship){
+    const trustRelationshipTrusted = await this.getTrustRelationshipsTrusted();
+    //just manage type of trust relationship
+    if(trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.manage){
+      //if is mange request
+      if(trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_TYPE.manage){
+        if(trustRelationshipTrusted.some(e => {
+          if(
+            (
+              e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
+              e.actor_entity_id === trustRelationship.target_entity_id &&
+              e.target_entity_id === trustRelationship.actor_entity_id
+            ) || (
+              e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
+              e.actor_entity_id === trustRelationship.actor_entity_id &&
+              e.target_entity_id === trustRelationship.target_entity_id
+            )
+          ){
+            return true;
+          }else{
+            return false;
+          }
+        })){
+          throw new HttpError(403, "Operation forbidden, because this would lead to a management circle");
+        }
+      }else if(trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
+        if(trustRelationshipTrusted.some(e => {
+          if(
+            (
+              e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
+              e.actor_entity_id === trustRelationship.target_entity_id &&
+              e.target_entity_id === trustRelationship.actor_entity_id
+            ) || (
+              e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
+              e.actor_entity_id === trustRelationship.actor_entity_id &&
+              e.target_entity_id === trustRelationship.target_entity_id
+            )
+          ){
+            return true;
+          }else{
+            return false;
+          }
+        })){
+          throw new HttpError(403, "Operation forbidden, because this would lead to a management circle");
+        }
+      }
+    }
   }
 
   /*
