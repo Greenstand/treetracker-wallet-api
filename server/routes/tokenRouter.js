@@ -43,10 +43,11 @@ tokenRouter.get('/',
       req.query,
       Joi.object({
         limit: Joi.number().required(),
+        start: Joi.number().min(1).max(10000).integer(),
         wallet: Joi.string(),
       })
     );
-    const {limit, wallet} = req.query;
+    const {limit, wallet, start} = req.query;
     const session = new Session();
     const tokenService = new TokenService(session);
     const walletService = new WalletService(session);
@@ -64,7 +65,7 @@ tokenRouter.get('/',
     }
 
     //filter tokens by query, TODO optimization required
-    tokens = tokens.slice(0, limit);
+    tokens = tokens.slice(start? start-1:0, limit);
     const tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();

@@ -1,7 +1,8 @@
 {
   "name": "treetracker",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.3.0",
+  "description": "https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest",
+  "private": true,
   "main": "server/server.js",
   "scripts": {
     "lint": "npm run eslint",
@@ -20,9 +21,11 @@
     "prettier-fix": "prettier ./ --write",
     "db-migrate-ci": "cd database; db-migrate up"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "ecology"
+  ],
+  "author": "Greenstand Engineers",
+  "license": "GPL-3.0-or-later",
   "dependencies": {
     "@sentry/node": "^5.1.0",
     "bcryptjs": "^2.4.3",
@@ -44,6 +47,8 @@
     "uuid": "^8.2.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "chai": "3.5.0",
     "chai-http": "^4.3.0",
     "co-mocha": "1.1.2",
@@ -56,10 +61,22 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.2.0",
     "expect-runtime": "^0.7.0",
+    "husky": "^4.3.5",
     "mock-knex": "^0.4.9",
     "prettier": "^2.1.2",
     "sinon": "^9.0.3",
     "sinon-chai": "^2.14.0",
     "supertest": "^4.0.2"
-  }
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Greenstand/treetracker-wallet-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Greenstand/treetracker-wallet-api/issues"
+  },
+  "homepage": "https://github.com/Greenstand/treetracker-wallet-api#readme"
 }

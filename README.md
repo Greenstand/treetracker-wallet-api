@@ -1,5 +1,5 @@
 #API Documentation (earlier API version)
-
+   
 https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest
 
 To view the specs for the new API we are currently building, go to https://editor.swagger.io and load the YAML file from /docs/api/spec/treetracker-token-api.yaml
