@@ -68,6 +68,18 @@ function getRandomArbitrary(min, max) {
     const planter = result2[0]
     console.log(planter)
 
+    const images = [
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.06.14.19.59.24_ddb1452b-fec8-42df-aa67-5bf0b1337ffc_IMG_20180614_142511_234466904.jpg',
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.06.14.19.59.26_d82c45e1-83c5-457c-b213-cafd9f10dfd9_IMG_20180614_142542_71473033.jpg',
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.06.14.19.59.27_20a1b12c-1fcf-4888-9807-85aac5bad2bc_IMG_20180614_142613_1907612684.jpg',
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.06.14.19.59.35_799c8537-bce9-4997-96ca-9a0401e06fa2_IMG_20180614_142639_-714535546.jpg',
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.06.14.19.59.38_3bd88781-ecc9-4178-8884-66447dae1722_IMG_20180614_142705_1916331319.jpg',
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.06.14.19.59.40_14a8d4db-c1dd-449b-8534-a6b28a906e11_IMG_20180614_142737_-662610853.jpg',
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.07.23.16.01.35_6319320a-4082-4db8-b2aa-38f9ade86566_IMG_20180723_131343_-895124767.jpg',
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.07.23.16.30.00_229f166d-91f4-43fa-9332-f27a1d001473_IMG_20180723_135005_1449884218.jpg',
+      'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.06.19.18.20.59_5559d3ad-9090-4456-a81e-00a7653483c0_IMG_20180619_142743_1430885612.jpg'
+    ]
+
     // insert fake tree captures
     let trees = []
     for(i=0; i<1000; i++){
@@ -77,7 +89,7 @@ function getRandomArbitrary(min, max) {
         planter_id: planter.id,
         lat: getRandomArbitrary(-15,0),
         lon: getRandomArbitrary(15,35),
-        image_url: "https://treetracker-test-images.s3.eu-central-1.amazonaws.com/2020.07.20.03.00.39_-1.881482156711479_27.20611349640992_4d90da59-8f8a-41a5-afab-3b8bbb458214_IMG_20200719_223641_893600781461680891.jpg",
+        image_url: images[Math.floor(getRandomArbitrary(1,9.99))],
         uuid: uuidv4(),
         approved: true,
       }
@@ -103,7 +115,7 @@ function getRandomArbitrary(min, max) {
 
     knex.destroy()
 
-    console.log('username ' + username);
+    console.log('wallet ' + username);
     console.log('password ' + password);
     console.log('apiKey ' + apiKey);
 
