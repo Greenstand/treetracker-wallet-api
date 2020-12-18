@@ -25,6 +25,8 @@ describe("transferRouter", () => {
   }
 
   beforeEach(() => {
+    //mock session, note, this will impact all tests, when unit test, the session is a totally fake stuff
+    sinon.stub(Session.prototype);
     sinon.stub(ApiKeyService.prototype, "check");
     sinon.stub(JWTService.prototype, "verify").returns({
       id: walletLogin.id,
