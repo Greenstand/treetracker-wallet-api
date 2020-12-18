@@ -204,21 +204,6 @@ class Wallet{
 //    }
 
 
-    //check if I (current wallet) can add a new trust like this
-    const trustRelationships = await this.getTrustRelationships();
-    if(trustRelationships.some(trustRelationship => {
-      expect(trustRelationship).property("type").defined();
-      expect(trustRelationship).property("target_entity_id").number();
-      return (
-        trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.send &&
-        trustRelationship.request_type === requestType &&
-        trustRelationship.target_entity_id === targetWallet.getId() &&
-        trustRelationship.originator_entity_id === this._id &&
-        trustRelationship.actor_entity_id === actorWallet._id
-      )
-    })){
-      throw new HttpError(403, "The trust requested has existed");
-    }
     
     //check if the orginator can control the actor
     const hasControl = await this.hasControlOver(requesterWallet);
@@ -230,15 +215,60 @@ class Wallet{
     await requesteeWallet.checkTrustRequestSentToMe(requestType, this.id);
 
     //create this request
-    const result = await this.trustRepository.create({
+    const trustRelationship = {
       type: TrustRelationship.getTrustTypeByRequestType(requestType),
       request_type: requestType,
       actor_entity_id: actorWallet.getId(),
       originator_entity_id: this._id,
       target_entity_id: targetWallet.getId(),
       state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
-    });
+    }
+    await this.checkDuplicateRequest(trustRelationship);
+    const result = await this.trustRepository.create(trustRelationship);
     return result;
+  }
+
+  //check if I (current wallet) can add a new trust like this
+  async checkDuplicateRequest(trustRelationship){
+    const trustRelationships = await this.getTrustRelationships();
+    if(
+      trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.send || 
+      trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.manage
+    ){
+      if(
+        trustRelationships.some(e => {
+          if(
+            (
+              e.request_type === trustRelationship.request_type &&
+              (
+                e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested ||
+                e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+              ) &&
+              e.actor_entity_id === trustRelationship.actor_entity_id &&
+              e.target_entity_id === trustRelationship.target_entity_id
+            ) || (
+              e.request_type !== trustRelationship.request_type &&
+              (
+                e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested ||
+                e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+              ) &&
+              e.actor_entity_id === trustRelationship.target_entity_id &&
+              e.target_entity_id === trustRelationship.actor_entity_id
+            )
+          ){
+            return true;
+          }else{
+            return false;
+          }
+        })
+      ){
+        log.debug("Has duplicated trust");
+        throw new HttpError(403, "The trust relationship has been requested or trusted");
+      }
+    }else{
+      throw HttpError(500, "Not supported type");
+    }
+    log.debug("Has no duplicated trust");
   }
   
   /*
@@ -269,9 +299,63 @@ class Wallet{
     if(!trustRelationship){
       throw new HttpError(403, "Have no permission to accept this relationship");
     }
+    await this.checkManageCircle(trustRelationship);
     trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted;
     const json = await this.trustRepository.update(trustRelationship);
     return json;
+  }
+
+  async checkManageCircle(trustRelationship){
+    const trustRelationshipTrusted = await this.getTrustRelationshipsTrusted();
+    //just manage type of trust relationship
+    if(trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.manage){
+      //if is mange request
+      if(trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_TYPE.manage){
+        if(trustRelationshipTrusted.some(e => {
+          if(
+            (
+              e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
+              e.actor_entity_id === trustRelationship.target_entity_id &&
+              e.target_entity_id === trustRelationship.actor_entity_id
+            ) || (
+              e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
+              e.actor_entity_id === trustRelationship.actor_entity_id &&
+              e.target_entity_id === trustRelationship.target_entity_id
+            )
+          ){
+            return true;
+          }else{
+            return false;
+          }
+        })){
+          throw new HttpError(403, "Operation forbidden, because this would lead to a management circle");
+        }
+      }else if(trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
+        if(trustRelationshipTrusted.some(e => {
+          if(
+            (
+              e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
+              e.actor_entity_id === trustRelationship.target_entity_id &&
+              e.target_entity_id === trustRelationship.actor_entity_id
+            ) || (
+              e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
+              e.actor_entity_id === trustRelationship.actor_entity_id &&
+              e.target_entity_id === trustRelationship.target_entity_id
+            )
+          ){
+            return true;
+          }else{
+            return false;
+          }
+        })){
+          throw new HttpError(403, "Operation forbidden, because this would lead to a management circle");
+        }
+      }
+    }
   }
 
   /*
@@ -632,13 +716,21 @@ class Wallet{
    */
   async declineTransfer(transferId){
     const transfer = await this.transferRepository.getById(transferId);
-    const receiver = await this.walletService.getById(transfer.destination_entity_id);
+    const sourceWallet = await this.walletService.getById(transfer.source_entity_id);
+    const destWallet = await this.walletService.getById(transfer.destination_entity_id);
     if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
       throw new HttpError(403, "The transfer state is not pending and requested");
     }
-    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(receiver);
-    if(!doseCurrentAccountHasControlOverReceiver){
-      throw new HttpError(403, "Current account has no permission to decline this transfer");
+    if(transfer.state === Transfer.STATE.pending){
+      const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(destWallet);
+      if(!doseCurrentAccountHasControlOverReceiver){
+        throw new HttpError(403, "Current account has no permission to decline this transfer");
+      }
+    }else{
+      const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sourceWallet);
+      if(!doseCurrentAccountHasControlOverReceiver){
+        throw new HttpError(403, "Current account has no permission to decline this transfer");
+      }
     }
     transfer.state = Transfer.STATE.cancelled;
     const transferJson = await this.transferRepository.update(transfer);
@@ -653,13 +745,21 @@ class Wallet{
 
   async cancelTransfer(transferId){
     const transfer = await this.transferRepository.getById(transferId);
-    const sender = await this.walletService.getById(transfer.source_entity_id);
+    const sourceWallet = await this.walletService.getById(transfer.source_entity_id);
+    const destWallet = await this.walletService.getById(transfer.destination_entity_id);
     if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
       throw new HttpError(403, "The transfer state is not pending and requested");
     }
-    const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
-    if(!doseCurrentAccountHasControlOverReceiver){
-      throw new HttpError(403, "Current account has no permission to cancel this transfer");
+    if(transfer.state === Transfer.STATE.pending){
+      const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sourceWallet);
+      if(!doseCurrentAccountHasControlOverReceiver){
+        throw new HttpError(403, "Current account has no permission to cancel this transfer");
+      }
+    }else{
+      const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(destWallet);
+      if(!doseCurrentAccountHasControlOverReceiver){
+        throw new HttpError(403, "Current account has no permission to cancel this transfer");
+      }
     }
     transfer.state = Transfer.STATE.cancelled;
     const transferJson = await this.transferRepository.update(transfer);
@@ -802,6 +902,32 @@ class Wallet{
     }
     const result = await this.transferRepository.getByFilter(filter);
     return result;
+  }
+
+  async getTransferById(id){
+    const transfers = await this.getTransfers();
+    const transfer = transfers.reduce((a,c) => {
+      if(c.id === id){
+        return c;
+      }else{
+        return a;
+      }
+    }, undefined);
+    if(!transfer){
+      throw new HttpError(404, "Can not find this transfer or it is related to this wallet");
+    }
+    return transfer;
+  }
+
+  async getTokensByTransferId(id){
+    const transfer = await this.getTransferById(id);
+    let tokens;
+    if(transfer.state === Transfer.STATE.completed){
+      tokens = await this.tokenService.getTokensByTransferId(transfer.id);
+    }else{
+      tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+    }
+    return tokens;
   }
 
   /*

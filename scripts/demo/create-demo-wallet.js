@@ -1,4 +1,8 @@
 
+function getRandomArbitrary(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
 (async () => {
 
   const Knex = require('knex')
@@ -45,8 +49,6 @@
 
     const result = await trx('wallets.wallet').insert({
       type: 'p',
-      first_name: faker.name.firstName(),
-      last_name: faker.name.lastName(),
       name: username,
       password: passwordHash,
       salt: salt
@@ -73,8 +75,8 @@
         time_created: new Date(),
         time_updated: new Date(),
         planter_id: planter.id,
-        lat: 80.0,
-        lon: 120.0,
+        lat: getRandomArbitrary(-15,0),
+        lon: getRandomArbitrary(15,35),
         image_url: "https://treetracker-test-images.s3.eu-central-1.amazonaws.com/2020.07.20.03.00.39_-1.881482156711479_27.20611349640992_4d90da59-8f8a-41a5-afab-3b8bbb458214_IMG_20200719_223641_893600781461680891.jpg",
         uuid: uuidv4(),
         approved: true,
@@ -83,6 +85,7 @@
       const capture = result3[0]
       trees.push(capture.id)
       console.log(capture.id)
+      await trx.raw('UPDATE trees SET estimated_geometric_location = ST_SetSRID(ST_MakePoint(lon, lat), 4326) WHERE id = ?', capture.id)
     }
 
     // create fake tokens

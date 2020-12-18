@@ -1,0 +1,3133 @@
+{
+	"info": {
+		"_postman_id": "29aa38de-08b4-4499-87ef-e735958ea0b9",
+		"name": "treetracker token api (imported)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "tokens",
+			"item": [
+				{
+					"name": "{token uuid}",
+					"item": [
+						{
+							"name": "Get details for one token",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "<string>"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/tokens/:token_uuid",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"tokens",
+										":token_uuid"
+									],
+									"variable": [
+										{
+											"key": "token_uuid",
+											"value": "fb993e16-f8a1-40fd-b341-db56bc105e93",
+											"type": "string",
+											"description": "(Required) "
+										}
+									]
+								},
+								"description": "Get details for one token in the current wallet or managed wallets, matching certain parameters"
+							},
+							"response": [
+								{
+									"name": "Access bearer token is missing or invalid",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/tokens/:token_uuid",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"tokens",
+												":token_uuid"
+											],
+											"variable": [
+												{
+													"key": "token_uuid"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Untitled Example",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/tokens/:token_uuid",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"tokens",
+												":token_uuid"
+											],
+											"variable": [
+												{
+													"key": "token_uuid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"token\": \"d895cf1b-de4c-40ea-85c9-99540f2489a9\",\n \"map_url\": \"http://test.treetracker.org/?treeid=156867\",\n \"image_url\": \"https://treetracker-test.eu-central-1/2019.08.13.17.56.13_5f87e44c-1b90-4d15-8ab8-ae4e75f8a898_IMG_20190813_175243_67017802.jpg\",\n \"tree_captured_at\": \"+051586-06-14T15:10:00.000Z\",\n \"latitude\": 37.77295869,\n \"longitude\": -122.1781304,\n \"region\": \"United States\",\n \"bill_of_value\": \"json\"\n}"
+								}
+							]
+						},
+						{
+							"name": "Get transaction history for a particular token",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "<string>"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/tokens/:token_uuid/transactions?limit=<integer>&start=<integer>",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"tokens",
+										":token_uuid",
+										"transactions"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "<integer>",
+											"description": "(Required) "
+										},
+										{
+											"key": "start",
+											"value": "<integer>",
+											"description": "(Required) "
+										}
+									],
+									"variable": [
+										{
+											"key": "token_uuid",
+											"value": "fb993e16-f8a1-40fd-b341-db56bc105e93",
+											"type": "string",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Untitled Example",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/tokens/:token_uuid/transactions?limit=10&start=10",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"tokens",
+												":token_uuid",
+												"transactions"
+											],
+											"query": [
+												{
+													"key": "limit",
+													"value": "10"
+												},
+												{
+													"key": "start",
+													"value": "10"
+												}
+											],
+											"variable": [
+												{
+													"key": "token_uuid"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n \"history\": [\n  {\n   \"token\": \"e3cd6587-ff01-419b-b2c9-44ceed4dc749\",\n   \"sender_wallet\": \"zaven\",\n   \"receiver_wallet\": \"zaven2\",\n   \"processed_at\": \"2020-01-17T22:32:43.008Z\"\n  },\n  {\n   \"token\": \"e3cd6587-ff01-419b-b2c9-44ceed4dc749\",\n   \"sender_wallet\": \"zaven\",\n   \"receiver_wallet\": \"zaven2\",\n   \"processed_at\": \"2020-01-17T22:32:43.008Z\"\n  }\n ]\n}"
+								}
+							]
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Get a list of tokens in the current wallet  or managed wallets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{BEARER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"description": "(Required) ",
+								"key": "Content-Type",
+								"value": "<string>"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/tokens?limit=10&wallet=DadiorchenWallet",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"tokens"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "(Required) "
+								},
+								{
+									"key": "matching_all_tags",
+									"value": "<string>",
+									"description": "An array of tags.  Tokens returned by the endpoints must be attached to trees that have ALL of these tags assigned",
+									"disabled": true
+								},
+								{
+									"key": "matching_all_tags",
+									"value": "<string>",
+									"description": "An array of tags.  Tokens returned by the endpoints must be attached to trees that have ALL of these tags assigned",
+									"disabled": true
+								},
+								{
+									"key": "wallet",
+									"value": "DadiorchenWallet",
+									"description": "Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet"
+								}
+							]
+						},
+						"description": "Get a list of for tokens in the current wallet or managed wallets, matching certain parameters"
+					},
+					"response": [
+						{
+							"name": "Untitled Example",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/tokens?limit=10&matching_all_tags=<string>&matching_all_tags=<string>&wallet=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"tokens"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "matching_all_tags",
+											"value": "<string>"
+										},
+										{
+											"key": "matching_all_tags",
+											"value": "<string>"
+										},
+										{
+											"key": "wallet",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"tokens\": [\n  {\n   \"token\": \"d895cf1b-de4c-40ea-85c9-99540f2489a9\",\n   \"map_url\": \"http://test.treetracker.org/?treeid=156867\",\n   \"image_url\": \"https://treetracker-test.eu-central-1/2019.08.13.17.56.13_5f87e44c-1b90-4d15-8ab8-ae4e75f8a898_IMG_20190813_175243_67017802.jpg\",\n   \"tree_captured_at\": \"+051586-06-14T15:10:00.000Z\",\n   \"latitude\": 37.77295869,\n   \"longitude\": -122.1781304,\n   \"region\": \"United States\",\n   \"bill_of_value\": \"json\"\n  },\n  {\n   \"token\": \"d895cf1b-de4c-40ea-85c9-99540f2489a9\",\n   \"map_url\": \"http://test.treetracker.org/?treeid=156867\",\n   \"image_url\": \"https://treetracker-test.eu-central-1/2019.08.13.17.56.13_5f87e44c-1b90-4d15-8ab8-ae4e75f8a898_IMG_20190813_175243_67017802.jpg\",\n   \"tree_captured_at\": \"+051586-06-14T15:10:00.000Z\",\n   \"latitude\": 37.77295869,\n   \"longitude\": -122.1781304,\n   \"region\": \"United States\",\n   \"bill_of_value\": \"json\"\n  }\n ]\n}"
+						},
+						{
+							"name": "Access bearer token is missing or invalid",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/tokens?limit=10&matching_all_tags=<string>&matching_all_tags=<string>&wallet=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"tokens"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "matching_all_tags",
+											"value": "<string>"
+										},
+										{
+											"key": "matching_all_tags",
+											"value": "<string>"
+										},
+										{
+											"key": "wallet",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "wallets",
+			"item": [
+				{
+					"name": "Get all wallets managed by the logged in account.  This endpoint is also used to get the total number of tokens in a given wallet.  Each wallet also returns all trust relationships for that wallet that have not been deleted",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{BEARER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"description": "(Required) ",
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/wallets",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"wallets"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Untitled Example",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/wallets",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"wallets"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"wallets\": [\n  {\n   \"type\": \"cillum pariatur Ut minim mollit\",\n   \"wallet\": \"veniam Duis magna laborum\",\n   \"email\": \"cupidatat veniam Excepteur\",\n   \"phone\": \"ad\",\n   \"access\": \"Excepteur velit\",\n   \"tokens_in_wallet\": -95552295,\n   \"trust_relationships\": [\n    {\n     \"id\": 5888860,\n     \"actor_wallet\": \"commodo dolor in esse ipsum\",\n     \"target_wallet\": \"non\",\n     \"trust_type\": \"velit elit sunt\",\n     \"state\": \"tempor ea in in\",\n     \"trust_request_type\": \"aliquip ea\",\n     \"orginating_wallet\": \"dolore qui culpa in sed\",\n     \"created_at\": \"deserunt sit quis velit exercitation\"\n    },\n    {\n     \"id\": -33272249,\n     \"actor_wallet\": \"qui irure tempor in\",\n     \"target_wallet\": \"eu\",\n     \"trust_type\": \"\",\n     \"state\": \"deserunt ipsum\",\n     \"trust_request_type\": \"est enim velit\",\n     \"orginating_wallet\": \"labore ut proident ea Excepteur\",\n     \"created_at\": \"ut consectetur\"\n    }\n   ]\n  },\n  {\n   \"type\": \"ut\",\n   \"wallet\": \"consequat dolore ullamc\",\n   \"email\": \"pariatur ut sint labore\",\n   \"phone\": \"in labore sunt\",\n   \"access\": \"occaecat aliqua anim adipisicing consectetur\",\n   \"tokens_in_wallet\": -56376885,\n   \"trust_relationships\": [\n    {\n     \"id\": -54596200,\n     \"actor_wallet\": \"incididunt nostrud cupidatat\",\n     \"target_wallet\": \"dolore adipisicing\",\n     \"trust_type\": \"non culpa nisi proident in\",\n     \"state\": \"incididunt in occaecat\",\n     \"trust_request_type\": \"voluptate aliqua Lorem laborum\",\n     \"orginating_wallet\": \"fugiat amet\",\n     \"created_at\": \"tempor velit ex sunt nostrud\"\n    },\n    {\n     \"id\": 90236575,\n     \"actor_wallet\": \"minim incididunt in officia enim\",\n     \"target_wallet\": \"voluptate ut dolor\",\n     \"trust_type\": \"eu\",\n     \"state\": \"culpa ad id enim\",\n     \"trust_request_type\": \"sed ut\",\n     \"orginating_wallet\": \"in nisi\",\n     \"created_at\": \"dolor id Ut\"\n    }\n   ]\n  }\n ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Create a new managed wallet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{BEARER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"wallet\": \"DadiorchenWallet\"\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/wallets",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"wallets"
+							]
+						},
+						"description": "Create a new managed wallet.  Requires the manage_account role."
+					},
+					"response": [
+						{
+							"name": "A new wallet was created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"wallet\": \"sprinter_van_2004\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/wallets",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"wallets"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Access bearer token is missing or invalid",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"wallet\": \"sprinter_van_2004\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/wallets",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"wallets"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "transfers",
+			"item": [
+				{
+					"name": "{transfer id}",
+					"item": [
+						{
+							"name": "Cancel a pending or requested transfer that has not closed",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/transfers/:transfer_id",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"transfers",
+										":transfer_id"
+									],
+									"variable": [
+										{
+											"id": "347e501b-7aa5-4a6d-b79a-dba8d185322d",
+											"key": "transfer_id",
+											"value": "<integer>",
+											"type": "string",
+											"description": "(Required) "
+										}
+									]
+								},
+								"description": "Cancel a pending (untrusted) or requested transfer.  The executor can delete the pending/requested transfer before it is executed.  Transfer is marked canceled by this command."
+							},
+							"response": [
+								{
+									"name": "No transfer record with that id",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "Not Found",
+									"code": 404,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Authenticated wallet does not have access to this transfer",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Transfer with this id is not in requested or pending state",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "Not Acceptable",
+									"code": 406,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Transfer was marked canceled",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Access bearer token is missing or invalid",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "Accept a pending (untrusted) transfer",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/transfers/:transfer_id/accept",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"transfers",
+										":transfer_id",
+										"accept"
+									],
+									"variable": [
+										{
+											"id": "b838d748-c419-4828-9468-6cacc5f38a56",
+											"key": "transfer_id",
+											"value": "<integer>",
+											"type": "string",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Untitled Example",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id/accept",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id",
+												"accept"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Access bearer token is missing or invalid",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id/accept",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id",
+												"accept"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "Decline a pending (untrusted) transfer",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/transfers/:transfer_id/decline",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"transfers",
+										":transfer_id",
+										"decline"
+									],
+									"variable": [
+										{
+											"key": "transfer_id",
+											"value": "xxxx",
+											"type": "string",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Untitled Example",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id/decline",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id",
+												"decline"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Access bearer token is missing or invalid",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id/decline",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id",
+												"decline"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "Fullfill a requested transfer",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\n    \"implicit\": \"true\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/transfers/:transfer_id/fulfill",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"transfers",
+										":transfer_id",
+										"fulfill"
+									],
+									"variable": [
+										{
+											"key": "transfer_id",
+											"value": "3",
+											"type": "string",
+											"description": "(Required) the id of the transfer record on the server"
+										}
+									]
+								},
+								"description": "Post a list of tokens to fulfill the parameters of a transfer request that specifies tokens using a bundle.  This allows the debited wallet to decide which tokens matching the bundle parameters to attach to the transfer.  Application logic must check that each token matches the parameters of the request."
+							},
+							"response": [
+								{
+									"name": "Untitled Example",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"tokens\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"implicit\": \"<boolean>\"\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id/fulfill",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id",
+												"fulfill"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Access bearer token is missing or invalid",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"tokens\": [\n        \"<string>\",\n        \"<string>\"\n    ],\n    \"implicit\": \"<boolean>\"\n}"
+										},
+										"url": {
+											"raw": "{{baseUrl}}/transfers/:transfer_id/fulfill",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"transfers",
+												":transfer_id",
+												"fulfill"
+											],
+											"variable": [
+												{
+													"key": "transfer_id"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Move, request, and send tokens between wallets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{BEARER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"bundle\": {\n        \"bundle_size\": 1\n    },\n    \"sender_wallet\": \"Emilia_Bernhard18\",\n    \"receiver_wallet\": \"DadiorchenWallet\"\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/transfers",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"transfers"
+							]
+						},
+						"description": "Move, request, and send tokens between wallets (by name or id) as allowed by trust relationships.  Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer.  The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debut, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval"
+					},
+					"response": [
+						{
+							"name": "The transfer could not be completely processed because a trust relationship does not exist allowing for automated processing.  If a the source wallet is controlled by the authenitcated user, a  transfer in the pending state has been created. If the source",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"tokens\": [\n        \"e1b278e8-f025-44b7-9dd8-36ffb2d58f7e\",\n        \"e533653e-2dbf-48cd-940a-a87e5a393158\"\n    ],\n    \"sender_wallet\": \"zaven4\",\n    \"receiver_wallet\": 2\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/transfers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"transfers"
+									]
+								}
+							},
+							"status": "Accepted",
+							"code": 202,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{}"
+						},
+						{
+							"name": "The transfer was completely processed",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"tokens\": [\n        \"e1b278e8-f025-44b7-9dd8-36ffb2d58f7e\",\n        \"e533653e-2dbf-48cd-940a-a87e5a393158\"\n    ],\n    \"sender_wallet\": \"zaven4\",\n    \"receiver_wallet\": 2\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/transfers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"transfers"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"id\": \"Lorem esse sed elit\",\n \"originating_wallet\": \"quis\",\n \"source_wallet\": \"dolor cupidatat\",\n \"destination_wallet\": \"non \",\n \"type\": \"laboris eiusmod nostrud minim deserunt\",\n \"parameters\": {\n  \"bundle_size\": -10553315,\n  \"tokens\": [\n   \"laboris aliqua\",\n   \"Ut cillum\"\n  ],\n  \"matching_all_tags\": [\n   \"voluptate\",\n   \"nisi\"\n  ]\n },\n \"state\": \"et deserunt aliqua fugiat voluptate\",\n \"created_at\": \"ipsum cupidatat\",\n \"closed_at\": \"aute\"\n}"
+						},
+						{
+							"name": "Access bearer token is missing or invalid",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"tokens\": [\n        \"e1b278e8-f025-44b7-9dd8-36ffb2d58f7e\",\n        \"e533653e-2dbf-48cd-940a-a87e5a393158\"\n    ],\n    \"sender_wallet\": \"zaven4\",\n    \"receiver_wallet\": 2\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/transfers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"transfers"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get requested, pending, completed, cancelled, and failed transfers",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{BEARER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"description": "(Required) ",
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/transfers",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"transfers"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "<string>",
+									"description": "requested, pending, completed, cancelled, failed",
+									"disabled": true
+								},
+								{
+									"key": "wallet",
+									"value": "<string>",
+									"description": "filter transfers matches the source, destination, or originating wallet (by name or id) of a transfer",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get requested, pending, completed, cancelled and failed transfers for wallets (by name or id). The authenticated wallet is either the source, destination, or originating wallet entity."
+					},
+					"response": [
+						{
+							"name": "Access bearer token is missing or invalid",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/transfers?state=<string>&wallet=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"transfers"
+									],
+									"query": [
+										{
+											"key": "state",
+											"value": "<string>"
+										},
+										{
+											"key": "wallet",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Return array of matching transfers",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/transfers?state=<string>&wallet=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"transfers"
+									],
+									"query": [
+										{
+											"key": "state",
+											"value": "<string>"
+										},
+										{
+											"key": "wallet",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "trust relationships",
+			"item": [
+				{
+					"name": "{trust relationship id}",
+					"item": [
+						{
+							"name": "Remove a trust relationship linked to the autheticated wallet",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/trust_relationships/:trust_relationship_id",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"trust_relationships",
+										":trust_relationship_id"
+									],
+									"variable": [
+										{
+											"key": "trust_relationship_id",
+											"value": "1",
+											"type": "string",
+											"description": "(Required) the id of the entity trust record on the server"
+										}
+									]
+								},
+								"description": "Remove a trust relationship linked to the autheticated wallet.  This could be either the actor wallet or the target wallet"
+							},
+							"response": [
+								{
+									"name": "Access bearer token is missing or invalid",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/trust_relationships/:trust_relationship_id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"trust_relationships",
+												":trust_relationship_id"
+											],
+											"variable": [
+												{
+													"key": "trust_relationship_id"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Untitled Example",
+									"originalRequest": {
+										"method": "DELETE",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/trust_relationships/:trust_relationship_id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"trust_relationships",
+												":trust_relationship_id"
+											],
+											"variable": [
+												{
+													"key": "trust_relationship_id"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "Accept a trust relationship",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/trust_relationships/:trust_relationship_id/accept",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"trust_relationships",
+										":trust_relationship_id",
+										"accept"
+									],
+									"variable": [
+										{
+											"key": "trust_relationship_id",
+											"value": "1",
+											"type": "string",
+											"description": "(Required) the id of the entity trust record on the server"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Untitled Example",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/trust_relationships/:trust_relationship_id/accept",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"trust_relationships",
+												":trust_relationship_id",
+												"accept"
+											],
+											"variable": [
+												{
+													"key": "trust_relationship_id"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Access denied for that resource",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/trust_relationships/:trust_relationship_id/accept",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"trust_relationships",
+												":trust_relationship_id",
+												"accept"
+											],
+											"variable": [
+												{
+													"key": "trust_relationship_id"
+												}
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Access bearer token is missing or invalid",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/trust_relationships/:trust_relationship_id/accept",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"trust_relationships",
+												":trust_relationship_id",
+												"accept"
+											],
+											"variable": [
+												{
+													"key": "trust_relationship_id"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						},
+						{
+							"name": "Decline a trust relationship",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{BEARER_TOKEN}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "{{API_KEY}}"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/trust_relationships/:trust_relationship_id/decline",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"trust_relationships",
+										":trust_relationship_id",
+										"decline"
+									],
+									"variable": [
+										{
+											"id": "a65f28eb-6f8e-42f8-a814-d5835270503a",
+											"key": "trust_relationship_id",
+											"value": "<integer>",
+											"type": "string",
+											"description": "(Required) the id of the entity trust record on the server"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Untitled Example",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/trust_relationships/:trust_relationship_id/decline",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"trust_relationships",
+												":trust_relationship_id",
+												"decline"
+											],
+											"variable": [
+												{
+													"key": "trust_relationship_id"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Access bearer token is missing or invalid",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/trust_relationships/:trust_relationship_id/decline",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"trust_relationships",
+												":trust_relationship_id",
+												"decline"
+											],
+											"variable": [
+												{
+													"key": "trust_relationship_id"
+												}
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Access denied for that resource",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"description": {
+													"content": "Added as a part of security scheme: bearer",
+													"type": "text/plain"
+												},
+												"key": "Authorization",
+												"value": "Bearer <token>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "TREETRACKER-API-KEY",
+												"value": "<string>"
+											},
+											{
+												"description": "(Required) ",
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/trust_relationships/:trust_relationship_id/decline",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"trust_relationships",
+												":trust_relationship_id",
+												"decline"
+											],
+											"variable": [
+												{
+													"key": "trust_relationship_id"
+												}
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Get a list of existing, requested, and pending trust relationships",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{BEARER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"description": "(Required) ",
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/trust_relationships",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"trust_relationships"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "",
+									"description": "Filter by state of the trust relationship",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "<string>",
+									"description": "Type of trust relationship",
+									"disabled": true
+								},
+								{
+									"key": "request_type",
+									"value": "<string>",
+									"description": "Type of trust relationship",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Access bearer token is missing or invalid",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/trust_relationships?state=<string>&type=<string>&request_type=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"trust_relationships"
+									],
+									"query": [
+										{
+											"key": "state",
+											"value": "<string>"
+										},
+										{
+											"key": "type",
+											"value": "<string>"
+										},
+										{
+											"key": "request_type",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Untitled Example",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/trust_relationships?state=<string>&type=<string>&request_type=<string>",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"trust_relationships"
+									],
+									"query": [
+										{
+											"key": "state",
+											"value": "<string>"
+										},
+										{
+											"key": "type",
+											"value": "<string>"
+										},
+										{
+											"key": "request_type",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n \"trust_relationships\": [\n  {\n   \"id\": -1085041,\n   \"actor_wallet\": \"laboris magna incididunt anim\",\n   \"target_wallet\": \"fugiat proident volupta\",\n   \"trust_type\": \"eu qui Ut dolore\",\n   \"state\": \"minim enim\",\n   \"trust_request_type\": \"consectetur aliqua\",\n   \"orginating_wallet\": \"irure non\",\n   \"created_at\": \"occaecat dolore et eu\"\n  },\n  {\n   \"id\": 17119049,\n   \"actor_wallet\": \"magna dolor repreh\",\n   \"target_wallet\": \"enim eiusmod laboris dolor\",\n   \"trust_type\": \"quis exercitation\",\n   \"state\": \"ut ut dolore qui est\",\n   \"trust_request_type\": \"mollit magna velit\",\n   \"orginating_wallet\": \"in Ut quis\",\n   \"created_at\": \"Ut consectetur aute fugiat ipsum\"\n  }\n ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Request a new trust relationship from another wallet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{BEARER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"trust_request_type\": \"<string>\",\n    \"requester_wallet\": \"<string>\",\n    \"requestee_wallet\": \"<string>\"\n}",
+							"options": {
+								"raw": {}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/trust_relationships",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"trust_relationships"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Access bearer token is missing or invalid",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"trust_request_type\": \"<string>\",\n    \"requester_wallet\": \"<string>\",\n    \"requestee_wallet\": \"<string>\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/trust_relationships",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"trust_relationships"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Access denied for that resource",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"trust_request_type\": \"<string>\",\n    \"requester_wallet\": \"<string>\",\n    \"requestee_wallet\": \"<string>\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/trust_relationships",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"trust_relationships"
+									]
+								}
+							},
+							"status": "Forbidden",
+							"code": 403,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						},
+						{
+							"name": "Accepted but waiting for approval",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"description": {
+											"content": "Added as a part of security scheme: bearer",
+											"type": "text/plain"
+										},
+										"key": "Authorization",
+										"value": "Bearer <token>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "TREETRACKER-API-KEY",
+										"value": "<string>"
+									},
+									{
+										"description": "(Required) ",
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"trust_request_type\": \"<string>\",\n    \"requester_wallet\": \"<string>\",\n    \"requestee_wallet\": \"<string>\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/trust_relationships",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"trust_relationships"
+									]
+								}
+							},
+							"status": "Accepted",
+							"code": 202,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Authenticate account",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"description": "(Required) ",
+						"key": "TREETRACKER-API-KEY",
+						"value": "{{API_KEY}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"wallet\": \"Emilia_Bernhard18\",\n    \"password\": \"7hYvU9NdySkjPqD\"\n}",
+					"options": {
+						"raw": {}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/auth",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"auth"
+					]
+				},
+				"description": "Authenticate the client using wallet name or id and password, and respond with a bearer token"
+			},
+			"response": [
+				{
+					"name": "Untitled Example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"description": {
+									"content": "Added as a part of security scheme: bearer",
+									"type": "text/plain"
+								},
+								"key": "Authorization",
+								"value": "Bearer <token>"
+							},
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "<string>"
+							},
+							{
+								"description": "(Required) ",
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"wallet\": 1,\n    \"password\": \"walnut\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n \"bearer\": \"et ut ipsum\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get event stream for wallet",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{BEARER_TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"description": "(Required) ",
+						"key": "TREETRACKER-API-KEY",
+						"value": "<string>"
+					},
+					{
+						"description": "(Required) ",
+						"key": "Content-Type",
+						"value": "<string>"
+					}
+				],
+				"url": {
+					"raw": "{{BASE_URL}}/events?limit=<integer>&since=<timestamp>&wallet=<string>",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"events"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "<integer>",
+							"description": "(Required) The number of records to return"
+						},
+						{
+							"key": "since",
+							"value": "<timestamp>",
+							"description": "(Required) Only return events since a given timestamp"
+						},
+						{
+							"key": "wallet",
+							"value": "<string>",
+							"description": "Wallet (by name or id) can be specified if the authenticated wallet manages other wallets.  The default is to return events matching the authenticated wallet"
+						}
+					]
+				},
+				"description": "The event stream contains notifications about execute and pending transfers, transfer request, trust requests, trust deletions, and trust approvals.  Event streams for managed wallets can also be requested"
+			},
+			"response": [
+				{
+					"name": "Untitled Example",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"description": {
+									"content": "Added as a part of security scheme: bearer",
+									"type": "text/plain"
+								},
+								"key": "Authorization",
+								"value": "Bearer <token>"
+							},
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "<string>"
+							},
+							{
+								"description": "(Required) ",
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/events?limit=10&since=<timestamp>&wallet=<string>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"events"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "since",
+									"value": "<timestamp>"
+								},
+								{
+									"key": "wallet",
+									"value": "<string>"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n \"events\": [\n  {\n   \"type\": \"in sint voluptate dolore cupidatat\",\n   \"wallet\": \"non\",\n   \"transfer_id\": -20915687,\n   \"trust_relationship_id\": -79251855,\n   \"created_at\": \"et voluptate d\"\n  },\n  {\n   \"type\": \"ut co\",\n   \"wallet\": \"amet in ad minim\",\n   \"transfer_id\": 62198379,\n   \"trust_relationship_id\": 16629326,\n   \"created_at\": \"ullamco et exercitation labore\"\n  }\n ]\n}"
+				},
+				{
+					"name": "Access bearer token is missing or invalid",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"description": {
+									"content": "Added as a part of security scheme: bearer",
+									"type": "text/plain"
+								},
+								"key": "Authorization",
+								"value": "Bearer <token>"
+							},
+							{
+								"description": "(Required) ",
+								"key": "TREETRACKER-API-KEY",
+								"value": "<string>"
+							},
+							{
+								"description": "(Required) ",
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/events?limit=10&since=<timestamp>&wallet=<string>",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"events"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "since",
+									"value": "<timestamp>"
+								},
+								{
+									"key": "wallet",
+									"value": "<string>"
+								}
+							]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"_postman_previewlanguage": "text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "text/plain"
+						}
+					],
+					"cookie": [],
+					"body": ""
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "<Bearer Token>",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"id": "baseUrl",
+			"key": "baseUrl",
+			"value": "/",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}

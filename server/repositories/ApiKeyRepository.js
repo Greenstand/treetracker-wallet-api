@@ -6,7 +6,7 @@ const Session = require("../models/Session");
 class ApiKeyRepository{
 
   constructor(session){
-    this._tableName = "wallets.api_key";
+    this._tableName = "api_key";
     this._session = session;
   }
 

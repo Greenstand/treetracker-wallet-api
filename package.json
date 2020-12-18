@@ -1,23 +1,31 @@
 {
   "name": "treetracker",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.4.0",
+  "description": "https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest",
+  "private": true,
   "main": "server/server.js",
   "scripts": {
+    "lint": "npm run eslint",
+    "lint:fix": "npm run eslint:fix && npm run prettier:fix",
+    "eslint": "eslint --report-unused-disable-directives .",
+    "eslint:fix": "npm run eslint -- --fix",
     "test": "npm run test-unit; npm run test-integration;npm run test-repository",
-    "test-unit": "NODE_ENV=test mocha --exit ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
-    "test-repository": "NODE_ENV=test mocha --exit --require co-mocha  ./server/repositories/**/*.spec.js",
-    "server-test": "cd ./server && DEBUG=loopback:*,express:* NODE_LOG_LEVEL=debug nodemon serverTest.js",
-    "server": "cd ./server && nodemon server.js",
-    "test-seedDB": "NODE_ENV=test mocha --timeout 10000 --require co-mocha './**/*.spec.js'",
-    "test-integration": "NODE_ENV=test mocha --exit --timeout 20000 --require co-mocha './__tests__/supertest.js'",
-    "test-watch": "NODE_ENV=test NODE_LOG_LEVEL=info mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
-    "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug mocha --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
-    "prettier-fix": "prettier ./ --write"
+    "test-unit": "NODE_ENV=test mocha -r dotenv/config dotenv_config_path=.env.test --exit ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
+    "test-repository": "NODE_ENV=test mocha -r dotenv/config --exit --require co-mocha  ./server/repositories/**/*.spec.js",
+    "server-test": "DEBUG=loopback:*,express:* NODE_LOG_LEVEL=debug nodemon server/serverTest.js",
+    "server": "nodemon server/server.js",
+    "test-seedDB": "NODE_ENV=test mocha -r dotenv/config dotenv_config_path=.env.test --timeout 10000 --require co-mocha './**/*.spec.js'",
+    "test-integration": "NODE_ENV=test mocha -r dotenv/config dotenv_config_path=.env.test --exit --timeout 20000 --require co-mocha './__tests__/supertest.js'",
+    "test-watch": "NODE_ENV=test NODE_LOG_LEVEL=info mocha -r dotenv/config dotenv_config_path=.env.test --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
+    "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug mocha -r dotenv/config dotenv_config_path=.env.test --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
+    "prettier-fix": "prettier ./ --write",
+    "db-migrate-ci": "cd database; db-migrate up"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "ecology"
+  ],
+  "author": "Greenstand Engineers",
+  "license": "GPL-3.0-or-later",
   "dependencies": {
     "@sentry/node": "^5.1.0",
     "bcryptjs": "^2.4.3",
@@ -39,6 +47,8 @@
     "uuid": "^8.2.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "chai": "3.5.0",
     "chai-http": "^4.3.0",
     "co-mocha": "1.1.2",
@@ -49,11 +59,24 @@
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-config-prettier": "^6.13.0",
     "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.2.0",
     "expect-runtime": "^0.7.0",
+    "husky": "^4.3.5",
     "mock-knex": "^0.4.9",
     "prettier": "^2.1.2",
     "sinon": "^9.0.3",
     "sinon-chai": "^2.14.0",
     "supertest": "^4.0.2"
-  }
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Greenstand/treetracker-wallet-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Greenstand/treetracker-wallet-api/issues"
+  },
+  "homepage": "https://github.com/Greenstand/treetracker-wallet-api#readme"
 }

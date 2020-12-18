@@ -1,6 +1,7 @@
 const express = require('express');
 const helper = require('./utils');
 const WalletService = require("../services/WalletService");
+const TokenService = require("../services/TokenService");
 const TrustService = require("../services/TrustService");
 const Joi = require("joi");
 const Session = require("../models/Session");
@@ -20,8 +21,10 @@ walletRouter.get('/',
     
     const walletsJson = [];
 
+    const tokenService = new TokenService(session);
     for (const wallet of subWallets) {
       const json = await wallet.toJSON();
+      json.tokens_in_wallet = await tokenService.countTokenByWallet(wallet); 
       walletsJson.push(json);
     }
 

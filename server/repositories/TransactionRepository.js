@@ -3,7 +3,7 @@ const expect = require("expect-runtime");
 
 class TransferRepository extends BaseRepository{
   constructor(session){
-    super("wallets.transaction", session);
+    super("transaction", session);
     this._session = session;
   }
 }
