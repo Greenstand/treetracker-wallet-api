@@ -1,9 +1,17 @@
 const HttpError = require("../utils/HttpError");
-const knex = require('../database/knex');
+const expect = require("expect-runtime");
+const Session = require("../models/Session");
+
+
 class ApiKeyRepository{
 
+  constructor(session){
+    this._tableName = "api_key";
+    this._session = session;
+  }
+
   async getByApiKey(apiKey){
-    const list = await knex.select().table('wallets.api_key').where({
+    const list = await this._session.getDB().select().table(this._tableName).where({
       key: apiKey,
 //      tree_token_api_access: true,
     });

@@ -14,10 +14,13 @@ const TrustRelationship = require("../models/TrustRelationship");
 const Transfer = require("./Transfer");
 const Token = require("./Token");
 const TokenService = require("../services/TokenService");
+const Session = require("./Session");
 
 describe("Wallet", () => {
   let walletService;
-  let wallet;
+  let session = new Session();
+  let wallet = new Wallet(0, session);
+
   const walletObject = {
     id:1, 
     salt:"salet",
@@ -25,8 +28,8 @@ describe("Wallet", () => {
   };
 
   beforeEach(() => {
-    wallet = new Wallet(1);
-    walletService = new WalletService();
+    wallet = new Wallet(1, session);
+    walletService = new WalletService(session);
   })
 
   afterEach(() => {
@@ -77,7 +80,7 @@ describe("Wallet", () => {
     let wallet;
 
     beforeEach(() => {
-      wallet = new Wallet(1);
+      wallet = new Wallet(1, session);
     })
 
     it("request with a wrong type would throw error", async () => {
@@ -86,25 +89,11 @@ describe("Wallet", () => {
       }).rejects.toThrow("type");
     });
 
-    it("request with trust which has existed should throw 403", async () => {
-      const wallet2 = new Wallet(2);
-      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
-        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
-        actor_entity_id: wallet.getId(),
-        target_entity_id: wallet2.getId(),
-        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
-        originator_entity_id: wallet.getId(),
-      }]);
-      await jestExpect(async () => {
-        await wallet.requestTrustFromAWallet("send",wallet, wallet2);
-      }).rejects.toThrow(/existed/i);
-      fn.restore();
-    });
-
     it("request successfully", async () => {
       const wallet2 = new Wallet(2);
       const fn2 = sinon.stub(TrustRepository.prototype, "get").resolves([]);
       const fn3 = sinon.stub(TrustRepository.prototype, "create");
+      sinon.stub(Wallet.prototype, "checkDuplicateRequest");
       await wallet.requestTrustFromAWallet(
         TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
         wallet,
@@ -144,10 +133,10 @@ describe("Wallet", () => {
   });
 
   describe("Accept trust", () => {
-    let wallet; 
+    let wallet = new Wallet(1, session);
 
     beforeEach(() => {
-      wallet = new Wallet(1);
+      wallet = new Wallet(1, session);
     })
 
     it("accept but the requested trust whose target id is not me, throw 403", async () => {
@@ -169,7 +158,7 @@ describe("Wallet", () => {
         id: 1,
         target_entity_id: wallet.getId(),
       };
-      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsRequestedToMe").returns([trustRelationship]);
       const fn2 = sinon.stub(TrustRepository.prototype, "update");
       await wallet.acceptTrustRequestSentToMe(trustRelationship.id);
       fn1.restore();
@@ -178,10 +167,10 @@ describe("Wallet", () => {
   });
 
   describe("Decline trust", () => {
-    let wallet;
+    let wallet = new Wallet(1, session);
 
     beforeEach(() => {
-      wallet = new Wallet(1);
+      wallet = new Wallet(1, session);
     })
 
     it("decline but the requested trust whose target id is not me, throw 403", async () => {
@@ -203,7 +192,7 @@ describe("Wallet", () => {
         id: 1,
         target_entity_id: wallet.getId(),
       };
-      const fn1 = sinon.stub(TrustRepository.prototype, "getByTargetId").returns([trustRelationship]);
+      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsRequestedToMe").returns([trustRelationship]);
       const fn2 = sinon.stub(TrustRepository.prototype, "update");
       await wallet.declineTrustRequestSentToMe(trustRelationship.id);
       fn1.restore();
@@ -212,10 +201,10 @@ describe("Wallet", () => {
   });
 
   describe("Cancel trust request", () => {
-    let wallet;
+    let wallet = new Wallet(1, session);
 
     beforeEach(() => {
-      wallet = new Wallet(1);
+      wallet = new Wallet(1, session);
     })
 
     it("Try to cancel but the requested trust whose originator id is not me, throw 403", async () => {
@@ -248,23 +237,22 @@ describe("Wallet", () => {
     });
   });
 
-  describe("checkTrust()", () => {
+  describe("hasTrust()", () => {
 
-    it("checkTrust fails, should throw 403", async () => {
-      const walletReceiver = new Wallet(2);
+    it("has no trust", async () => {
+      const walletReceiver = new Wallet(2, session);
       const fn1 = sinon.stub(TrustRepository.prototype, "getTrustedByOriginatorId").resolves([]);//no relationship
-      await jestExpect(async () => {
-        await wallet.checkTrust(
+      const result =  await wallet.hasTrust(
           TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
           wallet,
           walletReceiver,
         );
-      }).rejects.toThrow(/no permission/);
+      expect(result).eq(false);
       fn1.restore();
     });
 
-    it("checkTrust successfully", async () => {
-      const walletReceiver = new Wallet(2);
+    it("has trust", async () => {
+      const walletReceiver = new Wallet(2, session);
       const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
         request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
         type: TrustRelationship.ENTITY_TRUST_TYPE.send,
@@ -272,15 +260,16 @@ describe("Wallet", () => {
         target_entity_id: walletReceiver.getId(),
         state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
       }]);//no relationship
-      await wallet.checkTrust(
+      const result = await wallet.hasTrust(
         TrustRelationship.ENTITY_TRUST_TYPE.send,
         wallet,
         walletReceiver,
       );
+      expect(result).eq(true);
       fn1.restore();
     });
 
-    it("checkTrust successfully with recieve case", async () => {
+    it("has trust with recieve case", async () => {
       const wallet2 = new Wallet(2);
       const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([{
         request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive,
@@ -288,11 +277,12 @@ describe("Wallet", () => {
         actor_entity_id: wallet2.getId(),
         target_entity_id: wallet.getId(),
       }]);//no relationship
-      await wallet.checkTrust(
+      const result = await wallet.hasTrust(
         TrustRelationship.ENTITY_TRUST_TYPE.send,
         wallet,
         wallet2,
       );
+      expect(result).eq(true);
       fn1.restore();
     });
 
@@ -300,21 +290,14 @@ describe("Wallet", () => {
 
   describe("Transfer", () => {
 
-    it("If it is deduct, throw 403, do not support it yet", async () => {
-      sinon.stub(Wallet.prototype, "checkDeduct").rejects(new HttpError(403, "deduct"));
-      await jestExpect(async () => {
-        await wallet.transfer();
-      }).rejects.toThrow(/deduct/);
-    });
-
     it("Given token uuid do not belongs to sender wallet, should throw 403", async () => {
       const fn1 = sinon.stub(Token.prototype, "belongsTo").resolves(false);
-      const sender = new Wallet(1);
-      const receiver = new Wallet(2);
+      const sender = new Wallet(1, session);
+      const receiver = new Wallet(2, session);
       const token = new Token({
         id: 1,
         uuid: "uu",
-      });
+      }, session);
       await jestExpect(async () => {
         await wallet.transfer(sender, receiver, [token]);
       }).rejects.toThrow(/belongs/);
@@ -323,13 +306,15 @@ describe("Wallet", () => {
 
     it("don't have trust, sender under control, should return transfer with pending state", async () => {
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
+      sinon.stub(Token.prototype, "beAbleToTransfer").resolves(true);
+      sinon.stub(Token.prototype, "pendingTransfer");
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
         state: Transfer.STATE.pending,
       });
-      const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
-      const sender = new Wallet(1);
-      const receiver = new Wallet(2);
+      const fn2 = sinon.stub(wallet, "hasTrust").resolves(false);
+      const sender = new Wallet(1, session);
+      const receiver = new Wallet(2, session);
       const token = new Token({
         id: 1,
         uuid: "uu",
@@ -358,8 +343,8 @@ describe("Wallet", () => {
         state: Transfer.STATE.requested,
       });
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
-      const sender = new Wallet(2);
-      const receiver = new Wallet(1);
+      const sender = new Wallet(2, session);
+      const receiver = new Wallet(1, session);
       const token = new Token({
         id: 1,
         uuid: "uu",
@@ -391,7 +376,7 @@ describe("Wallet", () => {
       const token = new Token({
         id: 1,
         uuid: "uu",
-      });
+      }, session);
       await wallet.transfer(sender, receiver, [token]);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.completed,
@@ -423,7 +408,7 @@ describe("Wallet", () => {
         id: 1,
         state: Transfer.STATE.pending,
       });
-      const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
+      const fn2 = sinon.stub(wallet, "hasTrust").resolves(false);
       const sender = new Wallet(1);
       const receiver = new Wallet(2);
       const transfer = await wallet.transferBundle(sender, receiver, 1);
@@ -450,7 +435,7 @@ describe("Wallet", () => {
         id: 1,
         state: Transfer.STATE.requested,
       });
-      const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
+      const fn2 = sinon.stub(wallet, "hasTrust").resolves(false);
       const sender = new Wallet(2);
       const receiver = new Wallet(1);
       const transfer = await wallet.transferBundle(sender, receiver, 1);
@@ -471,21 +456,47 @@ describe("Wallet", () => {
       fn2.restore();
     });
 
-    it("have trust, should finish successfully", async () => {
-      const sender = new Wallet(2);
-      const receiver = new Wallet(3);
+    it("have trust, not deduct, should finish successfully", async () => {
+      const sender = new Wallet(2, session);
+      const receiver = new Wallet(3, session);
       const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
-      const fn1 = sinon.stub(wallet, "checkTrust");
+      const fn1 = sinon.stub(Wallet.prototype, "hasTrust").resolves(true);
+      sinon.stub(Wallet.prototype, "isDeduct").resolves(false);
       const fn2 = sinon.stub(TransferRepository.prototype, "create");
       const fn3 = sinon.stub(Token.prototype, "completeTransfer");
       const fn4 = sinon.stub(TokenService.prototype, "getTokensByBundle").resolves([
-        new Token(1)
+        new Token(1, session)
       ]);
       await wallet.transferBundle(sender, receiver, 1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.completed,
       }));
       expect(fn3).calledWith();
+      fn0.restore();
+      fn1.restore();
+      fn2.restore();
+      fn3.restore();
+      fn4.restore();
+    });
+
+    it("have trust, is deduct, should pending", async () => {
+      const sender = new Wallet(2, session);
+      const receiver = new Wallet(3, session);
+      const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
+      const fn1 = sinon.stub(Wallet.prototype, "hasTrust").resolves(true);
+      sinon.stub(Wallet.prototype, "isDeduct").resolves(true);
+      const fn2 = sinon.stub(TransferRepository.prototype, "create");
+      const fn3 = sinon.stub(Token.prototype, "completeTransfer");
+      const fn4 = sinon.stub(TokenService.prototype, "getTokensByBundle").resolves([
+        new Token(1, session)
+      ]);
+      const fn5 = sinon.stub(Wallet.prototype, "hasControlOver");
+      fn5.onCall(0).resolves(false);
+      fn5.onCall(1).resolves(true);
+      await wallet.transferBundle(sender, receiver, 1);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.requested,
+      }));
       fn0.restore();
       fn1.restore();
       fn2.restore();
@@ -507,10 +518,28 @@ describe("Wallet", () => {
 
   describe("acceptTransfer", () => {
 
+    it("can not accept transfer who's state isn't pending", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.requested,
+      });  
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
+      sinon.stub(Token.prototype, "completeTransfer");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await jestExpect(async () => {
+        await wallet.acceptTransfer(1);
+      }).rejects.toThrow(/pending/);
+    });
+
     it("acceptTransfer", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.pending,
+      });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
-      const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1)]);
+      const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
       const fn4 = sinon.stub(Token.prototype, "completeTransfer");
       const fn5 = sinon.stub(WalletService.prototype, "getById");
       const fn6 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
@@ -531,6 +560,7 @@ describe("Wallet", () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
         id:1,
         source_entity_id: 1,
+        state: Transfer.STATE.pending,
         parameters: {
           bundle: {
             bundleSize: 1,
@@ -559,18 +589,70 @@ describe("Wallet", () => {
 
   describe("declineTransfer", () => {
 
-    it("declineTransfer", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+    it("can't decline if transfer state is neither the pending nor requested", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
+      sinon.stub(Token.prototype, "cancelTransfer");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await jestExpect(async () => {
+        await wallet.declineTransfer(1);
+      }).rejects.toThrow(/state/);
+    });
+
+    it("Can decline a 'pending' transfer", async () => {
+      const wallet2 = new Wallet(2);
+      const wallet3 = new Wallet(3);
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.pending,
+        source_entity_id: wallet2.getId(),
+        destination_entity_id: wallet3.getId(),
+      });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
-      const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1)]);
+      const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
       const fn4 = sinon.stub(Token.prototype, "cancelTransfer");
       const fn5 = sinon.stub(WalletService.prototype, "getById");
+      fn5.onCall(0).resolves(wallet2);
+      fn5.onCall(1).resolves(wallet3);
       const fn6 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       await wallet.declineTransfer(1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.cancelled,
       }));
       expect(fn4).calledWith();
+      expect(fn6).calledWith(wallet3);
+      fn1.restore();
+      fn2.restore();
+      fn3.restore();
+      fn4.restore();
+      fn5.restore();
+      fn6.restore();
+    });
+
+    it("Can decline a 'requested' transfer", async () => {
+      const wallet2 = new Wallet(2);
+      const wallet3 = new Wallet(3);
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.requested,
+        source_entity_id: wallet2.getId(),
+        destination_entity_id: wallet3.getId(),
+      });  
+      const fn2 = sinon.stub(TransferRepository.prototype, "update");
+      const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([new Token(1, session)]);
+      const fn4 = sinon.stub(Token.prototype, "cancelTransfer");
+      const fn5 = sinon.stub(WalletService.prototype, "getById");
+      fn5.onCall(0).resolves(wallet2);
+      fn5.onCall(1).resolves(wallet3);
+      const fn6 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await wallet.declineTransfer(1);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.cancelled,
+      }));
+      expect(fn4).calledWith();
+      expect(fn6).calledWith(wallet2);
       fn1.restore();
       fn2.restore();
       fn3.restore();
@@ -582,15 +664,50 @@ describe("Wallet", () => {
 
   describe("cancelTransfer", () => {
 
-    it("cancelTransfer", async () => {
-      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({id:1});  
+    it("Can cancel a 'pending' transfer", async () => {
+      const wallet2 = new Wallet(2);
+      const wallet3 = new Wallet(3);
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.pending,
+        source_entity_id: wallet2.getId(),
+        destination_entity_id: wallet3.getId(),
+      });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(WalletService.prototype, "getById");
+      fn3.onCall(0).resolves(wallet2);
+      fn3.onCall(1).resolves(wallet3);
       const fn4 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       await wallet.cancelTransfer(1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.cancelled,
       }));
+      expect(fn4).calledWith(wallet2);
+      fn1.restore();
+      fn2.restore();
+      fn3.restore();
+      fn4.restore();
+    });
+
+    it("Can cancel a 'requested' transfer", async () => {
+      const wallet2 = new Wallet(2);
+      const wallet3 = new Wallet(3);
+      const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        state: Transfer.STATE.requested,
+        source_entity_id: wallet2.getId(),
+        destination_entity_id: wallet3.getId(),
+      });  
+      const fn2 = sinon.stub(TransferRepository.prototype, "update");
+      const fn3 = sinon.stub(WalletService.prototype, "getById");
+      fn3.onCall(0).resolves(wallet2);
+      fn3.onCall(1).resolves(wallet3);
+      const fn4 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await wallet.cancelTransfer(1);
+      expect(fn2).calledWith(sinon.match({
+        state: Transfer.STATE.cancelled,
+      }));
+      expect(fn4).calledWith(wallet3);
       fn1.restore();
       fn2.restore();
       fn3.restore();
@@ -616,13 +733,13 @@ describe("Wallet", () => {
       fn4.restore();
     });
 
-    it("the transfer's sender is not me, should throw 403 no permission", async () => {
+    it("have no control over the transfer's sender , should throw 403 no permission", async () => {
       const fn1 = sinon.stub(TransferRepository.prototype, "getById").resolves([{
         id:1,
         source_entity_id: wallet.getId() + 1,
       }]);  
       const fn2 = sinon.stub(WalletService.prototype, "getById");
-      const fn3 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      const fn3 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(false);
       await jestExpect(async () => {
         await wallet.fulfillTransfer(1);
       }).rejects.toThrow(/permission/);
@@ -647,21 +764,193 @@ describe("Wallet", () => {
     });
   });
 
+  describe("fulfillTransferWithTokens", () => {
+
+    it("fulfillTransfer successfully", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+          bundle: {
+            bundleSize: 1,
+          }
+        }
+      });  
+      const token = new Token({id:1});
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      sinon.stub(Token.prototype, "toJSON").resolves({uuid:"xxx"});
+      sinon.stub(Token.prototype, "belongsTo").resolves(true);
+      sinon.stub(Token.prototype, "completeTransfer");
+      await wallet.fulfillTransferWithTokens(1, [token]);
+    });
+
+    it("Should not set tokens for non-bundle case", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+        }
+      });  
+      const token = new Token({id:1});
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await jestExpect(async () => {
+        await wallet.fulfillTransferWithTokens(1, [token]);
+      }).rejects.toThrow(/no need/i);
+    });
+
+    it("Too many tokens", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+          bundle: {
+            bundleSize: 1,
+          }
+        }
+      });  
+      const token = new Token({id:1});
+      const token2 = new Token({id:2});
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      sinon.stub(Token.prototype, "toJSON").resolves({uuid:"xxx"});
+      sinon.stub(Token.prototype, "belongsTo").resolves(true);
+      sinon.stub(Token.prototype, "completeTransfer");
+      await jestExpect(async () => {
+        await wallet.fulfillTransferWithTokens(1, [token, token2]);
+      }).rejects.toThrow(/too many/i);
+    });
+
+    it("Too few tokens", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+          bundle: {
+            bundleSize: 1,
+          }
+        }
+      });  
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      await jestExpect(async () => {
+        await wallet.fulfillTransferWithTokens(1, []);
+      }).rejects.toThrow(/too few/i);
+    });
+
+    it("Specified token do not belongs to the wallet", async () => {
+      sinon.stub(TransferRepository.prototype, "getById").resolves({
+        id:1,
+        source_entity_id: wallet.getId(),
+        state: Transfer.STATE.requested,
+        parameters:{
+          bundle: {
+            bundleSize: 1,
+          }
+        }
+      });  
+      const token = new Token({id:1});
+      sinon.stub(TransferRepository.prototype, "update");
+      sinon.stub(WalletService.prototype, "getById");
+      sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      sinon.stub(Token.prototype, "toJSON").resolves({uuid:"xxx"});
+      sinon.stub(Token.prototype, "belongsTo").resolves(false);
+      await jestExpect(async () => {
+        await wallet.fulfillTransferWithTokens(1, [token]);
+      }).rejects.toThrow(/belongs to/i);
+    });
+
+  });
+
   describe("getTransfers", () => {
 
     it("getTransfers", async () => {
+      const wallet2 = new Wallet(2);
       const fn1 = sinon.stub(TransferRepository.prototype, "getByFilter").resolves([{id:1}]);
-      const result = await wallet.getTransfers();
+      const result = await wallet.getTransfers(
+        Transfer.STATE.requested,
+        wallet2,
+      );
       expect(result).lengthOf(1);
+      expect(fn1).calledWith(
+        {
+          and: [{
+            or: [
+              {
+                source_entity_id: 1,
+              },{
+                destination_entity_id: 1,
+              },{
+                originator_entity_id: 1,
+              }
+            ],
+          },{
+            state: Transfer.STATE.requested,
+          },{
+            or: [
+              {
+                source_entity_id: 2,
+              },{
+                destination_entity_id: 2,
+              },{
+                originator_entity_id: 2,
+              }
+            ],
+          }]
+        }
+      );
       fn1.restore();
     });
+
   });
 
   describe("hasControlOver", () => {
 
     it("hasControlOver should pass if it is the same wallet", async () => {
-      const walletB = new Wallet(1);
-      await wallet.hasControlOver(walletB); 
+      const walletB = new Wallet(1, session);
+      const result = await wallet.hasControlOver(walletB); 
+      expect(result).eq(true);
+    });
+
+    it("hasControlOver should pass if manage/yield trust exists", async () => {
+      const wallet2 = new Wallet(2, session);
+      const fn = sinon.stub(TrustRepository.prototype, "getByFilter").resolves([{}]);
+      const result = await wallet.hasControlOver(wallet2); 
+      expect(result).eq(true);
+      expect(fn).calledWith({
+        or: [
+          {
+            and: [{
+              actor_entity_id: wallet.getId(),
+            },{
+              request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+            },{
+              target_entity_id: wallet2.getId(),
+            },{
+              state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+            }],
+          },{
+            and: [{
+              actor_entity_id: wallet2.getId(),
+            },{
+            request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+            },{
+            target_entity_id: wallet.getId(),
+            },{
+            state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+            }]
+          }
+        ]
+      });
     });
   });
 
@@ -716,19 +1005,21 @@ describe("Wallet", () => {
 
   describe("Deduct", () => {
 
-    it("the sender is me, should be able to pass", async () => {
+    it("the sender is me, should return false", async () => {
       const wallet = new Wallet(1);
       const sender = wallet;
       const receiver = new Wallet(2);
-      await wallet.checkDeduct(sender, receiver);
+      const result = await wallet.isDeduct(sender, receiver);
+      expect(result).eq(false);
     });
 
-    it("The sender is my sub wallet, should be able to pass", async () => {
+    it("The sender is my sub wallet, should return false", async () => {
       const wallet = new Wallet(1);
       const sender = new Wallet(2);
       const receiver = new Wallet(3);
       sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
-      await wallet.checkDeduct(sender, receiver);
+      const result = await wallet.isDeduct(sender, receiver);
+      expect(result).eq(false);
     });
 
     it("The sender isn't my sub wallet, should throw 403", async () => {
@@ -736,10 +1027,298 @@ describe("Wallet", () => {
       const sender = new Wallet(2);
       const receiver = new Wallet(3);
       sinon.stub(Wallet.prototype, "hasControlOver").resolves(false);
-      await jestExpect(async () => {
-        await wallet.checkDeduct(sender, receiver);
-      }).rejects.toThrow(/deduct/);
+      const result = await wallet.isDeduct(sender, receiver);
+      expect(result).eq(true);
     });
   });
+
+  describe("getSubWallet", () => {
+
+    it("get sub wallet successfully", async () => {
+      const wallet = new Wallet(1);
+      const subWallet = new Wallet(2);
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        actor_entity_id: wallet.getId(),
+        target_entity_id: subWallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      }]);
+      sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
+      const wallets = await wallet.getSubWallets();
+      expect(wallets).lengthOf(1);
+    });
+
+    it("get sub wallet which is state of yield", async () => {
+      const wallet = new Wallet(1);
+      const subWallet = new Wallet(2);
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        actor_entity_id: subWallet.getId(),
+        target_entity_id: wallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      }]);
+      sinon.stub(WalletService.prototype, "getById").resolves(subWallet);
+      const wallets = await wallet.getSubWallets();
+      expect(wallets).lengthOf(1);
+    });
+  });
+
+  describe("getTrustRelationshipsRequestedToMe", () => {
+
+    it("get one", async () => {
+      const wallet = new Wallet(1);
+      const wallet2 = new Wallet(2);
+      sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{
+        actor_entity_id: wallet2.getId(),
+        target_entity_id: wallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+      }]);
+      const list = await wallet.getTrustRelationshipsRequestedToMe()
+      expect(list).lengthOf(1);
+    });
+
+    it("get one requested to my sub wallet", async () => {
+      const wallet = new Wallet(1);
+      const wallet2 = new Wallet(2);
+      const subWallet = new Wallet(3);
+      sinon.stub(Wallet.prototype, "getSubWallets").resolves([subWallet]);
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships")
+      fn.onCall(0).resolves([{
+        actor_entity_id: wallet2.getId(),
+        target_entity_id: wallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+      }]);
+      fn.onCall(1).resolves([{
+        actor_entity_id: wallet2.getId(),
+        target_entity_id: subWallet.getId(),
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+      }]);
+      const list = await wallet.getTrustRelationshipsRequestedToMe()
+      expect(list).lengthOf(2);
+    });
+  });
+
+  describe("checkManageRecycle", () => {
+
+    it("A manage B, now B request to manage A, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipTrusted = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletB.getId(),
+        target_entity_id: walletA.getId(),
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([trustRelationshipTrusted]);
+      await jestExpect(async () => {
+        await walletA.checkManageCircle(trustRelationshipRequested);
+      }).rejects.toThrow(/circle/);
+    });
+
+    it("A manage B, now A request to yield B, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipTrusted = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([trustRelationshipTrusted]);
+      await jestExpect(async () => {
+        await walletA.checkManageCircle(trustRelationshipRequested);
+      }).rejects.toThrow(/circle/);
+    });
+
+    it("A yield B, now B request to yield A, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipTrusted = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletB.getId(),
+        target_entity_id: walletA.getId(),
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([trustRelationshipTrusted]);
+      await jestExpect(async () => {
+        await walletA.checkManageCircle(trustRelationshipRequested);
+      }).rejects.toThrow(/circle/);
+    });
+
+    it("A yield B, now A request to manage B, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipTrusted = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([trustRelationshipTrusted]);
+      await jestExpect(async () => {
+        await walletA.checkManageCircle(trustRelationshipRequested);
+      }).rejects.toThrow(/circle/);
+    });
+  });
+
+  describe("checkDuplicateRequest", () => {
+
+    it("A send B trust has been requested, now request again, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      const trustRelationshipRequesting = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([trustRelationshipRequested]);
+      await jestExpect(async () => {
+        await wallet.checkDuplicateRequest(trustRelationshipRequesting);
+      }).rejects.toThrow(/has been/);
+    });
+
+    it("A send B trust has been trusted, now request B receive A, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        request_type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      }
+      const trustRelationshipRequesting = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive,
+        actor_entity_id: walletB.getId(),
+        target_entity_id: walletA.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([trustRelationshipRequested]);
+      await jestExpect(async () => {
+        await wallet.checkDuplicateRequest(trustRelationshipRequesting);
+      }).rejects.toThrow(/has been/);
+    });
+
+    it("A manage B trust has been requested, now request B yield A, should throw error", async () => {
+      const walletA = new Wallet(1);
+      const walletB = new Wallet(2);
+      const trustRelationshipRequested = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        actor_entity_id: walletA.getId(),
+        target_entity_id: walletB.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      const trustRelationshipRequesting = {
+        id: 1,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
+        actor_entity_id: walletB.getId(),
+        target_entity_id: walletA.getId(),
+        state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      }
+      sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([trustRelationshipRequested]);
+      await jestExpect(async () => {
+        await wallet.checkDuplicateRequest(trustRelationshipRequesting);
+      }).rejects.toThrow(/has been/);
+    });
+  });
+
+  describe("getTransferById", () => {
+
+    it("Successfully", async () => {
+      sinon.stub(Wallet.prototype, "getTransfers").resolves([{
+        id: 1,
+      }]);
+      const transfer = await wallet.getTransferById(1);
+      expect(transfer).property("id").eq(1);
+    });
+
+    it("Not fond", async () => {
+      sinon.stub(Wallet.prototype, "getTransfers").resolves([]);
+      await jestExpect(async () => {
+        await wallet.getTransferById(1);
+      }).rejects.toThrow(/not find/);
+    });
+  });
+
+  describe("getTokensByTransferId", () => {
+
+    it("Completed transfer", async () => {
+      const transfer = { 
+        id: 1,
+        state: Transfer.STATE.completed,
+      };
+      const token = new Token(1);
+      sinon.stub(Wallet.prototype, "getTransferById").resolves(transfer);
+      const fn = sinon.stub(TokenService.prototype, "getTokensByTransferId").resolves([token]);
+      const tokens = await wallet.getTokensByTransferId(1);
+      expect(tokens).lengthOf(1);
+      expect(fn).calledWith(1);
+    });
+
+    it("Pending/requested transfer", async () => {
+      const transfer = { 
+        id: 1,
+        state: Transfer.STATE.pending,
+      };
+      const token = new Token(1);
+      sinon.stub(Wallet.prototype, "getTransferById").resolves(transfer);
+      const fn = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([token]);
+      const tokens = await wallet.getTokensByTransferId(1);
+      expect(tokens).lengthOf(1);
+      expect(fn).calledWith(1);
+    });
+
+  });
+
 
 });

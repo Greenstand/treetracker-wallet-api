@@ -1,4 +1,8 @@
 
+function getRandomArbitrary(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
 (async () => {
 
   const Knex = require('knex')
@@ -38,34 +42,19 @@
       tree_token_api_access: true,
       name: username
     }
-    const result0 = await trx('api_key').insert(apiKeyData).returning('*')
+    const result0 = await trx('wallets.api_key').insert(apiKeyData).returning('*')
     console.log(result0)
 
     // create wallet and password, salt
 
-    const result = await trx('entity').insert({
+    const result = await trx('wallets.wallet').insert({
       type: 'p',
-      first_name: faker.name.firstName(),
-      last_name: faker.name.lastName(),
-      wallet: username,
+      name: username,
       password: passwordHash,
       salt: salt
     }).returning('*')
     const entity = result[0]
     console.log(entity)
-
-
-    const roles = [
-      { entity_id: entity.id, role_name: 'list_trees', enabled: true },
-      { entity_id: entity.id, role_name: 'transfer', enabled: true },
-      { entity_id: entity.id, role_name: 'manage_accounts', enabled: true },
-      { entity_id: entity.id, role_name: 'transfer_bundle', enabled: true },
-      { entity_id: entity.id, role_name: 'accounts', enabled: true },
-    ]
-
-    for(role of roles){
-      await trx('entity_role').insert(role)
-    }
 
 
     // insert fake planters
@@ -75,7 +64,7 @@
       email: faker.internet.email(),
       phone: faker.phone.phoneNumber()
     }
-    const result2 = await trx('planter').insert(planterData).returning('*')
+    const result2 = await trx('public.planter').insert(planterData).returning('*')
     const planter = result2[0]
     console.log(planter)
 
@@ -86,16 +75,17 @@
         time_created: new Date(),
         time_updated: new Date(),
         planter_id: planter.id,
-        lat: 80.0,
-        lon: 120.0,
+        lat: getRandomArbitrary(-15,0),
+        lon: getRandomArbitrary(15,35),
         image_url: "https://treetracker-test-images.s3.eu-central-1.amazonaws.com/2020.07.20.03.00.39_-1.881482156711479_27.20611349640992_4d90da59-8f8a-41a5-afab-3b8bbb458214_IMG_20200719_223641_893600781461680891.jpg",
         uuid: uuidv4(),
         approved: true,
       }
-      const result3 = await trx('trees').insert(captureData).returning('*')
+      const result3 = await trx('public.trees').insert(captureData).returning('*')
       const capture = result3[0]
       trees.push(capture.id)
       console.log(capture.id)
+      await trx.raw('UPDATE trees SET estimated_geometric_location = ST_SetSRID(ST_MakePoint(lon, lat), 4326) WHERE id = ?', capture.id)
     }
 
     // create fake tokens
@@ -104,7 +94,7 @@
         tree_id: treeId,
         entity_id: entity.id
       }
-      const result4 = await trx('token').insert(tokenData).returning('*')
+      const result4 = await trx('wallets.token').insert(tokenData).returning('*')
       const token = result4[0]
       console.log(token.uuid)
     }

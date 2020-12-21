@@ -1,3 +1,4 @@
+
 #API Documentation (earlier API version) 
 
 https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest
@@ -198,6 +199,73 @@ So the trade-off way we are using is building model object JUST with the identit
 
 In some case, to reduce the traffic to the DB, model can cache the JSON object from DB by contructor the model object with it. In this case, the outside code which is using this model should be responsible for keep the cached JSON (in model object) consistent with the DB status. 
 
+### Seting up DB transaction
+
+To set up database transaction if needed:
+
+```
+const session = new Session();
+//begin transaction
+try{
+  await session.beginTransaction();
+  const walletService = new WalletService(session);
+  const walletLogin = await walletService.getById(res.locals.wallet_id);
+
+  const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
+  const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
+
+  let result;
+  if(req.body.tokens){
+    const tokens = [];
+    const tokenService = new TokenService(session);
+    for(let uuid of req.body.tokens){
+      const token = await tokenService.getByUUID(uuid); 
+      tokens.push(token);
+    }
+    result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
+  }else{
+    result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
+  }
+  const transferService = new TransferService(session);
+  result = await transferService.convertToResponse(result);
+  if(result.state === Transfer.STATE.completed){
+    res.status(201).json(result);
+  }else if(
+    result.state === Transfer.STATE.pending || 
+    result.state === Transfer.STATE.requested){
+    res.status(202).json(result);
+  }else{
+    expect.fail();
+  }
+  //commit transaction
+  await session.commitTransaction();
+}catch(e){
+  if(e instanceof HttpError && !e.shouldRollback()){
+    //if the error type is HttpError, means the exception has been handled
+    await session.commitTransaction();
+    throw e;
+  }else{
+    //unknown exception, rollback the transaction
+    await session.rollbackTransaction();
+    throw e;
+  }
+}
+```
+
+By wrapping all the code in a try/catch block, if everything goes well, when the code reach to the line `await session.commitTransaction()`, all those changing happned in this code block would be commited to DB. If somthine went wrong, there are three cases:
+
+1. If this is a unkown error, for example, the DB lib thrown something like: connection to DB is broken, then the transaction would rollback to the start point. 
+
+2. If this is a error thrown by ourselves, we can chose to commit or rollback by setting the flag in HttpError:
+
+
+```
+throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`, true);
+```
+
+The third parameter `true` means please rollback. (This is the default case for HttpError); 
+
+3. If set the HttpError's `toRollback` (the third parameter) to false, then, the transaction would commit anyway.
 
 ### About Class vs literal object
 

@@ -5,6 +5,7 @@ const Wallet = require("../models/Wallet");
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 const Joi = require("joi");
+const Session = require("../models/Session");
 
 authRouter.post(
   "/",
@@ -14,18 +15,17 @@ authRouter.post(
       req.body,
       Joi.object({
         wallet: Joi.alternatives().try(
-          Joi.string().alphanum().min(4).max(32),
+          Joi.string().min(4).max(32),
           Joi.number().min(4).max(32)
         ).required(),
         password: Joi.string()
-          .pattern(new RegExp("^[a-zA-Z0-9]+$"))
-          .min(8)
           .max(32)
           .required(),
       })
     );
     const { wallet, password } = req.body;
-    const walletService = new WalletService();
+    const session = new Session();
+    const walletService = new WalletService(session);
     
     let walletObject = await walletService.getByIdOrName(wallet);
     walletObject = await walletObject.authorize(password);

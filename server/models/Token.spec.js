@@ -9,8 +9,10 @@ chai.use(sinonChai);
 const {expect} = chai;
 const TransactionRepository = require("../repositories/TransactionRepository");
 const Wallet = require("./Wallet");
+const Session = require("./Session");
 
 describe("Token", () => {
+  let session = new Session();
 
   beforeEach(() => {
   })
@@ -18,7 +20,7 @@ describe("Token", () => {
   it("constructor by object", () => {
     const token = new Token({
       id: 1,
-    });
+    }, session);
     expect(token).instanceOf(Token);
     expect(token.getId()).eq(1);
   });
@@ -26,7 +28,7 @@ describe("Token", () => {
   describe("pendingTransfer", () => {
 
     it("pendingTransfer successfully", async () => {
-      const token = new Token(1);
+      const token = new Token(1, session);
       const transfer = {id:1};
       const fn1 = sinon.stub(TokenRepository.prototype, "update");
       await token.pendingTransfer(transfer);
@@ -42,7 +44,7 @@ describe("Token", () => {
   describe("completeTransfer", () => {
 
     it("completeTransfer successfully", async () => {
-      const token = new Token(1);
+      const token = new Token(1, session);
       const transfer = {
         id:1,
         source_entity_id: 1,
@@ -71,7 +73,7 @@ describe("Token", () => {
   describe("cancelTransfer", () => {
 
     it("cancelTransfer successfully", async () => {
-      const token = new Token(1);
+      const token = new Token(1, session);
       const transfer = {
         id:1,
         source_entity_id: 1,
@@ -94,8 +96,8 @@ describe("Token", () => {
   describe("belongsTo", () => {
 
     it("belongsTo", async () => {
-      const token = new Token(1);
-      const wallet = new Wallet(2);
+      const token = new Token(1, session);
+      const wallet = new Wallet(2, session);
       const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
         id: 1,
         entity_id: 2,
@@ -106,8 +108,8 @@ describe("Token", () => {
     });
 
     it("not belongsTo", async () => {
-      const token = new Token(1);
-      const wallet = new Wallet(2);
+      const token = new Token(1, session);
+      const wallet = new Wallet(2, session);
       const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
         id: 1,
         entity_id: 1,
@@ -116,6 +118,17 @@ describe("Token", () => {
       expect(fn1).calledWith();
       fn1.restore();
     });
+  });
+
+  describe("Transactions", () => {
+
+    it("getTransactions", async () => {
+      const token = new Token(1);
+      sinon.stub(TransactionRepository.prototype, "getByFilter").resolves([{}]);
+      const transactions = await token.getTransactions();
+      expect(transactions).lengthOf(1);
+    });
+
   });
 
 });

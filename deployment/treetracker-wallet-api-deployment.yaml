@@ -17,6 +17,7 @@ spec:
       containers:
       - name: treetracker-wallet-api
         image: greenstand/treetracker-wallet-api:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         env:
@@ -35,3 +36,9 @@ spec:
               secretKeyRef:
                 name: treetracker-api-database-connection
                 key: db
+          - name: DATABASE_SCHEMA
+            value: wallets
+          - name: NODE_LOG_LEVEL
+            value: trace
+          - name: REMOTE_LOG_URL
+            value: http://104.131.78.177:8000

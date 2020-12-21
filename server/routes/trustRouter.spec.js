@@ -50,7 +50,7 @@ describe("trustRouter", () => {
         .post("/")
         .send({
           trust_request_type: "send",
-          target_wallet: "test",
+          requestee_wallet: "test",
         });
       expect(res).property("statusCode").eq(200);
       expect(fn).calledWith(
@@ -60,8 +60,34 @@ describe("trustRouter", () => {
       )
     });
     
-    //TODO check the schema validation
-    it.skip("", () => {
+    it("missed parameters", async () => {
+      const res = await request(app)
+        .post("/")
+        .send({
+        });
+      expect(res).property("statusCode").eq(422);
+    });
+
+    it("missed parameters", async () => {
+      const res = await request(app)
+        .post("/")
+        .send({
+          trust_request_type: "send",
+        });
+      expect(res).property("statusCode").eq(422);
+    });
+
+    it("wrong parameters", async () => {
+      const wallet = new Wallet(1);
+      sinon.stub(WalletService.prototype, "getByName").resolves(wallet);
+      sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+      const res = await request(app)
+        .post("/")
+        .send({
+          trust_request_type: "sendError",
+          requestee_wallet: "wallet",
+        });
+      expect(res).property("statusCode").eq(400);
     });
 
   });

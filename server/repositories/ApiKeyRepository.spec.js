@@ -3,13 +3,14 @@ const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
 const tracker = mockKnex.getTracker();
 const ApiKeyRepository = require("./ApiKeyRepository");
+const Session = require("../models/Session");
 
 describe("ApiKeyRepository", () => {
   let apiKeyRepository;
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
-    apiKeyRepository = new ApiKeyRepository();
+    apiKeyRepository = new ApiKeyRepository(new Session());
   })
 
   afterEach(() => {

@@ -4,21 +4,22 @@ const HttpError = require("../utils/HttpError");
 const expect = require('expect-runtime');
 
 class WalletService {
-  constructor() {
-    this.walletRepository = new WalletRepository();
+  constructor(session){
+    this._session = session;
+    this.walletRepository = new WalletRepository(session);
   }
 
   async getById(id) {
     const object = await this.walletRepository.getById(id);
     expect(object).match({ id: expect.any(Number) });
-    const wallet = new Wallet(object.id);
+    const wallet = new Wallet(object.id, this._session);
     return wallet;
   }
 
   async getByName(name) {
     const object = await this.walletRepository.getByName(name);
     expect(object).match({ id: expect.any(Number) });
-    const wallet = new Wallet(object.id);
+    const wallet = new Wallet(object.id, this._session);
     return wallet;
   }
 
@@ -33,7 +34,7 @@ class WalletService {
     }
 
     expect(walletObject).match({ id: expect.any(Number) });
-    const wallet = new Wallet(walletObject.id);
+    const wallet = new Wallet(walletObject.id, this._session);
     return wallet;
   }
 }

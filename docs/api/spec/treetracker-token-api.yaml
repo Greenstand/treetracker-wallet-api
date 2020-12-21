@@ -71,12 +71,16 @@ paths:
               - type: string
               - type: number
             example: zaven2
-        - name: token
-          description: ""
+        - name: start
           in: query
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
+          style: form
+          explode: true
           schema:
-            type: string
-            example: "496ffa8e-2fa2-488c-98e1-acf9b57c230b"
+            type: integer
+            format: int32
+            example: 10
       responses:
         '200':
           description: ''
@@ -273,6 +277,25 @@ paths:
   
   
   /transfers/{transfer_id}:
+    get:
+      tags:
+      - Transfers
+      summary: 'Get information of a single transfer'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: ''
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     delete:
       tags:
       - Transfers
@@ -374,6 +397,28 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+
+  /transfers/{transfer_id}/tokens:
+    get:
+      tags:
+      - Transfers
+      summary: 'Get all tokens linked to a single transfer'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: ''
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: ''
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
   /events:
     get:
       tags: 
@@ -687,23 +732,14 @@ components:
     walletItem:
       title: Wallet Details
       properties:
-        type:
-          type: string
         wallet:
           type: string
         email:
           type: string
         phone:
           type: string
-        access:
-          type: string
-          description: primary, managed
         tokens_in_wallet:
           type: integer
-        trust_relationships:
-          type: array
-          items:
-            $ref: "#/components/schemas/trustRelationshipItem"
     transferrequest:
       title: transferrequest
       required:
@@ -907,11 +943,12 @@ components:
       properties:
         trust_request_type:
           type: string
-        actor_wallet:
+        requester_wallet:
           type: string
-          description: "This is optional, if ignore the actor_wallet, then the defaul actor_wallet should be the current logged in wallet"
-        target_wallet:
+          description: "This is optional, if ignore it, then the default requester_wallet should be the current logged in wallet"
+        requestee_wallet:
           type: string
+          description: "The wallet to who this request are targetting"
     historyResponse:
       title: History Response
       type: object
