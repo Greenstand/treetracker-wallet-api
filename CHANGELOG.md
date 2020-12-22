@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.4.0...v1.4.1) (2020-12-22)
+
+
+### Bug Fixes
+
+* unit test to remove uneccessary visit to the DB ([b6f71c3](https://github.com/Greenstand/treetracker-wallet-api/commit/b6f71c3ee912df61206bc6d6f9463e177f9f015c))
+
 # [1.4.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.3.0...v1.4.0) (2020-12-16)
 
 
