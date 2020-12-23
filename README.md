@@ -89,7 +89,7 @@ If you are using the postgres user:
 DATABASE_URL="postgresql://postgres@localhost:5432/[database_name]";
 
 ```
-
+See the .env.example file for the format and structure. 
 
 Here are some resources to get started on local database set up and migration:
 * https://postgresapp.com

@@ -124,7 +124,7 @@ async function seed() {
     });
 
   //walletC
-  await knex('wallets.wallet')
+  await knex('wallet')
     .insert({
       id: walletC.id,
       type: walletC.type,
