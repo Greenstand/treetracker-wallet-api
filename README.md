@@ -71,30 +71,30 @@ CREATE DATABASE dbname
     ENCODING = 'UTF8';
 `
 
-We recommend setting up your Postgres server/database locally and exporting your connection string in ./config/config.js as such:
+We recommend setting up your Postgres server/database locally and assigning setting up your environment variables in an .env file in your root repository:
+
+.env file should look like this:
 
 ```
-exports.connectionString = "postgresql://[your_username]:[password]@localhost:5432/[database_name]";
+DATABASE_URL=postgresql://[your_username]:[password]@localhost:5432/[database_name]
+DATABASE_SCHEMA=wallets
+PUBLIC_KEY="[copy and paste all contents from your jwtRS256.key.pub]"
+PRIVATE_KEY="[copy and paste all contents from your jwtRS256.key]"
+NODE_LOG_LEVEL=trace
 
 ```
-
 If you are using the postgres user:
 
 ```
-exports.connectionString = "postgresql://postgres@localhost:5432/[database_name]";
+DATABASE_URL="postgresql://postgres@localhost:5432/[database_name]";
 
 ```
+
 
 Here are some resources to get started on local database set up and migration:
 * https://postgresapp.com
 * pgAdmin and DBeaver are great GUI options to use for navigating your local db 
 * https://www.postgresql.org/docs/9.1/app-pgdump.html
-
-After setting up your local database, you can then copy over the public schema from our database seeding file into your own local db. The file can be found at ./database/treetracker-wallet-seed-schema-only.pgsql. Run the following command to build the relevant tables in your local db's public schema:
-
-```
-psql -h localhost -U <your username> -d <your dbname> -a -f treetracker-wallet-seed-schema-only.pgsql
-```
 
 Next, create a new wallets schema in your local database. Navigate to the database folder and create a database.json file populated with the credentials for your local server:
 
@@ -136,7 +136,7 @@ Delete and recreate your wallets schema and then open postgress terminal and run
 \c <db name> 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
-Now re-run the "db-migrate --env dev up" command.
+Now re-run the "db-migrate --env dev up" command in your normal terminal in the database directory.
 
 Now you should be all set up and ready to go!
 
