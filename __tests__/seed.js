@@ -1,15 +1,9 @@
 /*
  * seed data to DB for testing
  */
-const pool = require('../server/database/database.js');
 const uuid = require('uuid');
 const log = require('loglevel');
-const assert = require('assert');
-const knex = require('knex')({
-  client: 'pg',
-//  debug: true,
-  connection: require('../config/config').connectionString,
-});
+const knex = require("../server/database/knex");
 
 
 const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
@@ -130,7 +124,7 @@ async function seed() {
     });
 
   //walletC
-  await knex('wallet')
+  await knex('wallets.wallet')
     .insert({
       id: walletC.id,
       type: walletC.type,
@@ -149,45 +143,6 @@ async function seed() {
       request_type: "manage",
       state: "trusted",
     });
-
-//  //entity
-//  await knex('entity')
-//    .insert({
-//      id: wallet.id,
-//      type: wallet.type,
-//      name: wallet.name,
-//      wallet: wallet.name,
-//      password: wallet.passwordHash,
-//      salt: wallet.salt,
-//    });
-
-
-  //entity role
-//  log.debug('insert role');
-//  await knex('entity_role')
-//    .insert([{
-//      entity_id: wallet.id,
-//      role_name: 'list_trees',
-//      enabled: true,
-//    },{
-//      entity_id: wallet.id,
-//      role_name: 'manage_accounts',
-//      enabled: true,
-//    },{
-//      entity_id: wallet.id,
-//      role_name: 'accounts',
-//      enabled: true,
-//    }]);
-
-
-//  //tree
-//  await knex('trees')
-//    .insert({
-//      id: tree.id,
-//      time_created: new Date(),
-//      time_updated: new Date(),
-//    });
-
 
   // token
   log.log('seed token');
@@ -209,8 +164,6 @@ async function clear() {
   await knex('transaction').del();
   await knex('token').del();
   await knex('wallet').del();
-//  await knex('entity_role').del();
-//  await knex('entity').del();
   await knex('wallet_trust').del();
   await knex('transfer').del();
 }
