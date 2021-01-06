@@ -1,16 +1,8 @@
 
-#API Documentation (earlier API version) 
+#API Documentation 
 
-https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest
+To view the specs for the new API visit https://editor.swagger.io and load the YAML file from /docs/api/spec/treetracker-token-api.yaml
 
-To view the specs for the new API we are currently building, go to https://editor.swagger.io and load the YAML file from /docs/api/spec/treetracker-token-api.yaml
-
-# Video Tutorial
-* https://youtu.be/6WjlMb_UG5o    Greenstand - API via Postman Tutorial Video
-
-* https://youtu.be/hRv5mcxlWX8    Greenstand -  Tokens Transfer  Tutorial Video
-
-* https://youtu.be/H6levADLJ4E    Greenstand - Permission Access Tutorial Video
 
 # Getting Started
   
