@@ -60,7 +60,7 @@ jobs:
         CI: true
         
     - name: run integration tests
-      run: npm run test-integration-ci
+      run: npm run test-integration
       working-directory: ${{ env.project-directory }}
       env:  
         DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
