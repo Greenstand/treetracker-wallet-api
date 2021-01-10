@@ -21,7 +21,7 @@ npm install
 
 ```
 
-While running the server locally, generate your own public and private JWT keys in your config folder using the keygen script below:
+While running the server locally, navigate to the config folder and generate your own public and private JWT keys here using the keygen script below:
 
 ```
 ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
@@ -63,30 +63,35 @@ CREATE DATABASE dbname
     ENCODING = 'UTF8';
 `
 
-We recommend setting up your Postgres server/database locally and exporting your connection string in ./config/config.js as such:
+We recommend setting up your Postgres server/database locally and assigning setting up your environment variables in an .env file in your root repository:
+
+.env file should look like this:
 
 ```
-exports.connectionString = "postgresql://[your_username]:[password]@localhost:5432/[database_name]";
+DATABASE_URL=postgresql://[your_username]:[password]@localhost:5432/[database_name]
+DATABASE_SCHEMA=wallets
+PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
+PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
+NODE_LOG_LEVEL=trace
+PUBLIC_KEY="[copy and paste all contents from your jwtRS256.key.pub]"
+PRIVATE_KEY="[copy and paste all contents from your jwtRS256.key]"
+NODE_LOG_LEVEL=trace
 
 ```
+Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files.  **Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here.
 
 If you are using the postgres user:
 
 ```
-exports.connectionString = "postgresql://postgres@localhost:5432/[database_name]";
+DATABASE_URL="postgresql://postgres@localhost:5432/[database_name]";
 
 ```
+See the .env.example file for the format and structure. 
 
 Here are some resources to get started on local database set up and migration:
 * https://postgresapp.com
 * pgAdmin and DBeaver are great GUI options to use for navigating your local db 
 * https://www.postgresql.org/docs/9.1/app-pgdump.html
-
-After setting up your local database, you can then copy over the public schema from our database seeding file into your own local db. The file can be found at ./database/treetracker-wallet-seed-schema-only.pgsql. Run the following command to build the relevant tables in your local db's public schema:
-
-```
-psql -h localhost -U <your username> -d <your dbname> -a -f treetracker-wallet-seed-schema-only.pgsql
-```
 
 Next, create a new wallets schema in your local database. Navigate to the database folder and create a database.json file populated with the credentials for your local server:
 
@@ -128,7 +133,7 @@ Delete and recreate your wallets schema and then open postgress terminal and run
 \c <db name> 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
-Now re-run the "db-migrate --env dev up" command.
+Now re-run the "db-migrate --env dev up" command in your normal terminal in the database directory.
 
 Now you should be all set up and ready to go!
 
@@ -461,6 +466,8 @@ Chai is not good for testing/catching errors throwing from internal stack. We ar
 
 # Contributing
 
-Create your local git branch and rebase it from the shared master branch. Please make sure to rebuild your local database schemas using the migrations (as illustrated in the Database Setup section above) to capture any latest updates/changes.
+Create your local git branch and rebase it from the shared master branch. Please make sure to 1) npm install and 2) delete and rebuild your local database wallet schema using the migrations (as illustrated in the Database Setup section above) to capture any latest updates/changes.
+
+Please follow this convention for commit messages [here](https://www.conventionalcommits.org/en/v1.0.0/)
 
 When you are ready to submit a pull request from your local branch, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting. Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. 
