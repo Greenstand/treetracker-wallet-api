@@ -152,12 +152,63 @@ describe("tokenRouter", () => {
     });
     sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
     const res = await request(app)
-      .get("/xxxx/transactions");
+      .get("/xxxx/transactions/?limit=1");
     expect(res).property("statusCode").eq(200);
     expect(res.body.history).lengthOf(1);
     expect(res.body.history[0]).property("token").eq("xxx");
     expect(res.body.history[0]).property("sender_wallet").eq("test");
     expect(res.body.history[0]).property("receiver_wallet").eq("test");
+  });
+
+  it("/tokens/{token_uuid}/transactions: limit parameters missed", async () => {
+    const res = await request(app)
+      .get("/xxxx/transactions");
+    expect(res).property("statusCode").eq(422);
+  });
+
+  it("/xxx/transactions limit and offset successfully", async () => {
+    const token = new Token(1);
+    const wallet = new Wallet(1);
+    sinon.stub(TokenService.prototype, "getByUUID").resolves(token);
+    sinon.stub(token, "toJSON").resolves({
+      entity_id: 1,
+    });
+    sinon.stub(token, "getTransactions").resolves([
+      {id: 1,}, {id: 2,}, {id: 3,}, {id: 4,}, {id: 5,}, {id: 6,}, {id: 7,}, {id: 8,}, {id: 9,}, {id: 10,}
+  ]);
+    sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+    sinon.stub(TokenService.prototype, "convertToResponse").resolves({
+      token: "xxx",
+      sender_wallet: "test",
+      receiver_wallet: "test",
+    }).onCall(4).resolves({
+      token: "xxx",
+      sender_wallet: "number5",
+      receiver_wallet: "number5",
+    }).onCall(5).resolves({
+      token: "xxx",
+      sender_wallet: "number6",
+      receiver_wallet: "number6",
+    }).onCall(6).resolves({
+      token: "xxx",
+      sender_wallet: "number7",
+      receiver_wallet: "number7",
+    });
+    sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
+    const res = await request(app)
+      .get("/xxxx/transactions?limit=3&start=5");
+    expect(res).property("statusCode").eq(200);
+    expect(res.body.history).lengthOf(3);
+    expect(res.body.history[0]).property("sender_wallet").eq("number5");
+    expect(res.body.history[0]).property("receiver_wallet").eq("number5");
+
+    expect(res.body.history[1]).property("sender_wallet").eq("number6");
+    expect(res.body.history[1]).property("receiver_wallet").eq("number6");
+
+    expect(res.body.history[2]).property("sender_wallet").eq("number7");
+    expect(res.body.history[2]).property("receiver_wallet").eq("number7");
+
+
   });
 
 });

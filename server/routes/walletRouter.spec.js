@@ -41,18 +41,40 @@ describe("walletRouter", ()=> {
 
   describe("get /wallets", () => {
 
+    it("limit parameters missed", async () => {
+      const res = await request(app)
+        .get("/");
+      expect(res).property("statusCode").eq(422);
+    });
+
     it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({id:1}));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
       sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(10);
       const fn = sinon.stub(Wallet.prototype, "getSubWallets").resolves([ new Wallet({id:2})]);
       const res = await request(app)
-        .get('/');
+        .get('/?limit=2');
       expect(res).property("statusCode").eq(200);
       expect(res.body.wallets).lengthOf(2);
       expect(res.body.wallets[0]).property("tokens_in_wallet").eq(10);
     });
   })
+
+  it("limit and offet working successfully", async () => {
+    sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({id:2}));
+    sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:2});
+    sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(10);
+    const fn = sinon.stub(Wallet.prototype, "getSubWallets").resolves([ new Wallet({id:10}), new Wallet({id:11}), new Wallet({id:12})]);
+    const res = await request(app)
+      .get('/?limit=3&start=2');
+    console.log(res.body.wallets);
+    expect(res).property("statusCode").eq(200);
+    expect(res.body.wallets).lengthOf(3);
+    expect(res.body.wallets[0]).property("tokens_in_wallet").eq(10);
+    expect(res.body.wallets[0]).property("id").eq(11);
+    expect(res.body.wallets[1]).property("id").eq(12);
+    expect(res.body.wallets[2]).property("id").eq(2);
+  });
 
 
   describe("get /wallets/:wallet_id/trust_relationships", () => {
@@ -92,4 +114,4 @@ describe("walletRouter", ()=> {
     });
   });
 
-})
+});

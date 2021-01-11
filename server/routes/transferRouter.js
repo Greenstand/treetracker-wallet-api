@@ -273,9 +273,11 @@ transferRouter.get("/",
           Joi.string(),
           Joi.number().min(4).max(32)
         ),
+        limit: Joi.number().required(),
+        start: Joi.number().min(1).max(10000).integer()
       })
     );
-    const {state, wallet} = req.query;
+    const {state, wallet, limit, start} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
@@ -290,11 +292,18 @@ transferRouter.get("/",
     
     const result = await walletTransfer.getTransfers(state);
     const transferService = new TransferService(session);
-    const json = [];
+    let json = [];
+    console.log(result);
     for(let t of result){
       const j = await transferService.convertToResponse(t);
       json.push(j);
     }
+    console.log(json);
+
+    //filter transfer json by query
+    const numStart = parseInt(start);
+    const numLimit = parseInt(limit);
+    json = json.slice(numStart?numStart-1:0, numStart+numLimit - 1);
     res.status(200).json({transfers: json});
   })
 );
@@ -327,6 +336,8 @@ transferRouter.get('/:transfer_id/tokens',
       req.params,
       Joi.object({
         transfer_id: Joi.number().required(),
+        limit: Joi.number().required(),
+        start: Joi.number().min(1).max(10000).integer(),
       })
     );
     const session = new Session();

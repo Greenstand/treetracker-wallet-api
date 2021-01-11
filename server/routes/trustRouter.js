@@ -14,6 +14,17 @@ trustRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    Joi.assert(
+      req.query,
+      Joi.object({
+        state: Joi.string(),
+        type: Joi.string(),
+        request_type: Joi.string(),
+        limit: Joi.number().required(),
+        start: Joi.number().min(1).max(10000).integer(),
+      })
+    );
+    const {state, type, request_type, limit, start} = req.query;
     expect(res.locals).property("wallet_id").number();
     const session = new Session();
     const walletService = new WalletService(session);
@@ -37,11 +48,19 @@ trustRouter.get('/',
         }
       }
     }
-    const trust_relationships_json = [];
+    let trust_relationships_json = [];
     for(let t of trust_relationships){
       const j = await trustService.convertToResponse(t);
       trust_relationships_json.push(j);
     }
+
+    //filter trust_relationships json by query
+    let numStart = parseInt(start);
+    let numLimit = parseInt(limit);
+    let numBegin = numStart?numStart-1:0;
+    let numEnd = numBegin+numLimit;
+    trust_relationships_json = trust_relationships_json.slice(numBegin, numEnd);
+
     res.status(200).json({
       trust_relationships: trust_relationships_json,
     });
