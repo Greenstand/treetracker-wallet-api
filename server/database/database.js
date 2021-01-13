@@ -3,8 +3,11 @@ const config = require('../../config/config');
 
 
 const pool = new Pool({
-  connectionString: config.connectionString
+  connectionString: config.connectionString,
+
 });
+
+pool.query("SET search_path TO 'wallets';")
 
 pool.on('connect', (client) => {
   //console.log("connected", client);

@@ -1,3 +1,26 @@
+# [1.5.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.4.1...v1.5.0) (2021-01-10)
+
+
+### Bug Fixes
+
+* clean up and gitignore edit ([4db5a39](https://github.com/Greenstand/treetracker-wallet-api/commit/4db5a396b85fcee476c8f8ada9a418291d3eeacb))
+* properly set up environment variables for all tests ([410297a](https://github.com/Greenstand/treetracker-wallet-api/commit/410297a88784b743f0f94550b401505d6874da42))
+* separate CI PR- flow tests ([8e9a64f](https://github.com/Greenstand/treetracker-wallet-api/commit/8e9a64f705481eb3463fd96330f3d019cff24bc0))
+* update gitignore ([98f4dee](https://github.com/Greenstand/treetracker-wallet-api/commit/98f4dee661f97efeb7a7374c8d1097f9b6afa82b))
+* update gitignore ([6b9a48f](https://github.com/Greenstand/treetracker-wallet-api/commit/6b9a48fad1ce70cea7023a0f5dd2694d778f44bf))
+
+
+### Features
+
+* update README ([abeaed7](https://github.com/Greenstand/treetracker-wallet-api/commit/abeaed743e9b4866f5cf3f84ab02655b2c0c029d))
+
+## [1.4.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.4.0...v1.4.1) (2020-12-22)
+
+
+### Bug Fixes
+
+* unit test to remove uneccessary visit to the DB ([b6f71c3](https://github.com/Greenstand/treetracker-wallet-api/commit/b6f71c3ee912df61206bc6d6f9463e177f9f015c))
+
 # [1.4.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.3.0...v1.4.0) (2020-12-16)
 
 
