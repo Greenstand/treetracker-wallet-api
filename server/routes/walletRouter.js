@@ -25,6 +25,10 @@ walletRouter.get('/',
     for (const wallet of subWallets) {
       const json = await wallet.toJSON();
       json.tokens_in_wallet = await tokenService.countTokenByWallet(wallet); 
+      // Hide unnecessary fields 
+      delete json.password;
+      delete json.salt;
+      delete json.type;
       walletsJson.push(json);
     }
 
