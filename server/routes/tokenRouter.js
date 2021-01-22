@@ -81,6 +81,18 @@ tokenRouter.get('/:uuid/transactions',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    // validate input
+    Joi.assert(
+      req.query,
+      Joi.object({
+        limit: Joi.number().required(),
+        start: Joi.number().min(1).max(10000).integer(),
+        token_uuid: Joi.string(), //TODO: not sure how to validate
+        transactions: Joi.string(),
+      })
+    );
+    const {limit, start} = req.query;
+
     const session = new Session();
     const {uuid} = req.params;
     const tokenService = new TokenService(session);
@@ -98,11 +110,21 @@ tokenRouter.get('/:uuid/transactions',
       throw new HttpError(401, "Have no permission to visit this token");
     }
     const transactions = await token.getTransactions();
-    const response = [];
+    let response = [];
     for(const t of transactions){
       const transaction = await tokenService.convertToResponse(t);
       response.push(transaction);
     }
+
+    //filter transaction json by query
+    let numStart = parseInt(start);
+    let numLimit = parseInt(limit);
+    let numBegin = numStart?numStart-1:0;
+    let numEnd=numBegin+numLimit;
+    response = response.slice(numBegin, numEnd);
+    // console.log(numBegin);
+    // console.log(numEnd);
+    // console.log(response);
     res.status(200).json({
       history: response,
     });

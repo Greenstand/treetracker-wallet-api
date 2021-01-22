@@ -12,6 +12,14 @@ walletRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    Joi.assert(
+      req.query,
+      Joi.object({
+        limit: Joi.number().required(),
+        start: Joi.number().min(1).max(10000).integer(),
+      })
+    );
+    const {limit, start} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
@@ -19,7 +27,7 @@ walletRouter.get('/',
     //myself
     subWallets.push(loggedInWallet);
     
-    const walletsJson = [];
+    let walletsJson = [];
 
     const tokenService = new TokenService(session);
     for (const wallet of subWallets) {
@@ -27,6 +35,13 @@ walletRouter.get('/',
       json.tokens_in_wallet = await tokenService.countTokenByWallet(wallet); 
       walletsJson.push(json);
     }
+
+    let numStart = parseInt(start);
+    let numLimit = parseInt(limit);
+    let numBegin = numStart?numStart-1:0;
+    let numEnd=numBegin+numLimit;
+    console.log(numBegin, numEnd);
+    walletsJson = walletsJson.slice(numBegin, numEnd);
 
     res.status(200).json({
       wallets: walletsJson

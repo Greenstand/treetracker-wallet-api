@@ -93,14 +93,33 @@ describe("trustRouter", () => {
   });
 
   describe("get /trust_relationships", () => {
+
     it("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
       const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{}]);
       const res = await request(app)
-        .get(`/?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}`);
+        .get(`/?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}&limit=1`);
       expect(res).property("statusCode").eq(200);
       expect(res.body.trust_relationships).lengthOf(1);
+      expect(fn).calledWith(
+        TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+        TrustRelationship.ENTITY_TRUST_TYPE.send,
+        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
+      )
+    });
+
+    it("limit and offset working successfully", async () => {
+      // TODO: need to update the test
+      sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(1));
+      sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:1});
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{},{},{},{}]);
+      const res = await request(app)
+        .get(`/?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}&limit=3`);
+      expect(res).property("statusCode").eq(200);
+      console.log(res.body.trust_relationships);
+      //get 3 from 4 items
+      expect(res.body.trust_relationships).lengthOf(3);
       expect(fn).calledWith(
         TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
         TrustRelationship.ENTITY_TRUST_TYPE.send,

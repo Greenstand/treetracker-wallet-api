@@ -192,7 +192,7 @@ describe('Wallet integration tests', () => {
 
         beforeEach(async () => {
           const res = await request(server)
-            .get(`/transfers?state=pending&wallet=${seed.wallet.name}`)
+            .get(`/transfers?state=pending&wallet=${seed.wallet.name}&limit=1000`)
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${tokenB}`);
           expect(res).to.have.property('statusCode', 200);
@@ -214,7 +214,7 @@ describe('Wallet integration tests', () => {
 
           it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed 1`, async () => {
             const res = await request(server)
-              .get(`/transfers`)
+              .get(`/transfers?limit=1000`)
               .set('treetracker-api-key', apiKey)
               .set('Content-Type', "application/json")
               .set('Authorization', `Bearer ${bearerToken}`);
@@ -234,7 +234,7 @@ describe('Wallet integration tests', () => {
 
           it(`Token:#${seed.token.id} now should have some transaction history`, async () => {
             const res = await request(server)
-              .get(`/tokens/${seed.token.uuid}/transactions`)
+              .get(`/tokens/${seed.token.uuid}/transactions?limit=1000`)
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${bearerTokenB}`);
             expect(res).to.have.property('statusCode', 200);
@@ -258,7 +258,7 @@ describe('Wallet integration tests', () => {
 
           it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
             const res = await request(server)
-              .get(`/transfers`)
+              .get(`/transfers?limit=1000`)
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${bearerToken}`);
             expect(res).to.have.property('statusCode', 200);
@@ -298,7 +298,7 @@ describe('Wallet integration tests', () => {
 
           it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
             const res = await request(server)
-              .get(`/transfers`)
+              .get(`/transfers?limit=1000`)
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${bearerToken}`);
             expect(res).to.have.property('statusCode', 200);
@@ -393,7 +393,7 @@ describe('Wallet integration tests', () => {
 
           it("Wallet should be able to find the relationship, and it was approved", async () => {
             const res = await request(server)
-              .get("/trust_relationships")
+              .get("/trust_relationships?limit=1000")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${bearerToken}`);
             expect(res).property("statusCode").to.eq(200);
@@ -444,7 +444,7 @@ describe('Wallet integration tests', () => {
 
           it("Wallet should be able to find the relationship, and it was cancelled", async () => {
             const res = await request(server)
-              .get("/trust_relationships")
+              .get("/trust_relationships?limit=1000")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${bearerToken}`);
             expect(res).property("statusCode").to.eq(200);
@@ -468,7 +468,7 @@ describe('Wallet integration tests', () => {
 
         it("Wallet should be able to find the relationship, and it was cancelled", async () => {
           const res = await request(server)
-            .get("/trust_relationships")
+            .get("/trust_relationships?limit=1000")
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${bearerToken}`);
           expect(res).property("statusCode").to.eq(200);
@@ -519,7 +519,7 @@ describe('Wallet integration tests', () => {
 
         beforeEach(async () => {
           const res = await request(server)
-            .get('/transfers?state=pending')
+            .get('/transfers?state=pending&limit=1000')
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${tokenB}`);
           expect(res).to.have.property('statusCode', 200);
@@ -541,7 +541,7 @@ describe('Wallet integration tests', () => {
 
           it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed 2`, async () => {
             const res = await request(server)
-              .get(`/transfers`)
+              .get(`/transfers?limit=1000`)
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${bearerToken}`);
             expect(res).to.have.property('statusCode', 200);
@@ -572,7 +572,7 @@ describe('Wallet integration tests', () => {
 
           it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
             const res = await request(server)
-              .get(`/transfers`)
+              .get(`/transfers?limit=1000`)
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${bearerToken}`);
             expect(res).to.have.property('statusCode', 200);
@@ -602,7 +602,7 @@ describe('Wallet integration tests', () => {
 
           it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
             const res = await request(server)
-              .get(`/transfers`)
+              .get(`/transfers?limit=1000`)
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${bearerToken}`);
             expect(res).to.have.property('statusCode', 200);
@@ -651,7 +651,7 @@ describe('Wallet integration tests', () => {
 
         beforeEach(async () => {
           const res = await request(server)
-            .get("/transfers?state=requested")
+            .get("/transfers?state=requested&limit=1000")
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${bearerToken}`);
           expect(res).property("statusCode").to.eq(200);
@@ -675,7 +675,7 @@ describe('Wallet integration tests', () => {
 
           it(`${seed.walletB.name} should be able to find requested transfer has been completed`, async () => {
             const res = await request(server)
-              .get("/transfers?state=completed")
+              .get("/transfers?state=completed&limit=1000")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).property("statusCode").to.eq(200);
@@ -718,7 +718,7 @@ describe('Wallet integration tests', () => {
 
         beforeEach(async () => {
           const res = await request(server)
-            .get("/transfers?state=requested")
+            .get("/transfers?state=requested&limit=1000")
             .set('treetracker-api-key', apiKey)
             .set('Authorization', `Bearer ${bearerToken}`);
           expect(res).property("statusCode").to.eq(200);
@@ -742,7 +742,7 @@ describe('Wallet integration tests', () => {
 
           it(`${seed.walletB.name} should be able to find requested transfer has been completed`, async () => {
             const res = await request(server)
-              .get("/transfers?state=completed")
+              .get("/transfers?state=completed&limit=1000")
               .set('treetracker-api-key', apiKey)
               .set('Authorization', `Bearer ${tokenB}`);
             expect(res).property("statusCode").to.eq(200);
@@ -785,7 +785,7 @@ describe('Wallet integration tests', () => {
 
     it(`Should be able to find the trust relationship: 'mange ${seed.walletC.name}`, async () => {
       const res = await request(server)
-        .get("/trust_relationships")
+        .get("/trust_relationships?limit=1000")
         .set('treetracker-api-key', apiKey)
         .set('Authorization', `Bearer ${tokenB}`);
       expect(res).property("statusCode").to.eq(200);
