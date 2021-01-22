@@ -48,18 +48,23 @@ class Token{
    * To transfer this token according the transfer object
    */
   async completeTransfer(transfer){
-    log.debug("Token complet transfer");
+    
+    log.debug("Token complete transfer");
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: false,
       transfer_pending_id: transfer.id,
       entity_id: transfer.destination_entity_id,
+      //TODO: add a boolean for claim.
+      claim: transfer.claim,
     });
     await this.transactionRepository.create({
       token_id: this._id,
       transfer_id: transfer.id,
       source_entity_id: transfer.source_entity_id,
       destination_entity_id: transfer.destination_entity_id,
+      //TODO: add a boolean for claim.
+      claim: transfer.claim,
     });
   }
 

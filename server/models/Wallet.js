@@ -451,7 +451,7 @@ class Wallet{
   /*
    * Transfer some tokens from the sender to receiver
    */
-  async transfer(sender, receiver, tokens){
+  async transfer(sender, receiver, tokens, claimBoolean){
 //    await this.checkDeduct(sender, receiver);
     //check tokens belong to sender
     for(const token of tokens){
@@ -487,6 +487,8 @@ class Wallet{
         parameters: {
           tokens: tokensUUID,
         },
+        // TODO: add boolean for claim in transferRepository
+        claim: claimBoolean,
       });
       log.debug("now, deal with tokens");
       for(let token of tokens){
@@ -569,6 +571,7 @@ class Wallet{
             bundleSize: bundleSize,
           }
         }
+        //TODO: boolean for claim
       });
       log.debug("now, deal with tokens");
       const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize)
@@ -699,12 +702,14 @@ class Wallet{
       }
       for(let token of tokens){
         expect(token).defined();
+        //TODO: claim
         await token.completeTransfer(transfer);
       }
     }else{
       log.debug("transfer tokens");
       const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
       for(let token of tokens){
+        //TODO: claim
         await token.completeTransfer(transfer);
       }
     }

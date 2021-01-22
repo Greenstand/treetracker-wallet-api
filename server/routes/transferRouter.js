@@ -33,6 +33,8 @@ transferRouter.post(
             Joi.string(),
             Joi.number().min(1).max(32)
           ).required(),
+          // TODO: add boolean for claim, but default to false.
+          claim: Joi.boolean(),
         }),
         otherwise: Joi.object({
           bundle: Joi.object({
@@ -54,6 +56,8 @@ transferRouter.post(
 
       const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
       const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
+      // check if this transfer is a claim (claim == not transferrrable tokens)
+      const claim = req.body.claim;
 
       let result;
       if(req.body.tokens){
@@ -63,8 +67,12 @@ transferRouter.post(
           const token = await tokenService.getByUUID(uuid); 
           tokens.push(token);
         }
-        result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
+        //Case 1: with trust, token transfer
+        console.log('HERE1');
+        result = await walletLogin.transfer(walletSender, walletReceiver, tokens, claim);
       }else{
+        //Case 2: with trust, bundle transfer
+        // TODO: get only transferrable tokens
         result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
       }
       const transferService = new TransferService(session);
@@ -109,6 +117,7 @@ transferRouter.post('/:transfer_id/accept',
       await session.beginTransaction();
       const walletService = new WalletService(session);
       const walletLogin = await walletService.getById(res.locals.wallet_id);
+      //TODO: claim 
       const transferJson = await walletLogin.acceptTransfer(req.params.transfer_id);
       const transferService = new TransferService(session);
       const transferJson2 = await transferService.convertToResponse(transferJson);
