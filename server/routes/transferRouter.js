@@ -273,9 +273,11 @@ transferRouter.get("/",
           Joi.string(),
           Joi.number().min(4).max(32)
         ),
+        limit: Joi.number().required(),
+        start: Joi.number().min(1).max(10000).integer()
       })
     );
-    const {state, wallet} = req.query;
+    const {state, wallet, limit, start} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
@@ -290,16 +292,25 @@ transferRouter.get("/",
     
     const result = await walletTransfer.getTransfers(state);
     const transferService = new TransferService(session);
-    const json = [];
+    let json = [];
+    // console.log(result);
     for(let t of result){
       const j = await transferService.convertToResponse(t);
       json.push(j);
     }
+    // console.log(json);
+
+    //filter tokensJson by query
+    let numStart = parseInt(start);
+    let numLimit = parseInt(limit);
+    let numBegin = numStart?numStart-1:0;
+    let numEnd=numBegin+numLimit;
+    json = json.slice(numBegin, numEnd);
     res.status(200).json({transfers: json});
   })
 );
 
-transferRouter.get('/:transfer_id',
+transferRouter.get('/:transfer_id', 
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
@@ -329,15 +340,32 @@ transferRouter.get('/:transfer_id/tokens',
         transfer_id: Joi.number().required(),
       })
     );
+
+    Joi.assert(
+      req.query,
+      Joi.object({
+        limit: Joi.number().required(),
+        start: Joi.number().min(1).max(10000).integer(),
+      })
+    );
+    const {limit, start} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const tokens = await walletLogin.getTokensByTransferId(parseInt(req.params.transfer_id));
-    const tokensJson = [];
+    let tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();
       tokensJson.push(json);
     }
+    // console.log(tokensJson);
+    //filter tokensJson by query
+    let numStart = parseInt(start);
+    let numLimit = parseInt(limit);
+    let numBegin = numStart?numStart-1:0;
+    let numEnd=numBegin+numLimit;
+    tokensJson = tokensJson.slice(numBegin, numEnd);
+    console.log(tokensJson);
     res.status(200).json({
       tokens: tokensJson,
     });

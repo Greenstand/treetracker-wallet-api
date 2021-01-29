@@ -48,8 +48,18 @@ paths:
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: ''
+          description: 'Number of items to return'
           required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
+        - name: start
+          in: query
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
           style: form
           explode: true
           schema:
@@ -71,16 +81,6 @@ paths:
               - type: string
               - type: number
             example: zaven2
-        - name: start
-          in: query
-          description: 'Where does the list start, 1 means start from the beginning of the list'
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 10
       responses:
         '200':
           description: ''
@@ -126,6 +126,26 @@ paths:
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: limit
+          in: query
+          description: 'Number of items to return'
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
+        - name: start
+          in: query
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
       responses:
         '200':
           description: ''
@@ -224,6 +244,26 @@ paths:
               - type: number
           required: false
           description: filter transfers matches the source, destination, or originating wallet (by name or id) of a transfer
+        - name: limit
+          in: query
+          description: 'Number of items to return'
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
+        - name: start
+          in: query
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
       responses:
         '200':
           description: 'Return array of matching transfers'
@@ -247,7 +287,7 @@ paths:
             example: e3cd6587-ff01-419b-b2c9-44ceed4dc749
         - name: limit
           in: query
-          description: ''
+          description: 'Number of items to return'
           required: true
           style: form
           explode: true
@@ -257,8 +297,8 @@ paths:
             example: 10
         - name: start
           in: query
-          description: ''
-          required: true
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
           style: form
           explode: true
           schema:
@@ -413,6 +453,26 @@ paths:
           schema:
             type: integer
             format: int32
+        - name: limit
+          in: query
+          description: 'Number of items to return'
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
+        - name: start
+          in: query
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
       responses:
         '200':
           description: ''
@@ -473,6 +533,26 @@ paths:
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: limit
+          in: query
+          description: 'Number of items to return'
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
+        - name: start
+          in: query
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
         - name: state
           in: query
           description: 'Filter by state of the trust relationship'

@@ -73,9 +73,7 @@ DATABASE_SCHEMA=wallets
 PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
 PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
 NODE_LOG_LEVEL=trace
-PUBLIC_KEY="[copy and paste all contents from your jwtRS256.key.pub]"
-PRIVATE_KEY="[copy and paste all contents from your jwtRS256.key]"
-NODE_LOG_LEVEL=trace
+
 
 ```
 Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files.  **Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here.

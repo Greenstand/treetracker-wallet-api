@@ -15,6 +15,8 @@ const Wallet = require("../models/Wallet");
 const Transfer = require("../models/Transfer");
 const TransferService = require("../services/TransferService");
 const Session = require("../models/Session");
+const { extractExpectedAssertionsErrors } = require("expect");
+const { column } = require("../database/knex");
 
 describe("transferRouter", () => {
   let app;
@@ -25,8 +27,6 @@ describe("transferRouter", () => {
   }
 
   beforeEach(() => {
-    //mock session, note, this will impact all tests, when unit test, the session is a totally fake stuff
-    sinon.stub(Session.prototype);
     sinon.stub(ApiKeyService.prototype, "check");
     sinon.stub(JWTService.prototype, "verify").returns({
       id: walletLogin.id,
@@ -41,6 +41,45 @@ describe("transferRouter", () => {
   afterEach(() => {
     sinon.restore();
   })
+
+  // test for limit 
+  it("limit parameters missed", async () => {
+    const res = await request(app)
+      .get("/");
+    expect(res).property("statusCode").eq(422);
+  });
+
+  it("with limit and offset specified, should return correct number", async () => {
+    sinon
+      .stub(WalletService.prototype, 'getById')
+      .resolves(new Wallet(1));
+    sinon
+      .stub(WalletService.prototype, 'getByIdOrName')
+      .resolves(new Wallet(1));
+
+    sinon.stub(Wallet.prototype, 'getTransfers').resolves(
+      [{},{},{},{},{},{},{},{},{},{}].map((_,i) => ({id:i, state:Transfer.STATE.completed})
+      ));
+
+    sinon.stub(TransferService.prototype, "convertToResponse")
+    .onCall(0).resolves({id:0, state:Transfer.STATE.completed})
+    .onCall(1).resolves({id:1, state:Transfer.STATE.completed})
+    .onCall(2).resolves({id:2, state:Transfer.STATE.completed})
+    .onCall(3).resolves({id:3, state:Transfer.STATE.completed})
+    .onCall(4).resolves({id:4, state:Transfer.STATE.completed})
+    .onCall(5).resolves({id:5, state:Transfer.STATE.completed})
+    .onCall(6).resolves({id:6, state:Transfer.STATE.completed})
+    .onCall(7).resolves({id:7, state:Transfer.STATE.completed})
+    .onCall(8).resolves({id:8, state:Transfer.STATE.completed})
+    .onCall(9).resolves({id:9, state:Transfer.STATE.completed});
+
+    const res = await request(app)
+      .get("/?limit=3&wallet=testWallet&start=5");
+    expect(res.body.transfers).lengthOf(3);
+    // console.log("HERE2");
+    // console.log(res.body.transfers);
+    expect(res.body.transfers.map(t=>(t.id))).to.deep.equal([4, 5, 6]);
+  });
 
   it("missing tokens should throw error", async () => {
     const res = await request(app)
@@ -281,7 +320,7 @@ describe("transferRouter", () => {
     });
   });
 
-  describe("GET /{transfer_id}/tokens", () => {
+  describe("GET /{transfer_id}/tokens start and limit working", () => {
 
     it("Successfully", async () => {
       const wallet = new Wallet(1);
@@ -290,12 +329,32 @@ describe("transferRouter", () => {
       const fn = sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const fn2 = sinon.stub(Wallet.prototype, "getTokensByTransferId").resolves([token]);
       const res = await request(app)
-        .get("/2/tokens");
+        .get("/2/tokens?limit=1");
       expect(fn).calledWith(1);
       expect(fn2).calledWith(2);
       expect(res).property("statusCode").eq(200);
       expect(res.body).property("tokens").lengthOf(1);
     });
+
+    it("limit and start working successfully", async () => {
+      const wallet = new Wallet(1);
+      const transfer = {id:2};
+      const token = new Token({id:3});
+      const token2 = new Token({id:4});
+      const token3 = new Token({id:5});
+      const token4 = new Token({id:6});
+      const fn = sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+      const fn2 = sinon.stub(Wallet.prototype, "getTokensByTransferId").resolves([token, token2, token3, token4]);
+      const res = await request(app)
+        .get("/2/tokens?limit=3&start=2");
+      expect(fn).calledWith(1);
+      expect(fn2).calledWith(2);
+      expect(res).property("statusCode").eq(200);
+      console.log(res.body);
+      expect(res.body).property("tokens").lengthOf(3);
+      expect(res.body.tokens.map(t=>(t.id))).to.deep.equal([4, 5, 6]);
+    });
   })
+
 
 });

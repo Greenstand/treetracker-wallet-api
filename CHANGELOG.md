@@ -1,3 +1,18 @@
+# [1.6.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.5.0...v1.6.0) (2021-01-22)
+
+
+### Bug Fixes
+
+* add db-migrate in package.json back ([6ac5e6b](https://github.com/Greenstand/treetracker-wallet-api/commit/6ac5e6bdbb86f5dc7cf5006e9bbdc1afb612ea4d))
+* broken int test ([8a8cc9e](https://github.com/Greenstand/treetracker-wallet-api/commit/8a8cc9ef83c2878ad598c54d8fe9a01ea627d53a))
+* rerun npm install ([08634d7](https://github.com/Greenstand/treetracker-wallet-api/commit/08634d73417a3636b8d502202db19e25ae869ae7))
+* update yaml for issue 100 ([38f6622](https://github.com/Greenstand/treetracker-wallet-api/commit/38f6622b5c78e14a3806be3e753430b4d5fb1092))
+
+
+### Features
+
+* 2nd commit for issue 100 ([22b6bb4](https://github.com/Greenstand/treetracker-wallet-api/commit/22b6bb4221f7f7b7ca96030ac4e52165b941e983))
+
 # [1.5.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.4.1...v1.5.0) (2021-01-10)
 
 
