@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wallet-db-migration-job
+spec:
+  backoffLimit: 1 # allow for one re-try of the migration
+  activeDeadlineSeconds: 120 # after 120 seconds, the pod will be killed
+  ttlSecondsAfterFinished: 60 # if successfully completed, pod will be deleted after 60 seconds
+  template:
+    spec:
+      containers:
+      - name: migration
+        image: greenstand/treetracker-wallet-api:latest
+        env:
+          - name: BASE_DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: treetracker-api-database-connection
+                key: db
+          - name: DATABASE_URL
+            value: "$(BASE_DATABASE_URL)&schema=wallets"
+        command: ["node"]
+        args: ["node_modules/db-migrate/bin/db-migrate", "up", "--migrations-dir", "database/migrations/", "-v"]
+      restartPolicy: Never
