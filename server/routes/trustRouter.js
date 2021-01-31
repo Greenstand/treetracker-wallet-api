@@ -19,18 +19,21 @@ trustRouter.get('/',
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
     const wallet = await walletService.getById(res.locals.wallet_id);
+    // get all trust relationships of the logged in wallet (where logged in wallet is the actor/target/originator)
     const trust_relationships = await wallet.getTrustRelationships(
       req.query.state,
       req.query.type,
       req.query.request_type,
     );
     const subWallets = await wallet.getSubWallets();
+    // get all trust relationships of wallets managed by logged in wallet 
     for(const sw of subWallets){
       const trustRelationships = await sw.getTrustRelationships(
         req.query.state,
         req.query.type,
         req.query.request_type,
       );
+      // avoid duplicates (where subwallet trust ID is the same as one of logged in wallet's trust ID)
       for(tr of trustRelationships){
         if(trust_relationships.every(e => e.id !== tr.id)){
           trust_relationships.push(tr);
