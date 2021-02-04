@@ -4,8 +4,6 @@ metadata:
   name: wallet-db-migration-job
 spec:
   backoffLimit: 1 # allow for one re-try of the migration
-  activeDeadlineSeconds: 120 # after 120 seconds, the pod will be killed
-  ttlSecondsAfterFinished: 60 # if successfully completed, pod will be deleted after 60 seconds
   template:
     spec:
       containers:
