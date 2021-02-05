@@ -8,10 +8,12 @@ To view the specs for the new API visit https://editor.swagger.io and load the Y
   
 ## Project Setup
 
-Open terminal and navigate to a folder to install this project:
+Fork this repository to your account and clone from this forked copy.
+
+Open terminal, navigate to a folder to install this project, and run the below commands:
 
 ```
-git clone https://github.com/Greenstand/treetracker-token-trading-api.git
+git clone https://github.com/[YOUR GITHUB USERNAME]/treetracker-token-trading-api.git
 
 ```
 Install all necessary dependencies: 
@@ -125,7 +127,7 @@ If you run into issue:
 ```
  ifError got unwanted exception: function uuid_generate_v4() does not exist
 ```
-Delete and recreate your wallets schema and then open postgress terminal and run to install the required extension
+Delete and recreate your wallets schema and then inside your postgres connection in terminal, run to install the required extension
 
 ```
 \c <db name> 
@@ -468,4 +470,6 @@ Create your local git branch and rebase it from the shared master branch. Please
 
 Please follow this convention for commit messages [here](https://www.conventionalcommits.org/en/v1.0.0/)
 
-When you are ready to submit a pull request from your local branch, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting. Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. 
+Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. You can make a draft pull request as you are working on any open issue that interests you, and any changes you make on your local branch can be continually synced with this draft until you are ready to submit. Remember to push your changes up to your forked repository and then make any pull requests from your forked branch to the Greenstand master repository branch. 
+
+When you are ready to submit a pull request, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting. 
