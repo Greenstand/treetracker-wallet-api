@@ -6,10 +6,10 @@ info:
 paths:
   /auth:
     post:
-      tags: 
-      - Authentication
-      summary: "Authenticate account"
-      description: "Authenticate the client using wallet name or id and password, and respond with a bearer token"
+      tags:
+        - Authentication
+      summary: Authenticate account
+      description: 'Authenticate the client using wallet name or id and password, and respond with a bearer token'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -39,16 +39,16 @@ paths:
       deprecated: false
   /tokens:
     get:
-      tags: 
-      - Token details
-      summary: "Get a list of tokens in the current wallet  or managed wallets"
-      description: "Get a list of for tokens in the current wallet or managed wallets, matching certain parameters"
+      tags:
+        - Token details
+      summary: Get a list of tokens in the current wallet  or managed wallets
+      description: 'Get a list of for tokens in the current wallet or managed wallets, matching certain parameters'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: 'Number of items to return'
+          description: Number of items to return
           required: true
           style: form
           explode: true
@@ -67,14 +67,14 @@ paths:
             format: int32
             example: 10
         - name: matching_all_tags
-          description: "An array of tags.  Tokens returned by the endpoints must be attached to trees that have ALL of these tags assigned"
+          description: An array of tags.  Tokens returned by the endpoints must be attached to trees that have ALL of these tags assigned
           in: query
           schema:
             type: array
-            items: 
+            items:
               type: string
         - name: wallet
-          description: "Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet"
+          description: Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet
           in: query
           schema:
             oneOf:
@@ -91,23 +91,22 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
       deprecated: false
-      
-  /tokens/{token_uuid}:
+  '/tokens/{token_uuid}':
     get:
-      tags: 
-      - Token details
-      summary: "Get details for one token"
-      description: "Get details for one token in the current wallet or managed wallets, matching certain parameters"
+      tags:
+        - Token details
+      summary: Get details for one token
+      description: 'Get details for one token in the current wallet or managed wallets, matching certain parameters'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: token_uuid
-          description: ""
+          description: ''
           in: path
           required: true
           schema:
             type: string
-            example: "496ffa8e-2fa2-488c-98e1-acf9b57c230b"
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
       responses:
         '200':
           description: ''
@@ -120,15 +119,15 @@ paths:
       deprecated: false
   /wallets:
     get:
-      tags: 
-      - Managed wallets
-      summary: "Get all wallets managed by the logged in account.  This endpoint is also used to get the total number of tokens in a given wallet.  Each wallet also returns all trust relationships for that wallet that have not been deleted"
+      tags:
+        - Managed wallets
+      summary: Get all wallets managed by the logged in account.  This endpoint is also used to get the total number of tokens in a given wallet.  Each wallet also returns all trust relationships for that wallet that have not been deleted
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: 'Number of items to return'
+          description: Number of items to return
           required: true
           style: form
           explode: true
@@ -155,10 +154,10 @@ paths:
                 $ref: '#/components/schemas/walletsResponse'
       deprecated: false
     post:
-      tags: 
-      - Managed wallets
-      summary: "Create a new managed wallet"
-      description: "Create a new managed wallet.  Requires the manage_account role."      
+      tags:
+        - Managed wallets
+      summary: Create a new managed wallet
+      description: Create a new managed wallet.  Requires the manage_account role.
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -173,14 +172,14 @@ paths:
         required: true
       responses:
         '201':
-          description: 'A new wallet was created'
+          description: A new wallet was created
         '401':
           $ref: '#/components/responses/UnauthorizedError'
       deprecated: false
   /transfers:
     post:
-      tags: 
-      - Transfers
+      tags:
+        - Transfers
       summary: 'Move, request, and send tokens between wallets'
       description: 'Move, request, and send tokens between wallets (by name or id) as allowed by trust relationships.  Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer.  The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debut, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval'
       parameters:
@@ -204,11 +203,13 @@ paths:
                 value:
                   bundle:
                     bundle_size: 100
-                    matching_all_tags: ['pine', 'Tanzania']
+                    matching_all_tags:
+                      - pine
+                      - Tanzania
         required: true
       responses:
         '201':
-          description: 'The transfer was completely processed'
+          description: The transfer was completely processed
           content:
             application/json:
               schema:
@@ -221,10 +222,9 @@ paths:
                 $ref: '#/components/schemas/sendRequestPendingResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-      
     get:
       tags:
-      - Transfers
+        - Transfers
       summary: 'Get requested, pending, completed, cancelled, and failed transfers'
       description: 'Get requested, pending, completed, cancelled and failed transfers for wallets (by name or id). The authenticated wallet is either the source, destination, or originating wallet entity.'
       parameters:
@@ -235,7 +235,7 @@ paths:
           schema:
             type: string
           required: false
-          description: requested, pending, completed, cancelled, failed
+          description: 'requested, pending, completed, cancelled, failed'
         - in: query
           name: wallet
           schema:
@@ -243,10 +243,10 @@ paths:
               - type: string
               - type: number
           required: false
-          description: filter transfers matches the source, destination, or originating wallet (by name or id) of a transfer
+          description: 'filter transfers matches the source, destination, or originating wallet (by name or id) of a transfer'
         - name: limit
           in: query
-          description: 'Number of items to return'
+          description: Number of items to return
           required: true
           style: form
           explode: true
@@ -266,14 +266,14 @@ paths:
             example: 10
       responses:
         '200':
-          description: 'Return array of matching transfers'
+          description: Return array of matching transfers
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  /tokens/{token_uuid}/transactions:
+  '/tokens/{token_uuid}/transactions':
     get:
-      tags: 
-      - Token details
-      summary: "Get transaction history for a particular token"
+      tags:
+        - Token details
+      summary: Get transaction history for a particular token
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -287,7 +287,7 @@ paths:
             example: e3cd6587-ff01-419b-b2c9-44ceed4dc749
         - name: limit
           in: query
-          description: 'Number of items to return'
+          description: Number of items to return
           required: true
           style: form
           explode: true
@@ -313,14 +313,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/historyResponse'
       deprecated: false
-  
-  
-  
-  /transfers/{transfer_id}:
+  '/transfers/{transfer_id}':
     get:
       tags:
-      - Transfers
-      summary: 'Get information of a single transfer'
+        - Transfers
+      summary: Get information of a single transfer
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -338,9 +335,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
     delete:
       tags:
-      - Transfers
-      summary: 'Cancel a pending or requested transfer that has not closed'
-      description: 'Cancel a pending (untrusted) or requested transfer.  The executor can delete the pending/requested transfer before it is executed.  Transfer is marked canceled by this command.'
+        - Transfers
+      summary: Cancel a pending or requested transfer that has not closed
+      description: Cancel a pending (untrusted) or requested transfer.  The executor can delete the pending/requested transfer before it is executed.  Transfer is marked canceled by this command.
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -353,22 +350,20 @@ paths:
             format: int32
       responses:
         '200':
-          description: 'Transfer was marked canceled'
+          description: Transfer was marked canceled
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: 'Authenticated wallet does not have access to this transfer'
+          description: Authenticated wallet does not have access to this transfer
         '404':
-          description: 'No transfer record with that id'
+          description: No transfer record with that id
         '406':
-          description: 'Transfer with this id is not in requested or pending state'
-  
-  
-  /transfers/{transfer_id}/accept:
+          description: Transfer with this id is not in requested or pending state
+  '/transfers/{transfer_id}/accept':
     post:
       tags:
-      - Transfers
-      summary: 'Accept a pending (untrusted) transfer'
+        - Transfers
+      summary: Accept a pending (untrusted) transfer
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -384,13 +379,11 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  
-  
-  /transfers/{transfer_id}/decline:
+  '/transfers/{transfer_id}/decline':
     post:
       tags:
-      - Transfers
-      summary: 'Decline a pending (untrusted) transfer'
+        - Transfers
+      summary: Decline a pending (untrusted) transfer
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -406,27 +399,23 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  
-  
-                
-          
-  /transfers/{transfer_id}/fulfill:
+  '/transfers/{transfer_id}/fulfill':
     parameters:
       - $ref: '#/components/parameters/treetrackerApiKeyParam'
       - $ref: '#/components/parameters/contentTypeJsonHeader'
     post:
-      tags: 
-      - Transfers
-      summary: 'Fullfill a requested transfer'
-      description: 'Post a list of tokens to fulfill the parameters of a transfer request that specifies tokens using a bundle.  This allows the debited wallet to decide which tokens matching the bundle parameters to attach to the transfer.  Application logic must check that each token matches the parameters of the request.'
+      tags:
+        - Transfers
+      summary: Fullfill a requested transfer
+      description: Post a list of tokens to fulfill the parameters of a transfer request that specifies tokens using a bundle.  This allows the debited wallet to decide which tokens matching the bundle parameters to attach to the transfer.  Application logic must check that each token matches the parameters of the request.
       parameters:
-      - name: transfer_id
-        in: path
-        description: the id of the transfer record on the server
-        required: true
-        style: simple
-        schema:
-          type: integer
+        - name: transfer_id
+          in: path
+          description: the id of the transfer record on the server
+          required: true
+          style: simple
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
@@ -437,12 +426,11 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
-  /transfers/{transfer_id}/tokens:
+  '/transfers/{transfer_id}/tokens':
     get:
       tags:
-      - Transfers
-      summary: 'Get all tokens linked to a single transfer'
+        - Transfers
+      summary: Get all tokens linked to a single transfer
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -455,7 +443,7 @@ paths:
             format: int32
         - name: limit
           in: query
-          description: 'Number of items to return'
+          description: Number of items to return
           required: true
           style: form
           explode: true
@@ -478,19 +466,18 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-
   /events:
     get:
-      tags: 
-      - Event stream
-      summary: "Get event stream for wallet"
-      description: "The event stream contains notifications about execute and pending transfers, transfer request, trust requests, trust deletions, and trust approvals.  Event streams for managed wallets can also be requested"
+      tags:
+        - Event stream
+      summary: Get event stream for wallet
+      description: 'The event stream contains notifications about execute and pending transfers, transfer request, trust requests, trust deletions, and trust approvals.  Event streams for managed wallets can also be requested'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: 'The number of records to return'
+          description: The number of records to return
           required: true
           style: form
           explode: true
@@ -500,16 +487,16 @@ paths:
             example: 10
         - name: since
           in: query
-          description: 'Only return events since a given timestamp'
+          description: Only return events since a given timestamp
           required: true
           style: form
           explode: true
           schema:
             type: string
             format: timestamp
-            example: 2019-10-12T07:20:50.52Z
+            example: '2019-10-12T07:20:50.52Z'
         - name: wallet
-          description: "Wallet (by name or id) can be specified if the authenticated wallet manages other wallets.  The default is to return events matching the authenticated wallet"
+          description: Wallet (by name or id) can be specified if the authenticated wallet manages other wallets.  The default is to return events matching the authenticated wallet
           in: query
           schema:
             oneOf:
@@ -527,15 +514,15 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
   /trust_relationships:
     get:
-      tags: 
-      - Trust relationships
+      tags:
+        - Trust relationships
       summary: 'Get a list of existing, requested, and pending trust relationships'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: 'Number of items to return'
+          description: Number of items to return
           required: true
           style: form
           explode: true
@@ -555,7 +542,7 @@ paths:
             example: 10
         - name: state
           in: query
-          description: 'Filter by state of the trust relationship'
+          description: Filter by state of the trust relationship
           required: false
           style: form
           schema:
@@ -578,7 +565,7 @@ paths:
               description: Trust relationship was cancelled by the target
         - name: type
           in: query
-          description: 'Type of trust relationship'
+          description: Type of trust relationship
           required: false
           style: form
           schema:
@@ -595,7 +582,7 @@ paths:
               description: Allow actor to move funds from target wallet to any other wallet they control
         - name: request_type
           in: query
-          description: 'Type of trust relationship'
+          description: Type of trust relationship
           required: false
           style: form
           schema:
@@ -629,9 +616,9 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
     post:
-      tags: 
-      - Trust relationships
-      summary: 'Request a new trust relationship from another wallet'
+      tags:
+        - Trust relationships
+      summary: Request a new trust relationship from another wallet
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -642,37 +629,37 @@ paths:
               $ref: '#/components/schemas/trustRequest'
       responses:
         '202':
-          description: 'Accepted but waiting for approval'
+          description: Accepted but waiting for approval
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-  /trust_relationships/{trust_relationship_id}:
+  '/trust_relationships/{trust_relationship_id}':
     delete:
-      tags: 
-      - Trust relationships
-      summary: 'Remove a trust relationship linked to the autheticated wallet'
-      description: 'Remove a trust relationship linked to the autheticated wallet.  This could be either the actor wallet or the target wallet'
+      tags:
+        - Trust relationships
+      summary: Remove a trust relationship linked to the autheticated wallet
+      description: Remove a trust relationship linked to the autheticated wallet.  This could be either the actor wallet or the target wallet
       parameters:
-      - $ref: '#/components/parameters/treetrackerApiKeyParam'
-      - $ref: '#/components/parameters/contentTypeJsonHeader'
-      - name: trust_relationship_id
-        in: path
-        description: the id of the entity trust record on the server
-        required: true
-        style: simple
-        schema:
-          type: integer
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: trust_relationship_id
+          in: path
+          description: the id of the entity trust record on the server
+          required: true
+          style: simple
+          schema:
+            type: integer
       responses:
         '200':
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  /trust_relationships/{trust_relationship_id}/accept:
+  '/trust_relationships/{trust_relationship_id}/accept':
     post:
-      tags: 
-      - Trust relationships
-      summary: 'Accept a trust relationship'
+      tags:
+        - Trust relationships
+      summary: Accept a trust relationship
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -690,12 +677,11 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
-          
-  /trust_relationships/{trust_relationship_id}/decline:
+  '/trust_relationships/{trust_relationship_id}/decline':
     post:
-      tags: 
-      - Trust relationships
-      summary: 'Decline a trust relationship'
+      tags:
+        - Trust relationships
+      summary: Decline a trust relationship
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -722,7 +708,7 @@ components:
       required: true
       style: simple
       schema:
-          type: string
+        type: string
     contentTypeJsonHeader:
       name: Content-Type
       in: header
@@ -742,8 +728,8 @@ components:
       properties:
         wallet:
           oneOf:
-          - type: string
-          - type: number
+            - type: string
+            - type: number
         password:
           type: string
       example:
@@ -762,36 +748,28 @@ components:
         tokens:
           type: array
           items:
-            $ref: "#/components/schemas/tokenItem"
+            $ref: '#/components/schemas/tokenItem'
     tokenItem:
       title: Token
       type: object
-      properties:
-        token:
-          type: string
-        map_url:
-          type: string
-        image_url:
-          type: string
-        tree_captured_at:
-          type: string
-        latitude:
-          type: number
-        longitude:
-          type: number
-        region:
-          type: string
-        bill_of_value:
-          type: string
       example:
         token: d895cf1b-de4c-40ea-85c9-99540f2489a9
-        map_url: http://test.treetracker.org/?treeid=156867
-        image_url: https://treetracker-test.eu-central-1/2019.08.13.17.56.13_5f87e44c-1b90-4d15-8ab8-ae4e75f8a898_IMG_20190813_175243_67017802.jpg
-        tree_captured_at: "+051586-06-14T15:10:00.000Z"
+        map_url: 'http://test.treetracker.org/?treeid=156867'
+        image_url: 'https://treetracker-test.eu-central-1/2019.08.13.17.56.13_5f87e44c-1b90-4d15-8ab8-ae4e75f8a898_IMG_20190813_175243_67017802.jpg'
+        tree_captured_at: '+051586-06-14T15:10:00.000Z'
         latitude: 37.77295869
         longitude: -122.1781304
         region: United States
         bill_of_value: json
+      properties:
+        token:
+          type: string
+        map:
+          type: string
+        image:
+          type: string
+        capture:
+          type: string
     accountrequest:
       title: accountrequest
       required:
@@ -808,7 +786,7 @@ components:
         wallets:
           type: array
           items:
-            $ref: "#/components/schemas/walletItem"
+            $ref: '#/components/schemas/walletItem'
     walletItem:
       title: Wallet Details
       properties:
@@ -838,20 +816,20 @@ components:
           properties:
             bundle_size:
               type: integer
-              description: "required number of trees to transfer"
+              description: required number of trees to transfer
             matching_all_tags:
               type: array
               items:
                 type: string
-                description: "optional list of tags that trees must match ALL of"
+                description: optional list of tags that trees must match ALL of
         sender_wallet:
           oneOf:
-          - type: string
-          - type: number
+            - type: string
+            - type: number
         receiver_wallet:
           oneOf:
-          - type: string
-          - type: number
+            - type: string
+            - type: number
       example:
         tokens:
           - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
@@ -867,15 +845,15 @@ components:
       type: object
       properties:
         parameters:
-          $ref: "#/components/schemas/requestBundleRequestParameters"
+          $ref: '#/components/schemas/requestBundleRequestParameters'
         sender_wallet:
           oneOf:
-          - type: string
-          - type: number
+            - type: string
+            - type: number
         receiver_wallet:
           oneOf:
-          - type: string
-          - type: number
+            - type: string
+            - type: number
       example:
         bundle_size: 500
         sender_wallet: zaven
@@ -894,8 +872,8 @@ components:
           description: ''
         receiver_wallet:
           oneOf:
-          - type: string
-          - type: number
+            - type: string
+            - type: number
       example:
         tokens:
           - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
@@ -916,29 +894,26 @@ components:
           type: string
         type:
           type: string
-          description: the type of transfer.  send, deduct, or managed. the value is computed by the server based on the submitted request
+          description: 'the type of transfer.  send, deduct, or managed. the value is computed by the server based on the submitted request'
         parameters:
-          $ref: "#/components/schemas/requestBundleRequestParameters"
+          $ref: '#/components/schemas/requestBundleRequestParameters'
         state:
           type: string
-          description: the state of the transfer.  requested, pending, completed, cancelled, or failed
+          description: 'the state of the transfer.  requested, pending, completed, cancelled, or failed'
         created_at:
           type: string
         closed_at:
           type: string
-          
       example:
         originating_wallet: johnwallet1
         source_wallet: planeter
         destination_wallet: just.a.guy
         type: send
         parameters:
-          $ref: "#/components/schemas/requestBundleRequestParameters"
+          $ref: '#/components/schemas/requestBundleRequestParameters'
         state: completed
-        created_at: "2020-07-09T00:41:49+00:00"
-        closed_at: "2020-07-09T00:41:49+00:00"
-        
-          
+        created_at: '2020-07-09T00:41:49+00:00'
+        closed_at: '2020-07-09T00:41:49+00:00'
     sendRequestPendingResponse:
       title: sendRequestPendingResponse
     sendBundleRequest:
@@ -946,7 +921,7 @@ components:
       type: object
       properties:
         parameters:
-          $ref: "#/components/schemas/requestBundleRequestParameters"
+          $ref: '#/components/schemas/requestBundleRequestParameters'
         receiver_wallet:
           type: string
       required:
@@ -959,7 +934,7 @@ components:
         pending:
           type: array
           items:
-            $ref: "#/components/schemas/pendingTransferItem"
+            $ref: '#/components/schemas/pendingTransferItem'
     pendingTransferItem:
       title: Pending Transfer Item
       type: object
@@ -977,10 +952,10 @@ components:
       type: object
       properties:
         parameters:
-          $ref: "#/components/schemas/requestBundleRequestParameters"
+          $ref: '#/components/schemas/requestBundleRequestParameters'
         sender_wallet:
           type: string
-          description: "Senders other than the wallet requesting the transfer are not allowed at this time"
+          description: Senders other than the wallet requesting the transfer are not allowed at this time
         receiver_wallet:
           type: string
       required:
@@ -994,15 +969,15 @@ components:
           type: array
           items:
             type: string
-          description: "optional array of explicit tokens"
+          description: optional array of explicit tokens
         bundle_size:
           type: integer
-          description: "required number of trees to transfer"
+          description: required number of trees to transfer
         matching_all_tags:
           type: array
           items:
             type: string
-          description: "optional list of tags that trees must match ALL of"
+          description: optional list of tags that trees must match ALL of
       required:
         - bundle_size
     requestBundleFulfillBody:
@@ -1013,10 +988,10 @@ components:
           type: array
           items:
             type: string
-          description: "optional array of explicit tokens"
-        implicit: 
+          description: optional array of explicit tokens
+        implicit:
           type: boolean
-          description: "automatically fill the request with tokens matching the specified parameters if set"
+          description: automatically fill the request with tokens matching the specified parameters if set
     trustRequest:
       title: Trust Request
       type: object
@@ -1025,18 +1000,18 @@ components:
           type: string
         requester_wallet:
           type: string
-          description: "This is optional, if ignore it, then the default requester_wallet should be the current logged in wallet"
+          description: 'This is optional, if ignore it, then the default requester_wallet should be the current logged in wallet'
         requestee_wallet:
           type: string
-          description: "The wallet to who this request are targetting"
+          description: The wallet to who this request are targetting
     historyResponse:
       title: History Response
       type: object
       properties:
         history:
           type: array
-          items: 
-            $ref: "#/components/schemas/historyItem"
+          items:
+            $ref: '#/components/schemas/historyItem'
     historyItem:
       title: History Item
       type: object
@@ -1050,10 +1025,10 @@ components:
         processed_at:
           type: string
       example:
-          token: e3cd6587-ff01-419b-b2c9-44ceed4dc749
-          sender_wallet: zaven
-          receiver_wallet: zaven2
-          processed_at: "2020-01-17T22:32:43.008Z"
+        token: e3cd6587-ff01-419b-b2c9-44ceed4dc749
+        sender_wallet: zaven
+        receiver_wallet: zaven2
+        processed_at: '2020-01-17T22:32:43.008Z'
     eventStream:
       title: Event Stream
       type: object
@@ -1061,7 +1036,7 @@ components:
         events:
           type: array
           items:
-            $ref: "#/components/schemas/eventItem"
+            $ref: '#/components/schemas/eventItem'
     eventItem:
       title: Event Item
       type: object
@@ -1083,14 +1058,14 @@ components:
         trust_relationships:
           type: array
           items:
-            $ref: "#/components/schemas/trustRelationshipItem"
+            $ref: '#/components/schemas/trustRelationshipItem'
     trustRelationshipItem:
       title: Trust Relationship Item
       type: object
       properties:
         id:
           type: integer
-        actor_wallet: 
+        actor_wallet:
           type: string
         target_wallet:
           type: string
@@ -1113,7 +1088,6 @@ components:
     httpBearer:
       type: http
       scheme: bearer
-      bearerFormat: JWT  
+      bearerFormat: JWT
 security:
   - httpBearer: []
-
