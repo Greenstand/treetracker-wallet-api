@@ -16,7 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function (db) {
   return db.createTable('transaction', {
-    id: { type: 'uuid', primaryKey: true },
+    id: { type: 'uuid', primaryKey: true, notNull:true },
     token_id: {
       type: 'int',
       notNull: true,

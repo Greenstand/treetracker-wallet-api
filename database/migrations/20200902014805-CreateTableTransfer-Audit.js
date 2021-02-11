@@ -16,7 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.createTable('transfer_audit', {
-    id: { type: 'uuid', primaryKey: true },
+    id: { type: 'uuid', primaryKey: true, notNull: true },
     transfer_id: { type: 'int', notNull: true },
     new_state: { type: 'transfer_state', notNull: true },
     processed_at: {

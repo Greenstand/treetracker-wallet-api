@@ -19,7 +19,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return null;
+  return db.runSql('DROP EXTENSION "uuid-ossp"');
 };
 
 exports._meta = {
