@@ -16,7 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.createTable('entity_trust_log', {
-    id: { type: 'int', primaryKey: true, autoIncrement: true },
+    id: { type: 'uuid', primaryKey: true },
     entity_trust_id: { type: 'int', notNull: true },
     actor_entity_id: { type: 'int', notNull: true },
     target_entity_id: { type: 'int', notNull: true },

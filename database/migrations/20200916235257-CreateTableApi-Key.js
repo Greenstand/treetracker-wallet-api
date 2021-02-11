@@ -16,7 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.createTable('api_key', {
-    id: { type: 'int', primaryKey: true, autoIncrement: true },
+    id: { type: 'uuid', primaryKey: true },
     key: { type: 'string' },
     tree_token_api_access: { type: 'boolean' },
     hash: { type: 'string' },
