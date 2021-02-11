@@ -1,3 +1,11 @@
+## [1.6.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.6.0...v1.6.1) (2021-02-11)
+
+
+### Bug Fixes
+
+* update db-migrate package ([b1514cb](https://github.com/Greenstand/treetracker-wallet-api/commit/b1514cb8c183535c46e9990570e975e5eaaa9e52))
+* update pg package ([88486b3](https://github.com/Greenstand/treetracker-wallet-api/commit/88486b33c3e835121b2a389b6c9b2d20883eb6db))
+
 # [1.6.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.5.0...v1.6.0) (2021-01-22)
 
 
