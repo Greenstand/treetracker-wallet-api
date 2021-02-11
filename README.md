@@ -114,7 +114,7 @@ To quickly build the necessary tables for your wallets schema, run:
 db-migrate --env dev up
 ```
 
-If you have not installed db-migrate globally, you can run:
+If you have not installed db-migrate globally, while in the database folder, you can run:
 
 ```
 ../node_modules/db-migrate/bin/db-migrate --env dev up
