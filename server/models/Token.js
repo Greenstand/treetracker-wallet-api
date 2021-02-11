@@ -33,8 +33,7 @@ class Token{
     const result = {
       ...this._JSON,
       links: {
-        capture: `/capture/${this._JSON.tree_id}`,
-        tree: `/capture/${this._JSON.tree_id}/tree`,
+        capture: `webmap/tree?tree_id=${this._JSON.tree_id}`
       }
     }
     return result;
