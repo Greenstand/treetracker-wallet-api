@@ -16,21 +16,10 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function (db) {
   return db.createTable('transaction', {
-    id: { type: 'int', primaryKey: true, autoIncrement: true },
+    id: { type: 'uuid', primaryKey: true },
     token_id: {
       type: 'int',
       notNull: true,
-      // foreignKey: {
-      //   name: 'transaction_token_id_fk',
-      //   table: 'token',
-      //   mapping: {
-      //     token_id: 'id'
-      //   },
-      //   rules: {
-      //     onDelete: 'CASCADE',
-      //     onUpdate: 'RESTRICT',
-      //   },
-      // },
     },
     transfer_id: { type: 'int', notNull: true },
     source_entity_id: { type: 'int', notNull: true },
@@ -41,17 +30,6 @@ exports.up = function (db) {
       defaultValue: new String('now()')
     },
   })
-    // .then(
-    //   () => {
-    //     db.addForeignKey('transaction', 'token', 'transaction_token_id_fk',
-    //       {
-    //         'token_id': 'id',
-    //       },
-    //       {
-    //         onDelete: 'CASCADE',
-    //         onUpdate: 'RESTRICT',
-    //       });
-    //   });
 };
 
 exports.down = function (db) {
