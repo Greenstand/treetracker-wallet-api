@@ -3,13 +3,14 @@ const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
 const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
+const { validate: uuidValidate } = require('uuid');
 
 class Token{
   
   constructor(idOrJSON, session){
-    if(typeof idOrJSON === "number"){
+    if(uuidValidate(idOrJSON)){
       this._id = idOrJSON;
-    }else if(typeof idOrJSON === "object" && typeof idOrJSON.id === "number"){
+    }else if(typeof idOrJSON === "object" && uuidValidate(idOrJSON.id) ){
       this._id = idOrJSON.id;
       this._JSON = idOrJSON;
     }else{
@@ -53,13 +54,13 @@ class Token{
       id: this._id,
       transfer_pending: false,
       transfer_pending_id: transfer.id,
-      entity_id: transfer.destination_entity_id,
+      wallet_id: transfer.destination_wallet_id,
     });
     await this.transactionRepository.create({
       token_id: this._id,
       transfer_id: transfer.id,
-      source_entity_id: transfer.source_entity_id,
-      destination_entity_id: transfer.destination_entity_id,
+      source_wallet_id: transfer.source_wallet_id,
+      destination_wallet_id: transfer.destination_wallet_id,
     });
   }
 
@@ -89,7 +90,7 @@ class Token{
   async belongsTo(wallet){
     expect(wallet).defined();
     const json = await this.toJSON();
-    if(json.entity_id === wallet.getId()){
+    if(json.wallet_id === wallet.getId()){
       return true;
     }else{
       return false;

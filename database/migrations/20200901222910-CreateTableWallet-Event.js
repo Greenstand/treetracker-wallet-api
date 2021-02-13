@@ -17,7 +17,7 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
   return db.createTable('wallet_event', {
     id: { type: 'uuid', primaryKey: true, notNull: true },
-    entity_id: { type: 'int', notNull: true },
+    wallet_id: { type: 'uuid', notNull: true },
     type: { type: 'wallet_event_type', notNull: true },
     created_at: {
       type: 'timestamp',

@@ -24,7 +24,7 @@ class TransferRepository extends BaseRepository{
 
   async getPendingTransfers(id){
     return await this._session.getDB()(this._tableName).where({
-      destination_entity_id: id,
+      destination_wallet_id: id,
       state: Transfer.STATE.pending,
     });
   }

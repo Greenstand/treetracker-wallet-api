@@ -4,10 +4,14 @@ const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
 const tracker = mockKnex.getTracker();
 const Session = require("../models/Session");
-
+const uuid = require('uuid');
 
 describe("TransferRepository", () => {
   let transferRepository;
+
+  const originatorWalletId = uuid.v4()
+  const sourceWalletId = uuid.v4()
+  const destinationWalletId = uuid.v4()
 
   beforeEach(() => {
     mockKnex.mock(knex);
@@ -32,9 +36,9 @@ describe("TransferRepository", () => {
       ][step - 1]();
     });
     const result = await transferRepository.create({
-      originator_entity_id: 1,
-      source_entity_id: 2,
-      destination_entity_id: 3,
+      originator_wallet_id: originatorWalletId,
+      source_wallet_id: sourceWalletId,
+      destination_wallet_id: destinationWalletId,
     });
     expect(result).property('id').a('number');
   });
@@ -60,8 +64,8 @@ describe("TransferRepository", () => {
     tracker.on('query', function sendResult(query, step) {
       [
         function firstQuery() {
-          expect(query.sql).match(/select.*transfer.*where.*destination_entity_id.*/);
-          query.response([{id:1}]);
+          expect(query.sql).match(/select.*transfer.*where.*destination_wallet_id.*/);
+          query.response([{id:originatorWalletId}]);
         },
       ][step - 1]();
     });

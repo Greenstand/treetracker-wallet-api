@@ -8,7 +8,7 @@ const knex = require("../server/database/knex");
 
 const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
 const wallet = {
-  id: 10,
+  id: uuid.v4(),
   name: 'walletA',
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
@@ -31,7 +31,7 @@ const token = {
 
 
 const walletB = {
-  id: 11,
+  id: uuid.v4(),
   name: 'walletB',
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
@@ -40,7 +40,7 @@ const walletB = {
 };
 
 const walletC = {
-  id: 12,
+  id: uuid.v4(),
   name: 'walletC',
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
@@ -49,7 +49,7 @@ const walletC = {
 };
 
 const tokenB = {
-  id: 10,
+  id: uuid.v4(),
   uuid: uuid.v4(),
   tree_id: treeB.id,
   entity_id: walletC.id,

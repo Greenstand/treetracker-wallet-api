@@ -12,15 +12,16 @@ const TrustService = require("../services/TrustService");
 const JWTService = require("../services/JWTService");
 const HttpError = require("../utils/HttpError");
 const Wallet = require("../models/Wallet");
+const uuid = require('uuid');
 
 
 describe("walletRouter", ()=> {
   let app;
   const walletLogin = {
-    id: 1,
+    id: uuid.v4(),
   }
   const subWallet = {
-    id: 2,
+    id: uuid.v4(),
   }
 
   beforeEach(() => {

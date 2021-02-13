@@ -27,11 +27,9 @@ transferRouter.post(
           tokens: Joi.array().items(Joi.string()).required().unique(),
           sender_wallet: Joi.alternatives().try(
             Joi.string(),
-            Joi.number().min(1).max(32)
           ).required(),
           receiver_wallet: Joi.alternatives().try(
             Joi.string(),
-            Joi.number().min(1).max(32)
           ).required(),
         }),
         otherwise: Joi.object({
@@ -100,7 +98,7 @@ transferRouter.post('/:transfer_id/accept',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     const session = new Session();
@@ -135,7 +133,7 @@ transferRouter.post('/:transfer_id/decline',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     const session = new Session();
@@ -170,7 +168,7 @@ transferRouter.delete('/:transfer_id',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     const session = new Session();
@@ -205,7 +203,7 @@ transferRouter.post('/:transfer_id/fulfill',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     Joi.assert(
@@ -317,7 +315,7 @@ transferRouter.get('/:transfer_id',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     const session = new Session();
@@ -337,7 +335,7 @@ transferRouter.get('/:transfer_id/tokens',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
 

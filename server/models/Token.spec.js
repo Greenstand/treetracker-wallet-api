@@ -47,23 +47,23 @@ describe("Token", () => {
       const token = new Token(1, session);
       const transfer = {
         id:1,
-        source_entity_id: 1,
-        destination_entity_id: 2,
+        source_wallet_id: 1,
+        destination_wallet_id: 2,
       };
       const fn1 = sinon.stub(TokenRepository.prototype, "update");
       const fn2 = sinon.stub(TransactionRepository.prototype, "create");
       await token.completeTransfer(transfer);
       expect(fn1).calledWith({
         id: 1,
-        entity_id: 2,
+        wallet_id: 2,
         transfer_pending: false,
         transfer_pending_id: 1,
       });
       expect(fn2).calledWith({
         token_id: 1,
         transfer_id: 1,
-        source_entity_id: 1,
-        destination_entity_id: 2,
+        source_wallet_id: 1,
+        destination_wallet_id: 2,
       });
       fn1.restore();
       fn2.restore();
@@ -76,8 +76,8 @@ describe("Token", () => {
       const token = new Token(1, session);
       const transfer = {
         id:1,
-        source_entity_id: 1,
-        destination_entity_id: 2,
+        source_wallet_id: 1,
+        destination_wallet_id: 2,
       };
       const fn1 = sinon.stub(TokenRepository.prototype, "update");
       const fn2 = sinon.stub(TransactionRepository.prototype, "create");
@@ -100,7 +100,7 @@ describe("Token", () => {
       const wallet = new Wallet(2, session);
       const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
         id: 1,
-        entity_id: 2,
+        wallet_id: 2,
       });
       expect(await token.belongsTo(wallet)).eq(true);
       expect(fn1).calledWith();
@@ -112,7 +112,7 @@ describe("Token", () => {
       const wallet = new Wallet(2, session);
       const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
         id: 1,
-        entity_id: 1,
+        wallet_id: 1,
       });
       expect(await token.belongsTo(wallet)).eq(false);
       expect(fn1).calledWith();
