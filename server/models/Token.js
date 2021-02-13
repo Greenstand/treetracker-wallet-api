@@ -1,9 +1,9 @@
 const log = require("loglevel");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
-const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
 const { validate: uuidValidate } = require('uuid');
+const Joi = require("joi");
 
 class Token{
   
@@ -67,9 +67,14 @@ class Token{
    * To pending this token on the given transfer
    */
   async pendingTransfer(transfer){
-    expect(transfer).match({
-      id: expect.any(Number),
-    });
+
+    Joi.assert(
+      transfer,
+      Joi.object({
+        id: Joi.string().guid()
+      })
+    )
+
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: true,

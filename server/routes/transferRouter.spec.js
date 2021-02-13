@@ -1,9 +1,12 @@
 const request = require("supertest");
 const express = require("express");
 const transferRouter = require("./transferRouter");
-const {expect} = require("chai");
 const {errorHandler} = require("./utils");
 const sinon = require("sinon");
+const chai = require("chai");
+const sinonChai = require("sinon-chai");
+chai.use(sinonChai);
+const {expect} = chai;
 const ApiKeyService = require("../services/ApiKeyService");
 const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");

@@ -18,14 +18,14 @@ const uuid = require('uuid');
 
 describe("trustRouter", () => {
   let app;
-  const walletLogin = {
+  const authenticatedWallet = {
     id: uuid.v4(),
   }
 
   beforeEach(() => {
     sinon.stub(ApiKeyService.prototype, "check");
     sinon.stub(JWTService.prototype, "verify").returns({
-      id: walletLogin.id,
+      id: authenticatedWallet.id,
     });
     app = express();
     app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
@@ -39,12 +39,12 @@ describe("trustRouter", () => {
   })
 
   describe("post /trust_relationships", () => {
+    const walletId = uuid.v4()
+    const wallet2Id = uuid.v4()
+    const wallet = new Wallet(walletId);
+    const wallet2 = new Wallet(wallet2Id);
 
     it("successfully", async () => {
-      const walletId = uuid.v4()
-      const wallet2Id = uuid.v4()
-      const wallet = new Wallet(walletId);
-      const wallet2 = new Wallet(wallet2Id);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       sinon.stub(WalletService.prototype, "getByName").resolves(wallet2);
       const fn = sinon.stub(Wallet.prototype, "requestTrustFromAWallet");
@@ -53,8 +53,10 @@ describe("trustRouter", () => {
         .post("/")
         .send({
           trust_request_type: "send",
-          requestee_wallet: "test",
+          requestee_wallet: walletId,
+          requester_wallet: wallet2Id,
         });
+      console.log(res.body);
       expect(res).property("statusCode").eq(200);
       expect(fn).calledWith(
         "send",
@@ -81,8 +83,6 @@ describe("trustRouter", () => {
     });
 
     it("wrong parameters", async () => {
-      const walletId = uuid.v4()
-      const wallet = new Wallet(walletId);
       sinon.stub(WalletService.prototype, "getByName").resolves(wallet);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const res = await request(app)
@@ -91,16 +91,20 @@ describe("trustRouter", () => {
           trust_request_type: "sendError",
           requestee_wallet: "wallet",
         });
-      expect(res).property("statusCode").eq(400);
+      expect(res).property("statusCode").eq(422);
     });
 
   });
 
   describe("get /trust_relationships", () => {
 
+    const walletId = uuid.v4()
+    const wallet2Id = uuid.v4()
+    const wallet = new Wallet(walletId);
+    const wallet2 = new Wallet(wallet2Id);
+    const trustId = uuid.v4()
+
     it("successfully", async () => {
-      const walletId = uuid.v4()
-      const trustId = uuid.v4()
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(walletId));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:trustId});
       const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{}]);
@@ -117,13 +121,12 @@ describe("trustRouter", () => {
 
     it("limit and offset working successfully", async () => {
       // TODO: need to update the test
-      const walletId = uuid.v4()
-      const trustId = uuid.v4()
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(walletId));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:trustId});
       const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{},{},{},{}]);
       const res = await request(app)
         .get(`/?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}&limit=3`);
+      console.log(res.body);
       expect(res).property("statusCode").eq(200);
       console.log(res.body.trust_relationships);
       //get 3 from 4 items
