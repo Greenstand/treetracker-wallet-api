@@ -44,7 +44,7 @@ describe("Token", () => {
     expect(result).a("array").lengthOf(1);
     expect(result[0]).instanceOf(Token);
     expect(fn).calledWith({
-      entity_id: 1,
+      wallet_id: 1,
       transfer_pending: false,
     },{
       limit: 1,
@@ -57,7 +57,7 @@ describe("Token", () => {
     const result = await tokenService.countTokenByWallet(wallet);
     expect(result).eq(1);
     expect(fn).calledWith({
-      entity_id: 1,
+      wallet_id: 1,
     });
     fn.restore();
   });
@@ -66,8 +66,8 @@ describe("Token", () => {
     const transactionObject = {
       id: 1,
       token_id: 1,
-      source_entity_id: 1,
-      destination_entity_id: 1,
+      source_wallet_id: 1,
+      destination_wallet_id: 1,
     }
     sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: 1,

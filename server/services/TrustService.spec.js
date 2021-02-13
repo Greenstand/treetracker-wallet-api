@@ -20,10 +20,10 @@ describe("TrustService", () => {
 
   /*
    *{
-    "actor_entity_id": 10,
-    "target_entity_id": 11,
+    "actor_wallet_id": 10,
+    "target_wallet_id": 11,
     "type": "send",
-    "originator_entity_id": 10,
+    "originator_wallet_id": 10,
     "request_type": "send",
     "state": null,
     "created_at": "2020-10-16T07:36:21.955Z",
@@ -34,10 +34,10 @@ describe("TrustService", () => {
    */
   it("convertToResponse", async () => {
     const trustObject = {
-      "actor_entity_id": 10,
-      "target_entity_id": 11,
+      "actor_wallet_id": 10,
+      "target_wallet_id": 11,
       "type": "send",
-      "originator_entity_id": 10,
+      "originator_wallet_id": 10,
       "request_type": "send",
       "state": "trusted",
       "created_at": "2020-10-16T07:36:21.955Z",

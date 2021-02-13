@@ -17,11 +17,11 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
   return db.createTable('entity_trust_log', {
     id: { type: 'uuid', primaryKey: true, notNull: true },
-    entity_trust_id: { type: 'int', notNull: true },
-    actor_entity_id: { type: 'int', notNull: true },
-    target_entity_id: { type: 'int', notNull: true },
+    wallet_trust_id: { type: 'uuid', notNull: true },
+    actor_wallet_id: { type: 'uuid', notNull: true },
+    target_wallet_id: { type: 'uuid', notNull: true },
     type: { type: 'entity_trust_type', notNull: true },
-    originator_entity_id: { type: 'int', notNull: true },
+    originator_wallet_id: { type: 'uuid', notNull: true },
     request_type: { type: 'entity_trust_request_type', notNull: true },
     state: { type: 'entity_trust_state_type', notNull: true },
     created_at: { 

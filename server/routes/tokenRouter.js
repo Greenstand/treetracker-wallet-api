@@ -25,7 +25,7 @@ tokenRouter.get('/:uuid',
     let walletIds = [walletLogin.getId()];
     const subWallets = await walletLogin.getSubWallets();
     walletIds = [...walletIds, ...subWallets.map(e => e.getId())];
-    if(walletIds.includes(json.entity_id)){
+    if(walletIds.includes(json.wallet_id)){
       //pass
     }else{
       throw new HttpError(401, "Have no permission to visit this token");
@@ -104,7 +104,7 @@ tokenRouter.get('/:uuid/transactions',
     let walletIds = [walletLogin.getId()];
     const subWallets = await walletLogin.getSubWallets();
     walletIds = [...walletIds, ...subWallets.map(e => e.getId())];
-    if(walletIds.includes(json.entity_id)){
+    if(walletIds.includes(json.wallet_id)){
       //pass
     }else{
       throw new HttpError(401, "Have no permission to visit this token");

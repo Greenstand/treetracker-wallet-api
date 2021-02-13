@@ -21,9 +21,9 @@ exports.up = function (db) {
       type: 'int',
       notNull: true,
     },
-    transfer_id: { type: 'int', notNull: true },
-    source_entity_id: { type: 'int', notNull: true },
-    destination_entity_id: { type: 'int', notNull: true },
+    transfer_id: { type: 'uuid', notNull: true },
+    source_wallet_id: { type: 'uuid', notNull: true },
+    destination_wallet_id: { type: 'uuid', notNull: true },
     processed_at: {
       type: 'timestamp',
       notNull: true,
