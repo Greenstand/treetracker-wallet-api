@@ -1,9 +1,12 @@
 const request = require("supertest");
 const express = require("express");
 const walletRouter = require("./walletRouter");
-const {expect} = require("chai");
 const {errorHandler} = require("./utils");
 const sinon = require("sinon");
+const chai = require("chai");
+const sinonChai = require("sinon-chai");
+chai.use(sinonChai);
+const {expect} = chai;
 const bodyParser = require('body-parser');
 const ApiKeyService = require("../services/ApiKeyService");
 const WalletService = require("../services/WalletService");
@@ -115,7 +118,7 @@ describe("walletRouter", ()=> {
       console.log(res.body);
       expect(res).property("statusCode").eq(200);
       expect(res.body).to.have.property("wallet").eq(mockWallet2._JSON.name);
-      expect(fn).calledWith("subWallet");
+      expect(fn).calledWith(mockWallet2._JSON.name);
     });
 
     it("missed parameter", async () => {

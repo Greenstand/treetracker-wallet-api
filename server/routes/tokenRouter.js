@@ -87,7 +87,7 @@ tokenRouter.get('/:uuid/transactions',
       Joi.object({
         limit: Joi.number().required(),
         start: Joi.number().min(1).max(10000).integer(),
-        token_uuid: Joi.string(), //TODO: not sure how to validate
+        id: Joi.string().guid(), 
         transactions: Joi.string(),
       })
     );

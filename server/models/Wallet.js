@@ -4,11 +4,12 @@ const TrustRelationship = require("../models/TrustRelationship");
 const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
 const Crypto = require('crypto');
-const expect = require("expect-runtime");
 const log = require("loglevel");
 const Transfer = require("./Transfer");
 const Token = require("./Token");
 const { validate: uuidValidate } = require('uuid');
+const expect = require("expect-runtime"); //TODO: We should use Joi for validation
+const Joi = require("joi");
 
 
 class Wallet{
@@ -20,6 +21,7 @@ class Wallet{
       this._id = idOrJSON.id;
       this._JSON = idOrJSON;
     }else{
+      console.log(idOrJSON);
       throw new HttpError(500);
     }
     const WalletService = require("../services/WalletService");
@@ -187,11 +189,10 @@ class Wallet{
     requesteeWallet,
   ){
     log.debug("request trust...");
-    expect(
-      requestType, 
-      () => new HttpError(400, `The trust request type must be one of ${Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE).join(',')}`)
+    Joi.assert(
+      requestType,
+      Joi.string().required().valid(...Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE))
     )
-      .oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
 
     /*
      * Translate the requester/ee to actor/target
@@ -288,10 +289,8 @@ class Wallet{
    * Accept a trust relationship request
    */
   async acceptTrustRequestSentToMe(trustRelationshipId){
-    expect(trustRelationshipId).number();
     const trustRelationships = await this.getTrustRelationshipsRequestedToMe(this._id);
     const trustRelationship = trustRelationships.reduce((a,c) => {
-      expect(c.id).number();
       if(c.id === trustRelationshipId){
         return c;
       }else{
@@ -364,10 +363,8 @@ class Wallet{
    * Decline a trust relationship request
    */
   async declineTrustRequestSentToMe(trustRelationshipId){
-    expect(trustRelationshipId).number();
     const trustRelationships = await this.getTrustRelationshipsRequestedToMe(this._id);
     const trustRelationship = trustRelationships.reduce((a,c) => {
-      expect(c.id).number();
       if(c.id === trustRelationshipId){
         return c;
       }else{
@@ -386,8 +383,9 @@ class Wallet{
    * Cancel a trust relationship request
    */
   async cancelTrustRequestSentToMe(trustRelationshipId){
-    expect(trustRelationshipId).number();
     const trustRelationship = await this.trustRepository.getById(trustRelationshipId);
+    console.log(this._id)
+    console.log(trustRelationship)
     if(trustRelationship.originator_wallet_id !== this._id){
       throw new HttpError(403, "Have no permission to cancel this relationship");
     }
@@ -408,12 +406,14 @@ class Wallet{
     //check if the trust exist
     if(
       trustRelationships.some(trustRelationship => {
+        /* Seems unnecessary
         expect(trustRelationship).match({
           actor_wallet_id: expect.any(Number),
           target_wallet_id: expect.any(Number),
           request_type: expect.any(String),
           type: expect.any(String),
         });
+        */
         if(
           trustRelationship.actor_wallet_id === senderWallet.getId() &&
           trustRelationship.target_wallet_id === receiveWallet.getId() &&
@@ -426,12 +426,14 @@ class Wallet{
       })
       ||
       trustRelationships.some(trustRelationship => {
+        /* Seems unnecessary
         expect(trustRelationship).match({
           actor_wallet_id: expect.any(Number),
           target_wallet_id: expect.any(Number),
           request_type: expect.any(String),
           type: expect.any(String),
         });
+        */
         if(
           trustRelationship.actor_wallet_id === receiveWallet.getId() &&
           trustRelationship.target_wallet_id === senderWallet.getId() &&
@@ -547,7 +549,6 @@ class Wallet{
   async transferBundle(sender, receiver, bundleSize){
     //check has enough tokens to sender
     const tokenCount = await this.tokenService.countTokenByWallet(sender);
-    expect(tokenCount).number();
     if(tokenCount < bundleSize){
       throw new HttpError(403, `Do not have enough tokens to send`);
     }
@@ -668,7 +669,7 @@ class Wallet{
   }
 
   /*
-   * Accept a pending transfer, if I has the privilege to do so
+   * Accept a pending transfer, if wallet has the privilege to do so
    */
   async acceptTransfer(transferId){
 
@@ -693,14 +694,12 @@ class Wallet{
       transfer.parameters.bundle.bundleSize){
       log.debug("transfer bundle of tokens");
       const {source_wallet_id} = transfer;
-      expect(source_wallet_id).number();
       const senderWallet = new Wallet(source_wallet_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       if(tokens.length < transfer.parameters.bundle.bundleSize){
         throw new HttpError(403, "Do not have enough tokens");
       }
       for(let token of tokens){
-        expect(token).defined();
         await token.completeTransfer(transfer);
       }
     }else{
@@ -800,11 +799,9 @@ class Wallet{
       transfer.parameters.bundle.bundleSize){
       log.debug("transfer bundle of tokens");
       const {source_wallet_id} = transfer;
-      expect(source_wallet_id).number();
       const senderWallet = new Wallet(source_wallet_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       for(let token of tokens){
-        expect(token).defined();
         await token.completeTransfer(transfer);
       }
     }else{
@@ -844,7 +841,6 @@ class Wallet{
       transfer.parameters.bundle.bundleSize){
       log.debug("transfer bundle of tokens");
       const {source_wallet_id} = transfer;
-      expect(source_wallet_id).number();
       const senderWallet = new Wallet(source_wallet_id, this._session);
       //check it
       if(tokens.length > transfer.parameters.bundle.bundleSize){
@@ -863,7 +859,6 @@ class Wallet{
 
       //transfer
       for(let token of tokens){
-        expect(token).defined();
         await token.completeTransfer(transfer);
       }
     }else{

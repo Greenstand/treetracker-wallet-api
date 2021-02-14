@@ -48,11 +48,11 @@ class Token{
    * To transfer this token according the transfer object
    */
   async completeTransfer(transfer){
-    log.debug("Token complet transfer");
+    log.debug("Token complete transfer");
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: false,
-      transfer_pending_id: transfer.id,
+      transfer_pending_id: null,
       wallet_id: transfer.destination_wallet_id,
     });
     await this.transactionRepository.create({
@@ -87,12 +87,17 @@ class Token{
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: false,
-      transfer_pending_id: transfer.id,
+      transfer_pending_id: null
     });
   }
 
   async belongsTo(wallet){
-    expect(wallet).defined();
+
+    Joi.assert(
+      wallet.getId(),
+      Joi.string().guid()
+    )
+
     const json = await this.toJSON();
     if(json.wallet_id === wallet.getId()){
       return true;

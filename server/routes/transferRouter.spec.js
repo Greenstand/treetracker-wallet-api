@@ -26,14 +26,12 @@ describe("transferRouter", () => {
   let app;
   let session = new Session();
 
-  const walletLogin = {
-    id: uuid.v4(),
-  }
+  const authenticatedWallet = new Wallet(uuid.v4())
 
   beforeEach(() => {
     sinon.stub(ApiKeyService.prototype, "check");
     sinon.stub(JWTService.prototype, "verify").returns({
-      id: walletLogin.id,
+      id: authenticatedWallet.getId(),
     });
     app = express();
     app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
@@ -348,15 +346,14 @@ describe("transferRouter", () => {
 
     it("Successfully", async () => {
       const transferId = uuid.v4()
-      const walletId = uuid.v4()
-      const wallet = new Wallet(walletId);
+      const wallet = new Wallet(uuid.v4());
       const transfer = {id:transferId};
       const fn = sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const fn2 = sinon.stub(Wallet.prototype, "getTransferById").resolves(transfer);
       const fn3 = sinon.stub(TransferService.prototype, "convertToResponse").resolves(transfer);
       const res = await request(app)
         .get(`/${transferId}`);
-      expect(fn).calledWith(walletId);
+      expect(fn).calledWith(authenticatedWallet.getId());
       expect(fn2).calledWith(transferId);
       expect(fn3).calledWith(transfer);
       expect(res).property("statusCode").eq(200);
@@ -366,46 +363,40 @@ describe("transferRouter", () => {
 
   describe("GET /{transfer_id}/tokens start and limit working", () => {
 
+    const transferId = uuid.v4();
+    const tokenId = uuid.v4();
+    const token2Id = uuid.v4();
+    const token3Id = uuid.v4();
+    const token4Id = uuid.v4();
+    const transfer = {id:transferId};
+    const token = new Token({id:tokenId});
+    const token2 = new Token({id:token2Id});
+    const token3 = new Token({id:token3Id});
+    const token4 = new Token({id:token4Id});
+
+
     it("Successfully", async () => {
-      const walletId = uuid.v4();
-      const transferId = uuid.v4();
-      const tokenId = uuid.v4();
-      const wallet = new Wallet(walletId);
-      const transfer = {id:transferId};
-      const token = new Token({id:tokenId});
-      const fn = sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+      const fn = sinon.stub(WalletService.prototype, "getById").resolves(authenticatedWallet);
       const fn2 = sinon.stub(Wallet.prototype, "getTokensByTransferId").resolves([token]);
       const res = await request(app)
         .get(`/${transferId}/tokens?limit=1`);
-      expect(fn).calledWith(walletId);
+      expect(fn).calledWith(authenticatedWallet.getId());
       expect(fn2).calledWith(transferId);
       expect(res).property("statusCode").eq(200);
       expect(res.body).property("tokens").lengthOf(1);
     });
 
     it("limit and start working successfully", async () => {
-      const walletId = uuid.v4();
-      const transferId = uuid.v4();
-      const tokenId = uuid.v4();
-      const token2Id = uuid.v4();
-      const token3Id = uuid.v4();
-      const token4Id = uuid.v4();
-      const wallet = new Wallet(walletId);
-      const transfer = {id:transferId};
-      const token = new Token({id:tokenId});
-      const token2 = new Token({id:token2Id});
-      const token3 = new Token({id:token3Id});
-      const token4 = new Token({id:token4Id});
-      const fn = sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+      const fn = sinon.stub(WalletService.prototype, "getById").resolves(authenticatedWallet);
       const fn2 = sinon.stub(Wallet.prototype, "getTokensByTransferId").resolves([token, token2, token3, token4]);
       const res = await request(app)
         .get(`/${transferId}/tokens?limit=3&start=2`);
-      expect(fn).calledWith(walletId);
+      expect(fn).calledWith(authenticatedWallet.getId());
       expect(fn2).calledWith(transferId);
       expect(res).property("statusCode").eq(200);
       console.log(res.body);
       expect(res.body).property("tokens").lengthOf(3);
-      expect(res.body.tokens.map(t=>(t.id))).to.deep.equal([token, token2, token3, token4]);
+      expect(res.body.tokens.map(t=>(t.id))).to.deep.equal([token2.getId(), token3.getId(), token4.getId()]);
     });
   })
 

@@ -1,9 +1,12 @@
 const request = require("supertest");
 const express = require("express");
 const trustRouter = require("./trustRouter");
-const {expect} = require("chai");
 const {errorHandler} = require("./utils");
 const sinon = require("sinon");
+const chai = require("chai");
+const sinonChai = require("sinon-chai");
+chai.use(sinonChai);
+const {expect} = chai;
 const ApiKeyService = require("../services/ApiKeyService");
 const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");
@@ -18,14 +21,12 @@ const uuid = require('uuid');
 
 describe("trustRouter", () => {
   let app;
-  const authenticatedWallet = {
-    id: uuid.v4(),
-  }
+  const authenticatedWallet = new Wallet(uuid.v4())
 
   beforeEach(() => {
     sinon.stub(ApiKeyService.prototype, "check");
     sinon.stub(JWTService.prototype, "verify").returns({
-      id: authenticatedWallet.id,
+      id: authenticatedWallet.getId(),
     });
     app = express();
     app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
@@ -45,8 +46,8 @@ describe("trustRouter", () => {
     const wallet2 = new Wallet(wallet2Id);
 
     it("successfully", async () => {
-      sinon.stub(WalletService.prototype, "getById").resolves(wallet);
-      sinon.stub(WalletService.prototype, "getByName").resolves(wallet2);
+      sinon.stub(WalletService.prototype, "getById").resolves(authenticatedWallet);
+      sinon.stub(WalletService.prototype, "getByName").resolves(wallet);
       const fn = sinon.stub(Wallet.prototype, "requestTrustFromAWallet");
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({});
       const res = await request(app)
@@ -54,14 +55,13 @@ describe("trustRouter", () => {
         .send({
           trust_request_type: "send",
           requestee_wallet: walletId,
-          requester_wallet: wallet2Id,
         });
       console.log(res.body);
       expect(res).property("statusCode").eq(200);
       expect(fn).calledWith(
         "send",
-        walletId,
-        wallet2Id,
+        authenticatedWallet,
+        wallet
       )
     });
     

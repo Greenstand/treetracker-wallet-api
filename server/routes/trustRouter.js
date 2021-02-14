@@ -7,6 +7,7 @@ const TrustService = require("../services/TrustService");
 const Wallet = require("../models/Wallet");
 const helper = require("./utils");
 const Session = require("../models/Session");
+const TrustRelationship = require("../models/TrustRelationship");
 const Joi = require("joi");
 
 trustRouter.get('/',
@@ -78,8 +79,7 @@ trustRouter.post('/',
     Joi.assert(
       req.body,
       Joi.object({
-        trust_request_type: Joi.string().required(),
-        requester_wallet: Joi.string().required(),
+        trust_request_type: Joi.string().required().valid(...Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE)),
         requestee_wallet: Joi.string().required(),
       })
     );
@@ -99,6 +99,7 @@ trustRouter.post('/',
     if(req.body.requester_wallet){
       requesterWallet = await walletService.getByName(req.body.requester_wallet);
     }
+    console.log(wallet)
     const trust_relationship = await wallet.requestTrustFromAWallet(
       req.body.trust_request_type,
       requesterWallet,

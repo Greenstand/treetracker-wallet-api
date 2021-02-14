@@ -279,10 +279,6 @@ transferRouter.get("/",
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-//    let walletObject;
-//    if(wallet){
-//      walletObject = await walletService.getByIdOrName(wallet);
-//    }
     let walletTransfer = walletLogin;
     if(wallet){
       walletTransfer = await walletService.getByIdOrName(wallet);
@@ -322,7 +318,7 @@ transferRouter.get('/:transfer_id',
     const walletService = new WalletService(session);
     const transferService = new TransferService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const transferObject = await walletLogin.getTransferById(parseInt(req.params.transfer_id));
+    const transferObject = await walletLogin.getTransferById(req.params.transfer_id);
     const transferJson = await transferService.convertToResponse(transferObject);
     res.status(200).json(transferJson);
   })
@@ -350,7 +346,7 @@ transferRouter.get('/:transfer_id/tokens',
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const tokens = await walletLogin.getTokensByTransferId(parseInt(req.params.transfer_id));
+    const tokens = await walletLogin.getTokensByTransferId(req.params.transfer_id);
     let tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();

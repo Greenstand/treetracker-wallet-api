@@ -10,6 +10,7 @@ const {expect} = chai;
 const TransactionRepository = require("../repositories/TransactionRepository");
 const Wallet = require("./Wallet");
 const Session = require("./Session");
+const uuid = require('uuid');
 
 describe("Token", () => {
   let session = new Session();
@@ -51,7 +52,7 @@ describe("Token", () => {
     it("completeTransfer successfully", async () => {
       const token = new Token(tokenId, session);
       const transfer = {
-        id:tokenId,
+        id: transferId,
         source_wallet_id: walletId,
         destination_wallet_id: wallet2Id,
       };
@@ -60,14 +61,14 @@ describe("Token", () => {
       await token.completeTransfer(transfer);
       expect(fn1).calledWith({
         id: tokenId,
-        wallet_id: walletId,
+        wallet_id: wallet2Id,
         transfer_pending: false,
-        transfer_pending_id: transferId,
+        transfer_pending_id: null
       });
       expect(fn2).calledWith({
         token_id: tokenId,
         transfer_id: transferId,
-        source_wallet_id: wallet1Id,
+        source_wallet_id: walletId,
         destination_wallet_id: wallet2Id,
       });
       fn1.restore();
@@ -80,7 +81,7 @@ describe("Token", () => {
     it("cancelTransfer successfully", async () => {
       const token = new Token(tokenId, session);
       const transfer = {
-        id:tokenId,
+        id: transferId,
         source_wallet_id: walletId,
         destination_wallet_id: wallet2Id,
       };
@@ -90,7 +91,7 @@ describe("Token", () => {
       expect(fn1).calledWith({
         id: tokenId,
         transfer_pending: false,
-        transfer_pending_id: transferId,
+        transfer_pending_id: null,
       });
       expect(fn2).not.calledWith();
       fn1.restore();
@@ -101,11 +102,11 @@ describe("Token", () => {
   describe("belongsTo", () => {
 
     it("belongsTo", async () => {
-      const token = new Token(1, session);
-      const wallet = new Wallet(2, session);
+      const token = new Token(tokenId, session);
+      const wallet = new Wallet(walletId, session);
       const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
-        id: 1,
-        wallet_id: 2,
+        id: tokenId,
+        wallet_id: walletId,
       });
       expect(await token.belongsTo(wallet)).eq(true);
       expect(fn1).calledWith();
@@ -113,11 +114,11 @@ describe("Token", () => {
     });
 
     it("not belongsTo", async () => {
-      const token = new Token(1, session);
-      const wallet = new Wallet(2, session);
+      const token = new Token(tokenId, session);
+      const wallet = new Wallet(walletId, session);
       const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
-        id: 1,
-        wallet_id: 1,
+        id: tokenId,
+        wallet_id: wallet2Id,
       });
       expect(await token.belongsTo(wallet)).eq(false);
       expect(fn1).calledWith();
@@ -128,7 +129,7 @@ describe("Token", () => {
   describe("Transactions", () => {
 
     it("getTransactions", async () => {
-      const token = new Token(1);
+      const token = new Token(tokenId);
       sinon.stub(TransactionRepository.prototype, "getByFilter").resolves([{}]);
       const transactions = await token.getTransactions();
       expect(transactions).lengthOf(1);
