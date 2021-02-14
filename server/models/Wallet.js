@@ -415,7 +415,7 @@ class Wallet{
         if(
           trustRelationship.actor_entity_id === senderWallet.getId() &&
           trustRelationship.target_entity_id === receiveWallet.getId() &&
-          trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
+          trustRelationship.request_type === trustType
         ){
           return true;
         }else{
@@ -433,7 +433,7 @@ class Wallet{
         if(
           trustRelationship.actor_entity_id === receiveWallet.getId() &&
           trustRelationship.target_entity_id === senderWallet.getId() &&
-          trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive
+          trustRelationship.request_type === trustType
         ){
           return true;
         }else{

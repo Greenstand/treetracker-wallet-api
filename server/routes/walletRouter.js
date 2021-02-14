@@ -38,31 +38,31 @@ walletRouter.get('/',
   })
 );
 
-// TO DO: Add below route to yaml 
+// Don't need this route anymore?
 
-walletRouter.get('/:wallet_id/trust_relationships', 
-  helper.apiKeyHandler,
-  helper.verifyJWTHandler,
-  helper.handlerWrapper(async (req, res, next) => {
-    const session = new Session();
-    const trustService = new TrustService(session);
-    const walletService = new WalletService(session);
-    const wallet = await walletService.getById(req.params.wallet_id);
-    const trust_relationships = await wallet.getTrustRelationships(
-      req.query.state,
-      req.query.type,
-      req.query.request_type,
-    );
-    const trust_relationships_json = [];
-    for(let t of trust_relationships){
-      const j = await trustService.convertToResponse(t);
-      trust_relationships_json.push(j);
-    }
-    res.status(200).json({
-      trust_relationships: trust_relationships_json,
-    });
-  })
-); 
+// walletRouter.get('/:wallet_id/trust_relationships', 
+//   helper.apiKeyHandler,
+//   helper.verifyJWTHandler,
+//   helper.handlerWrapper(async (req, res, next) => {
+//     const session = new Session();
+//     const trustService = new TrustService(session);
+//     const walletService = new WalletService(session);
+//     const wallet = await walletService.getById(req.params.wallet_id);
+//     const trust_relationships = await wallet.getTrustRelationships(
+//       req.query.state,
+//       req.query.type,
+//       req.query.request_type,
+//     );
+//     const trust_relationships_json = [];
+//     for(let t of trust_relationships){
+//       const j = await trustService.convertToResponse(t);
+//       trust_relationships_json.push(j);
+//     }
+//     res.status(200).json({
+//       trust_relationships: trust_relationships_json,
+//     });
+//   })
+// ); 
 
 walletRouter.post('/', 
   helper.apiKeyHandler,
