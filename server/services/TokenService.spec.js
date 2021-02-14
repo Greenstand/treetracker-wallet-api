@@ -25,12 +25,12 @@ describe("Token", () => {
     sinon.restore();
   });
 
-  it("getByUUID() with id which doesn't exist, should throw 404", async () => {
-    sinon.stub(TokenRepository.prototype, "getByUUID").rejects(new HttpError(404, "not found"));
+  it("getById() with id which doesn't exist, should throw 404", async () => {
+    dsinon.stub(TokenRepository.prototype, "getById").rejects(new HttpError(404, "not found"));
     await jestExpect(async () => {
-      await tokenService.getByUUID("testUuid");
+      await tokenService.getById("testUuid");
     }).rejects.toThrow('not found');
-    TokenRepository.prototype.getByUUID.restore();
+    TokenRepository.prototype.getById.restore();
   });
 
   it("getTokensByBundle", async () => {
@@ -72,7 +72,7 @@ describe("Token", () => {
     sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: 1,
       uuid: "xxx",
-      tree_id: 1,
+      capture_id: 1,
     }));
     sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
       id: 1,

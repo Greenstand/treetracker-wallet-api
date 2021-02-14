@@ -30,7 +30,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return db.dropTable('transfer-audit');
+  return db.dropTable('transfer_audit');
 };
 
 exports._meta = {

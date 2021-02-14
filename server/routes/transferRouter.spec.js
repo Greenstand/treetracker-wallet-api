@@ -146,7 +146,7 @@ describe("transferRouter", () => {
       .resolves(new Wallet(walletId))
       .onSecondCall()
       .resolves(new Wallet(wallet2Id));
-    sinon.stub(TokenService.prototype, 'getByUUID').resolves(
+    sinon.stub(TokenService.prototype, 'getById').resolves(
       new Token({
         id: uuid.v4(),
         wallet_id: walletId,
@@ -186,7 +186,7 @@ describe("transferRouter", () => {
       .onSecondCall()
       .resolves(new Wallet(wallet2Id));
 
-    sinon.stub(TokenService.prototype, 'getByUUID').resolves(
+    sinon.stub(TokenService.prototype, 'getById').resolves(
       new Token({
         id: tokenId,
         wallet_id: walletId,
@@ -218,7 +218,7 @@ describe("transferRouter", () => {
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: () => {},
     });
-    sinon.stub(TokenService.prototype, "getByUUID").resolves(new Token({
+    sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: tokenId,
       wallet_id: walletId,
     }, session));
@@ -246,7 +246,7 @@ describe("transferRouter", () => {
     sinon.stub(WalletService.prototype, "getById").resolves({
       transfer: () => {},
     });
-    sinon.stub(TokenService.prototype, "getByUUID").resolves(new Token({
+    sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: tokenId,
       wallet_id: walletId,
     }, session));

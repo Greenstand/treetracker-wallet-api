@@ -40,10 +40,10 @@ describe("Seed data into DB", () => {
 
     it("Token should match tree/entity id", () => {
       expect(token)
-        .to.have.property('tree_id')
+        .to.have.property('capture_id')
         .to.equal(seed.tree.id);
       expect(token)
-        .to.have.property('entity_id')
+        .to.have.property('wallet_id')
         .to.equal(seed.wallet.id);
     });
 
@@ -96,7 +96,7 @@ describe("Seed data into DB", () => {
 //      const query = 
 //        `SELECT *
 //          FROM entity_role
-//          WHERE entity_id = ${seed.wallet.id}
+//          WHERE wallet_id = ${seed.wallet.id}
 //          AND role_name = 'list_trees'
 //          AND enabled = TRUE`;
 //      const result = await pool.query(query);
@@ -110,7 +110,7 @@ describe("Seed data into DB", () => {
 //      const query = 
 //        `SELECT *
 //          FROM entity_role
-//          WHERE entity_id = ${seed.wallet.id}
+//          WHERE wallet_id = ${seed.wallet.id}
 //          AND role_name = 'accounts'
 //          AND enabled = TRUE`;
 //      const result = await pool.query(query);
@@ -131,8 +131,8 @@ describe("Seed data into DB", () => {
     it("walletC have manage relationship with wallet", async () => {
       const r = await knex.table("wallet_trust").select()
         .where({
-          actor_entity_id: seed.walletB.id,
-          target_entity_id: seed.walletC.id,
+          actor_wallet_id: seed.walletB.id,
+          target_wallet_id: seed.walletC.id,
           type: "manage",
         });
       expect(r).lengthOf(1); 
@@ -156,7 +156,7 @@ describe("Seed data into DB", () => {
       const r = await knex.table("wallets.token").select()
         .where("id", seed.tokenB.id);
       expect(r).lengthOf(1); 
-      expect(r[0]).property("tree_id").eq(seed.treeB.id);
+      expect(r[0]).property("capture_id").eq(seed.treeB.id);
   });
 
 });

@@ -17,7 +17,7 @@ class WalletRepository extends BaseRepository {
   async create(object){
     const result = await super.create(object);
     expect(result).match({
-      id: expect.any(Number),
+      id: expect.any(String),
     });
     return result;
   }

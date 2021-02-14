@@ -48,12 +48,12 @@ describe("tokenRouter", () => {
     const token = new Token({
       id: tokenId,
       wallet_id: walletId,
-      tree_id: 1,
+      capture_id: 1,
     });
     const token2 = new Token({
       id: token2Id,
       wallet_id: wallet2Id,
-      tree_id: 2,
+      capture_id: 2,
     });
 
     const wallet = new Wallet(walletId);
@@ -112,12 +112,12 @@ describe("tokenRouter", () => {
     const token = new Token({
       id: tokenId,
       wallet_id: walletId,
-      tree_id: 1,
+      capture_id: 1,
     });
     const token2 = new Token({
       id: token2Id,
       wallet_id: wallet2Id,
-      tree_id: 2,
+      capture_id: 2,
     });
 
     const wallet = new Wallet(walletId);
@@ -125,7 +125,7 @@ describe("tokenRouter", () => {
 
 
     it("/test-uuid successfully", async () => {
-      sinon.stub(TokenService.prototype, "getByUUID").resolves(token);
+      sinon.stub(TokenService.prototype, "getById").resolves(token);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
       sinon.stub(TokenService.prototype, "convertToResponse").resolves({
@@ -141,7 +141,7 @@ describe("tokenRouter", () => {
     });
 
     it("/xxx/transactions successfully", async () => {
-      sinon.stub(TokenService.prototype, "getByUUID").resolves(token);
+      sinon.stub(TokenService.prototype, "getById").resolves(token);
       sinon.stub(token, "toJSON").resolves({
         wallet_id: walletId,
       });
@@ -171,7 +171,7 @@ describe("tokenRouter", () => {
     });
 
     it("/{token_uuid}/transactions limit and offset successfully", async () => {
-      sinon.stub(TokenService.prototype, "getByUUID").resolves(token);
+      sinon.stub(TokenService.prototype, "getById").resolves(token);
       sinon.stub(token, "toJSON").resolves({
         wallet_id: walletId,
       });

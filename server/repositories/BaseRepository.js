@@ -74,7 +74,7 @@ class BaseRepository{
   async update(object){
     const result = await this._session.getDB()(this._tableName).update(object).where("id", object.id).returning("*");
     expect(result).match([{
-      id: expect.any(Number),
+      id: expect.any(String), // UUID, but this type of runtime check is not necessary
     }]);
     return result[0];
   }

@@ -16,17 +16,16 @@ const wallet = {
   type: 'p',
 };
 
-const tree = {
-  id: 999999,
+const capture = {
+  id: uuid.v4()
 };
 
-const treeB = {
-  id: 999998,
+const captureB = {
+  id: uuid.v4()
 };
 
 const token = {
-  id: 9,
-  uuid: uuid.v4(),
+  id: uuid.v4()
 };
 
 
@@ -50,9 +49,8 @@ const walletC = {
 
 const tokenB = {
   id: uuid.v4(),
-  uuid: uuid.v4(),
-  tree_id: treeB.id,
-  entity_id: walletC.id,
+  capture_id: captureB.id,
+  wallet_id: walletC.id,
 };
 
 const storyOfThisSeed = `
@@ -63,14 +61,13 @@ const storyOfThisSeed = `
       wallet: ${wallet.wallet}
       password: ${wallet.password}
 
-    a tree: #${tree.id}
+    a capture: #${capture.id}
 
     a token: #${token.id}
-      tree: #${tree.id}
+      capture: #${capture.id}
       wallet: #${wallet.id}
-      uuid: ${token.uuid}
 
-    wallet #${wallet.id} planted a tree #${tree.id}, get a token #${token.id}
+    wallet #${wallet.id} planted a capture #${capture.id}, get a token #${token.id}
 
     walletB: 
       ${JSON.stringify(walletB, undefined, 2)}
@@ -81,7 +78,7 @@ const storyOfThisSeed = `
     Another token, belongs to walletC:
       ${JSON.stringify(tokenB, undefined, 2)}
 
-    Another tree: #${treeB.id}
+    Another capture: #${captureB.id}
 
 
 `;
@@ -137,9 +134,9 @@ async function seed() {
   await knex('wallet_trust')
     .insert({
       type: "manage",
-      actor_entity_id: walletB.id,
-      target_entity_id: walletC.id,
-      originator_entity_id: walletB.id,
+      actor_wallet_id: walletB.id,
+      target_wallet_id: walletC.id,
+      originator_wallet_id: walletB.id,
       request_type: "manage",
       state: "trusted",
     });
@@ -149,9 +146,8 @@ async function seed() {
   await knex('token')
     .insert({
       id: token.id,
-      tree_id: tree.id,
-      entity_id: wallet.id,
-      uuid: token.uuid,
+      capture_id: capture.id,
+      wallet_id: wallet.id,
     });
 
   await knex('token')
@@ -175,8 +171,8 @@ module.exports = {
   wallet, 
   walletB, 
   walletC, 
-  tree, 
+  capture, 
   token,
   tokenB,
-  treeB,
+  captureB,
 };

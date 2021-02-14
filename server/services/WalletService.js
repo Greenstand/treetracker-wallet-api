@@ -2,6 +2,7 @@ const WalletRepository = require('../repositories/WalletRepository');
 const Wallet = require('../models/Wallet');
 const HttpError = require("../utils/HttpError");
 const expect = require('expect-runtime');
+const { validate: uuidValidate } = require('uuid');
 
 class WalletService {
   constructor(session){
@@ -23,7 +24,7 @@ class WalletService {
 
   async getByIdOrName(idOrName) {
     let walletObject;
-    if (typeof idOrName === 'number') {
+    if(uuidValidate(idOrName)){
       walletObject = await this.walletRepository.getById(idOrName);
     } else if (typeof idOrName === 'string') {
       walletObject = await this.walletRepository.getByName(idOrName);

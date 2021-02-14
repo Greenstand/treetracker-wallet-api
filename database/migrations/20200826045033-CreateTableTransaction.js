@@ -18,7 +18,7 @@ exports.up = function (db) {
   return db.createTable('transaction', {
     id: { type: 'uuid', primaryKey: true, notNull:true },
     token_id: {
-      type: 'int',
+      type: 'uuid',
       notNull: true,
     },
     transfer_id: { type: 'uuid', notNull: true },

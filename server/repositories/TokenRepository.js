@@ -12,11 +12,11 @@ class TokenRepository extends BaseRepository{
     this._session = session;
   }
 
-  async getByUUID(uuid){
-    const result = await this._session.getDB()(this._tableName).where("uuid", uuid)
+  async getById(id){
+    const result = await this._session.getDB()(this._tableName).where("id", id)
       .first();
-    expect(result,() => new HttpError(404, `can not found token by uuid:${uuid}`)).match({
-      id: expect.any(Number),
+    expect(result,() => new HttpError(404, `can not found token by id:${id}`)).match({
+      id: expect.any(String),
     });
     return result;
   }

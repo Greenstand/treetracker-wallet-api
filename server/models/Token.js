@@ -34,7 +34,7 @@ class Token{
     const result = {
       ...this._JSON,
       links: {
-        capture: `/webmap/trees?treeid=${this._JSON.tree_id}`
+        capture: `/webmap/trees?treeid=${this._JSON.capture_id}`
       }
     }
     return result;
@@ -69,10 +69,8 @@ class Token{
   async pendingTransfer(transfer){
 
     Joi.assert(
-      transfer,
-      Joi.object({
-        id: Joi.string().guid()
-      })
+      transfer.id,
+      Joi.string().guid()
     )
 
     await this.tokenRepository.update({

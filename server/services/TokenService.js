@@ -1,7 +1,6 @@
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
-const expect = require("expect-runtime");
 
 class TokenService{
 
@@ -11,12 +10,6 @@ class TokenService{
     this.transactionRepository = new TransactionRepository(session);
     const WalletService  = require("../services/WalletService");
     this.walletService = new WalletService(session);
-  }
-
-  async getByUUID(uuid){
-    const tokenObject = await this.tokenRepository.getByUUID(uuid);
-    const token = new Token(tokenObject, this._session);
-    return token;
   }
 
   async getById(id){
@@ -34,7 +27,6 @@ class TokenService{
   }
 
   async getTokensByPendingTransferId(transferId){
-    expect(transferId).number();
     const result = await this.tokenRepository.getByFilter({
       transfer_pending_id: transferId,
     });
@@ -67,11 +59,6 @@ class TokenService{
   }
 
   async convertToResponse(transactionObject){
-    expect(transactionObject).match({
-      token_id: expect.any(Number),
-      source_wallet_id: expect.any(Number),
-      destination_wallet_id: expect.any(Number),
-    });
     const {
       token_id,
       source_wallet_id,

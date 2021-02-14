@@ -57,8 +57,8 @@ transferRouter.post(
       if(req.body.tokens){
         const tokens = [];
         const tokenService = new TokenService(session);
-        for(let uuid of req.body.tokens){
-          const token = await tokenService.getByUUID(uuid); 
+        for(let id of req.body.tokens){
+          const token = await tokenService.getById(id); 
           tokens.push(token);
         }
         result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
@@ -235,8 +235,8 @@ transferRouter.post('/:transfer_id/fulfill',
         //load tokens
         const tokens = [];
         const tokenService = new TokenService(session);
-        for(let uuid of req.body.tokens){
-          const token = await tokenService.getByUUID(uuid); 
+        for(let id of req.body.tokens){
+          const token = await tokenService.getById(id); 
           tokens.push(token);
         }
         transferJson = await walletLogin.fulfillTransferWithTokens(req.params.transfer_id, tokens);

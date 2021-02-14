@@ -9,11 +9,6 @@ class TransferService{
   }
 
   async convertToResponse(transferObject){
-    expect(transferObject).match({
-      originator_wallet_id: expect.any(Number),
-      source_wallet_id: expect.any(Number),
-      destination_wallet_id: expect.any(Number),
-    });
     const {
       originator_wallet_id,
       source_wallet_id,

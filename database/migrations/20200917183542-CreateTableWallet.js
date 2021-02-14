@@ -35,7 +35,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return null;
+  return db.dropTable('wallet');
 };
 
 exports._meta = {

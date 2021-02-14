@@ -15,8 +15,7 @@ authRouter.post(
       req.body,
       Joi.object({
         wallet: Joi.alternatives().try(
-          Joi.string().min(4).max(32),
-          Joi.number().min(4).max(32)
+          Joi.string().min(4).max(36),
         ).required(),
         password: Joi.string()
           .max(32)
@@ -27,6 +26,7 @@ authRouter.post(
     const session = new Session();
     const walletService = new WalletService(session);
     
+    console.log(wallet)
     let walletObject = await walletService.getByIdOrName(wallet);
     walletObject = await walletObject.authorize(password);
 
