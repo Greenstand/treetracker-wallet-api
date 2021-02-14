@@ -13,7 +13,7 @@ Fork this repository to your account and clone from this forked copy.
 Open terminal, navigate to a folder to install this project, and run the below commands:
 
 ```
-git clone https://github.com/[YOUR GITHUB USERNAME]/treetracker-token-trading-api.git
+git clone https://github.com/[YOUR GITHUB USERNAME]/treetracker-wallet-api.git
 
 ```
 Install all necessary dependencies: 
