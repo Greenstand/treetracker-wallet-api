@@ -281,7 +281,7 @@ describe("Wallet", () => {
         target_entity_id: wallet.getId(),
       }]);//no relationship
       const result = await wallet.hasTrust(
-        TrustRelationship.ENTITY_TRUST_TYPE.send,
+        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive,
         wallet,
         wallet2,
       );
