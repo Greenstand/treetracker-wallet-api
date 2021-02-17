@@ -20,8 +20,8 @@ trustRouter.get('/',
         state: Joi.string(),
         type: Joi.string(),
         request_type: Joi.string(),
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        start: Joi.number(),
+        limit: Joi.number().min(1).max(10000).integer(),
       })
     )
     Joi.assert(
@@ -126,11 +126,14 @@ trustRouter.post('/:trustRelationshipId/accept',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = parseInt(req.params.trustRelationshipId);
+    const trustRelationshipId = req.params.trustRelationshipId;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
+    console.log('MM' + res.locals.wallet_id)
     const wallet = await walletService.getById(res.locals.wallet_id);
+    console.log('MM' + wallet.name)
+    console.log('MM' + trustRelationshipId)
     const json = await wallet.acceptTrustRequestSentToMe(trustRelationshipId);
     const json2 = await trustService.convertToResponse(json);
     res.status(200).json(json2);
@@ -153,7 +156,7 @@ trustRouter.post('/:trustRelationshipId/decline',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = parseInt(req.params.trustRelationshipId);
+    const trustRelationshipId = req.params.trustRelationshipId;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -180,7 +183,7 @@ trustRouter.delete('/:trustRelationshipId',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = parseInt(req.params.trustRelationshipId);
+    const trustRelationshipId = req.params.trustRelationshipId;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);

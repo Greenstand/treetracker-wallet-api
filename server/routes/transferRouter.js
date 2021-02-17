@@ -52,6 +52,8 @@ transferRouter.post(
 
       const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
       const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
+      console.log('NN')
+      console.log(req.body)
 
       let result;
       if(req.body.tokens){
@@ -61,10 +63,13 @@ transferRouter.post(
           const token = await tokenService.getById(id); 
           tokens.push(token);
         }
+        console.log(tokens)
         result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
       }else{
         result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
       }
+      console.log('LL - ok')
+      console.log(result)
       const transferService = new TransferService(session);
       result = await transferService.convertToResponse(result);
       if(result.state === Transfer.STATE.completed){

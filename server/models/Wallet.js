@@ -460,11 +460,11 @@ class Wallet{
     //check tokens belong to sender
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
-        const uuid = await token.getUUID();
+        const uuid = await token.getId();
         throw new HttpError(403, `The token ${uuid} do not belongs to sender wallet`);
       }
       if(!await token.beAbleToTransfer()){
-        const uuid = await token.getUUID();
+        const uuid = await token.getId();
         throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
       }
     }
@@ -478,10 +478,9 @@ class Wallet{
       (hasControlOverSender && hasControlOverReceiver) ||
       (!isDeduct && hasTrust)
     ){
-      const tokensUUID = [];
+      const tokensId = [];
       for(let token of tokens){
-        const json = await token.toJSON();
-        tokensUUID.push(json.uuid);
+        tokensId.push(token.getId());
       }
       const transfer = await this.transferRepository.create({
         originator_wallet_id: this._id, 
@@ -489,11 +488,13 @@ class Wallet{
         destination_wallet_id: receiver.getId(),
         state: Transfer.STATE.completed,
         parameters: {
-          tokens: tokensUUID,
+          tokens: tokensId,
         },
       });
       log.debug("now, deal with tokens");
       for(let token of tokens){
+        console.log('NN')
+        console.log(token)
         await token.completeTransfer(transfer);
       }
       return transfer;
@@ -501,10 +502,9 @@ class Wallet{
     }else{
         if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
-          const tokensUUID = [];
+          const tokensId = [];
           for(let token of tokens){
-            const json = await token.toJSON();
-            tokensUUID.push(json.uuid);
+            tokensId.push(token.getId());
           }
           const transfer = await this.transferRepository.create({
             originator_wallet_id: this._id, 
@@ -512,7 +512,7 @@ class Wallet{
             destination_wallet_id: receiver.getId(),
             state: Transfer.STATE.pending,
             parameters: {
-              tokens: tokensUUID,
+              tokens: tokensId,
             },
           });
           for(let token of tokens){
@@ -521,10 +521,9 @@ class Wallet{
           return transfer;
         }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
-          const tokensUUID = [];
+          const tokensId = [];
           for(let token of tokens){
-            const json = await token.toJSON();
-            tokensUUID.push(json.uuid);
+            tokensId.push(token.getId());
           }
           const transfer = await this.transferRepository.create({
             originator_wallet_id: this._id, 
@@ -532,7 +531,7 @@ class Wallet{
             destination_wallet_id: receiver.getId(),
             state: Transfer.STATE.requested,
             parameters: {
-              tokens: tokensUUID,
+              tokens: tokensId,
             },
           });
           for(let token of tokens){

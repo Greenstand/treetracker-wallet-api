@@ -113,11 +113,6 @@ class Token{
     }
   }
 
-  async getUUID(){
-    const json = await this.toJSON();
-    return json.uuid;
-  }
-
   async getTransactions(){
     const transactions = await this.transactionRepository.getByFilter({
       token_id: this._id,
