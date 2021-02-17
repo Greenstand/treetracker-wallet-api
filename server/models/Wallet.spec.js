@@ -321,7 +321,7 @@ describe("Wallet", () => {
         destination_wallet_id: receiver.getId(),
         state: Transfer.STATE.pending,
         parameters: {
-          tokens: [token.id],
+          tokens: [token.getId()],
         }
       });
       fn0.restore();

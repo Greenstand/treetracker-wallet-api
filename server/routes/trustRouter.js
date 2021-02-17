@@ -53,21 +53,19 @@ trustRouter.get('/',
         }
       }
     }
-    console.log('here')
-    console.log(trust_relationships.length)
+
     let trust_relationships_json = [];
     for(let t of trust_relationships){
       const j = await trustService.convertToResponse(t);
       trust_relationships_json.push(j);
     }
-    console.log(trust_relationships_json)
 
     //filter trust_relationships json by query
     let numStart = parseInt(start);
     let numLimit = parseInt(limit);
     let numBegin = numStart?numStart-1:0;
-    let numEnd = numBegin+numLimit;
-    if(numBegin && numEnd){
+    let numEnd = numBegin + (numLimit != 0 ? numLimit : 1000);
+    if(numEnd != 0){
       trust_relationships_json = trust_relationships_json.slice(numBegin, numEnd);
     }
 
@@ -104,7 +102,7 @@ trustRouter.post('/',
     if(req.body.requester_wallet){
       requesterWallet = await walletService.getByName(req.body.requester_wallet);
     }
-    console.log(wallet)
+
     const trust_relationship = await wallet.requestTrustFromAWallet(
       req.body.trust_request_type,
       requesterWallet,
@@ -135,10 +133,7 @@ trustRouter.post('/:trustRelationshipId/accept',
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
-    console.log('MM' + res.locals.wallet_id)
     const wallet = await walletService.getById(res.locals.wallet_id);
-    console.log('MM' + wallet.name)
-    console.log('MM' + trustRelationshipId)
     const json = await wallet.acceptTrustRequestSentToMe(trustRelationshipId);
     const json2 = await trustService.convertToResponse(json);
     res.status(200).json(json2);
