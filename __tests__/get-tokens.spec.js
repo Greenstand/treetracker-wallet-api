@@ -58,7 +58,7 @@ describe('GET tokens', () => {
   it(`walletA, GET /tokens/${seed.token.id} Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.token.id}`)
-      .set('treetracker-api-key', apiKey)
+      .set('treetracker-api-key',seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('id').eq(seed.token.id);
@@ -67,7 +67,7 @@ describe('GET tokens', () => {
   it(`walletA, GET /tokens/${seed.tokenB.id} Should be forbidden`, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.tokenB.id}`)
-      .set('treetracker-api-key', apiKey)
+      .set('treetracker-api-key',seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 401);
   });
@@ -75,7 +75,7 @@ describe('GET tokens', () => {
   it(`walletA, GET /tokens Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens?limit=10`)
-      .set('treetracker-api-key', apiKey)
+      .set('treetracker-api-key',seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.tokens[0]).to.have.property('id').eq(seed.token.id);
@@ -84,7 +84,7 @@ describe('GET tokens', () => {
   it(`walletB, GET /tokens Should be able to get a token, which actually belongs to walletC`, async () => {
     const res = await request(server)
       .get(`/tokens?limit=10&wallet=walletC`)
-      .set('treetracker-api-key', apiKey)
+      .set('treetracker-api-key',seed.apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.tokens[0]).to.have.property('id').eq(seed.tokenB.id);
@@ -93,7 +93,7 @@ describe('GET tokens', () => {
   it(`walletB, GET /tokens/${seed.tokenB.id} Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.tokenB.id}`)
-      .set('treetracker-api-key', apiKey)
+      .set('treetracker-api-key',seed.apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('id').eq(seed.tokenB.id);

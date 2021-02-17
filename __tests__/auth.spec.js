@@ -42,7 +42,7 @@ describe('Authentication', () => {
   it(`[POST /auth] login with using wallet id: ${seed.wallet.id}`, (done) => {
     request(server)
       .post('/auth')
-      .set('treetracker-api-key', apiKey)
+      .set('treetracker-api-key', seed.apiKey)
       .send({wallet: seed.wallet.id, password: seed.wallet.password})
       .expect('Content-Type', /application\/json/)
       .expect(200)
