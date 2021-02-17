@@ -62,9 +62,9 @@ trustRouter.get('/',
 
     //filter trust_relationships json by query
     let numStart = parseInt(start);
-    let numLimit = parseInt(limit);
+    let numLimit = parseInt(limit) ? parseInt(limit) : 0; //TODO: fix this correctly by using db
     let numBegin = numStart?numStart-1:0;
-    let numEnd = numBegin + (numLimit != 0 ? numLimit : 1000);
+    let numEnd = numBegin + ((numLimit != 0) ? numLimit : 1000);
     if(numEnd != 0){
       trust_relationships_json = trust_relationships_json.slice(numBegin, numEnd);
     }

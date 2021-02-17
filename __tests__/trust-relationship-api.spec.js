@@ -89,8 +89,6 @@ describe('Trust relationship management', () => {
       .get("/trust_relationships")
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
-    console.log('got')
-    console.log(res.body)
     expect(res).property("statusCode").to.eq(200); // Integration
     expect(res).property("body").property("trust_relationships").lengthOf(1); // Integration
     expect(res.body.trust_relationships[0]).property("id").to.be.a.uuid('v4') // Unit test, or use Joi to evaluate entire payload
