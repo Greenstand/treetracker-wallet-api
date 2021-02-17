@@ -72,10 +72,11 @@ class BaseRepository{
   }
 
   async update(object){
-    const result = await this._session.getDB()(this._tableName).update(object).where("id", object.id).returning("*");
-    expect(result).match([{
-      id: expect.any(String), // UUID, but this type of runtime check is not necessary
-    }]);
+    let objectCopy = {}
+    Object.assign(objectCopy, object)
+    const id = object.id
+    delete objectCopy.id
+    const result = await this._session.getDB()(this._tableName).update(objectCopy).where("id", id).returning("*");
     return result[0];
   }
 

@@ -53,18 +53,23 @@ trustRouter.get('/',
         }
       }
     }
+    console.log('here')
+    console.log(trust_relationships.length)
     let trust_relationships_json = [];
     for(let t of trust_relationships){
       const j = await trustService.convertToResponse(t);
       trust_relationships_json.push(j);
     }
+    console.log(trust_relationships_json)
 
     //filter trust_relationships json by query
     let numStart = parseInt(start);
     let numLimit = parseInt(limit);
     let numBegin = numStart?numStart-1:0;
     let numEnd = numBegin+numLimit;
-    trust_relationships_json = trust_relationships_json.slice(numBegin, numEnd);
+    if(numBegin && numEnd){
+      trust_relationships_json = trust_relationships_json.slice(numBegin, numEnd);
+    }
 
     res.status(200).json({
       trust_relationships: trust_relationships_json,

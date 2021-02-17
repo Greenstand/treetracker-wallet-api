@@ -68,8 +68,6 @@ transferRouter.post(
       }else{
         result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
       }
-      console.log('LL - ok')
-      console.log(result)
       const transferService = new TransferService(session);
       result = await transferService.convertToResponse(result);
       if(result.state === Transfer.STATE.completed){

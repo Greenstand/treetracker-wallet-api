@@ -14,7 +14,7 @@ class TokenService{
 
   async getById(id){
     const tokenObject = await this.tokenRepository.getById(id);
-    const token = new Token(tokenObject);
+    const token = new Token(tokenObject, this._session);
     return token;
   }
 

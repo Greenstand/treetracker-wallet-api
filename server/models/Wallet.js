@@ -226,8 +226,12 @@ class Wallet{
       target_wallet_id: targetWallet.getId(),
       state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
     }
+    console.log('creating')
+    console.log(trustRelationship)
     await this.checkDuplicateRequest(trustRelationship);
     const result = await this.trustRepository.create(trustRelationship);
+    console.log('result')
+    console.log(result)
     return result;
   }
 
@@ -703,7 +707,7 @@ class Wallet{
       }
     }else{
       log.debug("transfer tokens");
-      const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+      const tokens = await this.tokenService.getTokensByPendingTransferId(transferId);
       for(let token of tokens){
         await token.completeTransfer(transfer);
       }
