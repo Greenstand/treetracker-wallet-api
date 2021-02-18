@@ -1,3 +1,11 @@
+## [1.7.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.0...v1.7.1) (2021-02-18)
+
+
+### Bug Fixes
+
+* clean up wallet table schema ([f329cdf](https://github.com/Greenstand/treetracker-wallet-api/commit/f329cdfbec4b8a47b89c06c51c7e55a629898607))
+* try to get wait for job via kubectl working ([77c9077](https://github.com/Greenstand/treetracker-wallet-api/commit/77c907701f15ca46e0742b538d0dcc2223eb8315))
+
 # [1.7.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.6.1...v1.7.0) (2021-02-18)
 
 
