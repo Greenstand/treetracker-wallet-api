@@ -122,4 +122,6 @@ jobs:
       run: kubectl -n wallet-api delete job wallet-db-migration-job
     - name: Update kubernetes resources
       run: kubectl -n wallet-api apply --wait -k ./deployment/
+    - name: Attempt to wait for migration job to complete
+      run: kubectl wait --for=condition=complete --timeout=45s job/wallet-db-migration-job
 
