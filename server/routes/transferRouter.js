@@ -52,8 +52,6 @@ transferRouter.post(
 
       const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
       const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
-      console.log('NN')
-      console.log(req.body)
 
       let result;
       if(req.body.tokens){
@@ -63,7 +61,6 @@ transferRouter.post(
           const token = await tokenService.getById(id); 
           tokens.push(token);
         }
-        console.log(tokens)
         result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
       }else{
         result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
@@ -290,12 +287,10 @@ transferRouter.get("/",
     const result = await walletTransfer.getTransfers(state);
     const transferService = new TransferService(session);
     let json = [];
-    // console.log(result);
     for(let t of result){
       const j = await transferService.convertToResponse(t);
       json.push(j);
     }
-    // console.log(json);
 
     //filter tokensJson by query
     let numStart = parseInt(start);
@@ -355,14 +350,12 @@ transferRouter.get('/:transfer_id/tokens',
       const json = await token.toJSON();
       tokensJson.push(json);
     }
-    // console.log(tokensJson);
     //filter tokensJson by query
     let numStart = parseInt(start);
     let numLimit = parseInt(limit);
     let numBegin = numStart?numStart-1:0;
     let numEnd=numBegin+numLimit;
     tokensJson = tokensJson.slice(numBegin, numEnd);
-    console.log(tokensJson);
     res.status(200).json({
       tokens: tokensJson,
     });

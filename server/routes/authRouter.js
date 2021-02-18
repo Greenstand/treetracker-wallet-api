@@ -26,7 +26,6 @@ authRouter.post(
     const session = new Session();
     const walletService = new WalletService(session);
     
-    console.log(wallet)
     let walletObject = await walletService.getByIdOrName(wallet);
     walletObject = await walletObject.authorize(password);
 

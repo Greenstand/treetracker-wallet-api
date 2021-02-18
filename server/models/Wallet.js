@@ -21,7 +21,6 @@ class Wallet{
       this._id = idOrJSON.id;
       this._JSON = idOrJSON;
     }else{
-      console.log(idOrJSON);
       throw new HttpError(500);
     }
     const WalletService = require("../services/WalletService");
@@ -226,12 +225,8 @@ class Wallet{
       target_wallet_id: targetWallet.getId(),
       state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
     }
-    console.log('creating')
-    console.log(trustRelationship)
     await this.checkDuplicateRequest(trustRelationship);
     const result = await this.trustRepository.create(trustRelationship);
-    console.log('result')
-    console.log(result)
     return result;
   }
 
@@ -388,8 +383,6 @@ class Wallet{
    */
   async cancelTrustRequestSentToMe(trustRelationshipId){
     const trustRelationship = await this.trustRepository.getById(trustRelationshipId);
-    console.log(this._id)
-    console.log(trustRelationship)
     if(trustRelationship.originator_wallet_id !== this._id){
       throw new HttpError(403, "Have no permission to cancel this relationship");
     }
@@ -497,8 +490,6 @@ class Wallet{
       });
       log.debug("now, deal with tokens");
       for(let token of tokens){
-        console.log('NN')
-        console.log(token)
         await token.completeTransfer(transfer);
       }
       return transfer;
@@ -622,7 +613,6 @@ class Wallet{
    * I have control over given wallet
    */
   async hasControlOver(wallet){
-    console.log("check control");
     //if the given wallet is me, then pass
     if(wallet.getId() === this._id){
       log.debug("The same wallet, control");
