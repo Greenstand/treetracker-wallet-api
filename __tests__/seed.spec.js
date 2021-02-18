@@ -1,5 +1,4 @@
 const seed = require("./seed");
-const pool = require("../server/database/database");
 const {expect} = require("chai");
 const Crypto = require('crypto');
 const log = require("loglevel");
