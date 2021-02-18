@@ -15,24 +15,16 @@ describe("Seed data into DB", () => {
   });
 
   it("Should have api key", async () => {
-    let r = await pool.query({
-      text: `select * from api_key where key = $1`,
-      values: [seed.apiKey]
-    });
-    expect(r).to.have.property('rows').that.have.lengthOf(1);
+    const r = await knex.table("api_key").select().where("key", seed.apiKey);
+    expect(r).lengthOf(1);
   });
 
 
   it("Should find a token", async () => {
     expect(seed.token).to.have.property('id');
-    r = await pool.query(
-      `select * from token where id = '${seed.token.id}'`
-    )
-    expect(r)
-      .to.have.property('rows').to.have.lengthOf(1);
-    token = r.rows[0];
-    console.log('oo')
-    console.log(token)
+    const r = await knex.table("token").select().where("id", seed.token.id);
+    expect(r).lengthOf(1);
+    token = r[0];
     expect(token)
       .to.have.property('capture_id')
       .to.equal(seed.capture.id);
