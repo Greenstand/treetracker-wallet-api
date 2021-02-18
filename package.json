@@ -11,7 +11,7 @@
     "eslint:fix": "npm run eslint -- --fix",
     "test": "npm run test-unit; npm run test-integration;npm run test-repository",
     "test-unit": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --exit --require co-mocha ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
-    "test-unit-ci": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --exit --require co-mocha ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
+    "test-unit-ci": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.ci mocha -r dotenv/config --exit --require co-mocha ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
     "test-repository": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --exit --require co-mocha  ./server/repositories/**/*.spec.js",
     "server-test": "DEBUG=loopback:*,express:* NODE_LOG_LEVEL=debug nodemon server/serverTest.js",
     "server": "nodemon server/server.js",
