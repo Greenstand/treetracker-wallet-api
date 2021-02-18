@@ -12,12 +12,6 @@ describe("Seed data into DB", () => {
   before(async () => {
     await seed.clear();
     await seed.seed();
-    if(process.env.DATABASE_SCHEMA){
-      knexConfig.searchPath = [process.env.DATABASE_SCHEMA]
-    } else {
-      knexConfig.searchPath = ['public']
-    }
-
   });
 
   it("Should have api key", async () => {
