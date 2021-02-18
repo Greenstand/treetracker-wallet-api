@@ -17,19 +17,9 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
   return db.createTable('wallet', {
     id: { type: 'uuid', primaryKey: true, notNull: true },
-    type: { type: 'string' },
     name: { type: 'string', notNull: true },
-    first_name: { type: 'string' },
-    last_name: { type: 'string' },
-    email: { type: 'string' },
-    phone: { type: 'string' },
-    pwd_reset_required: { type: 'boolean', defaultValue: false },
-    website: { type: 'string' },
     password: { type: 'string' },
     salt: { type: 'string' },
-    active_contract_id: { type: 'int' },
-    offering_pay_to_plant: { type: 'boolean', defaultValue: false },
-    tree_validation_contract_id: { type: 'int' },
     logo_url: { type: 'string' },
   });
 };
