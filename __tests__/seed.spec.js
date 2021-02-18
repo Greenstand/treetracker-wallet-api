@@ -12,6 +12,12 @@ describe("Seed data into DB", () => {
   before(async () => {
     await seed.clear();
     await seed.seed();
+    if(process.env.DATABASE_SCHEMA){
+      knexConfig.searchPath = [process.env.DATABASE_SCHEMA]
+    } else {
+      knexConfig.searchPath = ['public']
+    }
+
   });
 
   it("Should have api key", async () => {
@@ -42,7 +48,7 @@ describe("Seed data into DB", () => {
   });
 
   it("walletC exists", async () => {
-    const r = await knex.table("wallets.wallet").select().where("name", seed.walletC.name);
+    const r = await knex.table("wallet").select().where("name", seed.walletC.name);
     expect(r).lengthOf(1);
   });
 
@@ -57,7 +63,7 @@ describe("Seed data into DB", () => {
   });
 
   it("TokenB", async () => {
-      const r = await knex.table("wallets.token").select()
+      const r = await knex.table("token").select()
         .where("id", seed.tokenB.id);
       expect(r).lengthOf(1); 
       console.log(r)
