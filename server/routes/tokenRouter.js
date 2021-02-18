@@ -10,22 +10,22 @@ const Joi = require("joi");
 const tokenRouter = express.Router();
 
 
-tokenRouter.get('/:uuid',
+tokenRouter.get('/:id',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
-    const {uuid} = req.params;
+    const {id} = req.params;
     const session = new Session();
     const tokenService = new TokenService(session);
     const walletService = new WalletService(session);
-    const token = await tokenService.getByUUID(uuid);
+    const token = await tokenService.getById(id);
     //check permission
     const json = await token.toJSON();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     let walletIds = [walletLogin.getId()];
     const subWallets = await walletLogin.getSubWallets();
     walletIds = [...walletIds, ...subWallets.map(e => e.getId())];
-    if(walletIds.includes(json.entity_id)){
+    if(walletIds.includes(json.wallet_id)){
       //pass
     }else{
       throw new HttpError(401, "Have no permission to visit this token");
@@ -77,7 +77,7 @@ tokenRouter.get('/',
   })
 )
 
-tokenRouter.get('/:uuid/transactions',
+tokenRouter.get('/:id/transactions',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
@@ -87,24 +87,24 @@ tokenRouter.get('/:uuid/transactions',
       Joi.object({
         limit: Joi.number().required(),
         start: Joi.number().min(1).max(10000).integer(),
-        token_uuid: Joi.string(), //TODO: not sure how to validate
+        id: Joi.string().guid(), 
         transactions: Joi.string(),
       })
     );
     const {limit, start} = req.query;
 
     const session = new Session();
-    const {uuid} = req.params;
+    const {id} = req.params;
     const tokenService = new TokenService(session);
     const walletService = new WalletService(session);
-    const token = await tokenService.getByUUID(uuid);
+    const token = await tokenService.getById(id);
     //check permission
     const json = await token.toJSON();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     let walletIds = [walletLogin.getId()];
     const subWallets = await walletLogin.getSubWallets();
     walletIds = [...walletIds, ...subWallets.map(e => e.getId())];
-    if(walletIds.includes(json.entity_id)){
+    if(walletIds.includes(json.wallet_id)){
       //pass
     }else{
       throw new HttpError(401, "Have no permission to visit this token");

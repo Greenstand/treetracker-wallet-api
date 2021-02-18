@@ -4,17 +4,20 @@ const TrustRelationship = require("../models/TrustRelationship");
 const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
 const Crypto = require('crypto');
-const expect = require("expect-runtime");
 const log = require("loglevel");
 const Transfer = require("./Transfer");
 const Token = require("./Token");
+const { validate: uuidValidate } = require('uuid');
+const expect = require("expect-runtime"); //TODO: We should use Joi for validation
+const Joi = require("joi");
+
 
 class Wallet{
 
   constructor(idOrJSON, session){
-    if(typeof idOrJSON === "number"){
+    if(uuidValidate(idOrJSON)){
       this._id = idOrJSON;
-    }else if(typeof idOrJSON === "object" && typeof idOrJSON.id === "number"){
+    }else if(typeof idOrJSON === "object" && uuidValidate(idOrJSON.id) ){
       this._id = idOrJSON.id;
       this._JSON = idOrJSON;
     }else{
@@ -82,9 +85,9 @@ class Wallet{
     }
 
     const newTrustRelationship = await this.trustRepository.create({
-      actor_entity_id: this._id,
-      originator_entity_id: this._id,
-      target_entity_id: newWallet.id,
+      actor_wallet_id: this._id,
+      originator_wallet_id: this._id,
+      target_wallet_id: newWallet.id,
       request_type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
       type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
       state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
@@ -113,11 +116,11 @@ class Wallet{
     }
     filter.and.push({
       or: [{
-        actor_entity_id: this._id,
+        actor_wallet_id: this._id,
       },{
-        target_entity_id: this._id,
+        target_wallet_id: this._id,
       },{
-        originator_entity_id: this._id,
+        originator_wallet_id: this._id,
       }]
     });
     return await this.trustRepository.getByFilter(filter);
@@ -129,7 +132,7 @@ class Wallet{
   async getTrustRelationshipsRequested(){
     const result = await this.getTrustRelationships();
     return result.filter(trustRelationship => {
-      return trustRelationship.originator_entity_id === this._id
+      return trustRelationship.originator_wallet_id === this._id
     });
   }
 
@@ -145,7 +148,7 @@ class Wallet{
     }
     const walletIds = [this._id, ...subWallets.map(e => e.getId())];
     return result.filter(trustRelationship => {
-      return walletIds.includes(trustRelationship.target_entity_id);
+      return walletIds.includes(trustRelationship.target_wallet_id);
     });
   }
 
@@ -185,11 +188,10 @@ class Wallet{
     requesteeWallet,
   ){
     log.debug("request trust...");
-    expect(
-      requestType, 
-      () => new HttpError(400, `The trust request type must be one of ${Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE).join(',')}`)
+    Joi.assert(
+      requestType,
+      Joi.string().required().valid(...Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE))
     )
-      .oneOf(Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE));
 
     /*
      * Translate the requester/ee to actor/target
@@ -218,9 +220,9 @@ class Wallet{
     const trustRelationship = {
       type: TrustRelationship.getTrustTypeByRequestType(requestType),
       request_type: requestType,
-      actor_entity_id: actorWallet.getId(),
-      originator_entity_id: this._id,
-      target_entity_id: targetWallet.getId(),
+      actor_wallet_id: actorWallet.getId(),
+      originator_wallet_id: this._id,
+      target_wallet_id: targetWallet.getId(),
       state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
     }
     await this.checkDuplicateRequest(trustRelationship);
@@ -244,16 +246,16 @@ class Wallet{
                 e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested ||
                 e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
               ) &&
-              e.actor_entity_id === trustRelationship.actor_entity_id &&
-              e.target_entity_id === trustRelationship.target_entity_id
+              e.actor_wallet_id === trustRelationship.actor_wallet_id &&
+              e.target_wallet_id === trustRelationship.target_wallet_id
             ) || (
               e.request_type !== trustRelationship.request_type &&
               (
                 e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested ||
                 e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
               ) &&
-              e.actor_entity_id === trustRelationship.target_entity_id &&
-              e.target_entity_id === trustRelationship.actor_entity_id
+              e.actor_wallet_id === trustRelationship.target_wallet_id &&
+              e.target_wallet_id === trustRelationship.actor_wallet_id
             )
           ){
             return true;
@@ -286,10 +288,8 @@ class Wallet{
    * Accept a trust relationship request
    */
   async acceptTrustRequestSentToMe(trustRelationshipId){
-    expect(trustRelationshipId).number();
     const trustRelationships = await this.getTrustRelationshipsRequestedToMe(this._id);
     const trustRelationship = trustRelationships.reduce((a,c) => {
-      expect(c.id).number();
       if(c.id === trustRelationshipId){
         return c;
       }else{
@@ -316,13 +316,13 @@ class Wallet{
             (
               e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
               e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
-              e.actor_entity_id === trustRelationship.target_entity_id &&
-              e.target_entity_id === trustRelationship.actor_entity_id
+              e.actor_wallet_id === trustRelationship.target_wallet_id &&
+              e.target_wallet_id === trustRelationship.actor_wallet_id
             ) || (
               e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
               e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
-              e.actor_entity_id === trustRelationship.actor_entity_id &&
-              e.target_entity_id === trustRelationship.target_entity_id
+              e.actor_wallet_id === trustRelationship.actor_wallet_id &&
+              e.target_wallet_id === trustRelationship.target_wallet_id
             )
           ){
             return true;
@@ -338,13 +338,13 @@ class Wallet{
             (
               e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
               e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
-              e.actor_entity_id === trustRelationship.target_entity_id &&
-              e.target_entity_id === trustRelationship.actor_entity_id
+              e.actor_wallet_id === trustRelationship.target_wallet_id &&
+              e.target_wallet_id === trustRelationship.actor_wallet_id
             ) || (
               e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
               e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
-              e.actor_entity_id === trustRelationship.actor_entity_id &&
-              e.target_entity_id === trustRelationship.target_entity_id
+              e.actor_wallet_id === trustRelationship.actor_wallet_id &&
+              e.target_wallet_id === trustRelationship.target_wallet_id
             )
           ){
             return true;
@@ -362,10 +362,8 @@ class Wallet{
    * Decline a trust relationship request
    */
   async declineTrustRequestSentToMe(trustRelationshipId){
-    expect(trustRelationshipId).number();
     const trustRelationships = await this.getTrustRelationshipsRequestedToMe(this._id);
     const trustRelationship = trustRelationships.reduce((a,c) => {
-      expect(c.id).number();
       if(c.id === trustRelationshipId){
         return c;
       }else{
@@ -384,9 +382,8 @@ class Wallet{
    * Cancel a trust relationship request
    */
   async cancelTrustRequestSentToMe(trustRelationshipId){
-    expect(trustRelationshipId).number();
     const trustRelationship = await this.trustRepository.getById(trustRelationshipId);
-    if(trustRelationship.originator_entity_id !== this._id){
+    if(trustRelationship.originator_wallet_id !== this._id){
       throw new HttpError(403, "Have no permission to cancel this relationship");
     }
     trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.cancelled_by_originator;
@@ -406,15 +403,17 @@ class Wallet{
     //check if the trust exist
     if(
       trustRelationships.some(trustRelationship => {
+        /* Seems unnecessary
         expect(trustRelationship).match({
-          actor_entity_id: expect.any(Number),
-          target_entity_id: expect.any(Number),
+          actor_wallet_id: expect.any(Number),
+          target_wallet_id: expect.any(Number),
           request_type: expect.any(String),
           type: expect.any(String),
         });
+        */
         if(
-          trustRelationship.actor_entity_id === senderWallet.getId() &&
-          trustRelationship.target_entity_id === receiveWallet.getId() &&
+          trustRelationship.actor_wallet_id === senderWallet.getId() &&
+          trustRelationship.target_wallet_id === receiveWallet.getId() &&
           trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
         ){
           return true;
@@ -424,15 +423,17 @@ class Wallet{
       })
       ||
       trustRelationships.some(trustRelationship => {
+        /* Seems unnecessary
         expect(trustRelationship).match({
-          actor_entity_id: expect.any(Number),
-          target_entity_id: expect.any(Number),
+          actor_wallet_id: expect.any(Number),
+          target_wallet_id: expect.any(Number),
           request_type: expect.any(String),
           type: expect.any(String),
         });
+        */
         if(
-          trustRelationship.actor_entity_id === receiveWallet.getId() &&
-          trustRelationship.target_entity_id === senderWallet.getId() &&
+          trustRelationship.actor_wallet_id === receiveWallet.getId() &&
+          trustRelationship.target_wallet_id === senderWallet.getId() &&
           trustRelationship.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive
         ){
           return true;
@@ -456,11 +457,11 @@ class Wallet{
     //check tokens belong to sender
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
-        const uuid = await token.getUUID();
+        const uuid = await token.getId();
         throw new HttpError(403, `The token ${uuid} do not belongs to sender wallet`);
       }
       if(!await token.beAbleToTransfer()){
-        const uuid = await token.getUUID();
+        const uuid = await token.getId();
         throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
       }
     }
@@ -474,18 +475,17 @@ class Wallet{
       (hasControlOverSender && hasControlOverReceiver) ||
       (!isDeduct && hasTrust)
     ){
-      const tokensUUID = [];
+      const tokensId = [];
       for(let token of tokens){
-        const json = await token.toJSON();
-        tokensUUID.push(json.uuid);
+        tokensId.push(token.getId());
       }
       const transfer = await this.transferRepository.create({
-        originator_entity_id: this._id, 
-        source_entity_id: sender.getId(),
-        destination_entity_id: receiver.getId(),
+        originator_wallet_id: this._id, 
+        source_wallet_id: sender.getId(),
+        destination_wallet_id: receiver.getId(),
         state: Transfer.STATE.completed,
         parameters: {
-          tokens: tokensUUID,
+          tokens: tokensId,
         },
       });
       log.debug("now, deal with tokens");
@@ -497,18 +497,17 @@ class Wallet{
     }else{
         if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
-          const tokensUUID = [];
+          const tokensId = [];
           for(let token of tokens){
-            const json = await token.toJSON();
-            tokensUUID.push(json.uuid);
+            tokensId.push(token.getId());
           }
           const transfer = await this.transferRepository.create({
-            originator_entity_id: this._id, 
-            source_entity_id: sender.getId(),
-            destination_entity_id: receiver.getId(),
+            originator_wallet_id: this._id, 
+            source_wallet_id: sender.getId(),
+            destination_wallet_id: receiver.getId(),
             state: Transfer.STATE.pending,
             parameters: {
-              tokens: tokensUUID,
+              tokens: tokensId,
             },
           });
           for(let token of tokens){
@@ -517,18 +516,17 @@ class Wallet{
           return transfer;
         }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
-          const tokensUUID = [];
+          const tokensId = [];
           for(let token of tokens){
-            const json = await token.toJSON();
-            tokensUUID.push(json.uuid);
+            tokensId.push(token.getId());
           }
           const transfer = await this.transferRepository.create({
-            originator_entity_id: this._id, 
-            source_entity_id: sender.getId(),
-            destination_entity_id: receiver.getId(),
+            originator_wallet_id: this._id, 
+            source_wallet_id: sender.getId(),
+            destination_wallet_id: receiver.getId(),
             state: Transfer.STATE.requested,
             parameters: {
-              tokens: tokensUUID,
+              tokens: tokensId,
             },
           });
           for(let token of tokens){
@@ -545,7 +543,6 @@ class Wallet{
   async transferBundle(sender, receiver, bundleSize){
     //check has enough tokens to sender
     const tokenCount = await this.tokenService.countTokenByWallet(sender);
-    expect(tokenCount).number();
     if(tokenCount < bundleSize){
       throw new HttpError(403, `Do not have enough tokens to send`);
     }
@@ -560,9 +557,9 @@ class Wallet{
       (!isDeduct && hasTrust)
     ){
       const transfer = await this.transferRepository.create({
-        originator_entity_id: this._id, 
-        source_entity_id: sender.getId(),
-        destination_entity_id: receiver.getId(),
+        originator_wallet_id: this._id, 
+        source_wallet_id: sender.getId(),
+        destination_wallet_id: receiver.getId(),
         state: Transfer.STATE.completed,
         parameters: {
           bundle: {
@@ -580,9 +577,9 @@ class Wallet{
         if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
           const transfer = await this.transferRepository.create({
-            originator_entity_id: this._id, 
-            source_entity_id: sender.getId(),
-            destination_entity_id: receiver.getId(),
+            originator_wallet_id: this._id, 
+            source_wallet_id: sender.getId(),
+            destination_wallet_id: receiver.getId(),
             state: Transfer.STATE.pending,
             parameters: {
               bundle: {
@@ -594,9 +591,9 @@ class Wallet{
         }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
           const transfer = await this.transferRepository.create({
-            originator_entity_id: this._id, 
-            source_entity_id: sender.getId(),
-            destination_entity_id: receiver.getId(),
+            originator_wallet_id: this._id, 
+            source_wallet_id: sender.getId(),
+            destination_wallet_id: receiver.getId(),
             state: Transfer.STATE.requested,
             parameters: {
               bundle: {
@@ -616,7 +613,6 @@ class Wallet{
    * I have control over given wallet
    */
   async hasControlOver(wallet){
-    console.log("check control");
     //if the given wallet is me, then pass
     if(wallet.getId() === this._id){
       log.debug("The same wallet, control");
@@ -627,22 +623,22 @@ class Wallet{
         or: [
           {
             and: [{
-              actor_entity_id: this._id,
+              actor_wallet_id: this._id,
             },{
               request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
             },{
-              target_entity_id: wallet.getId(),
+              target_wallet_id: wallet.getId(),
             },{
               state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
             }],
           },
           {
             and: [{
-              actor_entity_id: wallet.getId(),
+              actor_wallet_id: wallet.getId(),
             },{
               request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield,
             },{
-              target_entity_id: this._id,
+              target_wallet_id: this._id,
             },{
               state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
             }]
@@ -666,12 +662,12 @@ class Wallet{
   }
 
   /*
-   * Accept a pending transfer, if I has the privilege to do so
+   * Accept a pending transfer, if wallet has the privilege to do so
    */
   async acceptTransfer(transferId){
 
     const transfer = await this.transferRepository.getById(transferId);
-    const receiver = await this.walletService.getById(transfer.destination_entity_id);
+    const receiver = await this.walletService.getById(transfer.destination_wallet_id);
     if(transfer.state !== Transfer.STATE.pending){
       throw new HttpError(403, "The transfer state is not pending");
     }
@@ -690,20 +686,18 @@ class Wallet{
       transfer.parameters.bundle &&
       transfer.parameters.bundle.bundleSize){
       log.debug("transfer bundle of tokens");
-      const {source_entity_id} = transfer;
-      expect(source_entity_id).number();
-      const senderWallet = new Wallet(source_entity_id, this._session);
+      const {source_wallet_id} = transfer;
+      const senderWallet = new Wallet(source_wallet_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       if(tokens.length < transfer.parameters.bundle.bundleSize){
         throw new HttpError(403, "Do not have enough tokens");
       }
       for(let token of tokens){
-        expect(token).defined();
         await token.completeTransfer(transfer);
       }
     }else{
       log.debug("transfer tokens");
-      const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+      const tokens = await this.tokenService.getTokensByPendingTransferId(transferId);
       for(let token of tokens){
         await token.completeTransfer(transfer);
       }
@@ -716,8 +710,8 @@ class Wallet{
    */
   async declineTransfer(transferId){
     const transfer = await this.transferRepository.getById(transferId);
-    const sourceWallet = await this.walletService.getById(transfer.source_entity_id);
-    const destWallet = await this.walletService.getById(transfer.destination_entity_id);
+    const sourceWallet = await this.walletService.getById(transfer.source_wallet_id);
+    const destWallet = await this.walletService.getById(transfer.destination_wallet_id);
     if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
       throw new HttpError(403, "The transfer state is not pending and requested");
     }
@@ -745,8 +739,8 @@ class Wallet{
 
   async cancelTransfer(transferId){
     const transfer = await this.transferRepository.getById(transferId);
-    const sourceWallet = await this.walletService.getById(transfer.source_entity_id);
-    const destWallet = await this.walletService.getById(transfer.destination_entity_id);
+    const sourceWallet = await this.walletService.getById(transfer.source_wallet_id);
+    const destWallet = await this.walletService.getById(transfer.destination_wallet_id);
     if(transfer.state !== Transfer.STATE.pending && transfer.state !== Transfer.STATE.requested){
       throw new HttpError(403, "The transfer state is not pending and requested");
     }
@@ -779,7 +773,7 @@ class Wallet{
     //TODO check privilege
 
     const transfer = await this.transferRepository.getById(transferId);
-    const sender = await this.walletService.getById(transfer.source_entity_id);
+    const sender = await this.walletService.getById(transfer.source_wallet_id);
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to fulfill this transfer");
@@ -797,12 +791,10 @@ class Wallet{
       transfer.parameters.bundle &&
       transfer.parameters.bundle.bundleSize){
       log.debug("transfer bundle of tokens");
-      const {source_entity_id} = transfer;
-      expect(source_entity_id).number();
-      const senderWallet = new Wallet(source_entity_id, this._session);
+      const {source_wallet_id} = transfer;
+      const senderWallet = new Wallet(source_wallet_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       for(let token of tokens){
-        expect(token).defined();
         await token.completeTransfer(transfer);
       }
     }else{
@@ -823,7 +815,7 @@ class Wallet{
     //TODO check privilege
 
     const transfer = await this.transferRepository.getById(transferId);
-    const sender = await this.walletService.getById(transfer.source_entity_id);
+    const sender = await this.walletService.getById(transfer.source_wallet_id);
     const doseCurrentAccountHasControlOverReceiver = await this.hasControlOver(sender);
     if(!doseCurrentAccountHasControlOverReceiver){
       throw new HttpError(403, "Current account has no permission to fulfill this transfer");
@@ -841,9 +833,8 @@ class Wallet{
       transfer.parameters.bundle &&
       transfer.parameters.bundle.bundleSize){
       log.debug("transfer bundle of tokens");
-      const {source_entity_id} = transfer;
-      expect(source_entity_id).number();
-      const senderWallet = new Wallet(source_entity_id, this._session);
+      const {source_wallet_id} = transfer;
+      const senderWallet = new Wallet(source_wallet_id, this._session);
       //check it
       if(tokens.length > transfer.parameters.bundle.bundleSize){
         throw new HttpError(403, `Too many tokens to transfer, please provider ${transfer.parameters.bundle.bundleSize} tokens for this transfer`, true);
@@ -861,7 +852,6 @@ class Wallet{
 
       //transfer
       for(let token of tokens){
-        expect(token).defined();
         await token.completeTransfer(transfer);
       }
     }else{
@@ -879,11 +869,11 @@ class Wallet{
     }
     filter.and.push({
       or: [{
-        source_entity_id: this._id,
+        source_wallet_id: this._id,
       },{
-        destination_entity_id: this._id,
+        destination_wallet_id: this._id,
       },{
-        originator_entity_id: this._id,
+        originator_wallet_id: this._id,
       }]
     });
     if(state){
@@ -892,11 +882,11 @@ class Wallet{
     if(wallet){
       filter.and.push({
         or: [{
-          source_entity_id: wallet.getId(),
+          source_wallet_id: wallet.getId(),
         },{
-          destination_entity_id: wallet.getId(),
+          destination_wallet_id: wallet.getId(),
         },{
-          originator_entity_id: wallet.getId(),
+          originator_wallet_id: wallet.getId(),
         }]
       });
     }
@@ -953,18 +943,18 @@ class Wallet{
     const subWallets = [];
     for(let e of trustRelationships){
       if(
-        e.actor_entity_id === this._id &&
+        e.actor_wallet_id === this._id &&
         e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
         e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
       ){
-        const subWallet = await this.walletService.getById(e.target_entity_id);
+        const subWallet = await this.walletService.getById(e.target_wallet_id);
         subWallets.push(subWallet);
       }else if(
-        e.target_entity_id === this._id &&
+        e.target_wallet_id === this._id &&
         e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
         e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
       ){
-        const subWallet = await this.walletService.getById(e.actor_entity_id);
+        const subWallet = await this.walletService.getById(e.actor_wallet_id);
         subWallets.push(subWallet);
       }
     }

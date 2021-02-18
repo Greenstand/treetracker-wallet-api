@@ -16,10 +16,8 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.createTable('wallet', {
-    // primary key references foreign keys on payment, token, transaction, trees, planter, entity_role, and entity_manager(?) tables
-    id: { type: 'int', primaryKey: true, autoIncrement: true },
+    id: { type: 'uuid', primaryKey: true, notNull: true },
     type: { type: 'string' },
-    // this wallet name points to the wallet column in entity
     name: { type: 'string', notNull: true },
     first_name: { type: 'string' },
     last_name: { type: 'string' },
@@ -37,7 +35,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return null;
+  return db.dropTable('wallet');
 };
 
 exports._meta = {

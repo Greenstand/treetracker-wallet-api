@@ -16,10 +16,10 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function (db) {
   return db.createTable('transfer', {
-    id: { type: 'int', primaryKey: true, autoIncrement: true },
-    originator_entity_id: { type: 'int', notNull: true },
-    source_entity_id: { type: 'int', notNull: true },
-    destination_entity_id: { type: 'int', notNull: true },
+    id: { type: 'uuid', primaryKey: true, notNull: true },
+    originator_wallet_id: { type: 'uuid', notNull: true },
+    source_wallet_id: { type: 'uuid', notNull: true },
+    destination_wallet_id: { type: 'uuid', notNull: true },
     type: { type: 'transfer_type', notNull: true },
     parameters: { type: 'json' },
     state: { type: 'transfer_state', notNull: true },

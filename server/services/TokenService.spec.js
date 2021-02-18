@@ -25,12 +25,12 @@ describe("Token", () => {
     sinon.restore();
   });
 
-  it("getByUUID() with id which doesn't exist, should throw 404", async () => {
-    sinon.stub(TokenRepository.prototype, "getByUUID").rejects(new HttpError(404, "not found"));
+  it("getById() with id which doesn't exist, should throw 404", async () => {
+    dsinon.stub(TokenRepository.prototype, "getById").rejects(new HttpError(404, "not found"));
     await jestExpect(async () => {
-      await tokenService.getByUUID("testUuid");
+      await tokenService.getById("testUuid");
     }).rejects.toThrow('not found');
-    TokenRepository.prototype.getByUUID.restore();
+    TokenRepository.prototype.getById.restore();
   });
 
   it("getTokensByBundle", async () => {
@@ -44,7 +44,7 @@ describe("Token", () => {
     expect(result).a("array").lengthOf(1);
     expect(result[0]).instanceOf(Token);
     expect(fn).calledWith({
-      entity_id: 1,
+      wallet_id: 1,
       transfer_pending: false,
     },{
       limit: 1,
@@ -57,7 +57,7 @@ describe("Token", () => {
     const result = await tokenService.countTokenByWallet(wallet);
     expect(result).eq(1);
     expect(fn).calledWith({
-      entity_id: 1,
+      wallet_id: 1,
     });
     fn.restore();
   });
@@ -66,13 +66,13 @@ describe("Token", () => {
     const transactionObject = {
       id: 1,
       token_id: 1,
-      source_entity_id: 1,
-      destination_entity_id: 1,
+      source_wallet_id: 1,
+      destination_wallet_id: 1,
     }
     sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: 1,
       uuid: "xxx",
-      tree_id: 1,
+      capture_id: 1,
     }));
     sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
       id: 1,

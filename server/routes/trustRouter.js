@@ -5,9 +5,9 @@ const assert = require("assert");
 const WalletService = require("../services/WalletService");
 const TrustService = require("../services/TrustService");
 const Wallet = require("../models/Wallet");
-const expect = require("expect-runtime");
 const helper = require("./utils");
 const Session = require("../models/Session");
+const TrustRelationship = require("../models/TrustRelationship");
 const Joi = require("joi");
 
 trustRouter.get('/',
@@ -20,12 +20,17 @@ trustRouter.get('/',
         state: Joi.string(),
         type: Joi.string(),
         request_type: Joi.string(),
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        start: Joi.number(),
+        limit: Joi.number().min(1).max(10000).integer(),
       })
-    );
+    )
+    Joi.assert(
+      res.locals,
+      Joi.object({
+        wallet_id: Joi.string().required()
+      })
+    )
     const {state, type, request_type, limit, start} = req.query;
-    expect(res.locals).property("wallet_id").number();
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -48,6 +53,7 @@ trustRouter.get('/',
         }
       }
     }
+
     let trust_relationships_json = [];
     for(let t of trust_relationships){
       const j = await trustService.convertToResponse(t);
@@ -56,10 +62,12 @@ trustRouter.get('/',
 
     //filter trust_relationships json by query
     let numStart = parseInt(start);
-    let numLimit = parseInt(limit);
+    let numLimit = parseInt(limit) ? parseInt(limit) : 0; //TODO: fix this correctly by using db
     let numBegin = numStart?numStart-1:0;
-    let numEnd = numBegin+numLimit;
-    trust_relationships_json = trust_relationships_json.slice(numBegin, numEnd);
+    let numEnd = numBegin + ((numLimit != 0) ? numLimit : 1000);
+    if(numEnd != 0){
+      trust_relationships_json = trust_relationships_json.slice(numBegin, numEnd);
+    }
 
     res.status(200).json({
       trust_relationships: trust_relationships_json,
@@ -71,15 +79,20 @@ trustRouter.post('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    expect(res.locals.wallet_id).number();
     Joi.assert(
       req.body,
       Joi.object({
-        trust_request_type: Joi.string().required(),
-        requester_wallet: Joi.string(),
+        trust_request_type: Joi.string().required().valid(...Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE)),
         requestee_wallet: Joi.string().required(),
       })
     );
+    Joi.assert(
+      res.locals,
+      Joi.object({
+        wallet_id: Joi.string().required()
+      })
+    )
+    
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -89,6 +102,7 @@ trustRouter.post('/',
     if(req.body.requester_wallet){
       requesterWallet = await walletService.getByName(req.body.requester_wallet);
     }
+
     const trust_relationship = await wallet.requestTrustFromAWallet(
       req.body.trust_request_type,
       requesterWallet,
@@ -103,9 +117,19 @@ trustRouter.post('/:trustRelationshipId/accept',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    expect(res.locals).property("wallet_id").number();
-    expect(req.params).property("trustRelationshipId").defined();
-    const trustRelationshipId = parseInt(req.params.trustRelationshipId);
+    Joi.assert(
+      res.locals,
+      Joi.object({
+        wallet_id: Joi.string().required()
+      })
+    )
+    Joi.assert(
+      req.params,
+      Joi.object({
+        trustRelationshipId: Joi.string().required()
+      })
+    )
+    const trustRelationshipId = req.params.trustRelationshipId;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -120,9 +144,19 @@ trustRouter.post('/:trustRelationshipId/decline',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    expect(res.locals).property("wallet_id").number();
-    expect(req.params).property("trustRelationshipId").defined();
-    const trustRelationshipId = parseInt(req.params.trustRelationshipId);
+    Joi.assert(
+      res.locals,
+      Joi.object({
+        wallet_id: Joi.string().required()
+      })
+    )
+    Joi.assert(
+      req.params,
+      Joi.object({
+        trustRelationshipId: Joi.string().required()
+      })
+    )
+    const trustRelationshipId = req.params.trustRelationshipId;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -137,9 +171,19 @@ trustRouter.delete('/:trustRelationshipId',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res) => {
-    expect(res.locals).property("wallet_id").number();
-    expect(req.params).property("trustRelationshipId").defined();
-    const trustRelationshipId = parseInt(req.params.trustRelationshipId);
+    Joi.assert(
+      res.locals,
+      Joi.object({
+        wallet_id: Joi.string().required()
+      })
+    )
+    Joi.assert(
+      req.params,
+      Joi.object({
+        trustRelationshipId: Joi.string().required()
+      })
+    )
+    const trustRelationshipId = req.params.trustRelationshipId;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
