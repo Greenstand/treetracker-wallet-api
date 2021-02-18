@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: migration
-        image: greenstand/treetracker-wallet-api:latest
+        image: greenstand/treetracker-wallet-api:TAG
         env:
           - name: BASE_DATABASE_URL
             valueFrom:
