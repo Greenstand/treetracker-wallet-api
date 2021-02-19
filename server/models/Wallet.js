@@ -453,6 +453,12 @@ class Wallet{
    */
   async transfer(sender, receiver, tokens, claimBoolean){
 //    await this.checkDeduct(sender, receiver);
+    // check is claim is already set to true, if so, we cannot transfer this token.
+    if (claim === true) {
+      console.log("token is claimed, cannot be transfered");
+      throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+    }
+
     //check tokens belong to sender
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
@@ -544,7 +550,7 @@ class Wallet{
     }
   }
 
-  async transferBundle(sender, receiver, bundleSize){
+  async transferBundle(sender, receiver, bundleSize, claimBoolean){
     //check has enough tokens to sender
     const tokenCount = await this.tokenService.countTokenByWallet(sender);
     expect(tokenCount).number();
@@ -570,13 +576,23 @@ class Wallet{
           bundle: {
             bundleSize: bundleSize,
           }
-        }
+        },
         //TODO: boolean for claim
+        claim: claimBoolean,
       });
       log.debug("now, deal with tokens");
       const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize)
+
+      
+
       for(let token of tokens){
-        await token.completeTransfer(transfer);
+        // check is claim is already set to true, if so, we cannot transfer this token.
+        if (token.claim === true) {
+          console.log("token is claimed, cannot be transfered");
+          throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+        } else {
+          await token.completeTransfer(transfer);
+        }
       }
       return transfer;
     }else{

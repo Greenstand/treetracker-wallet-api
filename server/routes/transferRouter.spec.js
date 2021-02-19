@@ -27,6 +27,7 @@ describe("transferRouter", () => {
   }
 
   beforeEach(() => {
+    sinon.stub(Session.prototype);
     sinon.stub(ApiKeyService.prototype, "check");
     sinon.stub(JWTService.prototype, "verify").returns({
       id: walletLogin.id,
@@ -210,6 +211,7 @@ describe("transferRouter", () => {
       id: 1,
       state: Transfer.STATE.completed,
     });
+
     const res = await request(app)
       .post('/')
       .send({
@@ -222,6 +224,9 @@ describe("transferRouter", () => {
     console.log(res);
     expect(res).property('statusCode').eq(201);
   });
+
+  //check what's in the db, after transfer claim
+  // test transfer, in wallet.spec.js
 
   it("all parameters fine, but no trust relationship, should return 202", async () => {
     sinon.stub(WalletService.prototype, "getByIdOrName").resolves(new Wallet(1));

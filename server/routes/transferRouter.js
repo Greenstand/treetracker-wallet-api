@@ -47,19 +47,25 @@ transferRouter.post(
         }),
       })
     );
+    console.log('HERE0');
     const session = new Session();
+    
     //begin transaction
     try{
+      console.log('HERE00');
       await session.beginTransaction();
+      console.log('HERE000');
       const walletService = new WalletService(session);
       const walletLogin = await walletService.getById(res.locals.wallet_id);
 
+      console.log('HERE001'); 
       const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
       const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
       // check if this transfer is a claim (claim == not transferrrable tokens)
       const claim = req.body.claim;
 
       let result;
+      //TODO: put the claim boolean into each tokens
       if(req.body.tokens){
         const tokens = [];
         const tokenService = new TokenService(session);
@@ -73,8 +79,10 @@ transferRouter.post(
       }else{
         //Case 2: with trust, bundle transfer
         // TODO: get only transferrable tokens
-        result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size);
+        console.log('HERE2');
+        result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size, claim);
       }
+      // console.log('HERE3');
       const transferService = new TransferService(session);
       result = await transferService.convertToResponse(result);
       if(result.state === Transfer.STATE.completed){
