@@ -1,3 +1,11 @@
+## [1.7.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.1...v1.7.2) (2021-02-18)
+
+
+### Bug Fixes
+
+* do not rely on latest tag, use kustomization ([a9afb84](https://github.com/Greenstand/treetracker-wallet-api/commit/a9afb84cbe2c3a17589c549ef294ab64ea0fd4b0))
+* remove unnecessary migration ([f7916fc](https://github.com/Greenstand/treetracker-wallet-api/commit/f7916fc1cf582021588849483537c163006c7634))
+
 ## [1.7.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.0...v1.7.1) (2021-02-18)
 
 
