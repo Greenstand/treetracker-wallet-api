@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.2...v1.7.3) (2021-02-19)
+
+
+### Bug Fixes
+
+* fix create demo wallet script ([3601917](https://github.com/Greenstand/treetracker-wallet-api/commit/360191767521fce7d9071aa6c666c5a88de1e7d7))
+
 ## [1.7.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.1...v1.7.2) (2021-02-18)
 
 
