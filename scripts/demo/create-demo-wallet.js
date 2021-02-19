@@ -48,13 +48,12 @@ function getRandomArbitrary(min, max) {
     // create wallet and password, salt
 
     const result = await trx('wallets.wallet').insert({
-      type: 'p',
       name: username,
       password: passwordHash,
       salt: salt
     }).returning('*')
-    const entity = result[0]
-    console.log(entity)
+    const wallet = result[0]
+    console.log(wallet)
 
 
     // insert fake planters
@@ -82,7 +81,7 @@ function getRandomArbitrary(min, max) {
 
     // insert fake tree captures
     let trees = []
-    for(i=0; i<1000; i++){
+    for(i=0; i<10; i++){
       const captureData = {
         time_created: new Date(),
         time_updated: new Date(),
@@ -95,20 +94,20 @@ function getRandomArbitrary(min, max) {
       }
       const result3 = await trx('public.trees').insert(captureData).returning('*')
       const capture = result3[0]
-      trees.push(capture.id)
-      console.log(capture.id)
+      trees.push(capture.uuid)
+      console.log(capture.uuid)
       await trx.raw('UPDATE trees SET estimated_geometric_location = ST_SetSRID(ST_MakePoint(lon, lat), 4326) WHERE id = ?', capture.id)
     }
 
     // create fake tokens
     for ( const treeId of trees ){
       const tokenData = {
-        tree_id: treeId,
-        entity_id: entity.id
+        capture_id: treeId,
+        wallet_id: wallet.id
       }
       const result4 = await trx('wallets.token').insert(tokenData).returning('*')
       const token = result4[0]
-      console.log(token.uuid)
+      console.log(token.id)
     }
 
     await trx.commit();
