@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.3...v1.7.4) (2021-02-19)
+
+
+### Bug Fixes
+
+* delete pre-existing job ([fea4677](https://github.com/Greenstand/treetracker-wallet-api/commit/fea4677d9827e98a2a02db14072f49928ce9e815))
+
 ## [1.7.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.2...v1.7.3) (2021-02-19)
 
 
