@@ -83,6 +83,7 @@ trustRouter.post('/',
       req.body,
       Joi.object({
         trust_request_type: Joi.string().required().valid(...Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE)),
+        requester_wallet: Joi.string(),
         requestee_wallet: Joi.string().required(),
       })
     );
