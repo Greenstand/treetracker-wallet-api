@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.4...v1.8.0) (2021-02-20)
+
+
+### Features
+
+* use SERIALIZABLE transaction isolation level ([91b8f11](https://github.com/Greenstand/treetracker-wallet-api/commit/91b8f1148763019e7f297a3642f671f5cfd6f0fb))
+
 ## [1.7.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.3...v1.7.4) (2021-02-19)
 
 
