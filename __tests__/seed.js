@@ -13,7 +13,6 @@ const wallet = {
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
-  type: 'p',
 };
 
 const capture = {
@@ -35,7 +34,6 @@ const walletB = {
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
-  type: 'p',
 };
 
 const walletC = {
@@ -44,7 +42,6 @@ const walletC = {
   password: 'test1234',
   passwordHash: '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
   salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
-  type: 'p',
 };
 
 const tokenB = {
@@ -104,7 +101,6 @@ async function seed() {
   await knex('wallet')
     .insert({
       id: wallet.id,
-      type: wallet.type,
       name: wallet.name,
       password: wallet.passwordHash,
       salt: wallet.salt,
@@ -114,7 +110,6 @@ async function seed() {
   await knex('wallet')
     .insert({
       id: walletB.id,
-      type: walletB.type,
       name: walletB.name,
       password: walletB.passwordHash,
       salt: walletB.salt,
@@ -124,7 +119,6 @@ async function seed() {
   await knex('wallet')
     .insert({
       id: walletC.id,
-      type: walletC.type,
       name: walletC.name,
       password: walletC.passwordHash,
       salt: walletC.salt,
