@@ -22,7 +22,7 @@ class TokenService{
     const tokensObject = await this.tokenRepository.getByFilter({
       wallet_id: wallet.getId(),
     });
-    const tokens = tokensObject.map(object => new Token(object));
+    const tokens = tokensObject.map(object => new Token(object, this._session));
     return tokens;
   }
 
