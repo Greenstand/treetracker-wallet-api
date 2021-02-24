@@ -11,7 +11,7 @@
     "eslint:fix": "npm run eslint -- --fix",
     "test": "npm run test-unit; npm run test-integration;npm run test-repository",
     "test-unit": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --exit --require co-mocha ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
-    "test-unit-ci": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.ci mocha -r dotenv/config --exit --require co-mocha ./server/models/**/*.spec.js ./server/routes/**/*.spec.js",
+    "test-unit-ci": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.ci mocha -r dotenv/config --exit --require co-mocha --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js'",
     "test-repository": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --exit --require co-mocha  ./server/repositories/**/*.spec.js",
     "server-test": "DEBUG=loopback:*,express:* NODE_LOG_LEVEL=debug nodemon server/serverTest.js",
     "server": "nodemon server/server.js",
@@ -20,7 +20,7 @@
     "test-integration": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config  --exit --timeout 20000 --require co-mocha './__tests__/*.spec.js'",
     "test-integration-ci": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.ci mocha -r dotenv/config --exit --timeout 20000 --require co-mocha './__tests__/*.spec.js'",
     "test-watch": "NODE_ENV=test NODE_LOG_LEVEL=info mocha -r dotenv/config dotenv_config_path=.env.test --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
-    "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
+    "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/*.spec.js'",
     "prettier-fix": "prettier ./ --write",
     "db-migrate-ci": "cd database; db-migrate up"
   },
