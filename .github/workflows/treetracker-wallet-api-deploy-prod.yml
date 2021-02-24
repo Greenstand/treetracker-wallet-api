@@ -1,5 +1,5 @@
 
-name: Deploy to Test Env
+name: Deploy to Production Env
 
 
 on:
@@ -14,7 +14,7 @@ env:
 
 jobs:
   deploy-test:
-    name: Deploy latest to test environment, requires approval
+    name: Deploy selected tag to production environment, requires approval
     runs-on: ubuntu-latest
     if: |
       github.repository == 'Greenstand/treetracker-wallet-api'
