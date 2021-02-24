@@ -40,6 +40,6 @@ jobs:
       - name: Save DigitalOcean kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ secrets.PRODUCTION_CLUSTER_NAME }}
       - name: Delete completed migration jobs prior to deployment
-        run: kubectl -n wallet-api delete job wallet-db-migration-job
+        run: kubectl -n wallet-api delete job --ignore-not-found=true  wallet-db-migration-job
       - name: Update kubernetes resources
         run: kubectl -n wallet-api apply --wait -k ./deployment/
