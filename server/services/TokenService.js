@@ -87,12 +87,10 @@ class TokenService{
   }
 
   async getTokensByTransferId(transferId){
-    const result = await this.transactionRepository.getByFilter({
-      transfer_id: transferId,
-    });
+    const result = await this.tokenRepository.getByTransferId(transferId);
     const tokens = [];
     for(const r of result){
-      const token = await this.getById(r.token_id);
+      const token = new Token(r);
       tokens.push(token);
     }
     return tokens;

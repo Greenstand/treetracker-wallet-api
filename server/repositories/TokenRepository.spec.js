@@ -29,4 +29,13 @@ describe("TokenRepository", () => {
     expect(token).property("token").eq("testUuid");
   });
 
+  it("getByTransferId", async () => {
+    tracker.on("query", (query) => {
+      expect(query.sql).match(/select.*token.*transaction.*transfer_id/is);
+      query.response([{id:1, token: "testUuid"}]);
+    });
+    const tokens = await tokenRepository.getByTransferId("testUuid");
+    expect(tokens).lengthOf(1);
+  });
+
 });

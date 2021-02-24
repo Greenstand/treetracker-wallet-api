@@ -96,22 +96,11 @@ describe("Token", () => {
   describe("getTokensByTransferId", () => {
 
     it("Successfuly", async () => {
-      const tokenId1 = uuid.v4();
       const tokenId2 = uuid.v4();
       const transferId1 = uuid.v4();
-      const transactionId1 = uuid.v4();
-      const token = new Token({id:tokenId2});
-      const transaction = {
-        id: transactionId1,
-        token_id: tokenId2,
-      };
-      const fn = sinon.stub(TransactionRepository.prototype, "getByFilter").resolves([transaction]);
-      const fn2 = sinon.stub(TokenService.prototype, "getById").resolves(token);
+      const fn = sinon.stub(TokenRepository.prototype, "getByTransferId").resolves([{id:tokenId2}]);
       const tokens = await tokenService.getTokensByTransferId(transferId1);
-      expect(fn).calledWith({
-        transfer_id: transferId1,
-      })
-      expect(fn2).calledWith(tokenId2);
+      expect(fn).calledWith(transferId1);
       expect(tokens).lengthOf(1);
     });
   });
