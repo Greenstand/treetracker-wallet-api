@@ -56,10 +56,6 @@ class Token{
       transfer_pending_id: null,
       wallet_id: transfer.destination_wallet_id,
     });
-    expect(transfer).match({
-      source_wallet_id: expect.any(String),
-      destination_wallet_id: expect.any(String),
-    });
     await this.transactionRepository.create({
       token_id: this._id,
       transfer_id: transfer.id,
