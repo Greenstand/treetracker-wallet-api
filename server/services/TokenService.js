@@ -1,6 +1,7 @@
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
+const log = require("loglevel");
 
 class TokenService{
 
@@ -94,6 +95,26 @@ class TokenService{
       tokens.push(token);
     }
     return tokens;
+  }
+
+  /*
+   * To replace token.completeTransfer, as a bulk operaction
+   */
+  async completeTransfer(tokens, transfer){
+    log.debug("Token complete transfer batch");
+    await this.tokenRepository.updateByIds({
+        transfer_pending: false,
+        transfer_pending_id: null,
+        wallet_id: transfer.destination_wallet_id,
+      },
+      tokens.map(token => token.getId()),
+    );
+    await this.transactionRepository.batchCreate(tokens.map(token => ({
+      token_id: token.getId(),
+      transfer_id: transfer.id,
+      source_wallet_id: transfer.source_wallet_id,
+      destination_wallet_id: transfer.destination_wallet_id,
+    })));
   }
 
 }

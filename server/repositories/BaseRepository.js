@@ -1,6 +1,7 @@
 const Session = require("../models/Session");
 const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
+const log = require("loglevel");
 
 class BaseRepository{
 
@@ -80,12 +81,32 @@ class BaseRepository{
     return result[0];
   }
 
+  /*
+   * update all rows matching given id
+   */
+  async updateByIds(object, ids){
+    let objectCopy = {}
+    Object.assign(objectCopy, object)
+    delete objectCopy.id
+    const result = await this._session.getDB()(this._tableName).update(objectCopy).whereIn("id", ids);
+  }
+
   async create(object){
     const result = await this._session.getDB()(this._tableName).insert(object).returning("*");
     expect(result).match([{
       id: expect.anything(),
     }]);
     return result[0];
+  }
+
+  /*
+   * return ids created
+   */
+  async batchCreate(objects){
+    log.warn("object batch:", objects);
+    const result = await this._session.getDB().batchInsert(this._tableName,objects).returning('id');
+    expect(result).match([expect.any(String)]);
+    return result;
   }
 
 }

@@ -4,6 +4,7 @@ const TransactionRepository = require("../repositories/TransactionRepository");
 const HttpError = require("../utils/HttpError");
 const { validate: uuidValidate } = require('uuid');
 const Joi = require("joi");
+const expect = require("expect-runtime");
 
 class Token{
   
@@ -54,6 +55,10 @@ class Token{
       transfer_pending: false,
       transfer_pending_id: null,
       wallet_id: transfer.destination_wallet_id,
+    });
+    expect(transfer).match({
+      source_wallet_id: expect.any(String),
+      destination_wallet_id: expect.any(String),
     });
     await this.transactionRepository.create({
       token_id: this._id,

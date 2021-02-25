@@ -489,9 +489,7 @@ class Wallet{
         },
       });
       log.debug("now, deal with tokens");
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
       return transfer;
       
     }else{
@@ -569,9 +567,7 @@ class Wallet{
       });
       log.debug("now, deal with tokens");
       const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize)
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
       return transfer;
     }else{
         if(hasControlOverSender){
@@ -692,15 +688,14 @@ class Wallet{
       if(tokens.length < transfer.parameters.bundle.bundleSize){
         throw new HttpError(403, "Do not have enough tokens");
       }
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       log.debug("transfer tokens");
       const tokens = await this.tokenService.getTokensByPendingTransferId(transferId);
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      expect(transfer).match({
+        source_wallet_id: expect.any(String),
+      });
+      await this.tokenService.completeTransfer(tokens, transfer);
     }
     return transferJson;
   }

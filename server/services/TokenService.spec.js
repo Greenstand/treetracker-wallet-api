@@ -105,5 +105,17 @@ describe("Token", () => {
     });
   });
 
+  it("completeTransfer", async () => {
+    const tokenId1 = uuid.v4();
+    const transferId1 = uuid.v4();
+    const token1 = new Token({id:tokenId1});
+    const updateByIds = sinon.stub(TokenRepository.prototype, "updateByIds");
+    const batchCreate = sinon.stub(TransactionRepository.prototype, "batchCreate");
+    const transfer = {
+      destination_wallet_id: transferId1,
+    }
+    const tokens = await tokenService.completeTransfer([token1], transfer);
+    expect(updateByIds).calledWith(sinon.match({wallet_id:transferId1}), [tokenId1]);
+  });
 
 });
