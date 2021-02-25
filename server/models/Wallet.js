@@ -508,9 +508,7 @@ class Wallet{
               tokens: tokensId,
             },
           });
-          for(let token of tokens){
-            await token.pendingTransfer(transfer);
-          }
+          await this.tokenService.pendingTransfer(tokens, transfer);
           return transfer;
         }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
@@ -527,9 +525,7 @@ class Wallet{
               tokens: tokensId,
             },
           });
-          for(let token of tokens){
-            await token.pendingTransfer(transfer);
-          }
+          await this.tokenService.pendingTransfer(tokens, transfer);
           return transfer;
         }else{
           //TODO
@@ -726,9 +722,7 @@ class Wallet{
 
     //deal with tokens
     const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
-    for(let token of tokens){
-      await token.cancelTransfer(transfer);
-    }
+    await this.tokenService.cancelTransfer(tokens, transfer);
     return transferJson;
   }
 
@@ -755,9 +749,7 @@ class Wallet{
 
     //deal with tokens
     const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
-    for(let token of tokens){
-      await token.cancelTransfer(transfer);
-    }
+    await this.tokenService.cancelTransfer(tokens, transfer);
     return transferJson;
   }
 

@@ -118,4 +118,32 @@ describe("Token", () => {
     expect(updateByIds).calledWith(sinon.match({wallet_id:transferId1}), [tokenId1]);
   });
 
+  it("pendingTransfer", async () => {
+    const tokenId1 = uuid.v4();
+    const transferId1 = uuid.v4();
+    const token1 = new Token({id:tokenId1});
+    const updateByIds = sinon.stub(TokenRepository.prototype, "updateByIds");
+    const batchCreate = sinon.stub(TransactionRepository.prototype, "batchCreate");
+    const transfer = {
+      id: transferId1,
+      destination_wallet_id: transferId1,
+    }
+    const tokens = await tokenService.pendingTransfer([token1], transfer);
+    expect(updateByIds).calledWith(sinon.match({transfer_pending: true, transfer_pending_id:transferId1}), [tokenId1]);
+  });
+
+  it("cancelTransfer", async () => {
+    const tokenId1 = uuid.v4();
+    const transferId1 = uuid.v4();
+    const token1 = new Token({id:tokenId1});
+    const updateByIds = sinon.stub(TokenRepository.prototype, "updateByIds");
+    const batchCreate = sinon.stub(TransactionRepository.prototype, "batchCreate");
+    const transfer = {
+      id: transferId1,
+      destination_wallet_id: transferId1,
+    }
+    const tokens = await tokenService.cancelTransfer([token1], transfer);
+    expect(updateByIds).calledWith(sinon.match({transfer_pending: false, transfer_pending_id:null}), [tokenId1]);
+  });
+
 });

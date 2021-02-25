@@ -2,6 +2,7 @@ const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
 const log = require("loglevel");
+const Joi = require("joi");
 
 class TokenService{
 
@@ -115,6 +116,36 @@ class TokenService{
       source_wallet_id: transfer.source_wallet_id,
       destination_wallet_id: transfer.destination_wallet_id,
     })));
+  }
+
+  /*
+   * Batch operaction to pending transfer
+   */
+  async pendingTransfer(tokens, transfer){
+    Joi.assert(
+      transfer.id,
+      Joi.string().guid()
+    )
+
+    await this.tokenRepository.updateByIds({
+      transfer_pending: true,
+      transfer_pending_id: transfer.id,
+    }, 
+    tokens.map(token => token.getId()),
+    );
+  }
+
+  /*
+   * Batch way to cancel transfer
+   */
+  async cancelTransfer(tokens, transfer){
+    log.debug("Token cancel transfer");
+    await this.tokenRepository.updateByIds({
+        transfer_pending: false,
+        transfer_pending_id: null
+      },
+      tokens.map(token => token.getId()),
+    );
   }
 
 }

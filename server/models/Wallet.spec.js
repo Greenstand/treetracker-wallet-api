@@ -307,7 +307,7 @@ describe("Wallet", () => {
       fn3.onSecondCall().resolves(false);
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
       sinon.stub(Token.prototype, "beAbleToTransfer").resolves(true);
-      sinon.stub(Token.prototype, "pendingTransfer");
+      sinon.stub(TokenService.prototype, "pendingTransfer");
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: 1,
         state: Transfer.STATE.pending,
@@ -623,7 +623,7 @@ describe("Wallet", () => {
       });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([token]);
-      const fn4 = sinon.stub(Token.prototype, "cancelTransfer");
+      const fn4 = sinon.stub(TokenService.prototype, "cancelTransfer");
       const fn5 = sinon.stub(WalletService.prototype, "getById");
       fn5.onCall(0).resolves(sender);
       fn5.onCall(1).resolves(receiver);
@@ -651,7 +651,7 @@ describe("Wallet", () => {
       });  
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([token]);
-      const fn4 = sinon.stub(Token.prototype, "cancelTransfer");
+      const fn4 = sinon.stub(TokenService.prototype, "cancelTransfer");
       const fn5 = sinon.stub(WalletService.prototype, "getById");
       fn5.onCall(0).resolves(sender);
       fn5.onCall(1).resolves(receiver);
@@ -694,6 +694,7 @@ describe("Wallet", () => {
       fn3.onCall(1).resolves(wallet3);
       const fn4 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([]);
+      sinon.stub(TokenService.prototype, "cancelTransfer");
       await wallet.cancelTransfer(transferId);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.cancelled,
@@ -718,6 +719,7 @@ describe("Wallet", () => {
       fn3.onCall(1).resolves(wallet3);
       const fn4 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([]);
+      sinon.stub(TokenService.prototype, "cancelTransfer");
       await wallet.cancelTransfer(1);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.cancelled,
