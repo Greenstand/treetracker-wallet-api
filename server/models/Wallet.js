@@ -789,15 +789,11 @@ class Wallet{
       const {source_wallet_id} = transfer;
       const senderWallet = new Wallet(source_wallet_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       log.debug("transfer tokens");
       const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
     }
     return transferJson;
   }
@@ -846,9 +842,7 @@ class Wallet{
       }
 
       //transfer
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       throw new HttpError(403, "No need to specify tokens", true);
     }

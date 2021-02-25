@@ -748,6 +748,7 @@ describe("Wallet", () => {
       const fn2 = sinon.stub(TransferRepository.prototype, "update");
       const fn3 = sinon.stub(WalletService.prototype, "getById");
       const fn4 = sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
+      sinon.stub(TokenService.prototype, "completeTransfer");
       sinon.stub(TokenService.prototype, "getTokensByPendingTransferId").resolves([]);
       await wallet.fulfillTransfer(transferId);
       fn1.restore();
@@ -815,7 +816,7 @@ describe("Wallet", () => {
       sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       sinon.stub(Token.prototype, "toJSON").resolves({uuid:"xxx"});
       sinon.stub(Token.prototype, "belongsTo").resolves(true);
-      sinon.stub(Token.prototype, "completeTransfer");
+      sinon.stub(TokenService.prototype, "completeTransfer");
       await wallet.fulfillTransferWithTokens(1, [token]);
     });
 
