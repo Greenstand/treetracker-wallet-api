@@ -1,3 +1,102 @@
+# [1.8.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.4...v1.8.0) (2021-02-20)
+
+
+### Features
+
+* use SERIALIZABLE transaction isolation level ([91b8f11](https://github.com/Greenstand/treetracker-wallet-api/commit/91b8f1148763019e7f297a3642f671f5cfd6f0fb))
+
+## [1.7.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.3...v1.7.4) (2021-02-19)
+
+
+### Bug Fixes
+
+* delete pre-existing job ([fea4677](https://github.com/Greenstand/treetracker-wallet-api/commit/fea4677d9827e98a2a02db14072f49928ce9e815))
+
+## [1.7.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.2...v1.7.3) (2021-02-19)
+
+
+### Bug Fixes
+
+* fix create demo wallet script ([3601917](https://github.com/Greenstand/treetracker-wallet-api/commit/360191767521fce7d9071aa6c666c5a88de1e7d7))
+
+## [1.7.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.1...v1.7.2) (2021-02-18)
+
+
+### Bug Fixes
+
+* do not rely on latest tag, use kustomization ([a9afb84](https://github.com/Greenstand/treetracker-wallet-api/commit/a9afb84cbe2c3a17589c549ef294ab64ea0fd4b0))
+* remove unnecessary migration ([f7916fc](https://github.com/Greenstand/treetracker-wallet-api/commit/f7916fc1cf582021588849483537c163006c7634))
+
+## [1.7.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.0...v1.7.1) (2021-02-18)
+
+
+### Bug Fixes
+
+* clean up wallet table schema ([f329cdf](https://github.com/Greenstand/treetracker-wallet-api/commit/f329cdfbec4b8a47b89c06c51c7e55a629898607))
+* try to get wait for job via kubectl working ([77c9077](https://github.com/Greenstand/treetracker-wallet-api/commit/77c907701f15ca46e0742b538d0dcc2223eb8315))
+
+# [1.7.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.6.1...v1.7.0) (2021-02-18)
+
+
+### Bug Fixes
+
+* all tests passing ([612cf55](https://github.com/Greenstand/treetracker-wallet-api/commit/612cf555dc9e64539481377ff984b902bd544263))
+* all unit tests passing ([a7555fb](https://github.com/Greenstand/treetracker-wallet-api/commit/a7555fb0278508b38190dcd2f9973a4f56b03c1c))
+* all unit tests working ([59a9c99](https://github.com/Greenstand/treetracker-wallet-api/commit/59a9c99665915a22e2bcdb473bba9352b1804576))
+* clean up debugging logs ([4c927d2](https://github.com/Greenstand/treetracker-wallet-api/commit/4c927d2a59155e5c39e221ac6ae25d4f4f437613))
+* fix calls to test routines in package.json ([dd3b340](https://github.com/Greenstand/treetracker-wallet-api/commit/dd3b340ced6d21779d5d99d825c7f586eda11240))
+* fix seed tests that did not use knex ([1895bcf](https://github.com/Greenstand/treetracker-wallet-api/commit/1895bcf15ed936b8bdeec7ea3c0c10fcb461f02a))
+* fix some integration tests ([66cbe0e](https://github.com/Greenstand/treetracker-wallet-api/commit/66cbe0ea7baf0f1657d5569cbc94c4e28b5faa5d))
+* fixes to code found by integration testing ([f80691e](https://github.com/Greenstand/treetracker-wallet-api/commit/f80691e64674be284e7eada52469384e9fb1b2a6))
+* fixing integration tests and codes ([e4ae6e1](https://github.com/Greenstand/treetracker-wallet-api/commit/e4ae6e11d8f72ed4b9c634c257ce006727ebd992))
+* remove old supertest file ([26d2168](https://github.com/Greenstand/treetracker-wallet-api/commit/26d21687b2b0f1708db37644f6e342dad987103f))
+* remove unused and incorrectly configured database pool module ([b9094b5](https://github.com/Greenstand/treetracker-wallet-api/commit/b9094b5104300e6a5ab02e2bf92c24005d4cac40))
+* remove unused import ([16b285c](https://github.com/Greenstand/treetracker-wallet-api/commit/16b285ce1a313ed03d84b3c0a5ebec7a00b644a4))
+* set scheme for seed tests in ci ([2ffe6eb](https://github.com/Greenstand/treetracker-wallet-api/commit/2ffe6ebdf582b05f3be8a53dfc82a82099f934e4))
+* set scheme for seed tests in ci ([fc80a05](https://github.com/Greenstand/treetracker-wallet-api/commit/fc80a0592bbe65e876647d767808fe7398b8255b))
+* switch UUID for all ids, and set default value ([1249c91](https://github.com/Greenstand/treetracker-wallet-api/commit/1249c9198f4a2838dc0e30a704ed481e130e184e))
+* switch UUID for all ids, and set default value ([ed8f27d](https://github.com/Greenstand/treetracker-wallet-api/commit/ed8f27d6bee88878d9897ddf8055e7a777a57ff7))
+* use .spec.js for all integration test scopes ([7fa943f](https://github.com/Greenstand/treetracker-wallet-api/commit/7fa943fbae6b0bb5ffeb1d3445af7c0623908f40))
+* use the ci env for unit tests in github actions ([1bb0b1b](https://github.com/Greenstand/treetracker-wallet-api/commit/1bb0b1b385ef495abae1a37a6cf4103c1c6367e7))
+* wip - fix unit tests for uuid ids ([70edfe7](https://github.com/Greenstand/treetracker-wallet-api/commit/70edfe7a3748b8996d6ba95b02adff20781e0b14))
+* wip refactor integration tests ([44d2f7c](https://github.com/Greenstand/treetracker-wallet-api/commit/44d2f7cf8d3b2391bf121725985082d246496b66))
+* work in progress ([af99b9d](https://github.com/Greenstand/treetracker-wallet-api/commit/af99b9d3d366ea7423efa29a5d049a27e7e991f9))
+* work in progress ([69935b6](https://github.com/Greenstand/treetracker-wallet-api/commit/69935b61725fd8c0c6292b4f1c05a5495b627c31))
+* work to get integration working with primary key UUIDs, plus a log ([a234a0c](https://github.com/Greenstand/treetracker-wallet-api/commit/a234a0c17095fe14d7f11f5748aa79b4d26fa9a8))
+
+
+### Features
+
+* switch to UUID for all primary keys ([706581e](https://github.com/Greenstand/treetracker-wallet-api/commit/706581ec22f655bab177702f798b8cbfe67e8fee))
+* switch to UUID for all primary keys ([5bd9606](https://github.com/Greenstand/treetracker-wallet-api/commit/5bd9606b3814571844d969702e142c3f62607260))
+* use the webmap api for capture data ([9d4fbe6](https://github.com/Greenstand/treetracker-wallet-api/commit/9d4fbe6e3fde98212f45e805811d782ef6ec768c))
+* use the webmap api for capture data ([d2cfc0a](https://github.com/Greenstand/treetracker-wallet-api/commit/d2cfc0ae66cfb0f6940b8407cd2cbd2833a44048))
+* wip updating tests and models to uuid as id type, making tests more maintainable ([86babd5](https://github.com/Greenstand/treetracker-wallet-api/commit/86babd55cb62c1e693d9beaf08e00a789c6c854e))
+* wip updating tests and models to uuid as id type, making tests more maintainable ([9ef0d0f](https://github.com/Greenstand/treetracker-wallet-api/commit/9ef0d0f0a9509f9775acc9fbfdd0269e9ae4e56f))
+
+## [1.6.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.6.0...v1.6.1) (2021-02-11)
+
+
+### Bug Fixes
+
+* update db-migrate package ([b1514cb](https://github.com/Greenstand/treetracker-wallet-api/commit/b1514cb8c183535c46e9990570e975e5eaaa9e52))
+* update pg package ([88486b3](https://github.com/Greenstand/treetracker-wallet-api/commit/88486b33c3e835121b2a389b6c9b2d20883eb6db))
+
+# [1.6.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.5.0...v1.6.0) (2021-01-22)
+
+
+### Bug Fixes
+
+* add db-migrate in package.json back ([6ac5e6b](https://github.com/Greenstand/treetracker-wallet-api/commit/6ac5e6bdbb86f5dc7cf5006e9bbdc1afb612ea4d))
+* broken int test ([8a8cc9e](https://github.com/Greenstand/treetracker-wallet-api/commit/8a8cc9ef83c2878ad598c54d8fe9a01ea627d53a))
+* rerun npm install ([08634d7](https://github.com/Greenstand/treetracker-wallet-api/commit/08634d73417a3636b8d502202db19e25ae869ae7))
+* update yaml for issue 100 ([38f6622](https://github.com/Greenstand/treetracker-wallet-api/commit/38f6622b5c78e14a3806be3e753430b4d5fb1092))
+
+
+### Features
+
+* 2nd commit for issue 100 ([22b6bb4](https://github.com/Greenstand/treetracker-wallet-api/commit/22b6bb4221f7f7b7ca96030ac4e52165b941e983))
+
 # [1.5.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.4.1...v1.5.0) (2021-01-10)
 
 

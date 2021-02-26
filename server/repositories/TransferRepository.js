@@ -17,14 +17,14 @@ class TransferRepository extends BaseRepository{
     object.active = true;
     const result = await super.create(object);
     expect(result).match({
-      id: expect.any(Number),
+      id: expect.any(String),
     });
     return result;
   }
 
   async getPendingTransfers(id){
     return await this._session.getDB()(this._tableName).where({
-      destination_entity_id: id,
+      destination_wallet_id: id,
       state: Transfer.STATE.pending,
     });
   }

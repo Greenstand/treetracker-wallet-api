@@ -8,10 +8,12 @@ To view the specs for the new API visit https://editor.swagger.io and load the Y
   
 ## Project Setup
 
-Open terminal and navigate to a folder to install this project:
+Fork this repository to your account and clone from this forked copy.
+
+Open terminal, navigate to a folder to install this project, and run the below commands:
 
 ```
-git clone https://github.com/Greenstand/treetracker-token-trading-api.git
+git clone https://github.com/[YOUR GITHUB USERNAME]/treetracker-wallet-api.git
 
 ```
 Install all necessary dependencies: 
@@ -73,9 +75,7 @@ DATABASE_SCHEMA=wallets
 PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
 PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
 NODE_LOG_LEVEL=trace
-PUBLIC_KEY="[copy and paste all contents from your jwtRS256.key.pub]"
-PRIVATE_KEY="[copy and paste all contents from your jwtRS256.key]"
-NODE_LOG_LEVEL=trace
+
 
 ```
 Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files.  **Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here.
@@ -114,7 +114,7 @@ To quickly build the necessary tables for your wallets schema, run:
 db-migrate --env dev up
 ```
 
-If you have not installed db-migrate globally, you can run:
+If you have not installed db-migrate globally, while in the database folder, you can run:
 
 ```
 ../node_modules/db-migrate/bin/db-migrate --env dev up
@@ -127,7 +127,7 @@ If you run into issue:
 ```
  ifError got unwanted exception: function uuid_generate_v4() does not exist
 ```
-Delete and recreate your wallets schema and then open postgress terminal and run to install the required extension
+Delete and recreate your wallets schema and then inside your postgres connection in terminal, run to install the required extension
 
 ```
 \c <db name> 
@@ -470,4 +470,6 @@ Create your local git branch and rebase it from the shared master branch. Please
 
 Please follow this convention for commit messages [here](https://www.conventionalcommits.org/en/v1.0.0/)
 
-When you are ready to submit a pull request from your local branch, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting. Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. 
+Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. You can make a draft pull request as you are working on any open issue that interests you, and any changes you make on your local branch can be continually synced with this draft until you are ready to submit. Remember to push your changes up to your forked repository and then make any pull requests from your forked branch to the Greenstand master repository branch. 
+
+When you are ready to submit a pull request, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting. 

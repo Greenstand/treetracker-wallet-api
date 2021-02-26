@@ -8,7 +8,21 @@ let knexConfig = {
   client: 'pg',
   debug: process.env.NODE_LOG_LEVEL === "debug"? true:false,
   connection,
-  pool: { min:0, max: 100},
+  pool: { 
+    min:0, 
+    max: 100,
+    afterCreate: function (conn, done) {
+      conn.query('SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;', function (err) {
+        if (err) {
+          log.error(err)
+          done(err, conn)
+        } else {
+          log.debug('SERIALIZABLE isolation level set successfully')
+          done(err, conn)
+        }
+      });
+    }
+  },
 }
 
 log.debug(process.env.DATABASE_SCHEMA)

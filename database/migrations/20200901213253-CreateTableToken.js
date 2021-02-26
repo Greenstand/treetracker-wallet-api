@@ -16,16 +16,11 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function (db) {
   return db.createTable('token', {
-    id: { type: 'int', primaryKey: true, autoIncrement: true },
-    tree_id: { type: 'int', notNull: true },
-    entity_id: { type: 'int', notNull: true },
-    uuid: {
-      type: 'string',
-      notNull: true,
-      defaultValue: new String('uuid_generate_v4()'),
-    },
+    id: { type: 'uuid', primaryKey: true, notNull: true },
+    capture_id: { type: 'uuid', notNull: true },
+    wallet_id: { type: 'uuid', notNull: true },
     transfer_pending: { type: 'boolean', notNull: true, defaultValue: false },
-    transfer_pending_id: { type: 'int' },
+    transfer_pending_id: { type: 'uuid' },
     created_at: {
       type: 'timestamp',
       notNull: true,

@@ -24,9 +24,9 @@ describe("TransferService", () => {
   it("convertToResponse", async () => {
     const transferObject = {
       id: 1,
-      originator_entity_id: 1,
-      source_entity_id: 1,
-      destination_entity_id: 1,
+      originator_wallet_id: 1,
+      source_wallet_id: 1,
+      destination_wallet_id: 1,
     }
     sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
       id: 1,

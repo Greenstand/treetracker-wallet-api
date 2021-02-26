@@ -18,8 +18,9 @@ exports.up = function(db) {
   return db.runSql('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
 };
 
-exports.down = function(db) {
-  return null;
+exports.down = function(db, done) {
+  //return db.runSql('DROP EXTENSION "uuid-ossp"');
+  done()
 };
 
 exports._meta = {

@@ -2,3 +2,6 @@ resources:
 - treetracker-wallet-api-deployment.yaml
 - treetracker-wallet-api-mapping.yaml
 - treetracker-wallet-api-service.yaml
+- treetracker-wallet-api-db-migration-job.yaml
+- treetracker-wallet-api-clusterrole.yaml
+- treetracker-wallet-api-clusterrolebinding.yaml

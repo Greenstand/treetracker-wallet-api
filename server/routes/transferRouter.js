@@ -27,11 +27,9 @@ transferRouter.post(
           tokens: Joi.array().items(Joi.string()).required().unique(),
           sender_wallet: Joi.alternatives().try(
             Joi.string(),
-            Joi.number().min(1).max(32)
           ).required(),
           receiver_wallet: Joi.alternatives().try(
             Joi.string(),
-            Joi.number().min(1).max(32)
           ).required(),
           // TODO: add boolean for claim, but default to false.
           claim: Joi.boolean(),
@@ -69,8 +67,8 @@ transferRouter.post(
       if(req.body.tokens){
         const tokens = [];
         const tokenService = new TokenService(session);
-        for(let uuid of req.body.tokens){
-          const token = await tokenService.getByUUID(uuid); 
+        for(let id of req.body.tokens){
+          const token = await tokenService.getById(id); 
           tokens.push(token);
         }
         //Case 1: with trust, token transfer
@@ -116,7 +114,7 @@ transferRouter.post('/:transfer_id/accept',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     const session = new Session();
@@ -152,7 +150,7 @@ transferRouter.post('/:transfer_id/decline',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     const session = new Session();
@@ -187,7 +185,7 @@ transferRouter.delete('/:transfer_id',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     const session = new Session();
@@ -222,7 +220,7 @@ transferRouter.post('/:transfer_id/fulfill',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     Joi.assert(
@@ -254,8 +252,8 @@ transferRouter.post('/:transfer_id/fulfill',
         //load tokens
         const tokens = [];
         const tokenService = new TokenService(session);
-        for(let uuid of req.body.tokens){
-          const token = await tokenService.getByUUID(uuid); 
+        for(let id of req.body.tokens){
+          const token = await tokenService.getById(id); 
           tokens.push(token);
         }
         transferJson = await walletLogin.fulfillTransferWithTokens(req.params.transfer_id, tokens);
@@ -298,10 +296,6 @@ transferRouter.get("/",
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-//    let walletObject;
-//    if(wallet){
-//      walletObject = await walletService.getByIdOrName(wallet);
-//    }
     let walletTransfer = walletLogin;
     if(wallet){
       walletTransfer = await walletService.getByIdOrName(wallet);
@@ -310,12 +304,10 @@ transferRouter.get("/",
     const result = await walletTransfer.getTransfers(state);
     const transferService = new TransferService(session);
     let json = [];
-    // console.log(result);
     for(let t of result){
       const j = await transferService.convertToResponse(t);
       json.push(j);
     }
-    // console.log(json);
 
     //filter tokensJson by query
     let numStart = parseInt(start);
@@ -334,14 +326,14 @@ transferRouter.get('/:transfer_id',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
     const session = new Session();
     const walletService = new WalletService(session);
     const transferService = new TransferService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const transferObject = await walletLogin.getTransferById(parseInt(req.params.transfer_id));
+    const transferObject = await walletLogin.getTransferById(req.params.transfer_id);
     const transferJson = await transferService.convertToResponse(transferObject);
     res.status(200).json(transferJson);
   })
@@ -354,7 +346,7 @@ transferRouter.get('/:transfer_id/tokens',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.number().required(),
+        transfer_id: Joi.string().guid().required(),
       })
     );
 
@@ -369,20 +361,18 @@ transferRouter.get('/:transfer_id/tokens',
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const tokens = await walletLogin.getTokensByTransferId(parseInt(req.params.transfer_id));
+    const tokens = await walletLogin.getTokensByTransferId(req.params.transfer_id);
     let tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();
       tokensJson.push(json);
     }
-    // console.log(tokensJson);
     //filter tokensJson by query
     let numStart = parseInt(start);
     let numLimit = parseInt(limit);
     let numBegin = numStart?numStart-1:0;
     let numEnd=numBegin+numLimit;
     tokensJson = tokensJson.slice(numBegin, numEnd);
-    console.log(tokensJson);
     res.status(200).json({
       tokens: tokensJson,
     });

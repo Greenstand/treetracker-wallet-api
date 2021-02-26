@@ -24,7 +24,7 @@ walletRouter.get('/',
     const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
     const subWallets = await loggedInWallet.getSubWallets();
-    //myself
+    // at logged in wallets to list of wallets
     subWallets.push(loggedInWallet);
     
     let walletsJson = [];
@@ -40,7 +40,6 @@ walletRouter.get('/',
     let numLimit = parseInt(limit);
     let numBegin = numStart?numStart-1:0;
     let numEnd=numBegin+numLimit;
-    console.log(numBegin, numEnd);
     walletsJson = walletsJson.slice(numBegin, numEnd);
 
     res.status(200).json({

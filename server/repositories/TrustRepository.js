@@ -20,14 +20,14 @@ class TrustRepository extends BaseRepository{
   async getByOriginatorId(id){
     const list = await this._session.getDB().select()
       .table(this._tableName)
-      .where("originator_entity_id", id);
+      .where("originator_wallet_id", id);
     return list;
   }
 
   async getByTargetId(id){
     const list = await this._session.getDB().select()
       .table(this._tableName)
-      .where("target_entity_id", id);
+      .where("target_wallet_id", id);
     return list;
   }
 
@@ -35,7 +35,7 @@ class TrustRepository extends BaseRepository{
     const list = await this._session.getDB().select()
       .table(this._tableName)
       .where({
-        originator_entity_id: id,
+        originator_wallet_id: id,
         state: require("../models/TrustRelationship").ENTITY_TRUST_STATE_TYPE.trusted,
       });
     return list;

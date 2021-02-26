@@ -1,15 +1,16 @@
 const log = require("loglevel");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
-const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
+const { validate: uuidValidate } = require('uuid');
+const Joi = require("joi");
 
 class Token{
   
   constructor(idOrJSON, session){
-    if(typeof idOrJSON === "number"){
+    if(uuidValidate(idOrJSON)){
       this._id = idOrJSON;
-    }else if(typeof idOrJSON === "object" && typeof idOrJSON.id === "number"){
+    }else if(typeof idOrJSON === "object" && uuidValidate(idOrJSON.id) ){
       this._id = idOrJSON.id;
       this._JSON = idOrJSON;
     }else{
@@ -33,8 +34,7 @@ class Token{
     const result = {
       ...this._JSON,
       links: {
-        capture: `/capture/${this._JSON.tree_id}`,
-        tree: `/capture/${this._JSON.tree_id}/tree`,
+        capture: `/webmap/trees?treeid=${this._JSON.capture_id}`
       }
     }
     return result;
@@ -53,10 +53,8 @@ class Token{
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: false,
-      transfer_pending_id: transfer.id,
-      entity_id: transfer.destination_entity_id,
-      //TODO: add a boolean for claim.
-      claim: transfer.claim,
+      transfer_pending_id: null,
+      wallet_id: transfer.destination_wallet_id,
     });
     await this.transactionRepository.create({
       token_id: this._id,
@@ -65,6 +63,8 @@ class Token{
       destination_entity_id: transfer.destination_entity_id,
       //TODO: add a boolean for claim.
       claim: transfer.claim,
+      source_wallet_id: transfer.source_wallet_id,
+      destination_wallet_id: transfer.destination_wallet_id,
     });
   }
 
@@ -72,9 +72,12 @@ class Token{
    * To pending this token on the given transfer
    */
   async pendingTransfer(transfer){
-    expect(transfer).match({
-      id: expect.any(Number),
-    });
+
+    Joi.assert(
+      transfer.id,
+      Joi.string().guid()
+    )
+
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: true,
@@ -87,14 +90,19 @@ class Token{
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: false,
-      transfer_pending_id: transfer.id,
+      transfer_pending_id: null
     });
   }
 
   async belongsTo(wallet){
-    expect(wallet).defined();
+
+    Joi.assert(
+      wallet.getId(),
+      Joi.string().guid()
+    )
+
     const json = await this.toJSON();
-    if(json.entity_id === wallet.getId()){
+    if(json.wallet_id === wallet.getId()){
       return true;
     }else{
       return false;
@@ -108,11 +116,6 @@ class Token{
     }else{
       return false;
     }
-  }
-
-  async getUUID(){
-    const json = await this.toJSON();
-    return json.uuid;
   }
 
   async getTransactions(){
