@@ -239,4 +239,28 @@ describe("BaseRepository", () => {
     describe.skip("count support and and or", () => {
     });
   });
+
+  it("updateByIds", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on("query", (query) => {
+      expect(query.sql).match(/update.*where.*in/is);
+      query.response([{
+        count: "1",
+      }]);
+    });
+    await baseRepository.updateByIds({
+      column: "testColumn",
+    }, [1]);
+  });
+
+  it("batchCreate", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on("query", (query) => {
+      expect(query.sql).match(/(BEGIN|ROLLBACK|COMMIT|insert)/is);
+      query.response(["id"]);
+    });
+    await baseRepository.batchCreate([{a:"a", b:"b"},{a:"a",b:"b"}]);
+  });
 });

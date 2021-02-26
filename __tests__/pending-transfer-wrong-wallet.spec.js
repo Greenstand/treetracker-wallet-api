@@ -90,6 +90,7 @@ describe('Create and fail to accept a pending transfer with wrong wallet', () =>
   })
 
   it(`${seed.walletC.name} should not be able to accept the transfer (403)`, async () => {
+    expect(transferId).a("string");
     const res = await request(server)
       .post(`/transfers/${transferId}/accept`)
       .set('Content-Type', "application/json")

@@ -1,6 +1,8 @@
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
+const log = require("loglevel");
+const Joi = require("joi");
 
 class TokenService{
 
@@ -22,7 +24,7 @@ class TokenService{
     const tokensObject = await this.tokenRepository.getByFilter({
       wallet_id: wallet.getId(),
     });
-    const tokens = tokensObject.map(object => new Token(object));
+    const tokens = tokensObject.map(object => new Token(object, this._session));
     return tokens;
   }
 
@@ -98,15 +100,63 @@ class TokenService{
   }
 
   async getTokensByTransferId(transferId){
-    const result = await this.transactionRepository.getByFilter({
-      transfer_id: transferId,
-    });
+    const result = await this.tokenRepository.getByTransferId(transferId);
     const tokens = [];
     for(const r of result){
-      const token = await this.getById(r.token_id);
+      const token = new Token(r);
       tokens.push(token);
     }
     return tokens;
+  }
+
+  /*
+   * To replace token.completeTransfer, as a bulk operaction
+   */
+  async completeTransfer(tokens, transfer){
+    log.debug("Token complete transfer batch");
+    await this.tokenRepository.updateByIds({
+        transfer_pending: false,
+        transfer_pending_id: null,
+        wallet_id: transfer.destination_wallet_id,
+      },
+      tokens.map(token => token.getId()),
+    );
+    await this.transactionRepository.batchCreate(tokens.map(token => ({
+      token_id: token.getId(),
+      transfer_id: transfer.id,
+      source_wallet_id: transfer.source_wallet_id,
+      destination_wallet_id: transfer.destination_wallet_id,
+    })));
+  }
+
+  /*
+   * Batch operaction to pending transfer
+   */
+  async pendingTransfer(tokens, transfer){
+    Joi.assert(
+      transfer.id,
+      Joi.string().guid()
+    )
+
+    await this.tokenRepository.updateByIds({
+      transfer_pending: true,
+      transfer_pending_id: transfer.id,
+    }, 
+    tokens.map(token => token.getId()),
+    );
+  }
+
+  /*
+   * Batch way to cancel transfer
+   */
+  async cancelTransfer(tokens, transfer){
+    log.debug("Token cancel transfer");
+    await this.tokenRepository.updateByIds({
+        transfer_pending: false,
+        transfer_pending_id: null
+      },
+      tokens.map(token => token.getId()),
+    );
   }
 
 }
