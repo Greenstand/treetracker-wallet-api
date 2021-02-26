@@ -454,10 +454,12 @@ class Wallet{
    */
   async transfer(sender, receiver, tokens, claimBoolean){
 //    await this.checkDeduct(sender, receiver);
-    // check is claim is already set to true, if so, we cannot transfer this token.
-    if (claim === true) {
-      console.log("token is claimed, cannot be transfered");
+    // check if the tokens you want to transfer is claimed, i.e. not trasfferable
+    for (const token of tokens) {
+      if (token.claim == true) {
+        console.log("token is claimed, cannot be transfered");
       throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+      }
     }
 
     //check tokens belong to sender
@@ -551,7 +553,11 @@ class Wallet{
   async transferBundle(sender, receiver, bundleSize, claimBoolean){
     //check has enough tokens to sender
     const tokenCount = await this.tokenService.countTokenByWallet(sender);
-    if(tokenCount < bundleSize){
+    const notClaimedTokenCount = await this.tokenService.countNotClaimedTokenByWallet(sender);
+    // if(tokenCount < bundleSize){
+    //   throw new HttpError(403, `Do not have enough tokens to send`);
+    // }
+    if(notClaimedTokenCount < bundleSize){
       throw new HttpError(403, `Do not have enough tokens to send`);
     }
 

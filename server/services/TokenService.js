@@ -58,6 +58,17 @@ class TokenService{
     return result;
   }
 
+  /*
+   * Count how many not claimed tokens a wallet has
+   */
+  async countNotClaimedTokenByWallet(wallet) {
+    const result = await this.tokenRepository.countByFilter({
+      wallet_id: wallet.getId(),
+      claim: false
+    });
+    return result;
+  }
+
   async convertToResponse(transactionObject){
     const {
       token_id,
