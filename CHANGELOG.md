@@ -1,3 +1,18 @@
+# [1.9.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.8.0...v1.9.0) (2021-02-26)
+
+
+### Bug Fixes
+
+* bug in seed that is trying to insert 'type' column which has been deleted in the db schema ([5bd44ab](https://github.com/Greenstand/treetracker-wallet-api/commit/5bd44ab628e5ff563a610646593fb3c0c0a2c216))
+
+
+### Features
+
+* get back missing tests ([346161f](https://github.com/Greenstand/treetracker-wallet-api/commit/346161f0bbf31a1cab85c26efd02b2edad62e6be))
+* refactor getTokenByTransferId to using join SQL ([ba53211](https://github.com/Greenstand/treetracker-wallet-api/commit/ba5321143badb4a32b09d679a8cdaddada229abc))
+* replace cancelTransfer pendingTransfer with batch aproach ([6d12fa5](https://github.com/Greenstand/treetracker-wallet-api/commit/6d12fa5402286c50a2b8bafa1279939fc14746eb))
+* replace completTransfer with batch way ([d08092d](https://github.com/Greenstand/treetracker-wallet-api/commit/d08092d38110b401ecca3faaf681f4eb42a935a0))
+
 # [1.8.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.7.4...v1.8.0) (2021-02-20)
 
 
