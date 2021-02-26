@@ -4,6 +4,7 @@ const sinon = require("sinon");
 const {expect} = require("chai");
 const Wallet = require("../models/Wallet");
 const Session = require("../models/Session");
+const uuid = require('uuid');
 
 describe("WalletService", () => {
   let walletService;
@@ -14,15 +15,17 @@ describe("WalletService", () => {
   })
 
   it("getById", async () => {
-    sinon.stub(WalletRepository.prototype, "getById").resolves({id:1});
+    const walletId1 = uuid.v4();
+    sinon.stub(WalletRepository.prototype, "getById").resolves({id:walletId1});
     expect(walletService).instanceOf(WalletService);
-    const wallet = await walletService.getById(1);
+    const wallet = await walletService.getById(walletId1);
     expect(wallet).instanceOf(Wallet);
     WalletRepository.prototype.getById.restore();
   });
 
   it("getByName", async () => {
-    sinon.stub(WalletRepository.prototype, "getByName").resolves({id:1});
+    const walletId1 = uuid.v4();
+    sinon.stub(WalletRepository.prototype, "getByName").resolves({id:walletId1});
     expect(walletService).instanceOf(WalletService);
     const wallet = await walletService.getByName("test");
     expect(wallet).instanceOf(Wallet);

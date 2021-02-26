@@ -489,9 +489,7 @@ class Wallet{
         },
       });
       log.debug("now, deal with tokens");
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
       return transfer;
       
     }else{
@@ -510,9 +508,7 @@ class Wallet{
               tokens: tokensId,
             },
           });
-          for(let token of tokens){
-            await token.pendingTransfer(transfer);
-          }
+          await this.tokenService.pendingTransfer(tokens, transfer);
           return transfer;
         }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
@@ -529,9 +525,7 @@ class Wallet{
               tokens: tokensId,
             },
           });
-          for(let token of tokens){
-            await token.pendingTransfer(transfer);
-          }
+          await this.tokenService.pendingTransfer(tokens, transfer);
           return transfer;
         }else{
           //TODO
@@ -569,9 +563,7 @@ class Wallet{
       });
       log.debug("now, deal with tokens");
       const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize)
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
       return transfer;
     }else{
         if(hasControlOverSender){
@@ -692,15 +684,14 @@ class Wallet{
       if(tokens.length < transfer.parameters.bundle.bundleSize){
         throw new HttpError(403, "Do not have enough tokens");
       }
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       log.debug("transfer tokens");
       const tokens = await this.tokenService.getTokensByPendingTransferId(transferId);
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      expect(transfer).match({
+        source_wallet_id: expect.any(String),
+      });
+      await this.tokenService.completeTransfer(tokens, transfer);
     }
     return transferJson;
   }
@@ -731,9 +722,7 @@ class Wallet{
 
     //deal with tokens
     const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
-    for(let token of tokens){
-      await token.cancelTransfer(transfer);
-    }
+    await this.tokenService.cancelTransfer(tokens, transfer);
     return transferJson;
   }
 
@@ -760,9 +749,7 @@ class Wallet{
 
     //deal with tokens
     const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
-    for(let token of tokens){
-      await token.cancelTransfer(transfer);
-    }
+    await this.tokenService.cancelTransfer(tokens, transfer);
     return transferJson;
   }
 
@@ -794,15 +781,11 @@ class Wallet{
       const {source_wallet_id} = transfer;
       const senderWallet = new Wallet(source_wallet_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       log.debug("transfer tokens");
       const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
     }
     return transferJson;
   }
@@ -851,9 +834,7 @@ class Wallet{
       }
 
       //transfer
-      for(let token of tokens){
-        await token.completeTransfer(transfer);
-      }
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       throw new HttpError(403, "No need to specify tokens", true);
     }
