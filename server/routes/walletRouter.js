@@ -36,7 +36,6 @@ walletRouter.get('/',
       // Hide unnecessary fields 
       delete json.password;
       delete json.salt;
-      delete json.type;
       walletsJson.push(json);
     }
 
