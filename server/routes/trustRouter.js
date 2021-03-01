@@ -9,6 +9,8 @@ const helper = require("./utils");
 const Session = require("../models/Session");
 const TrustRelationship = require("../models/TrustRelationship");
 const Joi = require("joi");
+const HttpError = require("../utils/HttpError");
+
 
 trustRouter.get('/',
   helper.apiKeyHandler,
@@ -34,19 +36,39 @@ trustRouter.get('/',
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
-    const wallet = await walletService.getById(res.locals.wallet_id);
+    const loggedInWallet = await walletService.getById(res.locals.wallet_id);
+    let wallet;
+    if(req.query.wallet) {
+      // check to see if user passed in a wallet name or id (req queries are always default strings)
+      let walletQueryParam = Number.isNaN(parseInt(req.query.wallet)) ? req.query.wallet: parseInt(req.query.wallet);
+      const queryWallet = await walletService.getByIdOrName(walletQueryParam);
+      let isManaged = await loggedInWallet.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage, loggedInWallet, queryWallet);
+      let isYielded = await loggedInWallet.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield, queryWallet, loggedInWallet);
+      // check if we have right permissions to access the query wallet or the same as logged in wallet
+      if(isManaged || isYielded || loggedInWallet._id === queryWallet._id) {                
+        wallet = queryWallet;
+      }
+      else {
+        throw new HttpError(401, "Have no permission to access this wallet");
+      }
+    }
+    // otherwise if no passed in wallet query, then will just look at logged in wallet
+    wallet = loggedInWallet;
+    // get all trust relationships of the logged in wallet (where logged in wallet is the actor/target/originator)
     const trust_relationships = await wallet.getTrustRelationships(
       req.query.state,
       req.query.type,
       req.query.request_type,
     );
     const subWallets = await wallet.getSubWallets();
+    // get all trust relationships of wallets managed by logged in wallet 
     for(const sw of subWallets){
       const trustRelationships = await sw.getTrustRelationships(
         req.query.state,
         req.query.type,
         req.query.request_type,
       );
+      // avoid duplicates (where subwallet trust ID is the same as one of logged in wallet's trust ID)
       for(tr of trustRelationships){
         if(trust_relationships.every(e => e.id !== tr.id)){
           trust_relationships.push(tr);
