@@ -274,9 +274,9 @@ describe("Wallet", () => {
         target_wallet_id: wallet.getId(),
       }]);
       const result = await wallet.hasTrust(
-        TrustRelationship.ENTITY_TRUST_TYPE.send,
-        wallet,
+        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive,
         wallet2,
+        wallet,
       );
       expect(result).eq(true);
       fn1.restore();
