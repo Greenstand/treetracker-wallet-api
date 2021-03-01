@@ -33,6 +33,10 @@ walletRouter.get('/',
     for (const wallet of subWallets) {
       const json = await wallet.toJSON();
       json.tokens_in_wallet = await tokenService.countTokenByWallet(wallet); 
+      // Hide unnecessary fields 
+      delete json.password;
+      delete json.salt;
+      delete json.type;
       walletsJson.push(json);
     }
 
@@ -48,7 +52,7 @@ walletRouter.get('/',
   })
 );
 
-// TO DO: Add below route to yaml 
+// Don't need this route anymore?
 
 walletRouter.get('/:wallet_id/trust_relationships', 
   helper.apiKeyHandler,
