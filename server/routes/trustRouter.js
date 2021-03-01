@@ -19,6 +19,7 @@ trustRouter.get('/',
     Joi.assert(
       req.query,
       Joi.object({
+        wallet: Joi.string(),
         state: Joi.string(),
         type: Joi.string(),
         request_type: Joi.string(),
@@ -40,8 +41,7 @@ trustRouter.get('/',
     let wallet;
     if(req.query.wallet) {
       // check to see if user passed in a wallet name or id (req queries are always default strings)
-      let walletQueryParam = Number.isNaN(parseInt(req.query.wallet)) ? req.query.wallet: parseInt(req.query.wallet);
-      const queryWallet = await walletService.getByIdOrName(walletQueryParam);
+      const queryWallet = await walletService.getByIdOrName(req.query.wallet);
       let isManaged = await loggedInWallet.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage, loggedInWallet, queryWallet);
       let isYielded = await loggedInWallet.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield, queryWallet, loggedInWallet);
       // check if we have right permissions to access the query wallet or the same as logged in wallet
@@ -49,7 +49,7 @@ trustRouter.get('/',
         wallet = queryWallet;
       }
       else {
-        throw new HttpError(401, "Have no permission to access this wallet");
+        throw new HttpError(401, "Do not have permission to access this wallet");
       }
     }
     // otherwise if no passed in wallet query, then will just look at logged in wallet

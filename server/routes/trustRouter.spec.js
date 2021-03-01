@@ -137,6 +137,22 @@ describe("trustRouter", () => {
         TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
       )
     });
+
+    it("wallet param filter working for own logged in wallet", async () => {
+      const wallet = new Wallet(uuid.v4())
+      const wallet2 = new Wallet(uuid.v4())
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves({
+        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
+        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
+        actor_wallet_id: wallet.getId(),
+        target_wallet_id: wallet2.getId(),
+      })
+      const res = await request(app)
+        .get(`/?wallet=${wallet.getId()}`)
+        expect(res).property("statusCode").eq(200);
+        expect(res.body.trust_relationships).lengthOf(1);
+        expect(fn).calledWith(wallet.getId());
+    });
     
     //TODO 
     it.skip("wrong state string should throw 422", () => {
