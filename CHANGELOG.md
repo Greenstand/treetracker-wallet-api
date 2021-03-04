@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.0...v1.10.1) (2021-03-04)
+
+
+### Bug Fixes
+
+* read schema from database connection secret for now ([008b2a2](https://github.com/Greenstand/treetracker-wallet-api/commit/008b2a23c0cb76f2e86f8a9ed4d4864f0fcd5c4b))
+
 # [1.10.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.9.0...v1.10.0) (2021-03-04)
 
 
