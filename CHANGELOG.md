@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.9.0...v1.10.0) (2021-03-04)
+
+
+### Features
+
+* add some unique constraints ([ba9aa65](https://github.com/Greenstand/treetracker-wallet-api/commit/ba9aa65fcad9cb3c1b3e2340a278c6e3fb776602))
+
 # [1.9.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.8.0...v1.9.0) (2021-02-26)
 
 
