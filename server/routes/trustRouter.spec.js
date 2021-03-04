@@ -139,19 +139,18 @@ describe("trustRouter", () => {
     });
 
     it("wallet param filter working for own logged in wallet", async () => {
-      const wallet = new Wallet(uuid.v4())
-      const wallet2 = new Wallet(uuid.v4())
-      const fn = sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves({
-        request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage,
-        type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
-        actor_wallet_id: wallet.getId(),
-        target_wallet_id: wallet2.getId(),
-      })
+      sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(walletId));
+      sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:trustId});
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{}]);
       const res = await request(app)
-        .get(`/?wallet=${wallet.getId()}`)
+        .get(`/?wallet=${walletId}`);
         expect(res).property("statusCode").eq(200);
         expect(res.body.trust_relationships).lengthOf(1);
-        expect(fn).calledWith(wallet.getId());
+        expect(fn).calledWith(
+          TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+          TrustRelationship.ENTITY_TRUST_TYPE.manage,
+          TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage
+        );
     });
     
     //TODO 
