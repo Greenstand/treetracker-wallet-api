@@ -87,7 +87,7 @@ describe("transferRouter", () => {
     .onCall(9).resolves({id:token9Id, state:Transfer.STATE.completed});
 
     const res = await request(app)
-      .get("/?limit=3&wallet=testWallet&start=5");
+      .get("/?limit=3&wallet=testWallet&offset=4");
     expect(res.body.transfers).lengthOf(3);
     // console.log("HERE2");
     // console.log(res.body.transfers);
@@ -361,7 +361,7 @@ describe("transferRouter", () => {
     });
   });
 
-  describe("GET /{transfer_id}/tokens start and limit working", () => {
+  describe("GET /{transfer_id}/tokens offset and limit working", () => {
 
     const transferId = uuid.v4();
     const tokenId = uuid.v4();
@@ -386,11 +386,11 @@ describe("transferRouter", () => {
       expect(res.body).property("tokens").lengthOf(1);
     });
 
-    it("limit and start working successfully", async () => {
+    it("limit and offset working successfully", async () => {
       const fn = sinon.stub(WalletService.prototype, "getById").resolves(authenticatedWallet);
       const fn2 = sinon.stub(Wallet.prototype, "getTokensByTransferId").resolves([token, token2, token3, token4]);
       const res = await request(app)
-        .get(`/${transferId}/tokens?limit=3&start=2`);
+        .get(`/${transferId}/tokens?limit=3&offset=1`);
       expect(fn).calledWith(authenticatedWallet.getId());
       expect(fn2).calledWith(transferId);
       expect(res).property("statusCode").eq(200);

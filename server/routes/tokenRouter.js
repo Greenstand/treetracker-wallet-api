@@ -42,12 +42,12 @@ tokenRouter.get('/',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        limit: Joi.integer().required().max(10000),
+        offset: Joi.integer().min(0),
         wallet: Joi.string(),
       })
     );
-    const {limit, wallet, start} = req.query;
+    const {limit, wallet, offset} = req.query;
     const session = new Session();
     const tokenService = new TokenService(session);
     const walletService = new WalletService(session);
@@ -65,7 +65,7 @@ tokenRouter.get('/',
     }
 
     //filter tokens by query, TODO optimization required
-    tokens = tokens.slice(start? start-1:0, limit);
+    tokens = tokens.slice(offset? offset:0, limit);
     const tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();
@@ -85,13 +85,13 @@ tokenRouter.get('/:id/transactions',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        limit: Joi.integer().required().max(10000),
+        offset: Joi.integer().min(0),
         id: Joi.string().guid(), 
         transactions: Joi.string(),
       })
     );
-    const {limit, start} = req.query;
+    const {limit, offset} = req.query;
 
     const session = new Session();
     const {id} = req.params;
@@ -117,9 +117,9 @@ tokenRouter.get('/:id/transactions',
     }
 
     //filter transaction json by query
-    let numStart = parseInt(start);
+    let numStart = parseInt(offset);
     let numLimit = parseInt(limit);
-    let numBegin = numStart?numStart-1:0;
+    let numBegin = numStart?numStart:0;
     let numEnd=numBegin+numLimit;
     response = response.slice(numBegin, numEnd);
     // console.log(numBegin);

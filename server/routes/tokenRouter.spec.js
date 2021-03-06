@@ -70,7 +70,7 @@ describe("tokenRouter", () => {
       sinon.stub(TokenService.prototype, "getByOwner").resolves([token, token2]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const res = await request(app)
-        .get("/?limit=10&start=2");
+        .get("/?limit=10&offset=1");
       expect(res).property("statusCode").eq(200);
       expect(res.body.tokens).lengthOf(1);
       expect(res.body.tokens[0]).property("id").eq(token2Id);
@@ -198,7 +198,7 @@ describe("tokenRouter", () => {
       });
       sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
       const res = await request(app)
-        .get(`/${tokenId}/transactions?limit=3&start=5`);
+        .get(`/${tokenId}/transactions?limit=3&offset=4`);
       expect(res).property("statusCode").eq(200);
       expect(res.body.history).lengthOf(3);
       expect(res.body.history[0]).property("sender_wallet").eq("number5");

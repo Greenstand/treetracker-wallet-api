@@ -74,7 +74,7 @@ describe("walletRouter", ()=> {
       sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(10);
       const fn = sinon.stub(Wallet.prototype, "getSubWallets").resolves([ mockWallet2, mockWallet3, mockWallet4]);
       const res = await request(app)
-        .get('/?limit=3&start=2');
+        .get('/?limit=3&offset=1');
       expect(res).property("statusCode").eq(200);
       expect(res.body.wallets).lengthOf(3);
       console.log(authenticatedWallet.getId());

@@ -271,11 +271,11 @@ transferRouter.get("/",
           Joi.string(),
           Joi.number().min(4).max(32)
         ),
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer()
+        limit: Joi.integer().required().max(10000),
+        offset: Joi.integer()
       })
     );
-    const {state, wallet, limit, start} = req.query;
+    const {state, wallet, limit, offset} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
@@ -293,9 +293,9 @@ transferRouter.get("/",
     }
 
     //filter tokensJson by query
-    let numStart = parseInt(start);
+    let numStart = parseInt(offset);
     let numLimit = parseInt(limit);
-    let numBegin = numStart?numStart-1:0;
+    let numBegin = numStart?offset:0;
     let numEnd=numBegin+numLimit;
     json = json.slice(numBegin, numEnd);
     res.status(200).json({transfers: json});
@@ -336,11 +336,11 @@ transferRouter.get('/:transfer_id/tokens',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        limit: Joi.integer().required().max(10000),
+        offset: Joi.integer(),
       })
     );
-    const {limit, start} = req.query;
+    const {limit, offset} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
@@ -351,7 +351,7 @@ transferRouter.get('/:transfer_id/tokens',
       tokensJson.push(json);
     }
     //filter tokensJson by query
-    let numStart = parseInt(start);
+    let numStart = parseInt(offset);
     let numLimit = parseInt(limit);
     let numBegin = numStart?numStart-1:0;
     let numEnd=numBegin+numLimit;
