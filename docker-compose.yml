@@ -1,0 +1,17 @@
+version: '3.1'
+
+services: 
+  db: 
+    image: postgres:9-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports: 
+      - 5432:5432
+    volumes: 
+      - postgres_volume:/var/lib/postgresql
+      - ./init-db:/docker-entrypoint-initdb.d/init-db.sql
+
+volumes:
+  postgres_volume: {}
