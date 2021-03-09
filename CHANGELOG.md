@@ -1,3 +1,10 @@
+## [1.10.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.1...v1.10.2) (2021-03-09)
+
+
+### Bug Fixes
+
+* remove remove old remote logs env var from deployment ([da5bf61](https://github.com/Greenstand/treetracker-wallet-api/commit/da5bf61f2a6183fab503e90383f4ed0d14f5a997))
+
 ## [1.10.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.0...v1.10.1) (2021-03-04)
 
 
