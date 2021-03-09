@@ -56,10 +56,10 @@ your .env file to have a line
 ```
 DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user
 ```
-3. run ```docker-compose``` up to run the database (or ```docker-compose up -d``` to run detached)
+3. run ```docker-compose up ``` to run the database (or ```docker-compose up -d``` to run detached)
 4. then run migrations 
 ```
-../node_modules/db-migrate/bin/db-migrate --env dev up
+./node_modules/db-migrate/bin/db-migrate --env dev up
 ``` 
 5. that's it, your db should be running
 
@@ -107,13 +107,14 @@ DATABASE_SCHEMA=wallets
 PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
 PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
 NODE_LOG_LEVEL=trace
+```
 
 If you are using the postgres user:
 
 ```
 DATABASE_URL="postgresql://postgres@localhost:5432/[database_name]";
-
 ```
+
 See the .env.example file for the format and structure. 
 
 Here are some resources to get started on local database set up and migration:
