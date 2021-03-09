@@ -1,3 +1,11 @@
+## [1.10.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.2...v1.10.3) (2021-03-09)
+
+
+### Bug Fixes
+
+* fix link to capture data ([52dc427](https://github.com/Greenstand/treetracker-wallet-api/commit/52dc4270ced6b49a0002327edc6be9776e410124))
+* require 12.x node version ([d784b6a](https://github.com/Greenstand/treetracker-wallet-api/commit/d784b6a3072695ef80a53102168ebd950daaeb90))
+
 ## [1.10.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.1...v1.10.2) (2021-03-09)
 
 
