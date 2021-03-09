@@ -82,5 +82,8 @@
   "bugs": {
     "url": "https://github.com/Greenstand/treetracker-wallet-api/issues"
   },
-  "homepage": "https://github.com/Greenstand/treetracker-wallet-api#readme"
+  "homepage": "https://github.com/Greenstand/treetracker-wallet-api#readme",
+  "engines": {
+    "node": ">= 12 < 13"
+  }
 }
