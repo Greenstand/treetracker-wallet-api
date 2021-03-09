@@ -35,6 +35,38 @@ cat jwtRS256.key.pub
 
 ### Database Setup
 
+You can use docker-compose, to start a database. To do that:
+1. download and install docker
+2. set your /database/database.json file to be: 
+```
+{
+  "dev": {
+    "driver": "pg",
+    "user" : "wallet_user",
+    "password" : "secret",
+    "database" : "wallet_test",
+    "host" : "localhost",
+    "port" : "5432",
+    "schema" : "wallets"
+  }
+}
+```
+your .env file to have a line
+
+```
+DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user
+```
+3. run ```docker-compose``` up to run the database (or ```docker-compose up -d``` to run detached)
+4. then run migrations 
+```
+../node_modules/db-migrate/bin/db-migrate --env dev up
+``` 
+5. that's it, your db should be running
+
+Don't forget to set PUBLIC_KEY and PRIVATE_KEY as described below.
+
+If you want to run db without docker:
+
 To connect to the database, we need a user and a database. We can either use the default `postgres` user, or create a new user. We then need to create a database associated with that user.
 
 To create a new user (role):

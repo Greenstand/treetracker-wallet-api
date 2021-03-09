@@ -5,13 +5,13 @@ services:
     image: postgres:9-alpine
     restart: always
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=wallet_user
+      - POSTGRES_PASSWORD=secret
     ports: 
       - 5432:5432
     volumes: 
       - postgres_volume:/var/lib/postgresql
-      - ./init-db:/docker-entrypoint-initdb.d/init-db.sql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
 volumes:
   postgres_volume: {}
