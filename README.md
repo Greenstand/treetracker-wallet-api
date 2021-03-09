@@ -65,7 +65,7 @@ DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user
 
 Don't forget to set PUBLIC_KEY and PRIVATE_KEY as described below.
 
-If you want to run db without docker:
+#### If you want to run db without docker:
 
 To connect to the database, we need a user and a database. We can either use the default `postgres` user, or create a new user. We then need to create a database associated with that user.
 
@@ -108,10 +108,6 @@ PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY---
 PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
 NODE_LOG_LEVEL=trace
 
-
-```
-Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files.  **Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here.
-
 If you are using the postgres user:
 
 ```
@@ -153,6 +149,17 @@ If you have not installed db-migrate globally, while in the database folder, you
 ```
 
 See here to learn more about db-migrate: https://db-migrate.readthedocs.io/en/latest/
+
+### Setting up env variables 
+
+in your .env file you have (you can look at env.example)
+```
+...
+PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
+PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
+...
+```
+Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files.  **Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here.
 
 ## Troubleshooting 
 If you run into issue: 
