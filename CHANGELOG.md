@@ -1,3 +1,10 @@
+## [1.10.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.3...v1.10.4) (2021-03-10)
+
+
+### Bug Fixes
+
+* input variable spec was wrong ([ad20106](https://github.com/Greenstand/treetracker-wallet-api/commit/ad20106ebee88d68f7bb221c7e785dc7e7956c6e))
+
 ## [1.10.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.2...v1.10.3) (2021-03-09)
 
 
