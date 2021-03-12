@@ -40,13 +40,14 @@ walletRouter.get('/',
     let numLimit = parseInt(limit);
     let numBegin = numStart?numStart-1:0;
     let numEnd=numBegin+numLimit;
-    walletsJson = walletsJson.slice(numBegin, numEnd);
-
+    walletsJson = walletsJson.slice(numBegin, numEnd)
+    walletsJson.map(wallet => helper.omitPrivateFields(wallet))
     res.status(200).json({
       wallets: walletsJson
     });
   })
 );
+
 
 // TO DO: Add below route to yaml 
 
