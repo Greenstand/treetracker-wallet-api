@@ -44,7 +44,7 @@ You can use docker-compose, to start a database. To do that:
     "driver": "pg",
     "user" : "wallet_user",
     "password" : "secret",
-    "database" : "wallet_test",
+    "database" : "wallet_user",
     "host" : "localhost",
     "port" : "5432",
     "schema" : "wallets"
