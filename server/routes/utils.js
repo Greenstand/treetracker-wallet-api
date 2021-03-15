@@ -67,11 +67,3 @@ exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
   next();
 });
 
-exports.omitPrivateFields = (object) => {
-  const privateFields = ['password', 'type', 'salt']
-  privateFields.forEach(field => {
-      delete object[field]
-  })
-  return object
-}
-

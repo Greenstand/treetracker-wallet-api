@@ -5,6 +5,7 @@ const TokenService = require("../services/TokenService");
 const TrustService = require("../services/TrustService");
 const Joi = require("joi");
 const Session = require("../models/Session");
+const _ = require('lodash')
 
 const walletRouter = express.Router();
 
@@ -35,15 +36,15 @@ walletRouter.get('/',
       json.tokens_in_wallet = await tokenService.countTokenByWallet(wallet); 
       walletsJson.push(json);
     }
-
+    
     let numStart = parseInt(start);
     let numLimit = parseInt(limit);
     let numBegin = numStart?numStart-1:0;
     let numEnd=numBegin+numLimit;
     walletsJson = walletsJson.slice(numBegin, numEnd)
-    walletsJson.map(wallet => helper.omitPrivateFields(wallet))
+    
     res.status(200).json({
-      wallets: walletsJson
+      wallets: walletsJson.map(wallet => _.omit(wallet, ['password', 'type', 'salt']))
     });
   })
 );
