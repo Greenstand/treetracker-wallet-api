@@ -42,7 +42,7 @@ tokenRouter.get('/',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().required(),
+        limit: Joi.number().min(1).max(1000).required(),
         start: Joi.number().min(1).max(10000).integer(),
         wallet: Joi.string(),
       })
@@ -53,19 +53,21 @@ tokenRouter.get('/',
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     let tokens = [];
+    
     if(wallet){
       const walletInstance = await walletService.getByName(wallet);
       const isSub = await walletLogin.hasControlOver(walletInstance);
       if(!isSub){
-        throw new HttpError(403, "Wallet do not belongs to wallet logged in");
+        throw new HttpError(403, "Wallet does not belong to wallet logged in");
       }
-      tokens = await tokenService.getByOwner(walletInstance);
+      tokens = await tokenService.getByOwner(walletInstance, limit);
     }else{
-      tokens = await tokenService.getByOwner(walletLogin);
+      tokens = await tokenService.getByOwner(walletLogin, limit);
     }
 
     //filter tokens by query, TODO optimization required
-    tokens = tokens.slice(start? start-1:0, limit);
+    tokens = tokens.slice(start? start-1:0, limit); // TODO remove
+
     const tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();
