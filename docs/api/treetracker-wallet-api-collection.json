@@ -2864,7 +2864,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"wallet\": \"Emilia_Bernhard18\",\n    \"password\": \"7hYvU9NdySkjPqD\"\n}",
+					"raw": "{\n    \"wallet\": \"{{wallet}}\",\n    \"password\": \"{{password}}\"\n}",
 					"options": {
 						"raw": {}
 					}
