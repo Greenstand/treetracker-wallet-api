@@ -1,3 +1,26 @@
+# [1.11.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.4...v1.11.0) (2021-03-17)
+
+
+### Features
+
+* add docker compose file and initial db ([929b65e](https://github.com/Greenstand/treetracker-wallet-api/commit/929b65e9f0c3ee6f1d83d29a2287418d81f73f8b))
+* update docker db setup ([23bc910](https://github.com/Greenstand/treetracker-wallet-api/commit/23bc910520288c0007f47cd293a596b1ade188a5))
+
+## [1.10.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.3...v1.10.4) (2021-03-10)
+
+
+### Bug Fixes
+
+* input variable spec was wrong ([ad20106](https://github.com/Greenstand/treetracker-wallet-api/commit/ad20106ebee88d68f7bb221c7e785dc7e7956c6e))
+
+## [1.10.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.2...v1.10.3) (2021-03-09)
+
+
+### Bug Fixes
+
+* fix link to capture data ([52dc427](https://github.com/Greenstand/treetracker-wallet-api/commit/52dc4270ced6b49a0002327edc6be9776e410124))
+* require 12.x node version ([d784b6a](https://github.com/Greenstand/treetracker-wallet-api/commit/d784b6a3072695ef80a53102168ebd950daaeb90))
+
 ## [1.10.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.1...v1.10.2) (2021-03-09)
 
 

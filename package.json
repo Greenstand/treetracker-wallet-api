@@ -1,6 +1,6 @@
 {
   "name": "treetracker",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "description": "https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest",
   "private": true,
   "main": "server/server.js",
@@ -22,7 +22,8 @@
     "test-watch": "NODE_ENV=test NODE_LOG_LEVEL=info mocha -r dotenv/config dotenv_config_path=.env.test --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
     "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/*.spec.js'",
     "prettier-fix": "prettier ./ --write",
-    "db-migrate-ci": "cd database; db-migrate up"
+    "db-migrate-ci": "cd database; db-migrate up",
+    "start-db": "docker-compose up"
   },
   "keywords": [
     "ecology"
