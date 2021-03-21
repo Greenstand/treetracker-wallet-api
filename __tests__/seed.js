@@ -147,6 +147,15 @@ async function seed() {
     .insert(tokenB);
 }
 
+async function addTokenToWallet(walletId){
+  return await knex('token')
+  .insert({
+    id: uuid.v4(),
+    capture_id: uuid.v4(),
+    wallet_id: walletId,
+  }, ['id']);
+}
+
 async function clear() {
   log.debug('clear tables');
   await knex('api_key').del();
@@ -168,4 +177,5 @@ module.exports = {
   token,
   tokenB,
   captureB,
+  addTokenToWallet
 };

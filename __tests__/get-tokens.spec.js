@@ -1,26 +1,23 @@
 /*
  * The integration test to test the whole business, with DB
  */
-require('dotenv').config()
+require('dotenv').config();
 const request = require('supertest');
-const server = require("../server/app");
+const server = require('../server/app');
 const { expect } = require('chai');
 const seed = require('./seed');
-const log = require('loglevel');
-const Transfer = require("../server/models/Transfer");
-const TrustRelationship = require("../server/models/TrustRelationship");
-const sinon = require("sinon");
-const chai = require("chai");
+const sinon = require('sinon');
+const chai = require('chai');
 chai.use(require('chai-uuid'));
 
 describe('GET tokens', () => {
   let bearerToken;
   let bearerTokenB;
 
-  before( async () => {
-
+  beforeEach(async () => {
     await seed.clear();
     await seed.seed();
+    sinon.restore();
 
     {
       // Authorizes before each of the follow tests
@@ -51,14 +48,10 @@ describe('GET tokens', () => {
     }
   });
 
-  beforeEach(async () => {
-    sinon.restore();
-  })
-
   it(`walletA, GET /tokens/${seed.token.id} Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.token.id}`)
-      .set('treetracker-api-key',seed.apiKey)
+      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('id').eq(seed.token.id);
@@ -67,7 +60,7 @@ describe('GET tokens', () => {
   it(`walletA, GET /tokens/${seed.tokenB.id} Should be forbidden`, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.tokenB.id}`)
-      .set('treetracker-api-key',seed.apiKey)
+      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 401);
   });
@@ -75,7 +68,7 @@ describe('GET tokens', () => {
   it(`walletA, GET /tokens Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens?limit=10`)
-      .set('treetracker-api-key',seed.apiKey)
+      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.tokens[0]).to.have.property('id').eq(seed.token.id);
@@ -84,7 +77,7 @@ describe('GET tokens', () => {
   it(`walletB, GET /tokens Should be able to get a token, which actually belongs to walletC`, async () => {
     const res = await request(server)
       .get(`/tokens?limit=10&wallet=walletC`)
-      .set('treetracker-api-key',seed.apiKey)
+      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.tokens[0]).to.have.property('id').eq(seed.tokenB.id);
@@ -93,9 +86,32 @@ describe('GET tokens', () => {
   it(`walletB, GET /tokens/${seed.tokenB.id} Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.tokenB.id}`)
-      .set('treetracker-api-key',seed.apiKey)
+      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('id').eq(seed.tokenB.id);
+  });
+  it(`GET /tokens/ should return correct limit`, async () => {
+    await seed.addTokenToWallet(seed.wallet.id);
+    const res = await request(server)
+      .get(`/tokens?limit=1`)
+      .set('treetracker-api-key', seed.apiKey)
+      .set('Authorization', `Bearer ${bearerToken}`);
+
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body.tokens.length).to.eq(1);
+    expect(res.body.tokens[0].id).eq(seed.token.id);
+  });
+
+  it(`GET /tokens/ should return correct offset`, async () => {
+    const insertedId = (await seed.addTokenToWallet(seed.wallet.id))[0].id;
+    const res = await request(server)
+      .get(`/tokens?start=1&limit=10`)
+      .set('treetracker-api-key', seed.apiKey)
+      .set('Authorization', `Bearer ${bearerToken}`);
+
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body.tokens.length).to.eq(1);
+    expect(res.body.tokens[0].id).eq(insertedId);
   });
 });
