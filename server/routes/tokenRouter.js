@@ -64,9 +64,6 @@ tokenRouter.get('/',
     }else{
       tokens = await tokenService.getByOwner(walletLogin, limit, start);
     }
-    console.log(tokens)
-    //filter tokens by query, TODO optimization required
-    // tokens = tokens.slice(start? start-1:0, limit); // TODO remove
 
     const tokensJson = [];
     for(const token of tokens){
