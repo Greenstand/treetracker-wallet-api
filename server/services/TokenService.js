@@ -20,10 +20,10 @@ class TokenService{
     return token;
   }
 
-  async getByOwner(wallet, limit){
+  async getByOwner(wallet, limit, offset){
     const tokensObject = await this.tokenRepository.getByFilter({
       wallet_id: wallet.getId(),
-    }, limit);
+    }, {limit, offset});
     return tokensObject.map(object => new Token(object, this._session));
   }
 

@@ -36,7 +36,7 @@ describe("BaseRepository", () => {
   it.skip("getById can not find result, should throw 404", () => {
   });
 
-  describe.only("getByFilter", () => {
+  describe("getByFilter", () => {
 
     it("getByFilter", async () => {
       tracker.uninstall();
@@ -66,6 +66,22 @@ describe("BaseRepository", () => {
       });
       expect(result).lengthOf(1);
       expect(result[0]).property("id").eq(1);
+    });
+
+    it("getByFilter with offset", async () => {
+      tracker.uninstall();
+      tracker.install();
+      tracker.on("query", (query) => {
+        expect(query.sql).match(/select.*testTable.*offset.*/);
+        query.response([{id:2}]);
+      });
+      const result = await baseRepository.getByFilter({
+        name: "testName",
+      },{
+        offset: 1,
+      });
+      expect(result).lengthOf(1);
+      expect(result[0]).property("id").eq(2);
     });
 
     describe("'and' 'or' phrase", () => {

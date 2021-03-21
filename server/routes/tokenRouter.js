@@ -42,8 +42,8 @@ tokenRouter.get('/',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().min(1).max(1000).required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        limit: Joi.number().min(1).max(1000).required().default(1000),
+        start: Joi.number().min(0).max(1000).integer().default(0),
         wallet: Joi.string(),
       })
     );
@@ -60,13 +60,13 @@ tokenRouter.get('/',
       if(!isSub){
         throw new HttpError(403, "Wallet does not belong to wallet logged in");
       }
-      tokens = await tokenService.getByOwner(walletInstance, limit);
+      tokens = await tokenService.getByOwner(walletInstance, limit, start);
     }else{
-      tokens = await tokenService.getByOwner(walletLogin, limit);
+      tokens = await tokenService.getByOwner(walletLogin, limit, start);
     }
-
+    console.log(tokens)
     //filter tokens by query, TODO optimization required
-    tokens = tokens.slice(start? start-1:0, limit); // TODO remove
+    // tokens = tokens.slice(start? start-1:0, limit); // TODO remove
 
     const tokensJson = [];
     for(const token of tokens){

@@ -69,10 +69,10 @@ describe("tokenRouter", () => {
     });
 
     it("successfully, default wallet", async () => {
-      sinon.stub(TokenService.prototype, "getByOwner").resolves([token, token2]);
+      sinon.stub(TokenService.prototype, "getByOwner").resolves([token2]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const res = await request(app)
-        .get("/?limit=10&start=2");
+        .get("/?limit=10&start=1");
       expect(res).property("statusCode").eq(200);
       expect(res.body.tokens).lengthOf(1);
       expect(res.body.tokens[0]).property("id").eq(token2Id);
