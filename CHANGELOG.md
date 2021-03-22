@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.11.0...v1.11.1) (2021-03-22)
+
+
+### Bug Fixes
+
+* omit private fields in wallet api ([d078c20](https://github.com/Greenstand/treetracker-wallet-api/commit/d078c20216ff2b0fe18da5d3ef3ffab178a30d18))
+
 # [1.11.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.4...v1.11.0) (2021-03-17)
 
 
