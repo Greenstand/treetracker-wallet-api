@@ -271,8 +271,8 @@ transferRouter.get("/",
           Joi.string(),
           Joi.number().min(4).max(32)
         ),
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer()
+        limit: Joi.number().min(1).max(1000).required(),
+        start: Joi.number().min(0).max(1000).integer().default(0)
       })
     );
     const {state, wallet, limit, start} = req.query;
@@ -283,8 +283,7 @@ transferRouter.get("/",
     if(wallet){
       walletTransfer = await walletService.getByIdOrName(wallet);
     }
-    
-    const result = await walletTransfer.getTransfers(state);
+    const result = await walletTransfer.getTransfers(state, start, limit);
     const transferService = new TransferService(session);
     let json = [];
     for(let t of result){
@@ -292,12 +291,6 @@ transferRouter.get("/",
       json.push(j);
     }
 
-    //filter tokensJson by query
-    let numStart = parseInt(start);
-    let numLimit = parseInt(limit);
-    let numBegin = numStart?numStart-1:0;
-    let numEnd=numBegin+numLimit;
-    json = json.slice(numBegin, numEnd);
     res.status(200).json({transfers: json});
   })
 );

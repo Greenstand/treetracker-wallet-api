@@ -844,7 +844,7 @@ class Wallet{
   /*
    * Get all transfers belongs to me
    */
-  async getTransfers(state, wallet){
+  async getTransfers(state, wallet, offset = 0, limit){
     const filter = {
       and: [],
     }
@@ -871,8 +871,7 @@ class Wallet{
         }]
       });
     }
-    const result = await this.transferRepository.getByFilter(filter);
-    return result;
+    return await this.transferRepository.getByFilter(filter, {offset, limit} );
   }
 
   async getTransferById(id){
