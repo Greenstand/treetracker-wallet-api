@@ -94,9 +94,6 @@ class BaseRepository{
 
   async create(object){
     const result = await this._session.getDB()(this._tableName).insert(object).returning("*");
-    expect(result).match([{
-      id: expect.anything(),
-    }]);
     return result[0];
   }
 

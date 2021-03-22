@@ -17,7 +17,7 @@ class TransferRepository extends BaseRepository{
     object.active = true;
     const result = await super.create(object);
     expect(result).match({
-      id: expect.any(String),
+      id: expect.anything(),
     });
     return result;
   }

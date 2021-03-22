@@ -50,12 +50,12 @@ describe("TransferRepository", () => {
       [
         function firstQuery() {
           expect(query.sql).match(/select.*transfer.*/);
-          query.response({id:1});
+          query.response({id:uuid.v4()});
         },
       ][step - 1]();
     });
     const result = await transferRepository.getById(1);
-    expect(result).property("id").eq(1);
+    expect(result).property("id").a("string");
   });
 
   it("getPendingTransfers", async () => {
