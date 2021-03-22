@@ -59,39 +59,25 @@ describe("transferRouter", () => {
       .stub(WalletService.prototype, 'getByIdOrName')
       .resolves(new Wallet(uuid.v4()));
 
-    sinon.stub(Wallet.prototype, 'getTransfers').resolves(
-      [{},{},{},{},{},{},{},{},{},{}].map((_,i) => ({id:uuid.v4(), state:Transfer.STATE.completed})
+    const getTransfersStub = sinon.stub(Wallet.prototype, 'getTransfers')
+    getTransfersStub.resolves(
+      [{},{},{}].map((_,i) => ({id:uuid.v4(), state:Transfer.STATE.completed})
       ));
 
     const token0Id = uuid.v4();
     const token1Id = uuid.v4();
     const token2Id = uuid.v4();
-    const token3Id = uuid.v4();
-    const token4Id = uuid.v4();
-    const token5Id = uuid.v4();
-    const token6Id = uuid.v4();
-    const token7Id = uuid.v4();
-    const token8Id = uuid.v4();
-    const token9Id = uuid.v4();
 
     sinon.stub(TransferService.prototype, "convertToResponse")
     .onCall(0).resolves({id:token0Id, state:Transfer.STATE.completed})
     .onCall(1).resolves({id:token1Id, state:Transfer.STATE.completed})
-    .onCall(2).resolves({id:token2Id, state:Transfer.STATE.completed})
-    .onCall(3).resolves({id:token3Id, state:Transfer.STATE.completed})
-    .onCall(4).resolves({id:token4Id, state:Transfer.STATE.completed})
-    .onCall(5).resolves({id:token5Id, state:Transfer.STATE.completed})
-    .onCall(6).resolves({id:token6Id, state:Transfer.STATE.completed})
-    .onCall(7).resolves({id:token7Id, state:Transfer.STATE.completed})
-    .onCall(8).resolves({id:token8Id, state:Transfer.STATE.completed})
-    .onCall(9).resolves({id:token9Id, state:Transfer.STATE.completed});
+    .onCall(2).resolves({id:token2Id, state:Transfer.STATE.completed});
 
     const res = await request(app)
       .get("/?limit=3&wallet=testWallet&start=5");
     expect(res.body.transfers).lengthOf(3);
-    // console.log("HERE2");
-    // console.log(res.body.transfers);
-    expect(res.body.transfers.map(t=>(t.id))).to.deep.equal([token4Id, token5Id, token6Id]);
+    expect(getTransfersStub.getCall(0).args[0]).to.deep.equal(undefined, 5, 3)
+    expect(res.body.transfers.map(t=>(t.id))).to.deep.equal([token0Id, token1Id, token2Id]);
   });
 
   it("missing tokens should throw error", async () => {
