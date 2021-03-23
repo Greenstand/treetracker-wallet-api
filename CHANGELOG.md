@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.11.1...v1.11.2) (2021-03-23)
+
+
+### Bug Fixes
+
+* correct min and max validation of limit param ([d881fe9](https://github.com/Greenstand/treetracker-wallet-api/commit/d881fe9a3abbb009aff2ea50d50dfdcdc5355804))
+
 ## [1.11.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.11.0...v1.11.1) (2021-03-22)
 
 
