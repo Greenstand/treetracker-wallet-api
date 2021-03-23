@@ -3,7 +3,12 @@ const uuid = require('uuid');
 const log = require("loglevel");
 const Crypto = require('crypto');
 const generator = require('generate-password');
+const JWTService = require("../../server/services/JWTService");
+const Transfer = require("../../server/models/Transfer");
 
+/*
+ * register the user, create password hash, and apiKey
+ */
 async function register(user){
   const sha512 = function(password, salt){
     var hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
@@ -46,6 +51,18 @@ async function register(user){
   };
 }
 
+/*
+ * create the user, apiKey, then login, return
+ * token
+ */
+async function registerAndLogin(user){
+  const userRegistered = await register(user);
+  const jwtService = new JWTService();
+  const token = jwtService.sign(userRegistered);
+  user.token = token;
+  return user;
+}
+
 async function clear() {
   log.debug('clear tables');
   await knex('api_key').del();
@@ -56,7 +73,33 @@ async function clear() {
   await knex('transfer').del();
 }
 
+/*
+ * Directly pending a token send request
+ */
+async function sendAndPend(
+  walletSender,
+  walletReceiver,
+  bundleSize,
+){
+  const result = await knex("transfer")
+    .insert({
+      id: uuid.v4(),
+      originator_wallet_id: walletSender.id,
+      source_wallet_id: walletSender.id,
+      destination_wallet_id: walletReceiver.id,
+      type: Transfer.TYPE.send,
+      parameters: {
+        bundleSize,
+      },
+      state: Transfer.STATE.pending,
+      active: true,
+    }).returning("*");
+  return result;
+}
+
 module.exports = {
   register,
+  registerAndLogin,
   clear,
+  sendAndPend,
 }
