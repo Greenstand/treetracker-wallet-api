@@ -10,6 +10,7 @@ const walletZaven = require("../mock-data/walletZaven.json");
 const Meisze = require("../mock-data/Meisze.json");
 const testUtils = require("./testUtils");
 const Transfer = require("../../server/models/Transfer");
+const TokenA = require("../mock-data/TokenA");
 
 describe.only('Zaven request to send 1 token to Meisze', () => {
   let registeredZaven;
@@ -19,6 +20,7 @@ describe.only('Zaven request to send 1 token to Meisze', () => {
   beforeEach(async () => {
     await testUtils.clear();
     registeredZaven = await testUtils.registerAndLogin(walletZaven);
+    await testUtils.addToken(registeredZaven, TokenA);
     expect(registeredZaven).property("id").a("string");
     registeredMeisze = await testUtils.registerAndLogin(Meisze);
     transfer = await testUtils.sendAndPend(registeredZaven,registeredMeisze, 1);
@@ -43,8 +45,8 @@ describe.only('Zaven request to send 1 token to Meisze', () => {
 
     res = await request(server)
       .get(`/tokens?limit=10`)
-      .set('treetracker-api-key', registeredMeisze.apiKey)
-      .set('Authorization', `Bearer ${registeredMeisze.token}`);
+      .set('treetracker-api-key', registeredZaven.apiKey)
+      .set('Authorization', `Bearer ${registeredZaven.token}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.tokens).lengthOf(1);
   });

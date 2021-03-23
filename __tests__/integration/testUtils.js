@@ -76,6 +76,20 @@ async function clear() {
 }
 
 /*
+ * Add a token to a wallet
+ */
+async function addToken(wallet, token){
+  const result = await knex("token")
+    .insert({
+      ...token,
+      wallet_id: wallet.id,
+    }).returning("*");
+  expect(result[0]).property("id").eq(token.id);
+  expect(result[0]).property("wallet_id").eq(wallet.id);
+  return result[0];
+}
+
+/*
  * Directly pending a token send request
  */
 async function sendAndPend(
@@ -105,4 +119,5 @@ module.exports = {
   registerAndLogin,
   clear,
   sendAndPend,
+  addToken,
 }
