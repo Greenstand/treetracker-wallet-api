@@ -6,21 +6,19 @@ const log = require('loglevel');
 const sinon = require("sinon");
 const chai = require("chai");
 chai.use(require('chai-uuid'));
-const walletZaven = require("../mock-data/walletZaven.json");
+const Zaven = require("../mock-data/Zaven.json");
 const testUtils = require("./testUtils");
 
-describe.only('Authentication', () => {
-  let bearerToken;
-  let bearerTokenB;
+describe('Authentication', () => {
   let registeredUser;
 
   beforeEach(async () => {
     await testUtils.clear();
-    registeredUser = await testUtils.register(walletZaven);
+    registeredUser = await testUtils.register(Zaven);
   })
 
   // Authorization path
-  it(`[POST /auth] login with ${walletZaven.name}`, (done) => {
+  it(`[POST /auth] login with ${Zaven.name}`, (done) => {
     request(server)
       .post('/auth')
       .set('treetracker-api-key', registeredUser.apiKey)
@@ -38,7 +36,7 @@ describe.only('Authentication', () => {
   });
 
 
-  it(`[POST /auth] login with using wallet id of  ${walletZaven.name}`, (done) => {
+  it(`[POST /auth] login with using wallet id of  ${Zaven.name}`, (done) => {
     request(server)
       .post('/auth')
       .set('treetracker-api-key', registeredUser.apiKey)
