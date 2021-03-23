@@ -9,22 +9,22 @@ chai.use(require('chai-uuid'));
 const walletZaven = require("../mock-data/walletZaven.json");
 const Meisze = require("../mock-data/Meisze.json");
 const testUtils = require("./testUtils");
+const Transfer = require("../../server/models/Transfer");
 
-describe.only('Transfer', () => {
-  let bearerToken;
-  let bearerTokenB;
+describe.only('Zaven request to send 1 token to Meisze', () => {
   let registeredZaven;
   let registeredMeisze;
+  let transfer;
 
   beforeEach(async () => {
     await testUtils.clear();
     registeredZaven = await testUtils.registerAndLogin(walletZaven);
     expect(registeredZaven).property("id").a("string");
     registeredMeisze = await testUtils.registerAndLogin(Meisze);
+    transfer = await testUtils.sendAndPend(registeredZaven,registeredMeisze, 1);
   })
 
   it(``, async () => {
-    const transfer = await testUtils.sendAndPend(registeredZaven,registeredMeisze, 1);
     let res = await request(server)
       .post(`/transfers/${transfer.id}/decline`)
       .set('Content-Type', "application/json")
@@ -35,18 +35,18 @@ describe.only('Transfer', () => {
 
     res = await request(server)
       .get(`/transfers?limit=1000`)
-      .set('treetracker-api-key', apiKey)
-      .set('Authorization', `Bearer ${bearerToken}`);
+      .set('treetracker-api-key', registeredMeisze.apiKey)
+      .set('Authorization', `Bearer ${registeredMeisze.token}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.transfers).lengthOf(1);
     expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
 
     res = await request(server)
-      .get(`/tokens/${seed.token.id}`)
-      .set('treetracker-api-key', apiKey)
-      .set('Authorization', `Bearer ${bearerToken}`);
+      .get(`/tokens?limit=10`)
+      .set('treetracker-api-key', registeredMeisze.apiKey)
+      .set('Authorization', `Bearer ${registeredMeisze.token}`);
     expect(res).to.have.property('statusCode', 200);
-    expect(res.body.wallet_id).eq(seed.wallet.id);
+    expect(res.body.tokens).lengthOf(1);
   });
 
 });

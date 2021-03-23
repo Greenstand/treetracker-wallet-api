@@ -5,6 +5,7 @@ const Crypto = require('crypto');
 const generator = require('generate-password');
 const JWTService = require("../../server/services/JWTService");
 const Transfer = require("../../server/models/Transfer");
+const { expect } = require('chai');
 
 /*
  * register the user, create password hash, and apiKey
@@ -59,8 +60,9 @@ async function registerAndLogin(user){
   const userRegistered = await register(user);
   const jwtService = new JWTService();
   const token = jwtService.sign(userRegistered);
-  user.token = token;
-  return user;
+  userRegistered.token = token;
+  expect(userRegistered).property("apiKey").a("string");
+  return userRegistered;
 }
 
 async function clear() {
@@ -94,7 +96,8 @@ async function sendAndPend(
       state: Transfer.STATE.pending,
       active: true,
     }).returning("*");
-  return result;
+  expect(result[0]).property("id").a("string");
+  return result[0];
 }
 
 module.exports = {
