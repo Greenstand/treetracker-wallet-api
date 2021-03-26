@@ -64,6 +64,27 @@ describe("walletRouter", ()=> {
       expect(res.body.wallets[0]).property("tokens_in_wallet").eq(10);
     });
 
+    it("should omit private fields", async () => {
+      const wallet = new Wallet({
+        "id":  uuid.v4(),
+        "type": "p",
+        "name": "name",
+        "password": "private field",
+        "salt": "private field",
+        "tokens_in_wallet": 10
+    })
+      sinon.stub(WalletService.prototype, "getById").resolves(wallet);
+      sinon.stub(TrustService.prototype, "convertToResponse").resolves(mockTrust);
+      sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(10);
+      sinon.stub(Wallet.prototype, "getSubWallets").resolves( []);
+      const res = await request(app)
+        .get('/?limit=2');
+      expect(res).property("statusCode").eq(200);
+      expect(res.body.wallets).lengthOf(1);
+      const resWallet = res.body.wallets[0]
+      expect(resWallet).not.to.contain.keys(['password', 'salt', 'type'])
+    });
+
     it("limit and offet working successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(mockWallet);
       console.log(mockWallet.getId())
