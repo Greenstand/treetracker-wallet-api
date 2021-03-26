@@ -101,7 +101,7 @@ class Wallet{
   /*
    * Get trust relationships by filters, setting filter to undefined to allow all data
    */
-  async getTrustRelationships(state, type, request_type){
+  async getTrustRelationships(state, type, request_type, offset, limit){
     const filter = {
       and: [],
     }
@@ -123,7 +123,7 @@ class Wallet{
         originator_wallet_id: this._id,
       }]
     });
-    return await this.trustRepository.getByFilter(filter);
+    return await this.trustRepository.getByFilter(filter, {offset, limit});
   }
 
   /*

@@ -58,7 +58,7 @@ class BaseRepository{
     }
     let promise = this._session.getDB().select().table(this._tableName).offset(offset).where(builder => whereBuilder(filter, builder));
     if(options && options.limit){
-      promise = promise.limit(options && options.limit);
+      promise = promise.limit(options.limit);
     }
     const result = await promise;
     expect(result).a(expect.any(Array));

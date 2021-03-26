@@ -123,19 +123,19 @@ describe("trustRouter", () => {
       // TODO: need to update the test
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(walletId));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:trustId});
-      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{},{},{},{}]);
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{},{},{}]);
       const res = await request(app)
         .get(`/?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}&limit=3`);
-      console.log(res.body);
-      expect(res).property("statusCode").eq(200);
-      console.log(res.body.trust_relationships);
-      //get 3 from 4 items
-      expect(res.body.trust_relationships).lengthOf(3);
+
       expect(fn).calledWith(
         TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
         TrustRelationship.ENTITY_TRUST_TYPE.send,
-        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
+        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        0,
+        3
       )
+      expect(res).property("statusCode").eq(200);
+      expect(res.body.trust_relationships).lengthOf(3);
     });
     
     //TODO 
