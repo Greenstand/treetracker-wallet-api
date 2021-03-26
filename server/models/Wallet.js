@@ -889,13 +889,13 @@ class Wallet{
     return transfer;
   }
 
-  async getTokensByTransferId(id){
+  async getTokensByTransferId(id, limit, offset){
     const transfer = await this.getTransferById(id);
     let tokens;
     if(transfer.state === Transfer.STATE.completed){
-      tokens = await this.tokenService.getTokensByTransferId(transfer.id);
+      tokens = await this.tokenService.getTokensByTransferId(transfer.id, limit, offset);
     }else{
-      tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+      tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id, limit, offset);
     }
     return tokens;
   }
