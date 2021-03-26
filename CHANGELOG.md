@@ -1,3 +1,13 @@
+# [1.12.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.11.2...v1.12.0) (2021-03-26)
+
+
+### Features
+
+* can run transfer decline ([ee11f73](https://github.com/Greenstand/treetracker-wallet-api/commit/ee11f7395c3f67cd9e48936c1bdcf51bca778250))
+* pass first integration test:auth ([2ee4996](https://github.com/Greenstand/treetracker-wallet-api/commit/2ee499699a15796772678f877a0df766a5dec7ca))
+* pass test for transfer decline ([40198e6](https://github.com/Greenstand/treetracker-wallet-api/commit/40198e69553946c41753a8fb81d6b81af90100ca))
+* test transfer declien ([c4a4bef](https://github.com/Greenstand/treetracker-wallet-api/commit/c4a4bef09804efb5b40894b43cb2cf959197f35e))
+
 ## [1.11.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.11.1...v1.11.2) (2021-03-23)
 
 
