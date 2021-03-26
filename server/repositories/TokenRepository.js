@@ -24,16 +24,14 @@ class TokenRepository extends BaseRepository{
   /*
    * select transaction table by transfer id, return matched tokens
    */
-  async getByTransferId(transferId){
-    const result = await this._session.getDB().raw(`
+  async getByTransferId(transferId, limit, offset = 0){
+    return await this._session.getDB().raw(`
       SELECT "token".* FROM "token"
       JOIN "transaction" 
-      ON "token".id = "transaction".token_id
-      WHERE "transaction".transfer_id = '226f76cd-52b0-486b-b58a-98230696c748'
-    `);
-    return result;
+      ON "token".id = "transaction".token_id`)
+      .where("transaction.transfer_id", transferId) // used to be '226f76cd-52b0-486b-b58a-98230696c748'
+      .limit(limit).offset(offset)
   }
-
 }
 
 module.exports = TokenRepository;
