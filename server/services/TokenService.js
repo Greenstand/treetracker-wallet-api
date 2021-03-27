@@ -41,11 +41,14 @@ class TokenService{
    * Get n tokens from a wallet
    */
   async getTokensByBundle(wallet, bundleSize){
+    //TODO: getByFilter should be able to handle claim boolean
     const result = await this.tokenRepository.getByFilter({
       wallet_id: wallet.getId(),
       transfer_pending: false,
     },{
       limit: bundleSize,
+      // add claim
+      claim: false,
     });
     return result.map(json => new Token(json, this._session));
   }

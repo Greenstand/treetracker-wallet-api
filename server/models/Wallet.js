@@ -502,7 +502,8 @@ class Wallet{
       await this.tokenService.completeTransfer(tokens, transfer);
       return transfer;
       
-    }else{
+      // TODO: Do I need claim boolean in below cases?
+    }else{  
         if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
           const tokensId = [];
@@ -516,6 +517,7 @@ class Wallet{
             state: Transfer.STATE.pending,
             parameters: {
               tokens: tokensId,
+              claim: claimBoolean,
             },
           });
           await this.tokenService.pendingTransfer(tokens, transfer);
@@ -533,6 +535,7 @@ class Wallet{
             state: Transfer.STATE.requested,
             parameters: {
               tokens: tokensId,
+              claim: claimBoolean,
             },
           });
           await this.tokenService.pendingTransfer(tokens, transfer);
@@ -547,6 +550,7 @@ class Wallet{
   async transferBundle(sender, receiver, bundleSize, claimBoolean){
     //check has enough tokens to sender
     const tokenCount = await this.tokenService.countTokenByWallet(sender);
+    // count number of tokens not claimed 
     const notClaimedTokenCount = await this.tokenService.countNotClaimedTokenByWallet(sender);
     // if(tokenCount < bundleSize){
     //   throw new HttpError(403, `Do not have enough tokens to send`);
