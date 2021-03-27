@@ -42,12 +42,12 @@ function getRandomArbitrary(min, max) {
       tree_token_api_access: true,
       name: username
     }
-    const result0 = await trx('wallets.api_key').insert(apiKeyData).returning('*')
+    const result0 = await trx('wallet.api_key').insert(apiKeyData).returning('*')
     console.log(result0)
 
     // create wallet and password, salt
 
-    const result = await trx('wallets.wallet').insert({
+    const result = await trx('wallet.wallet').insert({
       name: username,
       password: passwordHash,
       salt: salt
@@ -81,7 +81,7 @@ function getRandomArbitrary(min, max) {
 
     // insert fake tree captures
     let trees = []
-    for(i=0; i<10; i++){
+    for(i=0; i<5000; i++){
       const captureData = {
         time_created: new Date(),
         time_updated: new Date(),
@@ -105,7 +105,7 @@ function getRandomArbitrary(min, max) {
         capture_id: treeId,
         wallet_id: wallet.id
       }
-      const result4 = await trx('wallets.token').insert(tokenData).returning('*')
+      const result4 = await trx('wallet.token').insert(tokenData).returning('*')
       const token = result4[0]
       console.log(token.id)
     }
