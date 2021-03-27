@@ -1,3 +1,71 @@
+# [1.12.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.11.2...v1.12.0) (2021-03-26)
+
+
+### Features
+
+* can run transfer decline ([ee11f73](https://github.com/Greenstand/treetracker-wallet-api/commit/ee11f7395c3f67cd9e48936c1bdcf51bca778250))
+* pass first integration test:auth ([2ee4996](https://github.com/Greenstand/treetracker-wallet-api/commit/2ee499699a15796772678f877a0df766a5dec7ca))
+* pass test for transfer decline ([40198e6](https://github.com/Greenstand/treetracker-wallet-api/commit/40198e69553946c41753a8fb81d6b81af90100ca))
+* test transfer declien ([c4a4bef](https://github.com/Greenstand/treetracker-wallet-api/commit/c4a4bef09804efb5b40894b43cb2cf959197f35e))
+
+## [1.11.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.11.1...v1.11.2) (2021-03-23)
+
+
+### Bug Fixes
+
+* correct min and max validation of limit param ([d881fe9](https://github.com/Greenstand/treetracker-wallet-api/commit/d881fe9a3abbb009aff2ea50d50dfdcdc5355804))
+
+## [1.11.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.11.0...v1.11.1) (2021-03-22)
+
+
+### Bug Fixes
+
+* omit private fields in wallet api ([d078c20](https://github.com/Greenstand/treetracker-wallet-api/commit/d078c20216ff2b0fe18da5d3ef3ffab178a30d18))
+
+# [1.11.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.4...v1.11.0) (2021-03-17)
+
+
+### Features
+
+* add docker compose file and initial db ([929b65e](https://github.com/Greenstand/treetracker-wallet-api/commit/929b65e9f0c3ee6f1d83d29a2287418d81f73f8b))
+* update docker db setup ([23bc910](https://github.com/Greenstand/treetracker-wallet-api/commit/23bc910520288c0007f47cd293a596b1ade188a5))
+
+## [1.10.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.3...v1.10.4) (2021-03-10)
+
+
+### Bug Fixes
+
+* input variable spec was wrong ([ad20106](https://github.com/Greenstand/treetracker-wallet-api/commit/ad20106ebee88d68f7bb221c7e785dc7e7956c6e))
+
+## [1.10.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.2...v1.10.3) (2021-03-09)
+
+
+### Bug Fixes
+
+* fix link to capture data ([52dc427](https://github.com/Greenstand/treetracker-wallet-api/commit/52dc4270ced6b49a0002327edc6be9776e410124))
+* require 12.x node version ([d784b6a](https://github.com/Greenstand/treetracker-wallet-api/commit/d784b6a3072695ef80a53102168ebd950daaeb90))
+
+## [1.10.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.1...v1.10.2) (2021-03-09)
+
+
+### Bug Fixes
+
+* remove remove old remote logs env var from deployment ([da5bf61](https://github.com/Greenstand/treetracker-wallet-api/commit/da5bf61f2a6183fab503e90383f4ed0d14f5a997))
+
+## [1.10.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.0...v1.10.1) (2021-03-04)
+
+
+### Bug Fixes
+
+* read schema from database connection secret for now ([008b2a2](https://github.com/Greenstand/treetracker-wallet-api/commit/008b2a23c0cb76f2e86f8a9ed4d4864f0fcd5c4b))
+
+# [1.10.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.9.0...v1.10.0) (2021-03-04)
+
+
+### Features
+
+* add some unique constraints ([ba9aa65](https://github.com/Greenstand/treetracker-wallet-api/commit/ba9aa65fcad9cb3c1b3e2340a278c6e3fb776602))
+
 # [1.9.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.8.0...v1.9.0) (2021-02-26)
 
 

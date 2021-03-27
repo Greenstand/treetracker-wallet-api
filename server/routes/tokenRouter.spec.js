@@ -44,16 +44,18 @@ describe("tokenRouter", () => {
     const walletId = uuid.v4()
     const wallet2Id = uuid.v4()
     const transactionId = uuid.v4()
+    const captureId = uuid.v4()
+    const capture2Id = uuid.v4()
 
     const token = new Token({
       id: tokenId,
       wallet_id: walletId,
-      capture_id: 1,
+      capture_id: captureId
     });
     const token2 = new Token({
       id: token2Id,
       wallet_id: wallet2Id,
-      capture_id: 2,
+      capture_id: capture2Id
     });
 
     const wallet = new Wallet(walletId);
@@ -74,7 +76,7 @@ describe("tokenRouter", () => {
       expect(res).property("statusCode").eq(200);
       expect(res.body.tokens).lengthOf(1);
       expect(res.body.tokens[0]).property("id").eq(token2Id);
-      expect(res.body.tokens[0]).property("links").property("capture").eq("/webmap/trees?treeid=2");
+      expect(res.body.tokens[0]).property("links").property("capture").eq("/webmap/tree?uuid=" + capture2Id);
     });
 
     it("successfully, sub wallet", async () => {
@@ -86,7 +88,7 @@ describe("tokenRouter", () => {
         .get(`/?limit=10&wallet=${wallet2Id}`);
       expect(res).property("statusCode").eq(200);
       expect(res.body.tokens[0]).property("id").eq(tokenId);
-      expect(res.body.tokens[0]).property("links").property("capture").eq("/webmap/trees?treeid=1");
+      expect(res.body.tokens[0]).property("links").property("capture").eq("/webmap/tree?uuid=" + captureId);
     });
 
     it("sub wallet, no permission", async () => {
@@ -108,16 +110,18 @@ describe("tokenRouter", () => {
     const walletId = uuid.v4()
     const wallet2Id = uuid.v4()
     const transactionId = uuid.v4()
+    const captureId = uuid.v4()
+    const capture2Id = uuid.v4()
 
     const token = new Token({
       id: tokenId,
       wallet_id: walletId,
-      capture_id: 1,
+      capture_id: captureId
     });
     const token2 = new Token({
       id: token2Id,
       wallet_id: wallet2Id,
-      capture_id: 2,
+      capture_id: capture2Id
     });
 
     const wallet = new Wallet(walletId);
@@ -137,7 +141,7 @@ describe("tokenRouter", () => {
         .get(`/${tokenId}`);
       expect(res).property("statusCode").eq(200);
       expect(res.body).property("id").eq(tokenId);
-      expect(res.body).property("links").property("capture").eq("/webmap/trees?treeid=1");
+      expect(res.body).property("links").property("capture").eq("/webmap/tree?uuid=" + captureId);
     });
 
     it("/xxx/transactions successfully", async () => {
