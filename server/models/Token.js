@@ -114,10 +114,10 @@ class Token{
     }
   }
 
-  async getTransactions(){
+  async getTransactions(limit, offset  = 0){
     const transactions = await this.transactionRepository.getByFilter({
       token_id: this._id,
-    });
+    }, {limit, offset});
     return transactions;
   }
 

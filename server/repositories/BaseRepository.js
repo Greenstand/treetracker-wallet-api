@@ -26,6 +26,7 @@ class BaseRepository{
    *  limit: number
    */
   async getByFilter(filter, options){
+    const offset = options && options.offset ? options.offset : 0 
     const whereBuilder = function(object, builder){
       let result = builder;
       if(object['and']){
@@ -55,7 +56,7 @@ class BaseRepository{
       }
       return result;
     }
-    let promise = this._session.getDB().select().table(this._tableName).where(builder => whereBuilder(filter, builder));
+    let promise = this._session.getDB().select().table(this._tableName).offset(offset).where(builder => whereBuilder(filter, builder));
     if(options && options.limit){
       promise = promise.limit(options && options.limit);
     }
@@ -93,9 +94,6 @@ class BaseRepository{
 
   async create(object){
     const result = await this._session.getDB()(this._tableName).insert(object).returning("*");
-    expect(result).match([{
-      id: expect.anything(),
-    }]);
     return result[0];
   }
 

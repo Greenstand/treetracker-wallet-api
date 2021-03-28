@@ -69,10 +69,10 @@ describe("tokenRouter", () => {
     });
 
     it("successfully, default wallet", async () => {
-      sinon.stub(TokenService.prototype, "getByOwner").resolves([token, token2]);
+      sinon.stub(TokenService.prototype, "getByOwner").resolves([token2]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const res = await request(app)
-        .get("/?limit=10&start=2");
+        .get("/?limit=10&start=1");
       expect(res).property("statusCode").eq(200);
       expect(res.body.tokens).lengthOf(1);
       expect(res.body.tokens[0]).property("id").eq(token2Id);
@@ -179,31 +179,36 @@ describe("tokenRouter", () => {
       sinon.stub(token, "toJSON").resolves({
         wallet_id: walletId,
       });
-      sinon.stub(token, "getTransactions").resolves([
-        {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}
+      const getTransactionsStub = sinon.stub(token, "getTransactions")
+      getTransactionsStub.resolves([
+         {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}
       ]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       sinon.stub(TokenService.prototype, "convertToResponse").resolves({
         token: tokenId,
         sender_wallet: authenticatedWallet,
         receiver_wallet: wallet2Id,
-      }).onCall(4).resolves({
+      }).onCall(0).resolves({
         token: tokenId,
         sender_wallet: "number5",
         receiver_wallet: "number5",
-      }).onCall(5).resolves({
+      }).onCall(1).resolves({
         token: tokenId,
         sender_wallet: "number6",
         receiver_wallet: "number6",
-      }).onCall(6).resolves({
+      }).onCall(2).resolves({
         token: tokenId,
         sender_wallet: "number7",
         receiver_wallet: "number7",
       });
       sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
+
+      const limit = "3"
+      const offset = "5"
       const res = await request(app)
-        .get(`/${tokenId}/transactions?limit=3&start=5`);
+        .get(`/${tokenId}/transactions?limit=${limit}&start=${offset}`);
       expect(res).property("statusCode").eq(200);
+      expect(getTransactionsStub.getCall(0).args).deep.to.equal([limit, offset])
       expect(res.body.history).lengthOf(3);
       expect(res.body.history[0]).property("sender_wallet").eq("number5");
       expect(res.body.history[0]).property("receiver_wallet").eq("number5");
@@ -213,8 +218,6 @@ describe("tokenRouter", () => {
 
       expect(res.body.history[2]).property("sender_wallet").eq("number7");
       expect(res.body.history[2]).property("receiver_wallet").eq("number7");
-
-
     });
   });
 

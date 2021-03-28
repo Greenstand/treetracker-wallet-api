@@ -42,8 +42,8 @@ tokenRouter.get('/',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().min(0).max(1000).required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        limit: Joi.number().min(1).max(1000).required().default(1000),
+        start: Joi.number().min(0).max(1000).integer().default(0),
         wallet: Joi.string(),
       })
     );
@@ -53,19 +53,18 @@ tokenRouter.get('/',
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     let tokens = [];
+    
     if(wallet){
       const walletInstance = await walletService.getByName(wallet);
       const isSub = await walletLogin.hasControlOver(walletInstance);
       if(!isSub){
-        throw new HttpError(403, "Wallet do not belongs to wallet logged in");
+        throw new HttpError(403, "Wallet does not belong to wallet logged in");
       }
-      tokens = await tokenService.getByOwner(walletInstance);
+      tokens = await tokenService.getByOwner(walletInstance, limit, start);
     }else{
-      tokens = await tokenService.getByOwner(walletLogin);
+      tokens = await tokenService.getByOwner(walletLogin, limit, start);
     }
 
-    //filter tokens by query, TODO optimization required
-    tokens = tokens.slice(start? start-1:0, limit);
     const tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();
@@ -85,8 +84,8 @@ tokenRouter.get('/:id/transactions',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().min(0).max(1000).required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        limit: Joi.number().min(1).max(1000).integer().default(1000).required(),
+        start: Joi.number().min(0).max(1000).integer(),
         id: Joi.string().guid(), 
         transactions: Joi.string(),
       })
@@ -109,22 +108,14 @@ tokenRouter.get('/:id/transactions',
     }else{
       throw new HttpError(401, "Have no permission to visit this token");
     }
-    const transactions = await token.getTransactions();
+    const transactions = await token.getTransactions(limit, start);
+
     let response = [];
     for(const t of transactions){
       const transaction = await tokenService.convertToResponse(t);
       response.push(transaction);
     }
 
-    //filter transaction json by query
-    let numStart = parseInt(start);
-    let numLimit = parseInt(limit);
-    let numBegin = numStart?numStart-1:0;
-    let numEnd=numBegin+numLimit;
-    response = response.slice(numBegin, numEnd);
-    // console.log(numBegin);
-    // console.log(numEnd);
-    // console.log(response);
     res.status(200).json({
       history: response,
     });

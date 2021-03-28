@@ -5,6 +5,7 @@ const mockKnex = require("mock-knex");
 const tracker = mockKnex.getTracker();
 const jestExpect = require("expect");
 const Session = require("../models/Session");
+const uuid = require('uuid');
 
 describe("BaseRepository", () => {
   let baseRepository;
@@ -36,7 +37,7 @@ describe("BaseRepository", () => {
   it.skip("getById can not find result, should throw 404", () => {
   });
 
-  describe.only("getByFilter", () => {
+  describe("getByFilter", () => {
 
     it("getByFilter", async () => {
       tracker.uninstall();
@@ -66,6 +67,22 @@ describe("BaseRepository", () => {
       });
       expect(result).lengthOf(1);
       expect(result[0]).property("id").eq(1);
+    });
+
+    it("getByFilter with offset", async () => {
+      tracker.uninstall();
+      tracker.install();
+      tracker.on("query", (query) => {
+        expect(query.sql).match(/select.*testTable.*offset.*/);
+        query.response([{id:2}]);
+      });
+      const result = await baseRepository.getByFilter({
+        name: "testName",
+      },{
+        offset: 1,
+      });
+      expect(result).lengthOf(1);
+      expect(result[0]).property("id").eq(2);
     });
 
     describe("'and' 'or' phrase", () => {
@@ -195,10 +212,9 @@ describe("BaseRepository", () => {
         query.response({id:1});
       });
       const result = await baseRepository.update({
-        id: 1,
+        id: uuid.v4(), 
         name: "testName",
       });
-      expect(result).property("id").eq(1);
     });
   });
 

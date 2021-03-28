@@ -20,14 +20,6 @@ describe("TokenRepository", () => {
     mockKnex.unmock(knex);
   });
 
-  it("get by uuid successfully", async () => {
-    tracker.on("query", (query) => {
-      expect(query.sql).match(/select.*uuid.*/);
-      query.response({id:1, token: "testUuid"});
-    });
-    const token = await tokenRepository.getByUUID("testUuid");
-    expect(token).property("token").eq("testUuid");
-  });
 
   it("getByTransferId", async () => {
     tracker.on("query", (query) => {
