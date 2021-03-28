@@ -272,7 +272,7 @@ transferRouter.get("/",
           Joi.number().min(4).max(32)
         ),
         limit: Joi.number().min(1).max(1000).required(),
-        start: Joi.number().min(0).max(1000).integer().default(0)
+        start: Joi.number().min(0).integer().default(0)
       })
     );
     const {state, wallet, limit, start} = req.query;
@@ -332,7 +332,7 @@ transferRouter.get('/:transfer_id/tokens',
       req.query,
       Joi.object({
         limit: Joi.number().min(1).max(1000).required(),
-        start: Joi.number().min(0).max(10000).integer().default(0),
+        start: Joi.number().min(0).integer().default(0),
       })
     );
     const {limit, start} = req.query;
