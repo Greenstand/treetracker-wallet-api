@@ -279,12 +279,13 @@ transferRouter.get("/",
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
+
     let walletTransfer = walletLogin;
     if(wallet){
       walletTransfer = await walletService.getByIdOrName(wallet);
     }
-
-    const result = await walletTransfer.getTransfers(state, wallet, start, limit);
+    // todo fix filtering by wallet, instead of undefined should take a wallet object with getId() function
+    const result = await walletTransfer.getTransfers(state, undefined , start, limit);
     const transferService = new TransferService(session);
     let json = [];
     for(let t of result){
