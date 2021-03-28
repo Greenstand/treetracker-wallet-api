@@ -283,7 +283,8 @@ transferRouter.get("/",
     if(wallet){
       walletTransfer = await walletService.getByIdOrName(wallet);
     }
-    const result = await walletTransfer.getTransfers(state, start, limit);
+
+    const result = await walletTransfer.getTransfers(state, wallet, start, limit);
     const transferService = new TransferService(session);
     let json = [];
     for(let t of result){
@@ -337,7 +338,8 @@ transferRouter.get('/:transfer_id/tokens',
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const tokens = await walletLogin.getTokensByTransferId(req.params.transfer_id, Number(limit), Number(start));
+    const tokens = await walletLogin.getTokensByTransferId(req.params.transfer_id, Number(limit), Number(start || 0));
+
     let tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();
