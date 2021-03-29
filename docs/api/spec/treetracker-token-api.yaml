@@ -206,6 +206,13 @@ paths:
                     matching_all_tags:
                       - pine
                       - Tanzania
+              ImpactValue:
+                value:
+                  impact:
+                    value: 100
+                    accept_deviation: true
+                  sender_wallet: zaven4
+                  receiver_wallet: zaven
         required: true
       responses:
         '201':
