@@ -88,20 +88,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/tokens'
-              examples:
-                example-1:
-                  value:
-                    tokens:
-                      - token: d895cf1b-de4c-40ea-85c9-99540f2489a9
-                        map_url: 'http://test.treetracker.org/?treeid=156867'
-                        image_url: 'https://treetracker-test.eu-central-1/2019.08.13.17.56.13_5f87e44c-1b90-4d15-8ab8-ae4e75f8a898_IMG_20190813_175243_67017802.jpg'
-                        tree_captured_at: '+051586-06-14T15:10:00.000Z'
-                        latitude: 37.77295869
-                        longitude: -122.1781304
-                        region: United States
-                        bill_of_value: json
-                        value: 1
-                        value_matrix_id: 1
         '401':
           $ref: '#/components/responses/UnauthorizedError'
       deprecated: false
