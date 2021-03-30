@@ -792,6 +792,12 @@ components:
           type: string
         capture:
           type: string
+        value:
+          type: integer
+          description: impact value
+        value_matrix_id:
+          type: integer
+          description: The id of the impact value matrix
     accountrequest:
       title: accountrequest
       required:
@@ -869,6 +875,8 @@ components:
             value:
               type: integer
               description: 'The totla amount of the impact value '
+              minimum: 0
+              maximum: 10000
             accept_deviation:
               type: boolean
               description: 'If this transfer accept deviation when transfer happens, it means, when user choose to accept it, there might be some deviation between the actual transfered impact value and the value given here, the range of the deviation will be defined in the impact value matrix.'
@@ -1007,17 +1015,19 @@ components:
       properties:
         tokens:
           type: array
+          description: optional array of explicit tokens
           items:
             type: string
-          description: optional array of explicit tokens
         bundle_size:
           type: integer
           description: required number of trees to transfer
         matching_all_tags:
           type: array
+          description: optional list of tags that trees must match ALL of
           items:
             type: string
-          description: optional list of tags that trees must match ALL of
+        impact:
+          type: object
       required:
         - bundle_size
     requestBundleFulfillBody:
