@@ -852,6 +852,7 @@ components:
             accept_deviation:
               type: boolean
               description: 'If this transfer accept deviation when transfer happens, it means, when user choose to accept it, there might be some deviation between the actual transfered impact value and the value given here, the range of the deviation will be defined in the impact value matrix.'
+              default: true
       required:
         - tokens
         - sender_wallet
