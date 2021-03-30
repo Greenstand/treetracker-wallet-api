@@ -809,20 +809,6 @@ components:
     transferrequest:
       title: transferrequest
       type: object
-      example:
-        tokens:
-          - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-          - e533653e-2dbf-48cd-940a-a87e5a393158
-        sender_wallet: zaven4
-        receiver_wallet: zaven
-      x-examples:
-        example-1:
-          tokens:
-            - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-            - e533653e-2dbf-48cd-940a-a87e5a393158
-          sender_wallet: zaven4
-          receiver_wallet: zaven
-      description: ''
       properties:
         tokens:
           type: array
