@@ -487,6 +487,7 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      description: ''
   /events:
     get:
       tags:
@@ -821,17 +822,27 @@ components:
           type: integer
     transferrequest:
       title: transferrequest
-      required:
-        - tokens
-        - sender_wallet
-        - receiver_wallet
       type: object
+      example:
+        tokens:
+          - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
+          - e533653e-2dbf-48cd-940a-a87e5a393158
+        sender_wallet: zaven4
+        receiver_wallet: zaven
+      x-examples:
+        example-1:
+          tokens:
+            - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
+            - e533653e-2dbf-48cd-940a-a87e5a393158
+          sender_wallet: zaven4
+          receiver_wallet: zaven
+      description: ''
       properties:
         tokens:
           type: array
+          description: ''
           items:
             type: string
-          description: ''
         bundle:
           type: object
           properties:
@@ -851,12 +862,20 @@ components:
           oneOf:
             - type: string
             - type: number
-      example:
-        tokens:
-          - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-          - e533653e-2dbf-48cd-940a-a87e5a393158
-        sender_wallet: zaven4
-        receiver_wallet: zaven
+        impact:
+          type: object
+          description: Use impact value to express how many tokens should be tranfered
+          properties:
+            value:
+              type: integer
+              description: 'The totla amount of the impact value '
+            accept_deviation:
+              type: boolean
+              description: 'If this transfer accept deviation when transfer happens, it means, when user choose to accept it, there might be some deviation between the actual transfered impact value and the value given here, the range of the deviation will be defined in the impact value matrix.'
+      required:
+        - tokens
+        - sender_wallet
+        - receiver_wallet
     transferbundlerequest:
       title: transferbundlerequest
       required:
