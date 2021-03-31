@@ -106,7 +106,7 @@ describe('GET tokens', () => {
   it(`GET /tokens/ should return correct offset`, async () => {
     const insertedId = (await seed.addTokenToWallet(seed.wallet.id))[0].id;
     const res = await request(server)
-      .get(`/tokens?start=1&limit=10`)
+      .get(`/tokens?offset=1&limit=10`)
       .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
 
