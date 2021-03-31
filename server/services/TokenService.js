@@ -27,10 +27,10 @@ class TokenService{
     return tokensObject.map(object => new Token(object, this._session));
   }
 
-  async getTokensByPendingTransferId(transferId){
+  async getTokensByPendingTransferId(transferId, limit, offset = 0){
     const result = await this.tokenRepository.getByFilter({
       transfer_pending_id: transferId,
-    });
+    }, {limit, offset});
     return result.map(object => {
       return new Token(object, this._session);
     });
@@ -87,8 +87,8 @@ class TokenService{
     return result;
   }
 
-  async getTokensByTransferId(transferId){
-    const result = await this.tokenRepository.getByTransferId(transferId);
+  async getTokensByTransferId(transferId, limit, offset = 0){
+    const result = await this.tokenRepository.getByTransferId(transferId, limit, offset);
     const tokens = [];
     for(const r of result){
       const token = new Token(r);
