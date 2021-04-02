@@ -300,26 +300,26 @@ describe("Wallet", () => {
       fn1.restore();
     });
 
-    it.only("Claim set to true, should success", async () => {
-      const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
-      // const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
-      //   id: 1,
-      //   state: Transfer.STATE.completed,
+    // it.only("Claim set to true, should success", async () => {
+    //   const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
+    //   // const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
+    //   //   id: 1,
+    //   //   state: Transfer.STATE.completed,
         
-      // });
-      const fn1 = sinon.stub(wallet, "hasTrust").resolves(true);
-      const sender = new Wallet(1, session);
-      const receiver = new Wallet(2, session);
-      const token = new Token({
-        id: 1,
-        uuid: "uu",
-        transfer_pending: false,
-      }, session);
-      const transfer = await wallet.transfer(sender, receiver, [token], true);
-      expect(transfer).property("state").eq(Transfer.STATE.completed);
-      fn0.restore();
-      fn1.restore();
-    });
+    //   // });
+    //   const fn1 = sinon.stub(wallet, "hasTrust").resolves(true);
+    //   const sender = new Wallet(1, session);
+    //   const receiver = new Wallet(2, session);
+    //   const token = new Token({
+    //     id: 1,
+    //     uuid: "uu",
+    //     transfer_pending: false,
+    //   }, session);
+    //   const transfer = await wallet.transfer(sender, receiver, [token], true);
+    //   expect(transfer).property("state").eq(Transfer.STATE.completed);
+    //   fn0.restore();
+    //   fn1.restore();
+    // });
 
     it("don't have trust, sender under control, should return transfer with pending state", async () => {
       sinon.stub(Wallet.prototype, "isDeduct").resolves(false);
