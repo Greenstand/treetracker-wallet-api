@@ -101,7 +101,7 @@ class Wallet{
   /*
    * Get trust relationships by filters, setting filter to undefined to allow all data
    */
-  async getTrustRelationships(state, type, request_type){
+  async getTrustRelationships(state, type, request_type, offset, limit){
     const filter = {
       and: [],
     }
@@ -123,7 +123,7 @@ class Wallet{
         originator_wallet_id: this._id,
       }]
     });
-    return await this.trustRepository.getByFilter(filter);
+    return await this.trustRepository.getByFilter(filter, {offset, limit});
   }
 
   /*
@@ -844,7 +844,7 @@ class Wallet{
   /*
    * Get all transfers belongs to me
    */
-  async getTransfers(state, wallet){
+  async getTransfers(state, wallet, offset = 0, limit){
     const filter = {
       and: [],
     }
@@ -871,8 +871,7 @@ class Wallet{
         }]
       });
     }
-    const result = await this.transferRepository.getByFilter(filter);
-    return result;
+    return await this.transferRepository.getByFilter(filter, {offset, limit} );
   }
 
   async getTransferById(id){
@@ -890,13 +889,13 @@ class Wallet{
     return transfer;
   }
 
-  async getTokensByTransferId(id){
+  async getTokensByTransferId(id, limit, offset){
     const transfer = await this.getTransferById(id);
     let tokens;
     if(transfer.state === Transfer.STATE.completed){
-      tokens = await this.tokenService.getTokensByTransferId(transfer.id);
+      tokens = await this.tokenService.getTokensByTransferId(transfer.id, limit, offset);
     }else{
-      tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
+      tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id, limit, offset);
     }
     return tokens;
   }

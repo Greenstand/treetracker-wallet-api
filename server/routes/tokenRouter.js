@@ -43,7 +43,7 @@ tokenRouter.get('/',
       req.query,
       Joi.object({
         limit: Joi.number().min(1).max(1000).required().default(1000),
-        start: Joi.number().min(0).max(1000).integer().default(0),
+        start: Joi.number().min(0).integer().default(0),
         wallet: Joi.string(),
       })
     );
@@ -85,7 +85,7 @@ tokenRouter.get('/:id/transactions',
       req.query,
       Joi.object({
         limit: Joi.number().min(1).max(1000).integer().default(1000).required(),
-        start: Joi.number().min(0).max(1000).integer(),
+        start: Joi.number().min(0).integer(),
         id: Joi.string().guid(), 
         transactions: Joi.string(),
       })
