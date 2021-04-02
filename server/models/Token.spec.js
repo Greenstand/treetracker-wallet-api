@@ -55,6 +55,7 @@ describe("Token", () => {
         id: transferId,
         source_wallet_id: walletId,
         destination_wallet_id: wallet2Id,
+        claim: false,
       };
       const fn1 = sinon.stub(TokenRepository.prototype, "update");
       const fn2 = sinon.stub(TransactionRepository.prototype, "create");
@@ -63,13 +64,15 @@ describe("Token", () => {
         id: tokenId,
         wallet_id: wallet2Id,
         transfer_pending: false,
-        transfer_pending_id: null
+        transfer_pending_id: null,
+        claim: false,
       });
       expect(fn2).calledWith({
         token_id: tokenId,
         transfer_id: transferId,
         source_wallet_id: walletId,
         destination_wallet_id: wallet2Id,
+        claim: false,
       });
       fn1.restore();
       fn2.restore();

@@ -334,7 +334,7 @@ describe("Wallet", () => {
         state: Transfer.STATE.pending,
       });
       const fn2 = sinon.stub(sender, "hasTrust").resolves(false);
-      const transfer = await sender.transfer(sender, receiver, [token]);
+      const transfer = await sender.transfer(sender, receiver, [token], false);
       expect(transfer).property("state").eq(Transfer.STATE.pending);
       expect(fn1).to.have.been.calledWith({
         originator_wallet_id: sender.getId(),
@@ -343,7 +343,8 @@ describe("Wallet", () => {
         state: Transfer.STATE.pending,
         parameters: {
           tokens: [token.getId()],
-        }
+        },
+        claim: false,
       });
       fn0.restore();
       fn1.restore();
@@ -358,7 +359,7 @@ describe("Wallet", () => {
         state: Transfer.STATE.requested,
       });
       const fn2 = sinon.stub(wallet, "checkTrust").rejects(new HttpError(403));
-      const transfer = await wallet.transfer(sender, receiver, [token]);
+      const transfer = await wallet.transfer(sender, receiver, [token], false);
       expect(transfer).property("state").eq(Transfer.STATE.requested);
       expect(fn1).to.have.been.calledWith({
         originator_wallet_id: sender.getId(),
@@ -367,7 +368,8 @@ describe("Wallet", () => {
         state: Transfer.STATE.requested,
         parameters: {
           tokens: [token.id],
-        }
+        },
+        claim: false
       });
       fn0.restore();
       fn1.restore();
@@ -412,6 +414,7 @@ describe("Wallet", () => {
 
     it("don't have trust, sender under control, should created a transfer pending record", async () => {
       const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
+      const fn4 = sinon.stub(TokenService.prototype, "countNotClaimedTokenByWallet").resolves(1);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: transferId,
         state: Transfer.STATE.pending,
@@ -421,7 +424,7 @@ describe("Wallet", () => {
       fn3.onFirstCall().resolves(true);
       fn3.onSecondCall().resolves(false);
       const fn2 = sinon.stub(sender, "hasTrust").resolves(false);
-      const transfer = await sender.transferBundle(sender, receiver, 1);
+      const transfer = await sender.transferBundle(sender, receiver, 1, false);
       expect(transfer).property("state").eq(Transfer.STATE.pending);
       expect(fn1).to.have.been.calledWith({
         originator_wallet_id: sender.getId(),
@@ -433,14 +436,17 @@ describe("Wallet", () => {
             bundleSize: 1,
           }
         },
+        claim: false,
       });
       expect(fn0).calledWith(sender);
       fn1.restore();
       fn2.restore();
+      fn4.restore();
     });
 
     it("don't have trust, receiver under control, should create a transfer request record", async () => {
       const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
+      const fn4 = sinon.stub(TokenService.prototype, "countNotClaimedTokenByWallet").resolves(1);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
         id: transferId,
         state: Transfer.STATE.requested,
@@ -450,9 +456,10 @@ describe("Wallet", () => {
       fn3.onFirstCall().resolves(false);
       fn3.onSecondCall().resolves(true);
       const fn2 = sinon.stub(receiver, "hasTrust").resolves(false);
-      const transfer = await receiver.transferBundle(sender, receiver, 1);
+      const transfer = await receiver.transferBundle(sender, receiver, 1, false);
       expect(transfer).property("state").eq(Transfer.STATE.requested);
       expect(fn1).to.have.been.calledWith({
+        claim: false,
         originator_wallet_id: receiver.getId(),
         source_wallet_id: sender.getId(),
         destination_wallet_id: receiver.getId(),
@@ -466,10 +473,12 @@ describe("Wallet", () => {
       fn0.restore();
       fn1.restore();
       fn2.restore();
+      fn4.restore();
     });
 
     it("have trust, not deduct, should finish successfully", async () => {
       const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
+      const fn5 = sinon.stub(TokenService.prototype, "countNotClaimedTokenByWallet").resolves(1);
       const fn1 = sinon.stub(Wallet.prototype, "hasTrust").resolves(true);
       sinon.stub(Wallet.prototype, "isDeduct").resolves(false);
       const fn2 = sinon.stub(TransferRepository.prototype, "create");
@@ -478,7 +487,7 @@ describe("Wallet", () => {
       const fn4 = sinon.stub(TokenService.prototype, "getTokensByBundle").resolves([
         new Token(uuid.v4(), session)
       ]);
-      await wallet.transferBundle(sender, receiver, 1);
+      await wallet.transferBundle(sender, receiver, 1, false);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.completed,
       }));
@@ -488,10 +497,12 @@ describe("Wallet", () => {
       fn2.restore();
       fn3.restore();
       fn4.restore();
+      fn5.restore();
     });
 
     it("have trust, is deduct, should pending", async () => {
       const fn0 = sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(1);
+      const fn6 = sinon.stub(TokenService.prototype, "countNotClaimedTokenByWallet").resolves(1);
       const fn1 = sinon.stub(Wallet.prototype, "hasTrust").resolves(true);
       sinon.stub(Wallet.prototype, "isDeduct").resolves(true);
       const fn2 = sinon.stub(TransferRepository.prototype, "create");
@@ -502,7 +513,7 @@ describe("Wallet", () => {
       const fn5 = sinon.stub(Wallet.prototype, "hasControlOver");
       fn5.onCall(0).resolves(false);
       fn5.onCall(1).resolves(true);
-      await wallet.transferBundle(sender, receiver, 1);
+      await wallet.transferBundle(sender, receiver, 1, false);
       expect(fn2).calledWith(sinon.match({
         state: Transfer.STATE.requested,
       }));

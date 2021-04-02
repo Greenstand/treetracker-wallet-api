@@ -465,15 +465,6 @@ class Wallet{
         throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
       }
     }
-    // check if the tokens you want to transfer is claimed, i.e. not trasfferable
-    for (const token of tokens) {
-      if (token['_JSON']['claim'] == true) {
-        console.log("token is claimed, cannot be transfered");
-        let uuid = token['_id'];
-      throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
-      }
-    }
-
     const isDeduct = await this.isDeduct(sender,receiver);
     const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
     const hasControlOverSender = await this.hasControlOver(sender);
@@ -483,8 +474,15 @@ class Wallet{
       (hasControlOverSender && hasControlOverReceiver) ||
       (!isDeduct && hasTrust)
     ){
+
       const tokensId = [];
       for(let token of tokens){
+        // check if the tokens you want to transfer is claimed, i.e. not trasfferable
+        if (token['_JSON']['claim'] == true) {
+          console.log("token is claimed, cannot be transfered");
+          let uuid = token['_id'];
+        throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+        }
         tokensId.push(token.getId());
       }
       const transfer = await this.transferRepository.create({
@@ -517,10 +515,19 @@ class Wallet{
             state: Transfer.STATE.pending,
             parameters: {
               tokens: tokensId,
-              claim: claimBoolean,
+              
             },
+            claim: claimBoolean,
           });
           await this.tokenService.pendingTransfer(tokens, transfer);
+          // check if the tokens you want to transfer is claimed, i.e. not trasfferable
+          for (const token of tokens) {
+            if (token['_JSON']['claim'] == true) {
+              console.log("token is claimed, cannot be transfered");
+              let uuid = token['_id'];
+            throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+            }
+          }
           return transfer;
         }else if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
@@ -535,10 +542,19 @@ class Wallet{
             state: Transfer.STATE.requested,
             parameters: {
               tokens: tokensId,
-              claim: claimBoolean,
+              
             },
+            claim: claimBoolean,
           });
           await this.tokenService.pendingTransfer(tokens, transfer);
+          // check if the tokens you want to transfer is claimed, i.e. not trasfferable
+          for (const token of tokens) {
+            if (token['_JSON']['claim'] == true) {
+              console.log("token is claimed, cannot be transfered");
+              let uuid = token['_id'];
+            throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+            }
+          }
           return transfer;
         }else{
           //TODO

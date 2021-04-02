@@ -42,7 +42,7 @@ transferRouter.post(
           .required(),
           receiver_wallet: Joi.string()
           .required(),
-          claim: Joi.boolean(),
+          claim: Joi.boolean().required(),
         }),
       })
     );

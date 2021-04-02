@@ -131,6 +131,7 @@ class TokenService{
       transfer_id: transfer.id,
       source_wallet_id: transfer.source_wallet_id,
       destination_wallet_id: transfer.destination_wallet_id,
+      claim: claimBoolean,
     })));
   }
 

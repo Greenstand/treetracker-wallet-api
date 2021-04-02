@@ -292,6 +292,7 @@ describe("transferRouter", () => {
     sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: tokenId,
       wallet_id: walletId,
+      claim: false,
     }, session));
     WalletService.prototype.getById.restore();    
     sinon.stub(WalletService.prototype, "getById").resolves({
@@ -307,6 +308,7 @@ describe("transferRouter", () => {
         },
         sender_wallet: walletId,
         receiver_wallet: wallet2Id,
+        claim: false,
       });
     expect(res).property("statusCode").eq(202);
   });
