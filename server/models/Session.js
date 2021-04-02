@@ -21,7 +21,6 @@ class Session{
       throw new Error("Can not start transaction in transaction");
     }
     this.thx = await knex.transaction();
-    console.log('HEREbbba');
   }
 
   async commitTransaction(){

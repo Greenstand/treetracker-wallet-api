@@ -42,21 +42,17 @@ transferRouter.post(
           .required(),
           receiver_wallet: Joi.string()
           .required(),
+          claim: Joi.boolean(),
         }),
       })
     );
-    console.log('HERE0');
     const session = new Session();
     
     //begin transaction
     try{
-      console.log('HERE00');
       await session.beginTransaction();
-      console.log('HERE000');
       const walletService = new WalletService(session);
       const walletLogin = await walletService.getById(res.locals.wallet_id);
-
-      console.log('HERE001'); 
       const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
       const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
       // check if this transfer is a claim (claim == not transferrrable tokens)
@@ -72,15 +68,12 @@ transferRouter.post(
           tokens.push(token);
         }
         //Case 1: with trust, token transfer
-        console.log('HERE1');
         result = await walletLogin.transfer(walletSender, walletReceiver, tokens, claim);
       }else{
         //Case 2: with trust, bundle transfer
         // TODO: get only transferrable tokens
-        console.log('HERE2');
         result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size, claim);
       }
-      // console.log('HERE3');
       const transferService = new TransferService(session);
       result = await transferService.convertToResponse(result);
       if(result.state === Transfer.STATE.completed){

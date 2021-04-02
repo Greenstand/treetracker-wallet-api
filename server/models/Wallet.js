@@ -454,14 +454,6 @@ class Wallet{
    */
   async transfer(sender, receiver, tokens, claimBoolean){
 //    await this.checkDeduct(sender, receiver);
-    // check if the tokens you want to transfer is claimed, i.e. not trasfferable
-    for (const token of tokens) {
-      if (token.claim == true) {
-        console.log("token is claimed, cannot be transfered");
-      throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
-      }
-    }
-
     //check tokens belong to sender
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
@@ -471,6 +463,14 @@ class Wallet{
       if(!await token.beAbleToTransfer()){
         const uuid = await token.getId();
         throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
+      }
+    }
+    // check if the tokens you want to transfer is claimed, i.e. not trasfferable
+    for (const token of tokens) {
+      if (token['_JSON']['claim'] == true) {
+        console.log("token is claimed, cannot be transfered");
+        let uuid = token['_id'];
+      throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
       }
     }
 
@@ -555,6 +555,7 @@ class Wallet{
     // if(tokenCount < bundleSize){
     //   throw new HttpError(403, `Do not have enough tokens to send`);
     // }
+    // console.log(notClaimedTokenCount);
     if(notClaimedTokenCount < bundleSize){
       throw new HttpError(403, `Do not have enough tokens to send`);
     }
@@ -582,9 +583,9 @@ class Wallet{
         claim: claimBoolean,
       });
       log.debug("now, deal with tokens");
-      const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize)
+      const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize, claimBoolean)
       // need to check if tokens are not claim
-      await this.tokenService.completeTransfer(tokens, transfer);
+      await this.tokenService.completeTransfer(tokens, transfer, claimBoolean);
       return transfer;
     }else{
         if(hasControlOverSender){
@@ -598,7 +599,9 @@ class Wallet{
               bundle: {
                 bundleSize: bundleSize,
               }
-            }
+            },
+            //TODO: boolean for claim
+            claim: claimBoolean,
           });
           return transfer;
         }else if(hasControlOverReceiver){
