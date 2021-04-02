@@ -6,3 +6,13 @@ spec:
   prefix: /wallet/
   service: treetracker-wallet-api
   rewrite: /
+   cors:
+    origins:
+    - https://forestmatic.com
+    - https://app.forestmatic.com
+    - https://test-app.forestmatic.com
+    - https://staging-app.forestmatic.com
+    methods: GET, OPTIONS
+    headers:
+    - Content-Type
+    - Authorization
