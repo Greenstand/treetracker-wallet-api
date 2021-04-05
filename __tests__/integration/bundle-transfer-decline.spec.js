@@ -1,9 +1,9 @@
 require('dotenv').config()
 const request = require('supertest');
-const server = require("../../server/app");
 const { expect } = require('chai');
 const log = require('loglevel');
 const chai = require("chai");
+const server = require("../../server/app");
 chai.use(require('chai-uuid'));
 const Zaven = require("../mock-data/Zaven.json");
 const Meisze = require("../mock-data/Meisze.json");

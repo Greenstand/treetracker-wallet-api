@@ -86,7 +86,7 @@ storyOfThisSeed,
 
 async function seed() {
   log.debug('seed api key');
-  //TODO should use appropriate hash & salt to populate this table
+  // TODO should use appropriate hash & salt to populate this table
   await knex('api_key')
     .insert({
       key: apiKey,
@@ -105,7 +105,7 @@ async function seed() {
       salt: wallet.salt,
     });
 
-  //walletB
+  // walletB
   await knex('wallet')
     .insert({
       id: walletB.id,
@@ -114,7 +114,7 @@ async function seed() {
       salt: walletB.salt,
     });
 
-  //walletC
+  // walletC
   await knex('wallet')
     .insert({
       id: walletC.id,
@@ -123,7 +123,7 @@ async function seed() {
       salt: walletC.salt,
     });
 
-  //relationships: 'walletB' manage 'walletC'
+  // relationships: 'walletB' manage 'walletC'
   await knex('wallet_trust')
     .insert({
       type: "manage",

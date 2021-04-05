@@ -1,9 +1,9 @@
 const FS = require('fs');
 const log = require("loglevel");
 const path = require("path");
+const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
 const ApiKeyRepository = require("../repositories/ApiKeyRepository");
-const expect = require("expect-runtime");
 
 // PRIVATE and PUBLIC key
 const privateKEY = process.env.PRIVATE_KEY // FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
@@ -40,8 +40,8 @@ class ApiKeyService{
 
 module.exports = ApiKeyService;
 
-//const authController = {};
-//authController.apiKey = async (req, res, next) => {
+// const authController = {};
+// authController.apiKey = async (req, res, next) => {
 //  if (!req.headers['treetracker-api-key']) {
 //    console.log('ERROR: Invalid access - no API key');
 //    next({
@@ -70,5 +70,5 @@ module.exports = ApiKeyService;
 //  }
 //  // console.log('Valid Access');
 //  next();
-//};
+// };
 

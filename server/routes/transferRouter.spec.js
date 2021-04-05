@@ -1,14 +1,17 @@
 const request = require("supertest");
 const express = require("express");
-const transferRouter = require("./transferRouter");
-const {errorHandler} = require("./utils");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const bodyParser = require('body-parser');
+const { extractExpectedAssertionsErrors } = require("expect");
+const uuid = require('uuid');
+const transferRouter = require("./transferRouter");
+const {errorHandler} = require("./utils");
+
 chai.use(sinonChai);
 const {expect} = chai;
 const ApiKeyService = require("../services/ApiKeyService");
-const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 const HttpError = require("../utils/HttpError");
@@ -18,13 +21,11 @@ const Wallet = require("../models/Wallet");
 const Transfer = require("../models/Transfer");
 const TransferService = require("../services/TransferService");
 const Session = require("../models/Session");
-const { extractExpectedAssertionsErrors } = require("expect");
 const { column } = require("../database/knex");
-const uuid = require('uuid');
 
 describe("transferRouter", () => {
   let app;
-  let session = new Session();
+  const session = new Session();
 
   const authenticatedWallet = new Wallet(uuid.v4())
 

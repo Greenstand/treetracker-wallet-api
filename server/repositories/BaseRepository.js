@@ -1,7 +1,7 @@
-const Session = require("../models/Session");
 const expect = require("expect-runtime");
-const HttpError = require("../utils/HttpError");
 const log = require("loglevel");
+const Session = require("../models/Session");
+const HttpError = require("../utils/HttpError");
 
 class BaseRepository{
 
@@ -29,22 +29,22 @@ class BaseRepository{
     const offset = options && options.offset ? options.offset : 0 
     const whereBuilder = function(object, builder){
       let result = builder;
-      if(object['and']){
+      if(object.and){
         expect(Object.keys(object)).lengthOf(1);
-        expect(object['and']).a(expect.any(Array));
-        for(let one of object['and']){
-          if(one['or']){
+        expect(object.and).a(expect.any(Array));
+        for(const one of object.and){
+          if(one.or){
             result = result.andWhere(subBuilder => whereBuilder(one, subBuilder));
           }else{
             expect(Object.keys(one)).lengthOf(1);
             result = result.andWhere(Object.keys(one)[0], Object.values(one)[0]);
           }
         }
-      }else if(object['or']){
+      }else if(object.or){
         expect(Object.keys(object)).lengthOf(1);
-        expect(object['or']).a(expect.any(Array));
-        for(let one of object['or']){
-          if(one['and']){
+        expect(object.or).a(expect.any(Array));
+        for(const one of object.or){
+          if(one.and){
             result = result.orWhere(subBuilder => whereBuilder(one, subBuilder));
           }else{
             expect(Object.keys(one)).lengthOf(1);
@@ -74,9 +74,9 @@ class BaseRepository{
   }
 
   async update(object){
-    let objectCopy = {}
+    const objectCopy = {}
     Object.assign(objectCopy, object)
-    const id = object.id
+    const {id} = object
     delete objectCopy.id
     const result = await this._session.getDB()(this._tableName).update(objectCopy).where("id", id).returning("*");
     return result[0];
@@ -86,7 +86,7 @@ class BaseRepository{
    * update all rows matching given id
    */
   async updateByIds(object, ids){
-    let objectCopy = {}
+    const objectCopy = {}
     Object.assign(objectCopy, object)
     delete objectCopy.id
     const result = await this._session.getDB()(this._tableName).update(objectCopy).whereIn("id", ids);

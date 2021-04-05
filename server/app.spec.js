@@ -1,6 +1,6 @@
-const server = require("../server/app");
 const request = require('supertest');
 const { expect } = require('chai');
+const server = require("./app");
 
 
 describe("", () => {

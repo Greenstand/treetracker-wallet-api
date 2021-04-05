@@ -1,11 +1,11 @@
 const express = require('express');
 const { check, validationResult } = require('express-validator');
+const Joi = require("joi");
 const helper = require("./utils");
 const TokenService = require("../services/TokenService");
 const WalletService = require("../services/WalletService");
 const HttpError = require("../utils/HttpError");
 const Session = require("../models/Session");
-const Joi = require("joi");
 
 const tokenRouter = express.Router();
 
@@ -19,14 +19,14 @@ tokenRouter.get('/:id',
     const tokenService = new TokenService(session);
     const walletService = new WalletService(session);
     const token = await tokenService.getById(id);
-    //check permission
+    // check permission
     const json = await token.toJSON();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     let walletIds = [walletLogin.getId()];
     const subWallets = await walletLogin.getSubWallets();
     walletIds = [...walletIds, ...subWallets.map(e => e.getId())];
     if(walletIds.includes(json.wallet_id)){
-      //pass
+      // pass
     }else{
       throw new HttpError(401, "Have no permission to visit this token");
     }
@@ -97,20 +97,20 @@ tokenRouter.get('/:id/transactions',
     const tokenService = new TokenService(session);
     const walletService = new WalletService(session);
     const token = await tokenService.getById(id);
-    //check permission
+    // check permission
     const json = await token.toJSON();
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     let walletIds = [walletLogin.getId()];
     const subWallets = await walletLogin.getSubWallets();
     walletIds = [...walletIds, ...subWallets.map(e => e.getId())];
     if(walletIds.includes(json.wallet_id)){
-      //pass
+      // pass
     }else{
       throw new HttpError(401, "Have no permission to visit this token");
     }
     const transactions = await token.getTransactions(limit, start);
 
-    let response = [];
+    const response = [];
     for(const t of transactions){
       const transaction = await tokenService.convertToResponse(t);
       response.push(transaction);

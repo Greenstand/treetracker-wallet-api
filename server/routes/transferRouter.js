@@ -1,11 +1,12 @@
 const express = require("express");
+
 const transferRouter = express.Router();
+const Joi = require("joi");
 const WalletService = require("../services/WalletService");
 const TransferService = require("../services/TransferService");
 const Wallet = require("../models/Wallet");
 const TrustRelationship = require("../models/TrustRelationship");
 const helper = require("./utils");
-const Joi = require("joi");
 const TokenService = require("../services/TokenService");
 const HttpError = require("../utils/HttpError");
 const Transfer = require("../models/Transfer");
@@ -19,7 +20,7 @@ transferRouter.post(
     Joi.assert(
       req.body,
       Joi.alternatives()
-      //if there is tokens field
+      // if there is tokens field
       .conditional(Joi.object({
         tokens: Joi.any().required(),
       }).unknown(),{
@@ -44,7 +45,7 @@ transferRouter.post(
       })
     );
     const session = new Session();
-    //begin transaction
+    // begin transaction
     try{
       await session.beginTransaction();
       const walletService = new WalletService(session);
@@ -57,7 +58,7 @@ transferRouter.post(
       if(req.body.tokens){
         const tokens = [];
         const tokenService = new TokenService(session);
-        for(let id of req.body.tokens){
+        for(const id of req.body.tokens){
           const token = await tokenService.getById(id); 
           tokens.push(token);
         }
@@ -79,11 +80,11 @@ transferRouter.post(
       await session.commitTransaction();
     }catch(e){
       if(e instanceof HttpError && !e.shouldRollback()){
-        //if the error type is HttpError, means the exception has been handled
+        // if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
       }else{
-        //unknown exception, rollback the transaction
+        // unknown exception, rollback the transaction
         await session.rollbackTransaction();
         throw e;
       }
@@ -102,7 +103,7 @@ transferRouter.post('/:transfer_id/accept',
       })
     );
     const session = new Session();
-    //begin transaction
+    // begin transaction
     try{
       await session.beginTransaction();
       const walletService = new WalletService(session);
@@ -114,11 +115,11 @@ transferRouter.post('/:transfer_id/accept',
       await session.commitTransaction();
     }catch(e){
       if(e instanceof HttpError && !e.shouldRollback()){
-        //if the error type is HttpError, means the exception has been handled
+        // if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
       }else{
-        //unknown exception, rollback the transaction
+        // unknown exception, rollback the transaction
         await session.rollbackTransaction();
         throw e;
       }
@@ -137,7 +138,7 @@ transferRouter.post('/:transfer_id/decline',
       })
     );
     const session = new Session();
-    //begin transaction
+    // begin transaction
     try{
       await session.beginTransaction();
       const walletService = new WalletService(session);
@@ -149,11 +150,11 @@ transferRouter.post('/:transfer_id/decline',
       await session.commitTransaction();
     }catch(e){
       if(e instanceof HttpError && !e.shouldRollback()){
-        //if the error type is HttpError, means the exception has been handled
+        // if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
       }else{
-        //unknown exception, rollback the transaction
+        // unknown exception, rollback the transaction
         await session.rollbackTransaction();
         throw e;
       }
@@ -172,7 +173,7 @@ transferRouter.delete('/:transfer_id',
       })
     );
     const session = new Session();
-    //begin transaction
+    // begin transaction
     try{
       await session.beginTransaction();
       const walletService = new WalletService(session);
@@ -184,11 +185,11 @@ transferRouter.delete('/:transfer_id',
       await session.commitTransaction();
     }catch(e){
       if(e instanceof HttpError && !e.shouldRollback()){
-        //if the error type is HttpError, means the exception has been handled
+        // if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
       }else{
-        //unknown exception, rollback the transaction
+        // unknown exception, rollback the transaction
         await session.rollbackTransaction();
         throw e;
       }
@@ -209,7 +210,7 @@ transferRouter.post('/:transfer_id/fulfill',
     Joi.assert(
       req.body,
       Joi.alternatives()
-      //if there is tokens field
+      // if there is tokens field
       .conditional(Joi.object({
         tokens: Joi.any().required(),
       }).unknown(),{
@@ -222,7 +223,7 @@ transferRouter.post('/:transfer_id/fulfill',
       })
     );
     const session = new Session();
-    //begin transaction
+    // begin transaction
     try{
       await session.beginTransaction();
       const walletService = new WalletService(session);
@@ -232,10 +233,10 @@ transferRouter.post('/:transfer_id/fulfill',
       if(req.body.implicit){
         transferJson = await walletLogin.fulfillTransfer(req.params.transfer_id);
       }else{
-        //load tokens
+        // load tokens
         const tokens = [];
         const tokenService = new TokenService(session);
-        for(let id of req.body.tokens){
+        for(const id of req.body.tokens){
           const token = await tokenService.getById(id); 
           tokens.push(token);
         }
@@ -246,11 +247,11 @@ transferRouter.post('/:transfer_id/fulfill',
       await session.commitTransaction();
     }catch(e){
       if(e instanceof HttpError && !e.shouldRollback()){
-        //if the error type is HttpError, means the exception has been handled
+        // if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
       }else{
-        //unknown exception, rollback the transaction
+        // unknown exception, rollback the transaction
         await session.rollbackTransaction();
         throw e;
       }
@@ -287,8 +288,8 @@ transferRouter.get("/",
     // todo fix filtering by wallet, instead of undefined should take a wallet object with getId() function
     const result = await walletTransfer.getTransfers(state, undefined , start, limit);
     const transferService = new TransferService(session);
-    let json = [];
-    for(let t of result){
+    const json = [];
+    for(const t of result){
       const j = await transferService.convertToResponse(t);
       json.push(j);
     }
@@ -341,7 +342,7 @@ transferRouter.get('/:transfer_id/tokens',
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     const tokens = await walletLogin.getTokensByTransferId(req.params.transfer_id, Number(limit), Number(start || 0));
 
-    let tokensJson = [];
+    const tokensJson = [];
     for(const token of tokens){
       const json = await token.toJSON();
       tokensJson.push(json);

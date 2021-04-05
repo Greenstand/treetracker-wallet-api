@@ -1,7 +1,8 @@
-const TrustRepository = require("./TrustRepository");
 const {expect} = require("chai");
-const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
+const TrustRepository = require("./TrustRepository");
+const knex = require("../database/knex");
+
 const tracker = mockKnex.getTracker();
 const Session = require("../models/Session");
 const uuid = require('uuid');

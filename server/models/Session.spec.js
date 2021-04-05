@@ -1,8 +1,9 @@
-const Session = require("./Session");
 const jestExpect = require("expect");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const Session = require("./Session");
+
 chai.use(sinonChai);
 const {expect} = chai;
 

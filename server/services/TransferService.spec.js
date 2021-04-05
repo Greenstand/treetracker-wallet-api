@@ -1,19 +1,20 @@
 const TransferService = require("./TransferService");
 const WalletService = require("./WalletService");
-const Wallet = require("../models/Wallet");
 const jestExpect = require("expect");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+
 chai.use(sinonChai);
 const {expect} = chai;
-const Session = require("../models/Session");
 const uuid = require('uuid');
+const Session = require("../models/Session");
+const Wallet = require("../models/Wallet");
 
 describe("TransferService", () => {
   let transferService ;
   describe("", () => {
-    let session = new Session();
+    const session = new Session();
     transferService = new TransferService(session);
 
   });

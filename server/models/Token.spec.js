@@ -1,19 +1,20 @@
-const Token = require("./Token");
 const jestExpect = require("expect");
 const sinon = require("sinon");
-const TokenRepository = require("../repositories/TokenRepository");
-const HttpError = require("../utils/HttpError");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const uuid = require('uuid');
+const Token = require("./Token");
+const TokenRepository = require("../repositories/TokenRepository");
+const HttpError = require("../utils/HttpError");
+
 chai.use(sinonChai);
 const {expect} = chai;
 const TransactionRepository = require("../repositories/TransactionRepository");
 const Wallet = require("./Wallet");
 const Session = require("./Session");
-const uuid = require('uuid');
 
 describe("Token", () => {
-  let session = new Session();
+  const session = new Session();
 
   const tokenId = uuid.v4()
   const transferId = uuid.v4()
