@@ -17,10 +17,10 @@ walletRouter.get('/',
       req.query,
       Joi.object({
         limit: Joi.number().required(),
-        start: Joi.number().min(1).integer(),
+        offset: Joi.number().min(1).integer(),
       })
     );
-    const {limit, start} = req.query;
+    const {limit, offset} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
@@ -37,10 +37,11 @@ walletRouter.get('/',
       walletsJson.push(json);
     }
     
-    const numStart = parseInt(start);
+    const numStart = parseInt(offset);
     const numLimit = parseInt(limit);
     const numBegin = numStart?numStart-1:0;
     const numEnd=numBegin+numLimit;
+
     walletsJson = walletsJson.slice(numBegin, numEnd)
     
     res.status(200).json({

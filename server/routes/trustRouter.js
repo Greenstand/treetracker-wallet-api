@@ -21,7 +21,7 @@ trustRouter.get('/',
         state: Joi.string(),
         type: Joi.string(),
         request_type: Joi.string(),
-        start: Joi.number().min(0).default(0).integer(),
+        offset: Joi.number().min(0).default(0).integer(),
         limit: Joi.number().min(1).max(10000).integer().default(1000),
       })
     )
@@ -31,7 +31,7 @@ trustRouter.get('/',
         wallet_id: Joi.string().required()
       })
     )
-    const {state, type, request_type, limit, start} = req.query;
+    const {state, type, request_type, limit, offset} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -40,7 +40,7 @@ trustRouter.get('/',
       state,
       type,
       request_type,
-      Number(start || 0),
+      Number(offset || 0),
       Number(limit || 0)
     );
     const subWallets = await wallet.getSubWallets();
