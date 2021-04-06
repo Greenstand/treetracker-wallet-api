@@ -1,20 +1,19 @@
-const log = require("loglevel");
+const log = require('loglevel');
 const { validate: uuidValidate } = require('uuid');
-const Joi = require("joi");
-const expect = require("expect-runtime");
-const TokenRepository = require("../repositories/TokenRepository");
-const TransactionRepository = require("../repositories/TransactionRepository");
-const HttpError = require("../utils/HttpError");
+const Joi = require('joi');
+const expect = require('expect-runtime');
+const TokenRepository = require('../repositories/TokenRepository');
+const TransactionRepository = require('../repositories/TransactionRepository');
+const HttpError = require('../utils/HttpError');
 
-class Token{
-  
-  constructor(idOrJSON, session){
-    if(uuidValidate(idOrJSON)){
+class Token {
+  constructor(idOrJSON, session) {
+    if (uuidValidate(idOrJSON)) {
       this._id = idOrJSON;
-    }else if(typeof idOrJSON === "object" && uuidValidate(idOrJSON.id) ){
+    } else if (typeof idOrJSON === 'object' && uuidValidate(idOrJSON.id)) {
       this._id = idOrJSON.id;
       this._JSON = idOrJSON;
-    }else{
+    } else {
       throw new HttpError(500, `wrong contructor:${idOrJSON}`);
     }
     this.tokenRepository = new TokenRepository(session);
@@ -22,34 +21,33 @@ class Token{
     this._session = session;
   }
 
-  getId(){
+  getId() {
     return this._id;
   }
 
-  async toJSON(){
-    if(this._JSON){
-    }else{
+  async toJSON() {
+    if (!this._JSON) {
       this._JSON = await this.tokenRepository.getById(this._id);
     }
     // deal with tree links
     const result = {
       ...this._JSON,
       links: {
-        capture: `/webmap/tree?uuid=${this._JSON.capture_id}`
-      }
-    }
+        capture: `/webmap/tree?uuid=${this._JSON.capture_id}`,
+      },
+    };
     return result;
   }
 
-  clearJSON(){
+  clearJSON() {
     this._JSON = undefined;
   }
 
   /*
    * To transfer this token according the transfer object
    */
-  async completeTransfer(transfer){
-    log.debug("Token complete transfer");
+  async completeTransfer(transfer) {
+    log.debug('Token complete transfer');
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: false,
@@ -67,12 +65,8 @@ class Token{
   /*
    * To pending this token on the given transfer
    */
-  async pendingTransfer(transfer){
-
-    Joi.assert(
-      transfer.id,
-      Joi.string().guid()
-    )
+  async pendingTransfer(transfer) {
+    Joi.assert(transfer.id, Joi.string().guid());
 
     await this.tokenRepository.update({
       id: this._id,
@@ -81,46 +75,42 @@ class Token{
     });
   }
 
-  async cancelTransfer(transfer){
-    log.debug("Token cancel transfer");
+  async cancelTransfer(transfer) {
+    log.debug('Token cancel transfer');
     await this.tokenRepository.update({
       id: this._id,
       transfer_pending: false,
-      transfer_pending_id: null
+      transfer_pending_id: null,
     });
   }
 
-  async belongsTo(wallet){
-
-    Joi.assert(
-      wallet.getId(),
-      Joi.string().guid()
-    )
+  async belongsTo(wallet) {
+    Joi.assert(wallet.getId(), Joi.string().guid());
 
     const json = await this.toJSON();
-    if(json.wallet_id === wallet.getId()){
+    if (json.wallet_id === wallet.getId()) {
       return true;
     }
-      return false;
-    
+    return false;
   }
 
-  async beAbleToTransfer(){
+  async beAbleToTransfer() {
     const json = await this.toJSON();
-    if(json.transfer_pending === false){
+    if (json.transfer_pending === false) {
       return true;
     }
-      return false;
-    
+    return false;
   }
 
-  async getTransactions(limit, offset  = 0){
-    const transactions = await this.transactionRepository.getByFilter({
-      token_id: this._id,
-    }, {limit, offset});
+  async getTransactions(limit, offset = 0) {
+    const transactions = await this.transactionRepository.getByFilter(
+      {
+        token_id: this._id,
+      },
+      { limit, offset },
+    );
     return transactions;
   }
-
 }
 
 module.exports = Token;
