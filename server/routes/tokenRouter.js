@@ -43,11 +43,11 @@ tokenRouter.get('/',
       req.query,
       Joi.object({
         limit: Joi.number().min(1).max(1000).required().default(1000),
-        start: Joi.number().min(0).integer().default(0),
+        offset: Joi.number().min(0).integer().default(0),
         wallet: Joi.string(),
       })
     );
-    const {limit, wallet, start} = req.query;
+    const {limit, wallet, offset} = req.query;
     const session = new Session();
     const tokenService = new TokenService(session);
     const walletService = new WalletService(session);
@@ -60,9 +60,9 @@ tokenRouter.get('/',
       if(!isSub){
         throw new HttpError(403, "Wallet does not belong to wallet logged in");
       }
-      tokens = await tokenService.getByOwner(walletInstance, limit, start);
+      tokens = await tokenService.getByOwner(walletInstance, limit, offset);
     }else{
-      tokens = await tokenService.getByOwner(walletLogin, limit, start);
+      tokens = await tokenService.getByOwner(walletLogin, limit, offset);
     }
 
     const tokensJson = [];
@@ -85,12 +85,12 @@ tokenRouter.get('/:id/transactions',
       req.query,
       Joi.object({
         limit: Joi.number().min(1).max(1000).integer().default(1000).required(),
-        start: Joi.number().min(0).integer(),
+        offset: Joi.number().min(0).integer(),
         id: Joi.string().guid(), 
         transactions: Joi.string(),
       })
     );
-    const {limit, start} = req.query;
+    const {limit, offset} = req.query;
 
     const session = new Session();
     const {id} = req.params;
@@ -108,7 +108,7 @@ tokenRouter.get('/:id/transactions',
     }else{
       throw new HttpError(401, "Have no permission to visit this token");
     }
-    const transactions = await token.getTransactions(limit, start);
+    const transactions = await token.getTransactions(limit, offset);
 
     let response = [];
     for(const t of transactions){

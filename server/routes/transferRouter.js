@@ -272,10 +272,10 @@ transferRouter.get("/",
           Joi.number().min(4).max(32)
         ),
         limit: Joi.number().min(1).max(1000).required(),
-        start: Joi.number().min(0).integer().default(0)
+        offset: Joi.number().min(0).integer().default(0)
       })
     );
-    const {state, wallet, limit, start} = req.query;
+    const {state, wallet, limit, offset} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
@@ -285,7 +285,7 @@ transferRouter.get("/",
       walletTransfer = await walletService.getByIdOrName(wallet);
     }
     // todo fix filtering by wallet, instead of undefined should take a wallet object with getId() function
-    const result = await walletTransfer.getTransfers(state, undefined , start, limit);
+    const result = await walletTransfer.getTransfers(state, undefined , offset, limit);
     const transferService = new TransferService(session);
     let json = [];
     for(let t of result){
@@ -332,14 +332,14 @@ transferRouter.get('/:transfer_id/tokens',
       req.query,
       Joi.object({
         limit: Joi.number().min(1).max(1000).required(),
-        start: Joi.number().min(0).integer().default(0),
+        offset: Joi.number().min(0).integer().default(0),
       })
     );
-    const {limit, start} = req.query;
+    const {limit, offset} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
-    const tokens = await walletLogin.getTokensByTransferId(req.params.transfer_id, Number(limit), Number(start || 0));
+    const tokens = await walletLogin.getTokensByTransferId(req.params.transfer_id, Number(limit), Number(offset || 0));
 
     let tokensJson = [];
     for(const token of tokens){
