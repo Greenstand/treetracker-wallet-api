@@ -1,12 +1,10 @@
-
 as
-#API Documentation 
+#API Documentation
 
 To view the specs for the new API visit https://editor.swagger.io and load the YAML file from /docs/api/spec/treetracker-token-api.yaml
 
-
 # Getting Started
-  
+
 ## Project Setup
 
 Fork this repository to your account and clone from this forked copy.
@@ -17,7 +15,8 @@ Open terminal, navigate to a folder to install this project, and run the below c
 git clone https://github.com/[YOUR GITHUB USERNAME]/treetracker-wallet-api.git
 
 ```
-Install all necessary dependencies: 
+
+Install all necessary dependencies:
 
 ```
 npm install
@@ -37,8 +36,10 @@ cat jwtRS256.key.pub
 ### Database Setup
 
 You can use docker-compose, to start a database. To do that:
+
 1. download and install docker
-2. set your /database/database.json file to be: 
+2. set your /database/database.json file to be:
+
 ```
 {
   "dev": {
@@ -52,16 +53,20 @@ You can use docker-compose, to start a database. To do that:
   }
 }
 ```
+
 your .env file to have a line
 
 ```
 DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user
 ```
-3. run ```docker-compose up ``` to run the database (or ```docker-compose up -d``` to run detached)
-4. then run migrations 
+
+3. run `docker-compose up ` to run the database (or `docker-compose up -d` to run detached)
+4. then run migrations
+
 ```
 ./node_modules/db-migrate/bin/db-migrate --env dev up
-``` 
+```
+
 5. that's it, your db should be running
 
 Don't forget to set PUBLIC_KEY and PRIVATE_KEY as described below.
@@ -72,31 +77,15 @@ To connect to the database, we need a user and a database. We can either use the
 
 To create a new user (role):
 
-`
-CREATE ROLE "username" WITH
-	LOGIN
-	SUPERUSER
-	CREATEDB
-	CREATEROLE
-	INHERIT
-	NOREPLICATION
-	CONNECTION LIMIT -1;
-`
+`CREATE ROLE "username" WITH LOGIN SUPERUSER CREATEDB CREATEROLE INHERIT NOREPLICATION CONNECTION LIMIT -1;`
 
 To set the password:
 
-`
-ALTER USER username WITH PASSWORD 'password';
-`
+`ALTER USER username WITH PASSWORD 'password';`
 
 To create a new database:
 
-`
-CREATE DATABASE dbname
-    WITH 
-    OWNER = username
-    ENCODING = 'UTF8';
-`
+`CREATE DATABASE dbname WITH OWNER = username ENCODING = 'UTF8';`
 
 We recommend setting up your Postgres server/database locally and assigning setting up your environment variables in an .env file in your root repository:
 
@@ -116,12 +105,13 @@ If you are using the postgres user:
 DATABASE_URL="postgresql://postgres@localhost:5432/[database_name]";
 ```
 
-See the .env.example file for the format and structure. 
+See the .env.example file for the format and structure.
 
 Here are some resources to get started on local database set up and migration:
-* https://postgresapp.com
-* pgAdmin and DBeaver are great GUI options to use for navigating your local db 
-* https://www.postgresql.org/docs/9.1/app-pgdump.html
+
+- https://postgresapp.com
+- pgAdmin and DBeaver are great GUI options to use for navigating your local db
+- https://www.postgresql.org/docs/9.1/app-pgdump.html
 
 Next, create a new wallets schema in your local database. Navigate to the database folder and create a database.json file populated with the credentials for your local server:
 
@@ -138,6 +128,7 @@ Next, create a new wallets schema in your local database. Navigate to the databa
   }
 }
 ```
+
 To quickly build the necessary tables for your wallets schema, run:
 
 ```
@@ -152,28 +143,39 @@ If you have not installed db-migrate globally, while in the database folder, you
 
 See here to learn more about db-migrate: https://db-migrate.readthedocs.io/en/latest/
 
-### Setting up env variables 
+### Setting up env variables
 
 in your .env file you have (you can look at env.example)
+
 ```
 ...
 PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
 PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
 ...
 ```
-Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files.  **Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here.
 
-## Troubleshooting 
-If you run into issue: 
+Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files. \*\*Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here.
+
+### We are using linter to keep the project in shape
+
+if you are using VScode as your IDE, you can set up linter to run on save, which is very handy
+you can set it up by going to Preferences > Settings > Workspace > Formatting > Format on Save
+
+## Troubleshooting
+
+If you run into issue:
+
 ```
  ifError got unwanted exception: function uuid_generate_v4() does not exist
 ```
+
 Delete and recreate your wallets schema and then inside your postgres connection in terminal, run to install the required extension
 
 ```
-\c <db name> 
+\c <db name>
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
+
 Now re-run the "db-migrate --env dev up" command in your normal terminal in the database directory.
 
 Now you should be all set up and ready to go!
@@ -182,30 +184,29 @@ Now you should be all set up and ready to go!
 
 This project use multiple layer structure to build the whole system. Similar with MVC structure:
 
-![layers](/layers.png "layers")
+![layers](/layers.png 'layers')
 
-
-* **Protocol layer**
+- **Protocol layer**
 
 Wallet API offers RESTFul API interace based on HTTP protocol. We use Express to handle all HTTP requests.
 
 The Express-routers work like the controller role in MVC, they receive the requests and parameters from client, and translate it and dispatch tasks to appropriate business objects. Then receive the result from them, translate to the 'view', the JSON response, to client.
 
-* **Service layer**
+- **Service layer**
 
-Both service layer and model layer are where all the business logic is located. Comparing to the Model , `service` object don't have state (stateless).  
+Both service layer and model layer are where all the business logic is located. Comparing to the Model , `service` object don't have state (stateless).
 
 Please put business logic code into service object when it is hard to put them into the `Model` object.
 
 Because we didn't use Factory or dependency injection to create object, so service layer also can be used as Factory to create `model` object.
 
-* **Model layer**
+- **Model layer**
 
-The business model, major business logic is here. They are real object, in the perspective of object oriented programming: they have states, they have the method to do stuff. 
+The business model, major business logic is here. They are real object, in the perspective of object oriented programming: they have states, they have the method to do stuff.
 
 There are more discussion about this, check below selection.
 
-* **Repository layer**
+- **Repository layer**
 
 Repository is responsible for communicate with the real database, this isolation brings flexibility for us, for example, we can consider replace the implementation of the storage infrastructure in the future.
 
@@ -233,9 +234,9 @@ Because we are not using ORM (Object Relationship Mapping) and not using object 
 
 Thanks Knex, we can use it to easily retrieve objects from SQL DB, but they are simple value object, not model.
 
-So the trade-off way we are using is building model object JUST with the identity (e.g. primary key), but don't have any other properties, if we want to visit them, require the DB(repository) at the moment. 
+So the trade-off way we are using is building model object JUST with the identity (e.g. primary key), but don't have any other properties, if we want to visit them, require the DB(repository) at the moment.
 
-In some case, to reduce the traffic to the DB, model can cache the JSON object from DB by contructor the model object with it. In this case, the outside code which is using this model should be responsible for keep the cached JSON (in model object) consistent with the DB status. 
+In some case, to reduce the traffic to the DB, model can cache the JSON object from DB by contructor the model object with it. In this case, the outside code which is using this model should be responsible for keep the cached JSON (in model object) consistent with the DB status.
 
 ### Seting up DB transaction
 
@@ -257,7 +258,7 @@ try{
     const tokens = [];
     const tokenService = new TokenService(session);
     for(let uuid of req.body.tokens){
-      const token = await tokenService.getByUUID(uuid); 
+      const token = await tokenService.getByUUID(uuid);
       tokens.push(token);
     }
     result = await walletLogin.transfer(walletSender, walletReceiver, tokens);
@@ -269,7 +270,7 @@ try{
   if(result.state === Transfer.STATE.completed){
     res.status(201).json(result);
   }else if(
-    result.state === Transfer.STATE.pending || 
+    result.state === Transfer.STATE.pending ||
     result.state === Transfer.STATE.requested){
     res.status(202).json(result);
   }else{
@@ -292,16 +293,15 @@ try{
 
 By wrapping all the code in a try/catch block, if everything goes well, when the code reach to the line `await session.commitTransaction()`, all those changing happned in this code block would be commited to DB. If somthine went wrong, there are three cases:
 
-1. If this is a unkown error, for example, the DB lib thrown something like: connection to DB is broken, then the transaction would rollback to the start point. 
+1. If this is a unkown error, for example, the DB lib thrown something like: connection to DB is broken, then the transaction would rollback to the start point.
 
 2. If this is a error thrown by ourselves, we can chose to commit or rollback by setting the flag in HttpError:
-
 
 ```
 throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`, true);
 ```
 
-The third parameter `true` means please rollback. (This is the default case for HttpError); 
+The third parameter `true` means please rollback. (This is the default case for HttpError);
 
 3. If set the HttpError's `toRollback` (the third parameter) to false, then, the transaction would commit anyway.
 
@@ -322,7 +322,7 @@ someService = {
 }
 ```
 
-There are two way to compose object, Class or direct literal object in Javascript, this project we suggest use Class to build object, like: model, service, repository, even though they are stateless objects. This is because generally to say, Class brings more flexibility for future choices, all the things literal object and do, Class can do it too, but literal object can not do all the things Class can do. 
+There are two way to compose object, Class or direct literal object in Javascript, this project we suggest use Class to build object, like: model, service, repository, even though they are stateless objects. This is because generally to say, Class brings more flexibility for future choices, all the things literal object and do, Class can do it too, but literal object can not do all the things Class can do.
 
 One things should be considered in future is the database transaction, if we use Class and create new instance ever time, then it's possible for us to pass the transition session object into the object to do things in a database transaction session.
 
@@ -338,9 +338,9 @@ throw new HttpError(403, 'Do not have permission to do this operation...');
 
 The protocol layer would catch the object and return to client with this response:
 
-* Status code: 403
+- Status code: 403
 
-* Response body: 
+- Response body:
 
 ```
 {
@@ -391,7 +391,7 @@ log.debug("...");
 log.info("...");
 ```
 
-* The default log level
+- The default log level
 
 The default log level is `info`, the change it temporarily, when developing, set the env: `NODE_LOG_LEVEL`, for example:
 
@@ -424,6 +424,7 @@ npm run test-integration
 ```
 
 ## Database seeding test
+
 In order to efficiently run our integration tests, we rely on automated database seeding/clearing functions to mock database entries. To test these functions, run:
 
 ```
@@ -504,13 +505,12 @@ Chai is not good for testing/catching errors throwing from internal stack. We ar
   }).rejects.toThrow(/can not find entity/);
 ```
 
-
 # Contributing
 
 Create your local git branch and rebase it from the shared master branch. Please make sure to 1) npm install and 2) delete and rebuild your local database wallet schema using the migrations (as illustrated in the Database Setup section above) to capture any latest updates/changes.
 
 Please follow this convention for commit messages [here](https://www.conventionalcommits.org/en/v1.0.0/)
 
-Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. You can make a draft pull request as you are working on any open issue that interests you, and any changes you make on your local branch can be continually synced with this draft until you are ready to submit. Remember to push your changes up to your forked repository and then make any pull requests from your forked branch to the Greenstand master repository branch. 
+Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. You can make a draft pull request as you are working on any open issue that interests you, and any changes you make on your local branch can be continually synced with this draft until you are ready to submit. Remember to push your changes up to your forked repository and then make any pull requests from your forked branch to the Greenstand master repository branch.
 
-When you are ready to submit a pull request, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting. 
+When you are ready to submit a pull request, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting.
