@@ -42,9 +42,9 @@ jobs:
     - name: npm clean install
       run: npm ci
       working-directory: ${{ env.project-directory }}
-      #- name: run ESLint
-      # run: npm run lint
-      #working-directory: ${{ env.project-directory }}
+      - name: run ESLint
+      run: npm run lint
+      working-directory: ${{ env.project-directory }}
 
     - name: run db-migrate
       run: npm run db-migrate-ci
