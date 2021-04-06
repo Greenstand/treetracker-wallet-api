@@ -1,15 +1,16 @@
 const express = require('express');
-const Joi = require("joi");
-const _ = require('lodash')
+const Joi = require('joi');
+const _ = require('lodash');
 const helper = require('./utils');
-const WalletService = require("../services/WalletService");
-const TokenService = require("../services/TokenService");
-const TrustService = require("../services/TrustService");
-const Session = require("../models/Session");
+const WalletService = require('../services/WalletService');
+const TokenService = require('../services/TokenService');
+const TrustService = require('../services/TrustService');
+const Session = require('../models/Session');
 
 const walletRouter = express.Router();
 
-walletRouter.get('/', 
+walletRouter.get(
+  '/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
@@ -17,42 +18,44 @@ walletRouter.get('/',
       req.query,
       Joi.object({
         limit: Joi.number().required(),
-        start: Joi.number().min(1).integer(),
-      })
+        offset: Joi.number().min(1).integer(),
+      }),
     );
-    const {limit, start} = req.query;
+    const { limit, offset } = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
     const subWallets = await loggedInWallet.getSubWallets();
     // at logged in wallets to list of wallets
     subWallets.push(loggedInWallet);
-    
+
     let walletsJson = [];
 
     const tokenService = new TokenService(session);
     for (const wallet of subWallets) {
       const json = await wallet.toJSON();
-      json.tokens_in_wallet = await tokenService.countTokenByWallet(wallet); 
+      json.tokens_in_wallet = await tokenService.countTokenByWallet(wallet);
       walletsJson.push(json);
     }
-    
-    const numStart = parseInt(start);
+
+    const numStart = parseInt(offset);
     const numLimit = parseInt(limit);
-    const numBegin = numStart?numStart-1:0;
-    const numEnd=numBegin+numLimit;
-    walletsJson = walletsJson.slice(numBegin, numEnd)
-    
+    const numBegin = numStart ? numStart - 1 : 0;
+    const numEnd = numBegin + numLimit;
+    walletsJson = walletsJson.slice(numBegin, numEnd);
+
     res.status(200).json({
-      wallets: walletsJson.map(wallet => _.omit(wallet, ['password', 'type', 'salt']))
+      wallets: walletsJson.map((wallet) =>
+        _.omit(wallet, ['password', 'type', 'salt']),
+      ),
     });
-  })
+  }),
 );
 
+// TO DO: Add below route to yaml
 
-// TO DO: Add below route to yaml 
-
-walletRouter.get('/:wallet_id/trust_relationships', 
+walletRouter.get(
+  '/:wallet_id/trust_relationships',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
@@ -66,17 +69,18 @@ walletRouter.get('/:wallet_id/trust_relationships',
       req.query.request_type,
     );
     const trust_relationships_json = [];
-    for(const t of trust_relationships){
+    for (const t of trust_relationships) {
       const j = await trustService.convertToResponse(t);
       trust_relationships_json.push(j);
     }
     res.status(200).json({
       trust_relationships: trust_relationships_json,
     });
-  })
-); 
+  }),
+);
 
-walletRouter.post('/', 
+walletRouter.post(
+  '/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
@@ -84,7 +88,7 @@ walletRouter.post('/',
       req.body,
       Joi.object({
         wallet: Joi.string().required(),
-      })
+      }),
     );
     const session = new Session();
     const walletService = new WalletService(session);
@@ -92,10 +96,9 @@ walletRouter.post('/',
     const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);
 
     res.status(200).json({
-      wallet: addedWallet.name
+      wallet: addedWallet.name,
     });
-  })
-)
-
+  }),
+);
 
 module.exports = walletRouter;

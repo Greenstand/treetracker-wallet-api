@@ -69,7 +69,7 @@ describe('tokenRouter', () => {
     it('successfully, default wallet', async () => {
       sinon.stub(TokenService.prototype, 'getByOwner').resolves([token2]);
       sinon.stub(WalletService.prototype, 'getById').resolves(wallet);
-      const res = await request(app).get('/?limit=10&start=1');
+      const res = await request(app).get('/?limit=10&offset=1');
       expect(res).property('statusCode').eq(200);
       expect(res.body.tokens).lengthOf(1);
       expect(res.body.tokens[0]).property('id').eq(token2Id);
@@ -216,13 +216,14 @@ describe('tokenRouter', () => {
       const limit = '3';
       const offset = '5';
       const res = await request(app).get(
-        `/${tokenId}/transactions?limit=${limit}&start=${offset}`,
+        `/${tokenId}/transactions?limit=${limit}&offset=${offset}`,
       );
       expect(res).property('statusCode').eq(200);
       expect(getTransactionsStub.getCall(0).args).deep.to.equal([
         limit,
         offset,
       ]);
+
       expect(res.body.history).lengthOf(3);
       expect(res.body.history[0]).property('sender_wallet').eq('number5');
       expect(res.body.history[0]).property('receiver_wallet').eq('number5');
