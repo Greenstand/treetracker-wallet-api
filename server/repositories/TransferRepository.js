@@ -1,7 +1,7 @@
+const expect = require("expect-runtime");
 const knex = require("../database/knex");
 const Transfer = require("../models/Transfer");
 const BaseRepository = require("./BaseRepository");
-const expect = require("expect-runtime");
 const Session = require("../models/Session");
 
 class TransferRepository extends BaseRepository{
@@ -17,7 +17,7 @@ class TransferRepository extends BaseRepository{
     object.active = true;
     const result = await super.create(object);
     expect(result).match({
-      id: expect.any(String),
+      id: expect.anything(),
     });
     return result;
   }

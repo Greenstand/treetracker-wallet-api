@@ -1,8 +1,8 @@
+const expect = require("expect-runtime");
 const knex = require('../database/knex');
 const config = require('../../config/config');
 const HttpError = require("../utils/HttpError");
 const BaseRepository = require("./BaseRepository");
-const expect = require("expect-runtime");
 const Session = require("../models/Session");
 
 class TokenRepository extends BaseRepository{
@@ -21,6 +21,18 @@ class TokenRepository extends BaseRepository{
     return result;
   }
 
+  /*
+   * select transaction table by transfer id, return matched tokens
+   */
+  async getByTransferId(transferId, limit, offset = 0){
+    return await this._session.getDB().raw(`
+      SELECT "token".* FROM "token"
+      JOIN "transaction" 
+      ON "token".id = "transaction".token_id
+      WHERE "transaction".transfer_id = ${transferId}
+      LIMIT ${limit}
+      OFFSET ${offset}`)
+  }
 }
 
 module.exports = TokenRepository;

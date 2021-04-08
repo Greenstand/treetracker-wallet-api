@@ -1,14 +1,16 @@
 const request = require("supertest");
 const express = require("express");
-const trustRouter = require("./trustRouter");
-const {errorHandler} = require("./utils");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const bodyParser = require('body-parser');
+const uuid = require('uuid');
+const trustRouter = require("./trustRouter");
+const {errorHandler} = require("./utils");
+
 chai.use(sinonChai);
 const {expect} = chai;
 const ApiKeyService = require("../services/ApiKeyService");
-const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");
 const TrustService = require("../services/TrustService");
 const JWTService = require("../services/JWTService");
@@ -17,7 +19,6 @@ const Token = require("../models/Token");
 const TokenService = require("../services/TokenService");
 const Wallet = require("../models/Wallet");
 const TrustRelationship = require("../models/TrustRelationship");
-const uuid = require('uuid');
 
 describe("trustRouter", () => {
   let app;
@@ -123,30 +124,30 @@ describe("trustRouter", () => {
       // TODO: need to update the test
       sinon.stub(WalletService.prototype, "getById").resolves(new Wallet(walletId));
       sinon.stub(TrustService.prototype, "convertToResponse").resolves({id:trustId});
-      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{},{},{},{}]);
+      const fn = sinon.stub(Wallet.prototype, "getTrustRelationships").resolves([{},{},{}]);
       const res = await request(app)
         .get(`/?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}&limit=3`);
-      console.log(res.body);
-      expect(res).property("statusCode").eq(200);
-      console.log(res.body.trust_relationships);
-      //get 3 from 4 items
-      expect(res.body.trust_relationships).lengthOf(3);
+
       expect(fn).calledWith(
         TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
         TrustRelationship.ENTITY_TRUST_TYPE.send,
-        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send
+        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        0,
+        3
       )
+      expect(res).property("statusCode").eq(200);
+      expect(res.body.trust_relationships).lengthOf(3);
     });
     
-    //TODO 
+    // TODO 
     it.skip("wrong state string should throw 422", () => {
     });
 
-    //TODO 
+    // TODO 
     it.skip("wrong type string should throw 422", () => {
     });
 
-    //TODO 
+    // TODO 
     it.skip("wrong request_type string should throw 422", () => {
     });
 

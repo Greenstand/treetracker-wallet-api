@@ -1,16 +1,16 @@
 require('dotenv').config()
 const request = require('supertest');
-const server = require("../server/app");
 const { expect } = require('chai');
-const seed = require('./seed');
 const log = require('loglevel');
-const Transfer = require("../server/models/Transfer");
-const TrustRelationship = require("../server/models/TrustRelationship");
 const sinon = require("sinon");
 const chai = require("chai");
+const server = require("../server/app");
+const seed = require('./seed');
+const Transfer = require("../server/models/Transfer");
+const TrustRelationship = require("../server/models/TrustRelationship");
 chai.use(require('chai-uuid'));
 
-const apiKey = seed.apiKey;
+const {apiKey} = seed;
 
 describe('Trust relationship management', () => {
 
@@ -122,7 +122,7 @@ describe('Trust relationship management', () => {
   it(`${seed.walletB.name} try to request "manage" relationship to ${seed.wallet.name}`, async () => {
     await seed.clear();
     await seed.seed();
-    let res = await request(server)
+    const res = await request(server)
       .post("/trust_relationships")
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`)

@@ -1,16 +1,16 @@
 require('dotenv').config()
 const request = require('supertest');
-const server = require("../server/app");
 const { expect } = require('chai');
-const seed = require('./seed');
 const log = require('loglevel');
-const Transfer = require("../server/models/Transfer");
-const TrustRelationship = require("../server/models/TrustRelationship");
 const sinon = require("sinon");
 const chai = require("chai");
+const server = require("../server/app");
+const seed = require('./seed');
+const Transfer = require("../server/models/Transfer");
+const TrustRelationship = require("../server/models/TrustRelationship");
 chai.use(require('chai-uuid'));
 
-const apiKey = seed.apiKey;
+const {apiKey} = seed;
 
 describe('Create and fail to accept a pending transfer with wrong wallet', () => {
   let bearerToken;
@@ -90,6 +90,7 @@ describe('Create and fail to accept a pending transfer with wrong wallet', () =>
   })
 
   it(`${seed.walletC.name} should not be able to accept the transfer (403)`, async () => {
+    expect(transferId).a("string");
     const res = await request(server)
       .post(`/transfers/${transferId}/accept`)
       .set('Content-Type', "application/json")

@@ -1,14 +1,15 @@
 const express = require('express');
+
 const trustRouter = express.Router();
 const { check, validationResult } = require('express-validator');
 const assert = require("assert");
+const Joi = require("joi");
 const WalletService = require("../services/WalletService");
 const TrustService = require("../services/TrustService");
 const Wallet = require("../models/Wallet");
 const helper = require("./utils");
 const Session = require("../models/Session");
 const TrustRelationship = require("../models/TrustRelationship");
-const Joi = require("joi");
 
 trustRouter.get('/',
   helper.apiKeyHandler,
@@ -20,8 +21,8 @@ trustRouter.get('/',
         state: Joi.string(),
         type: Joi.string(),
         request_type: Joi.string(),
-        start: Joi.number(),
-        limit: Joi.number().min(1).max(10000).integer(),
+        offset: Joi.number().min(0).default(0).integer(),
+        limit: Joi.number().min(1).max(10000).integer().default(1000),
       })
     )
     Joi.assert(
@@ -30,15 +31,17 @@ trustRouter.get('/',
         wallet_id: Joi.string().required()
       })
     )
-    const {state, type, request_type, limit, start} = req.query;
+    const {state, type, request_type, limit, offset} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
     const wallet = await walletService.getById(res.locals.wallet_id);
     const trust_relationships = await wallet.getTrustRelationships(
-      req.query.state,
-      req.query.type,
-      req.query.request_type,
+      state,
+      type,
+      request_type,
+      Number(offset || 0),
+      Number(limit || 0)
     );
     const subWallets = await wallet.getSubWallets();
     for(const sw of subWallets){
@@ -54,21 +57,12 @@ trustRouter.get('/',
       }
     }
 
-    let trust_relationships_json = [];
-    for(let t of trust_relationships){
+    const trust_relationships_json = [];
+    for(const t of trust_relationships){
       const j = await trustService.convertToResponse(t);
       trust_relationships_json.push(j);
     }
-
-    //filter trust_relationships json by query
-    let numStart = parseInt(start);
-    let numLimit = parseInt(limit) ? parseInt(limit) : 0; //TODO: fix this correctly by using db
-    let numBegin = numStart?numStart-1:0;
-    let numEnd = numBegin + ((numLimit != 0) ? numLimit : 1000);
-    if(numEnd != 0){
-      trust_relationships_json = trust_relationships_json.slice(numBegin, numEnd);
-    }
-
+    
     res.status(200).json({
       trust_relationships: trust_relationships_json,
     });
@@ -130,7 +124,7 @@ trustRouter.post('/:trustRelationshipId/accept',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = req.params.trustRelationshipId;
+    const {trustRelationshipId} = req.params;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -157,7 +151,7 @@ trustRouter.post('/:trustRelationshipId/decline',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = req.params.trustRelationshipId;
+    const {trustRelationshipId} = req.params;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -184,7 +178,7 @@ trustRouter.delete('/:trustRelationshipId',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = req.params.trustRelationshipId;
+    const {trustRelationshipId} = req.params;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);

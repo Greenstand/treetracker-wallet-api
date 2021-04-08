@@ -18,9 +18,9 @@ function getRandomArbitrary(min, max) {
 
   const Crypto = require('crypto');
   const sha512 = function(password, salt){
-    var hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
+    const hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
     hash.update(password);
-    var value = hash.digest('hex');
+    const value = hash.digest('hex');
     return value;
   };
 
@@ -42,15 +42,15 @@ function getRandomArbitrary(min, max) {
       tree_token_api_access: true,
       name: username
     }
-    const result0 = await trx('wallets.api_key').insert(apiKeyData).returning('*')
+    const result0 = await trx('wallet.api_key').insert(apiKeyData).returning('*')
     console.log(result0)
 
     // create wallet and password, salt
 
-    const result = await trx('wallets.wallet').insert({
+    const result = await trx('wallet.wallet').insert({
       name: username,
       password: passwordHash,
-      salt: salt
+      salt
     }).returning('*')
     const wallet = result[0]
     console.log(wallet)
@@ -80,8 +80,8 @@ function getRandomArbitrary(min, max) {
     ]
 
     // insert fake tree captures
-    let trees = []
-    for(i=0; i<10; i++){
+    const trees = []
+    for(i=0; i<5000; i++){
       const captureData = {
         time_created: new Date(),
         time_updated: new Date(),
@@ -105,7 +105,7 @@ function getRandomArbitrary(min, max) {
         capture_id: treeId,
         wallet_id: wallet.id
       }
-      const result4 = await trx('wallets.token').insert(tokenData).returning('*')
+      const result4 = await trx('wallet.token').insert(tokenData).returning('*')
       const token = result4[0]
       console.log(token.id)
     }
@@ -114,9 +114,9 @@ function getRandomArbitrary(min, max) {
 
     knex.destroy()
 
-    console.log('wallet ' + username);
-    console.log('password ' + password);
-    console.log('apiKey ' + apiKey);
+    console.log(`wallet ${  username}`);
+    console.log(`password ${  password}`);
+    console.log(`apiKey ${  apiKey}`);
 
   } catch (error) {
 

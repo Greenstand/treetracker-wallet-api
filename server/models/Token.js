@@ -1,9 +1,10 @@
 const log = require("loglevel");
+const { validate: uuidValidate } = require('uuid');
+const Joi = require("joi");
+const expect = require("expect-runtime");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
 const HttpError = require("../utils/HttpError");
-const { validate: uuidValidate } = require('uuid');
-const Joi = require("joi");
 
 class Token{
   
@@ -30,11 +31,11 @@ class Token{
     }else{
       this._JSON = await this.tokenRepository.getById(this._id);
     }
-    //deal with tree links
+    // deal with tree links
     const result = {
       ...this._JSON,
       links: {
-        capture: `/webmap/trees?treeid=${this._JSON.capture_id}`
+        capture: `/webmap/tree?uuid=${this._JSON.capture_id}`
       }
     }
     return result;
@@ -99,24 +100,24 @@ class Token{
     const json = await this.toJSON();
     if(json.wallet_id === wallet.getId()){
       return true;
-    }else{
-      return false;
     }
+      return false;
+    
   }
 
   async beAbleToTransfer(){
     const json = await this.toJSON();
     if(json.transfer_pending === false){
       return true;
-    }else{
-      return false;
     }
+      return false;
+    
   }
 
-  async getTransactions(){
+  async getTransactions(limit, offset  = 0){
     const transactions = await this.transactionRepository.getByFilter({
       token_id: this._id,
-    });
+    }, {limit, offset});
     return transactions;
   }
 

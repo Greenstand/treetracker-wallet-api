@@ -1,5 +1,6 @@
-const Session = require("../models/Session");
 const expect = require("expect-runtime");
+const log = require("loglevel");
+const Session = require("../models/Session");
 const HttpError = require("../utils/HttpError");
 
 class BaseRepository{
@@ -25,24 +26,25 @@ class BaseRepository{
    *  limit: number
    */
   async getByFilter(filter, options){
+    const offset = options && options.offset ? options.offset : 0 
     const whereBuilder = function(object, builder){
       let result = builder;
-      if(object['and']){
+      if(object.and){
         expect(Object.keys(object)).lengthOf(1);
-        expect(object['and']).a(expect.any(Array));
-        for(let one of object['and']){
-          if(one['or']){
+        expect(object.and).a(expect.any(Array));
+        for(const one of object.and){
+          if(one.or){
             result = result.andWhere(subBuilder => whereBuilder(one, subBuilder));
           }else{
             expect(Object.keys(one)).lengthOf(1);
             result = result.andWhere(Object.keys(one)[0], Object.values(one)[0]);
           }
         }
-      }else if(object['or']){
+      }else if(object.or){
         expect(Object.keys(object)).lengthOf(1);
-        expect(object['or']).a(expect.any(Array));
-        for(let one of object['or']){
-          if(one['and']){
+        expect(object.or).a(expect.any(Array));
+        for(const one of object.or){
+          if(one.and){
             result = result.orWhere(subBuilder => whereBuilder(one, subBuilder));
           }else{
             expect(Object.keys(one)).lengthOf(1);
@@ -54,9 +56,9 @@ class BaseRepository{
       }
       return result;
     }
-    let promise = this._session.getDB().select().table(this._tableName).where(builder => whereBuilder(filter, builder));
+    let promise = this._session.getDB().select().table(this._tableName).offset(offset).where(builder => whereBuilder(filter, builder));
     if(options && options.limit){
-      promise = promise.limit(options && options.limit);
+      promise = promise.limit(options.limit);
     }
     const result = await promise;
     expect(result).a(expect.any(Array));
@@ -72,20 +74,37 @@ class BaseRepository{
   }
 
   async update(object){
-    let objectCopy = {}
+    const objectCopy = {}
     Object.assign(objectCopy, object)
-    const id = object.id
+    const {id} = object
     delete objectCopy.id
     const result = await this._session.getDB()(this._tableName).update(objectCopy).where("id", id).returning("*");
     return result[0];
   }
 
+  /*
+   * update all rows matching given id
+   */
+  async updateByIds(object, ids){
+    const objectCopy = {}
+    Object.assign(objectCopy, object)
+    delete objectCopy.id
+    const result = await this._session.getDB()(this._tableName).update(objectCopy).whereIn("id", ids);
+  }
+
   async create(object){
     const result = await this._session.getDB()(this._tableName).insert(object).returning("*");
-    expect(result).match([{
-      id: expect.anything(),
-    }]);
     return result[0];
+  }
+
+  /*
+   * return ids created
+   */
+  async batchCreate(objects){
+    log.warn("object batch:", objects);
+    const result = await this._session.getDB().batchInsert(this._tableName,objects).returning('id');
+    expect(result).match([expect.any(String)]);
+    return result;
   }
 
 }

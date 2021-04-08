@@ -191,7 +191,7 @@
 									}
 								],
 								"url": {
-									"raw": "{{BASE_URL}}/tokens/:token_uuid/transactions?limit=<integer>&start=<integer>",
+									"raw": "{{BASE_URL}}/tokens/:token_uuid/transactions?limit=<integer>&offset=<integer>",
 									"host": [
 										"{{BASE_URL}}"
 									],
@@ -207,7 +207,7 @@
 											"description": "(Required) "
 										},
 										{
-											"key": "start",
+											"key": "offset",
 											"value": "<integer>",
 											"description": "(Required) "
 										}
@@ -248,7 +248,7 @@
 											}
 										],
 										"url": {
-											"raw": "{{baseUrl}}/tokens/:token_uuid/transactions?limit=10&start=10",
+											"raw": "{{baseUrl}}/tokens/:token_uuid/transactions?limit=10&offset=10",
 											"host": [
 												"{{baseUrl}}"
 											],
@@ -263,7 +263,7 @@
 													"value": "10"
 												},
 												{
-													"key": "start",
+													"key": "offset",
 													"value": "10"
 												}
 											],
@@ -2864,7 +2864,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"wallet\": \"Emilia_Bernhard18\",\n    \"password\": \"7hYvU9NdySkjPqD\"\n}",
+					"raw": "{\n    \"wallet\": \"{{wallet}}\",\n    \"password\": \"{{password}}\"\n}",
 					"options": {
 						"raw": {}
 					}

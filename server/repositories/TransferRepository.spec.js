@@ -1,7 +1,8 @@
-const TransferRepository = require("./TransferRepository");
 const {expect} = require("chai");
-const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
+const TransferRepository = require("./TransferRepository");
+const knex = require("../database/knex");
+
 const tracker = mockKnex.getTracker();
 const Session = require("../models/Session");
 const uuid = require('uuid');
@@ -50,12 +51,12 @@ describe("TransferRepository", () => {
       [
         function firstQuery() {
           expect(query.sql).match(/select.*transfer.*/);
-          query.response({id:1});
+          query.response({id:uuid.v4()});
         },
       ][step - 1]();
     });
     const result = await transferRepository.getById(1);
-    expect(result).property("id").eq(1);
+    expect(result).property("id").a("string");
   });
 
   it("getPendingTransfers", async () => {

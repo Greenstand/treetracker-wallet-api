@@ -1,8 +1,8 @@
 /* 
  * The model for: entity, wallet, entity table and so on
  */
-const HttpError = require("../utils/HttpError");
 const expect = require("expect-runtime");
+const HttpError = require("../utils/HttpError");
 const BaseRepository = require("./BaseRepository");
 const Session = require("../models/Session");
 

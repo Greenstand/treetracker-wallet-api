@@ -2,8 +2,10 @@ const BaseRepository = require("./BaseRepository");
 const {expect} = require("chai");
 const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
+
 const tracker = mockKnex.getTracker();
 const jestExpect = require("expect");
+const uuid = require('uuid');
 const Session = require("../models/Session");
 
 describe("BaseRepository", () => {
@@ -32,11 +34,11 @@ describe("BaseRepository", () => {
     expect(entity).property("id").eq(1);
   });
 
-  //TODO
+  // TODO
   it.skip("getById can not find result, should throw 404", () => {
   });
 
-  describe.only("getByFilter", () => {
+  describe("getByFilter", () => {
 
     it("getByFilter", async () => {
       tracker.uninstall();
@@ -66,6 +68,22 @@ describe("BaseRepository", () => {
       });
       expect(result).lengthOf(1);
       expect(result[0]).property("id").eq(1);
+    });
+
+    it("getByFilter with offset", async () => {
+      tracker.uninstall();
+      tracker.install();
+      tracker.on("query", (query) => {
+        expect(query.sql).match(/select.*testTable.*offset.*/);
+        query.response([{id:2}]);
+      });
+      const result = await baseRepository.getByFilter({
+        name: "testName",
+      },{
+        offset: 1,
+      });
+      expect(result).lengthOf(1);
+      expect(result[0]).property("id").eq(2);
     });
 
     describe("'and' 'or' phrase", () => {
@@ -195,10 +213,9 @@ describe("BaseRepository", () => {
         query.response({id:1});
       });
       const result = await baseRepository.update({
-        id: 1,
+        id: uuid.v4(), 
         name: "testName",
       });
-      expect(result).property("id").eq(1);
     });
   });
 
@@ -235,8 +252,32 @@ describe("BaseRepository", () => {
       expect(result).eq(1);
     });
 
-    //TODO
+    // TODO
     describe.skip("count support and and or", () => {
     });
+  });
+
+  it("updateByIds", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on("query", (query) => {
+      expect(query.sql).match(/update.*where.*in/is);
+      query.response([{
+        count: "1",
+      }]);
+    });
+    await baseRepository.updateByIds({
+      column: "testColumn",
+    }, [1]);
+  });
+
+  it("batchCreate", async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on("query", (query) => {
+      expect(query.sql).match(/(BEGIN|ROLLBACK|COMMIT|insert)/is);
+      query.response(["id"]);
+    });
+    await baseRepository.batchCreate([{a:"a", b:"b"},{a:"a",b:"b"}]);
   });
 });

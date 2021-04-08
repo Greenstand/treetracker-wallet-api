@@ -1,11 +1,12 @@
 const request = require("supertest");
 const express = require("express");
-const tokenRouter = require("./tokenRouter");
 const {expect} = require("chai");
-const {errorHandler} = require("./utils");
 const sinon = require("sinon");
-const ApiKeyService = require("../services/ApiKeyService");
 const bodyParser = require('body-parser');
+const uuid = require('uuid');
+const tokenRouter = require("./tokenRouter");
+const {errorHandler} = require("./utils");
+const ApiKeyService = require("../services/ApiKeyService");
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 const HttpError = require("../utils/HttpError");
@@ -14,7 +15,6 @@ const TokenService = require("../services/TokenService");
 const Wallet = require("../models/Wallet");
 const Transfer = require("../models/Transfer");
 const TransferService = require("../services/TransferService");
-const uuid = require('uuid');
 
 describe("tokenRouter", () => {
   let app;
@@ -44,16 +44,18 @@ describe("tokenRouter", () => {
     const walletId = uuid.v4()
     const wallet2Id = uuid.v4()
     const transactionId = uuid.v4()
+    const captureId = uuid.v4()
+    const capture2Id = uuid.v4()
 
     const token = new Token({
       id: tokenId,
       wallet_id: walletId,
-      capture_id: 1,
+      capture_id: captureId
     });
     const token2 = new Token({
       id: token2Id,
       wallet_id: wallet2Id,
-      capture_id: 2,
+      capture_id: capture2Id
     });
 
     const wallet = new Wallet(walletId);
@@ -67,14 +69,14 @@ describe("tokenRouter", () => {
     });
 
     it("successfully, default wallet", async () => {
-      sinon.stub(TokenService.prototype, "getByOwner").resolves([token, token2]);
+      sinon.stub(TokenService.prototype, "getByOwner").resolves([token2]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const res = await request(app)
-        .get("/?limit=10&start=2");
+        .get("/?limit=10&offset=1");
       expect(res).property("statusCode").eq(200);
       expect(res.body.tokens).lengthOf(1);
       expect(res.body.tokens[0]).property("id").eq(token2Id);
-      expect(res.body.tokens[0]).property("links").property("capture").eq("/webmap/trees?treeid=2");
+      expect(res.body.tokens[0]).property("links").property("capture").eq(`/webmap/tree?uuid=${  capture2Id}`);
     });
 
     it("successfully, sub wallet", async () => {
@@ -86,7 +88,7 @@ describe("tokenRouter", () => {
         .get(`/?limit=10&wallet=${wallet2Id}`);
       expect(res).property("statusCode").eq(200);
       expect(res.body.tokens[0]).property("id").eq(tokenId);
-      expect(res.body.tokens[0]).property("links").property("capture").eq("/webmap/trees?treeid=1");
+      expect(res.body.tokens[0]).property("links").property("capture").eq(`/webmap/tree?uuid=${  captureId}`);
     });
 
     it("sub wallet, no permission", async () => {
@@ -108,16 +110,18 @@ describe("tokenRouter", () => {
     const walletId = uuid.v4()
     const wallet2Id = uuid.v4()
     const transactionId = uuid.v4()
+    const captureId = uuid.v4()
+    const capture2Id = uuid.v4()
 
     const token = new Token({
       id: tokenId,
       wallet_id: walletId,
-      capture_id: 1,
+      capture_id: captureId
     });
     const token2 = new Token({
       id: token2Id,
       wallet_id: wallet2Id,
-      capture_id: 2,
+      capture_id: capture2Id
     });
 
     const wallet = new Wallet(walletId);
@@ -137,7 +141,7 @@ describe("tokenRouter", () => {
         .get(`/${tokenId}`);
       expect(res).property("statusCode").eq(200);
       expect(res.body).property("id").eq(tokenId);
-      expect(res.body).property("links").property("capture").eq("/webmap/trees?treeid=1");
+      expect(res.body).property("links").property("capture").eq(`/webmap/tree?uuid=${  captureId}`);
     });
 
     it("/xxx/transactions successfully", async () => {
@@ -175,31 +179,36 @@ describe("tokenRouter", () => {
       sinon.stub(token, "toJSON").resolves({
         wallet_id: walletId,
       });
-      sinon.stub(token, "getTransactions").resolves([
-        {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}
+      const getTransactionsStub = sinon.stub(token, "getTransactions")
+      getTransactionsStub.resolves([
+         {id: uuid.v4()}, {id: uuid.v4()}, {id: uuid.v4()}
       ]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       sinon.stub(TokenService.prototype, "convertToResponse").resolves({
         token: tokenId,
         sender_wallet: authenticatedWallet,
         receiver_wallet: wallet2Id,
-      }).onCall(4).resolves({
+      }).onCall(0).resolves({
         token: tokenId,
         sender_wallet: "number5",
         receiver_wallet: "number5",
-      }).onCall(5).resolves({
+      }).onCall(1).resolves({
         token: tokenId,
         sender_wallet: "number6",
         receiver_wallet: "number6",
-      }).onCall(6).resolves({
+      }).onCall(2).resolves({
         token: tokenId,
         sender_wallet: "number7",
         receiver_wallet: "number7",
       });
       sinon.stub(Wallet.prototype, "getSubWallets").resolves([]);
+
+      const limit = "3"
+      const offset = "5"
       const res = await request(app)
-        .get(`/${tokenId}/transactions?limit=3&start=5`);
+        .get(`/${tokenId}/transactions?limit=${limit}&offset=${offset}`);
       expect(res).property("statusCode").eq(200);
+      expect(getTransactionsStub.getCall(0).args).deep.to.equal([limit, offset])
       expect(res.body.history).lengthOf(3);
       expect(res.body.history[0]).property("sender_wallet").eq("number5");
       expect(res.body.history[0]).property("receiver_wallet").eq("number5");
@@ -209,8 +218,6 @@ describe("tokenRouter", () => {
 
       expect(res.body.history[2]).property("sender_wallet").eq("number7");
       expect(res.body.history[2]).property("receiver_wallet").eq("number7");
-
-
     });
   });
 

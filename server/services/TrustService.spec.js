@@ -5,11 +5,13 @@ const jestExpect = require("expect");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+
 chai.use(sinonChai);
 const {expect} = chai;
+const uuid = require('uuid');
 
 describe("TrustService", () => {
-  let trustService = new TrustService();
+  const trustService = new TrustService();
 
   describe("", () => {
   });
@@ -33,6 +35,8 @@ describe("TrustService", () => {
 }
    */
   it("convertToResponse", async () => {
+    const trustId1 = uuid.v4();
+    const walletId1 = uuid.v4();
     const trustObject = {
       "actor_wallet_id": 10,
       "target_wallet_id": 11,
@@ -43,15 +47,15 @@ describe("TrustService", () => {
       "created_at": "2020-10-16T07:36:21.955Z",
       "updated_at": "2020-10-16T07:36:21.955Z",
       "active": null,
-      "id": 1,
+      "id": trustId1,
     }
     sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
-      id: 1,
+      id: walletId1,
       name: "testName",
     }));
     const result = await trustService.convertToResponse(trustObject);
     expect(result).deep.eq({
-      "id": 1,
+      "id": trustId1,
       "actor_wallet": "testName",
       "target_wallet": "testName",
       "originating_wallet": "testName",

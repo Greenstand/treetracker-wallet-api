@@ -1,3 +1,5 @@
+const log = require("loglevel");
+const Joi = require("joi");
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
@@ -8,7 +10,7 @@ class TokenService{
     this._session =  session
     this.tokenRepository = new TokenRepository(session);
     this.transactionRepository = new TransactionRepository(session);
-    const WalletService  = require("../services/WalletService");
+    const WalletService  = require("./WalletService");
     this.walletService = new WalletService(session);
   }
 
@@ -18,18 +20,17 @@ class TokenService{
     return token;
   }
 
-  async getByOwner(wallet){
+  async getByOwner(wallet, limit, offset){
     const tokensObject = await this.tokenRepository.getByFilter({
       wallet_id: wallet.getId(),
-    });
-    const tokens = tokensObject.map(object => new Token(object));
-    return tokens;
+    }, {limit, offset});
+    return tokensObject.map(object => new Token(object, this._session));
   }
 
-  async getTokensByPendingTransferId(transferId){
+  async getTokensByPendingTransferId(transferId, limit, offset = 0){
     const result = await this.tokenRepository.getByFilter({
       transfer_pending_id: transferId,
-    });
+    }, {limit, offset});
     return result.map(object => {
       return new Token(object, this._session);
     });
@@ -86,16 +87,64 @@ class TokenService{
     return result;
   }
 
-  async getTokensByTransferId(transferId){
-    const result = await this.transactionRepository.getByFilter({
-      transfer_id: transferId,
-    });
+  async getTokensByTransferId(transferId, limit, offset = 0){
+    const result = await this.tokenRepository.getByTransferId(transferId, limit, offset);
     const tokens = [];
     for(const r of result){
-      const token = await this.getById(r.token_id);
+      const token = new Token(r);
       tokens.push(token);
     }
     return tokens;
+  }
+
+  /*
+   * To replace token.completeTransfer, as a bulk operaction
+   */
+  async completeTransfer(tokens, transfer){
+    log.debug("Token complete transfer batch");
+    await this.tokenRepository.updateByIds({
+        transfer_pending: false,
+        transfer_pending_id: null,
+        wallet_id: transfer.destination_wallet_id,
+      },
+      tokens.map(token => token.getId()),
+    );
+    await this.transactionRepository.batchCreate(tokens.map(token => ({
+      token_id: token.getId(),
+      transfer_id: transfer.id,
+      source_wallet_id: transfer.source_wallet_id,
+      destination_wallet_id: transfer.destination_wallet_id,
+    })));
+  }
+
+  /*
+   * Batch operaction to pending transfer
+   */
+  async pendingTransfer(tokens, transfer){
+    Joi.assert(
+      transfer.id,
+      Joi.string().guid()
+    )
+
+    await this.tokenRepository.updateByIds({
+      transfer_pending: true,
+      transfer_pending_id: transfer.id,
+    }, 
+    tokens.map(token => token.getId()),
+    );
+  }
+
+  /*
+   * Batch way to cancel transfer
+   */
+  async cancelTransfer(tokens, transfer){
+    log.debug("Token cancel transfer");
+    await this.tokenRepository.updateByIds({
+        transfer_pending: false,
+        transfer_pending_id: null
+      },
+      tokens.map(token => token.getId()),
+    );
   }
 
 }
