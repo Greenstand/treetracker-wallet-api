@@ -1,13 +1,15 @@
 const request = require("supertest");
 const express = require("express");
-const walletRouter = require("./walletRouter");
-const {errorHandler} = require("./utils");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const uuid = require('uuid');
+const bodyParser = require('body-parser');
+const walletRouter = require("./walletRouter");
+const {errorHandler} = require("./utils");
+
 chai.use(sinonChai);
 const {expect} = chai;
-const bodyParser = require('body-parser');
 const ApiKeyService = require("../services/ApiKeyService");
 const WalletService = require("../services/WalletService");
 const TokenService = require("../services/TokenService");
@@ -15,7 +17,6 @@ const TrustService = require("../services/TrustService");
 const JWTService = require("../services/JWTService");
 const HttpError = require("../utils/HttpError");
 const Wallet = require("../models/Wallet");
-const uuid = require('uuid');
 
 
 describe("walletRouter", ()=> {

@@ -2,6 +2,7 @@ const WalletRepository = require("./WalletRepository");
 const {expect} = require("chai");
 const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
+
 const tracker = mockKnex.getTracker();
 const jestExpect = require("expect");
 const Session = require("../models/Session");

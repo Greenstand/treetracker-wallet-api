@@ -1,10 +1,11 @@
 const express = require("express");
+
 const authRouter = express.Router();
+const Joi = require("joi");
 const helper = require("./utils");
 const Wallet = require("../models/Wallet");
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
-const Joi = require("joi");
 const Session = require("../models/Session");
 
 authRouter.post(

@@ -1,13 +1,13 @@
 require('dotenv').config()
 const request = require('supertest');
-const server = require("../server/app");
 const { expect } = require('chai');
-const seed = require('./seed');
 const log = require('loglevel');
-const Transfer = require("../server/models/Transfer");
-const TrustRelationship = require("../server/models/TrustRelationship");
 const sinon = require("sinon");
 const chai = require("chai");
+const server = require("../server/app");
+const seed = require('./seed');
+const Transfer = require("../server/models/Transfer");
+const TrustRelationship = require("../server/models/TrustRelationship");
 chai.use(require('chai-uuid'));
 
 describe('Authentication', () => {

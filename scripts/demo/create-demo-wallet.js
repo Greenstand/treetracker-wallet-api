@@ -18,9 +18,9 @@ function getRandomArbitrary(min, max) {
 
   const Crypto = require('crypto');
   const sha512 = function(password, salt){
-    var hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
+    const hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
     hash.update(password);
-    var value = hash.digest('hex');
+    const value = hash.digest('hex');
     return value;
   };
 
@@ -50,7 +50,7 @@ function getRandomArbitrary(min, max) {
     const result = await trx('wallet.wallet').insert({
       name: username,
       password: passwordHash,
-      salt: salt
+      salt
     }).returning('*')
     const wallet = result[0]
     console.log(wallet)
@@ -80,7 +80,7 @@ function getRandomArbitrary(min, max) {
     ]
 
     // insert fake tree captures
-    let trees = []
+    const trees = []
     for(i=0; i<5000; i++){
       const captureData = {
         time_created: new Date(),
@@ -114,9 +114,9 @@ function getRandomArbitrary(min, max) {
 
     knex.destroy()
 
-    console.log('wallet ' + username);
-    console.log('password ' + password);
-    console.log('apiKey ' + apiKey);
+    console.log(`wallet ${  username}`);
+    console.log(`password ${  password}`);
+    console.log(`apiKey ${  apiKey}`);
 
   } catch (error) {
 

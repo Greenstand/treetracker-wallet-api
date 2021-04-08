@@ -1,8 +1,8 @@
-'use strict';
 
-var dbm;
-var type;
-var seed;
+
+let dbm;
+let type;
+let seed;
 
 /**
   * We receive the dbmigrate dependency from dbmigrate initially.
@@ -19,7 +19,7 @@ exports.up = function(db) {
 };
 
 exports.down = function(db, done) {
-  //return db.runSql('DROP EXTENSION "uuid-ossp"');
+  // return db.runSql('DROP EXTENSION "uuid-ossp"');
   done()
 };
 

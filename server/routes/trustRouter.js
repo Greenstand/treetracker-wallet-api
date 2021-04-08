@@ -1,14 +1,15 @@
 const express = require('express');
+
 const trustRouter = express.Router();
 const { check, validationResult } = require('express-validator');
 const assert = require("assert");
+const Joi = require("joi");
 const WalletService = require("../services/WalletService");
 const TrustService = require("../services/TrustService");
 const Wallet = require("../models/Wallet");
 const helper = require("./utils");
 const Session = require("../models/Session");
 const TrustRelationship = require("../models/TrustRelationship");
-const Joi = require("joi");
 
 trustRouter.get('/',
   helper.apiKeyHandler,
@@ -56,8 +57,8 @@ trustRouter.get('/',
       }
     }
 
-    let trust_relationships_json = [];
-    for(let t of trust_relationships){
+    const trust_relationships_json = [];
+    for(const t of trust_relationships){
       const j = await trustService.convertToResponse(t);
       trust_relationships_json.push(j);
     }
@@ -122,7 +123,7 @@ trustRouter.post('/:trustRelationshipId/accept',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = req.params.trustRelationshipId;
+    const {trustRelationshipId} = req.params;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -149,7 +150,7 @@ trustRouter.post('/:trustRelationshipId/decline',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = req.params.trustRelationshipId;
+    const {trustRelationshipId} = req.params;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);
@@ -176,7 +177,7 @@ trustRouter.delete('/:trustRelationshipId',
         trustRelationshipId: Joi.string().required()
       })
     )
-    const trustRelationshipId = req.params.trustRelationshipId;
+    const {trustRelationshipId} = req.params;
     const session = new Session();
     const walletService = new WalletService(session);
     const trustService = new TrustService(session);

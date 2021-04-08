@@ -3,11 +3,11 @@
  */
 require('dotenv').config();
 const request = require('supertest');
-const server = require('../server/app');
 const { expect } = require('chai');
-const seed = require('./seed');
 const sinon = require('sinon');
 const chai = require('chai');
+const seed = require('./seed');
+const server = require('../server/app');
 chai.use(require('chai-uuid'));
 
 describe('GET tokens', () => {

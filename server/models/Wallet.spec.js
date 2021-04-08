@@ -1,8 +1,10 @@
-const Wallet = require("./Wallet");
 const jestExpect = require("expect");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const uuid = require('uuid');
+const Wallet = require("./Wallet");
+
 chai.use(sinonChai);
 const {expect} = chai;
 const WalletRepository = require("../repositories/WalletRepository");
@@ -10,16 +12,15 @@ const TrustRepository = require("../repositories/TrustRepository");
 const WalletService = require("../services/WalletService");
 const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
-const TrustRelationship = require("../models/TrustRelationship");
+const TrustRelationship = require("./TrustRelationship");
 const Transfer = require("./Transfer");
 const Token = require("./Token");
 const TokenService = require("../services/TokenService");
 const Session = require("./Session");
-const uuid = require('uuid');
 
 describe("Wallet", () => {
   let walletService;
-  let session = new Session();
+  const session = new Session();
 
   const walletObject = {
     id: uuid.v4(), 
@@ -239,7 +240,7 @@ describe("Wallet", () => {
     };
 
     it("has no trust", async () => {
-      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([]);//no relationship
+      const fn1 = sinon.stub(Wallet.prototype, "getTrustRelationshipsTrusted").resolves([]);// no relationship
       const result =  await wallet.hasTrust(
           TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
           wallet,
@@ -329,7 +330,7 @@ describe("Wallet", () => {
       fn2.restore();
     });
 
-    //This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
+    // This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
     it.skip("don't have trust, receiver under control, should created a transfer request record", async () => {
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
       const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
@@ -353,7 +354,7 @@ describe("Wallet", () => {
       fn2.restore();
     });
 
-    //This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
+    // This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
     it.skip("have trust, should finish successfully", async () => {
       const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
       const fn1 = sinon.stub(wallet, "checkTrust");
@@ -1054,7 +1055,7 @@ describe("Wallet", () => {
 
   describe("Deduct", () => {
 
-    const wallet = new Wallet({id: uuid.v4()}) //TODO: should create class MockWallet that does not use repository
+    const wallet = new Wallet({id: uuid.v4()}) // TODO: should create class MockWallet that does not use repository
     const sender = new Wallet(uuid.v4())
     const receiver = new Wallet(uuid.v4())
     const token = new Token({

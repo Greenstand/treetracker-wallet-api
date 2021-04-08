@@ -1,14 +1,16 @@
 const request = require("supertest");
 const express = require("express");
-const trustRouter = require("./trustRouter");
-const {errorHandler} = require("./utils");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const bodyParser = require('body-parser');
+const uuid = require('uuid');
+const trustRouter = require("./trustRouter");
+const {errorHandler} = require("./utils");
+
 chai.use(sinonChai);
 const {expect} = chai;
 const ApiKeyService = require("../services/ApiKeyService");
-const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");
 const TrustService = require("../services/TrustService");
 const JWTService = require("../services/JWTService");
@@ -17,7 +19,6 @@ const Token = require("../models/Token");
 const TokenService = require("../services/TokenService");
 const Wallet = require("../models/Wallet");
 const TrustRelationship = require("../models/TrustRelationship");
-const uuid = require('uuid');
 
 describe("trustRouter", () => {
   let app;
@@ -138,15 +139,15 @@ describe("trustRouter", () => {
       expect(res.body.trust_relationships).lengthOf(3);
     });
     
-    //TODO 
+    // TODO 
     it.skip("wrong state string should throw 422", () => {
     });
 
-    //TODO 
+    // TODO 
     it.skip("wrong type string should throw 422", () => {
     });
 
-    //TODO 
+    // TODO 
     it.skip("wrong request_type string should throw 422", () => {
     });
 

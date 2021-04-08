@@ -1,6 +1,6 @@
+const expect = require("expect-runtime");
 const HttpError = require("../utils/HttpError");
 const BaseRepository = require("./BaseRepository");
-const expect = require("expect-runtime");
 const Session = require("../models/Session");
 
 class TrustRepository extends BaseRepository{
@@ -11,7 +11,7 @@ class TrustRepository extends BaseRepository{
   }
 
   async get(){
-    //const trust_relationship_instance = new trust_relationship(1);
+    // const trust_relationship_instance = new trust_relationship(1);
     const list = await this._session.getDB().select()
       .table(this._tableName);
     return list;

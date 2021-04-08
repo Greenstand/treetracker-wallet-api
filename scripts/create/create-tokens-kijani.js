@@ -25,7 +25,7 @@ function getRandomArbitrary(min, max) {
 
     for(capture of rows){
         
-      //console.log('capture ' + capture.uuid);
+      // console.log('capture ' + capture.uuid);
       tokenData = {
         capture_id: capture.uuid,
         wallet_id: wallet.id

@@ -1,6 +1,6 @@
 const HttpError = require("../utils/HttpError");
-//NOTE: currently, don't have model for trust, here just defined some fields 
-//for this model
+// NOTE: currently, don't have model for trust, here just defined some fields 
+// for this model
 const TrustRelationship = {}
 
 TrustRelationship.ENTITY_TRUST_TYPE = {
