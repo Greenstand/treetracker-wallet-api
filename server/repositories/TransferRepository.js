@@ -1,7 +1,7 @@
+const expect = require("expect-runtime");
 const knex = require("../database/knex");
 const Transfer = require("../models/Transfer");
 const BaseRepository = require("./BaseRepository");
-const expect = require("expect-runtime");
 const Session = require("../models/Session");
 
 class TransferRepository extends BaseRepository{

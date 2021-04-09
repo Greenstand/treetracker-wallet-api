@@ -51,7 +51,7 @@ function getRandomArbitrary(min, max) {
         continue
       }
 
-      //console.log('capture ' + capture.uuid);
+      // console.log('capture ' + capture.uuid);
       tokenData = {
         capture_id: capture.uuid,
         wallet_id: wallet.id
@@ -69,7 +69,7 @@ function getRandomArbitrary(min, max) {
       await trx.rollback();
     } else {
       console.log('Committing changes!')
-      //await trx.commit();
+      // await trx.commit();
     }
 
     knex.destroy()

@@ -1,11 +1,11 @@
 const express = require('express');
+const Joi = require("joi");
+const _ = require('lodash')
 const helper = require('./utils');
 const WalletService = require("../services/WalletService");
 const TokenService = require("../services/TokenService");
 const TrustService = require("../services/TrustService");
-const Joi = require("joi");
 const Session = require("../models/Session");
-const _ = require('lodash')
 
 const walletRouter = express.Router();
 
@@ -17,10 +17,10 @@ walletRouter.get('/',
       req.query,
       Joi.object({
         limit: Joi.number().required(),
-        start: Joi.number().min(1).integer(),
+        offset: Joi.number().min(1).integer(),
       })
     );
-    const {limit, start} = req.query;
+    const {limit, offset} = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
@@ -37,10 +37,11 @@ walletRouter.get('/',
       walletsJson.push(json);
     }
     
-    let numStart = parseInt(start);
-    let numLimit = parseInt(limit);
-    let numBegin = numStart?numStart-1:0;
-    let numEnd=numBegin+numLimit;
+    const numStart = parseInt(offset);
+    const numLimit = parseInt(limit);
+    const numBegin = numStart?numStart-1:0;
+    const numEnd=numBegin+numLimit;
+
     walletsJson = walletsJson.slice(numBegin, numEnd)
     
     res.status(200).json({
@@ -66,7 +67,7 @@ walletRouter.get('/:wallet_id/trust_relationships',
       req.query.request_type,
     );
     const trust_relationships_json = [];
-    for(let t of trust_relationships){
+    for(const t of trust_relationships){
       const j = await trustService.convertToResponse(t);
       trust_relationships_json.push(j);
     }

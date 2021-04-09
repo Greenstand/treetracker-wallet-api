@@ -1,17 +1,18 @@
 require('dotenv').config()
 const expect = require('expect-runtime');
 const connection = require('../../config/config').connectionString;
+
 expect(connection).to.match(/^postgresql:\//);
 const log = require("loglevel");
 
-let knexConfig = {
+const knexConfig = {
   client: 'pg',
-  debug: process.env.NODE_LOG_LEVEL === "debug"? true:false,
+  debug: process.env.NODE_LOG_LEVEL === "debug",
   connection,
   pool: { 
     min:0, 
     max: 100,
-    afterCreate: function (conn, done) {
+    afterCreate (conn, done) {
       conn.query('SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;', function (err) {
         if (err) {
           log.error(err)

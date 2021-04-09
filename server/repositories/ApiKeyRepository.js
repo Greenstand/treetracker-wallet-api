@@ -1,5 +1,5 @@
-const HttpError = require("../utils/HttpError");
 const expect = require("expect-runtime");
+const HttpError = require("../utils/HttpError");
 const Session = require("../models/Session");
 
 

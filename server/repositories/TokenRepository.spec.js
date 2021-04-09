@@ -1,8 +1,9 @@
-const knex = require("../database/knex");
-const TokenRepository = require("./TokenRepository");
 const sinon = require("sinon");
 const {expect} = require("chai");
 const mockKnex = require("mock-knex");
+const TokenRepository = require("./TokenRepository");
+const knex = require("../database/knex");
+
 const tracker = mockKnex.getTracker();
 const Session = require("../models/Session");
 

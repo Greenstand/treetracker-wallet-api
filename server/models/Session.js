@@ -11,9 +11,9 @@ class Session{
   getDB(){
     if(this.thx){
       return this.thx;
-    }else{
-      return knex;
     }
+      return knex;
+    
   }
 
   async beginTransaction(){

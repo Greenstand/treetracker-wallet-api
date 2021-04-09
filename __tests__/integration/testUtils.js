@@ -1,24 +1,24 @@
-const knex = require("../../server/database/knex");
 const uuid = require('uuid');
 const log = require("loglevel");
 const Crypto = require('crypto');
 const generator = require('generate-password');
+const { expect } = require('chai');
 const JWTService = require("../../server/services/JWTService");
 const Transfer = require("../../server/models/Transfer");
-const { expect } = require('chai');
+const knex = require("../../server/database/knex");
 
 /*
  * register the user, create password hash, and apiKey
  */
 async function register(user){
   const sha512 = function(password, salt){
-    var hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
+    const hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
     hash.update(password);
-    var value = hash.digest('hex');
+    const value = hash.digest('hex');
     return value;
   };
 
-  const salt = Crypto.randomBytes(32).toString('base64')  //create a secure salt
+  const salt = Crypto.randomBytes(32).toString('base64')  // create a secure salt
   const passwordHash = sha512(user.password, salt)
 
   const apiKey = generator.generate({
@@ -41,13 +41,13 @@ async function register(user){
       id: uuid.v4(),
       name: user.name,
       password: passwordHash,
-      salt: salt,
+      salt,
     }).returning("*");
   log.info("registered wallet:", result);
   return {
     ...result[0], 
     apiKey, 
-    //restore password
+    // restore password
     password: user.password,
   };
 }

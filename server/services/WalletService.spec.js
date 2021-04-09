@@ -1,14 +1,14 @@
-const WalletService = require("./WalletService");
-const WalletRepository = require("../repositories/WalletRepository");
 const sinon = require("sinon");
 const {expect} = require("chai");
+const uuid = require('uuid');
+const WalletService = require("./WalletService");
+const WalletRepository = require("../repositories/WalletRepository");
 const Wallet = require("../models/Wallet");
 const Session = require("../models/Session");
-const uuid = require('uuid');
 
 describe("WalletService", () => {
   let walletService;
-  let session = new Session();
+  const session = new Session();
 
   beforeEach(() => {
     walletService = new WalletService(session);

@@ -34,7 +34,7 @@ function getRandomArbitrary(min, max) {
       const uuid = row[0]
       console.log(uuid)
 
-      const captures = await trx('trees').select(['id']).where({ uuid: uuid, active: true})
+      const captures = await trx('trees').select(['id']).where({ uuid, active: true})
       console.log(captures.length)
       captures.shift() // skip the first one
 
@@ -48,7 +48,7 @@ function getRandomArbitrary(min, max) {
 
 
     await trx.commit();
-    //await trx.rollback();
+    // await trx.rollback();
 
     knex.destroy()
 

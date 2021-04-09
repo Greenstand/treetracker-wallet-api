@@ -1,8 +1,8 @@
+const log = require("loglevel");
+const Joi = require("joi");
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
-const log = require("loglevel");
-const Joi = require("joi");
 
 class TokenService{
 
@@ -10,7 +10,7 @@ class TokenService{
     this._session =  session
     this.tokenRepository = new TokenRepository(session);
     this.transactionRepository = new TransactionRepository(session);
-    const WalletService  = require("../services/WalletService");
+    const WalletService  = require("./WalletService");
     this.walletService = new WalletService(session);
   }
 

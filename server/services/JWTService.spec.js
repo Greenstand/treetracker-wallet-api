@@ -1,5 +1,5 @@
-const JWTService = require("./JWTService");
 const {expect} = require("chai");
+const JWTService = require("./JWTService");
 
 
 

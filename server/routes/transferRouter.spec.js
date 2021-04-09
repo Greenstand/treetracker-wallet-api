@@ -1,14 +1,17 @@
 const request = require("supertest");
 const express = require("express");
-const transferRouter = require("./transferRouter");
-const {errorHandler} = require("./utils");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const bodyParser = require('body-parser');
+const { extractExpectedAssertionsErrors } = require("expect");
+const uuid = require('uuid');
+const transferRouter = require("./transferRouter");
+const {errorHandler} = require("./utils");
+
 chai.use(sinonChai);
 const {expect} = chai;
 const ApiKeyService = require("../services/ApiKeyService");
-const bodyParser = require('body-parser');
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 const HttpError = require("../utils/HttpError");
@@ -18,13 +21,11 @@ const Wallet = require("../models/Wallet");
 const Transfer = require("../models/Transfer");
 const TransferService = require("../services/TransferService");
 const Session = require("../models/Session");
-const { extractExpectedAssertionsErrors } = require("expect");
 const { column } = require("../database/knex");
-const uuid = require('uuid');
 
 describe("transferRouter", () => {
   let app;
-  let session = new Session();
+  const session = new Session();
 
   const authenticatedWallet = new Wallet(uuid.v4())
 
@@ -74,7 +75,7 @@ describe("transferRouter", () => {
     .onCall(2).resolves({id:token2Id, state:Transfer.STATE.completed});
 
     const res = await request(app)
-      .get("/?limit=3&wallet=testWallet&start=5");
+      .get("/?limit=3&wallet=testWallet&offset=5");
     expect(res.body.transfers).lengthOf(3);
     expect(getTransfersStub.getCall(0).args[0]).to.deep.equal(undefined, 5, 3)
     expect(res.body.transfers.map(t=>(t.id))).to.deep.equal([token0Id, token1Id, token2Id]);
@@ -347,7 +348,7 @@ describe("transferRouter", () => {
     });
   });
 
-  describe("GET /{transfer_id}/tokens start and limit working", () => {
+  describe("GET /{transfer_id}/tokens offset and limit working", () => {
 
     const transferId = uuid.v4();
     const tokenId = uuid.v4();
@@ -372,11 +373,11 @@ describe("transferRouter", () => {
       expect(res.body).property("tokens").lengthOf(1);
     });
 
-    it("limit and start working successfully", async () => {
+    it("limit and offset working successfully", async () => {
       const fn = sinon.stub(WalletService.prototype, "getById").resolves(authenticatedWallet);
       const fn2 = sinon.stub(Wallet.prototype, "getTokensByTransferId").resolves([token2, token3, token4]);
       const res = await request(app)
-        .get(`/${transferId}/tokens?limit=3&start=2`);
+        .get(`/${transferId}/tokens?limit=3&offset=2`);
       expect(fn).calledWith(authenticatedWallet.getId());
 
       expect(fn2).calledWith(transferId,  3, 2);

@@ -1,19 +1,20 @@
 /*
  * Test session mechanism
  */
-const seed = require('./seed');
-const Session = require("../server/models/Session");
 const jestExpect = require("expect");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const Session = require("../server/models/Session");
+const seed = require('./seed');
+
 chai.use(sinonChai);
 const {expect} = chai;
 
 
 describe("Session integration", () => {
   beforeEach(async () => {
-    //before all, seed data to DB
+    // before all, seed data to DB
     await seed.clear();
     await seed.seed();
 
