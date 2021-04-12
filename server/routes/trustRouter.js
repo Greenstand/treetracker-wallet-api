@@ -23,7 +23,7 @@ trustRouter.get(
         type: Joi.string(),
         request_type: Joi.string(),
         offset: Joi.number().min(0).default(0).integer(),
-        limit: Joi.number().min(1).max(10000).integer().default(1000),
+        limit: Joi.number().min(1).max(1000).integer().default(1000),
       }),
     );
     Joi.assert(
