@@ -15,12 +15,12 @@ function getRandomArbitrary(min, max) {
 
   const Crypto = require('crypto');
   const sha512 = function (password, salt) {
-    const hash = Crypto.createHmac(
+    var hash = Crypto.createHmac(
       'sha512',
       salt,
     ); /** Hashing algorithm sha512 */
     hash.update(password);
-    const value = hash.digest('hex');
+    var value = hash.digest('hex');
     return value;
   };
 
@@ -51,7 +51,7 @@ function getRandomArbitrary(min, max) {
       .insert({
         name: username,
         password: passwordHash,
-        salt,
+        salt: salt,
       })
       .returning('*');
     const wallet = result[0];
@@ -82,9 +82,14 @@ function getRandomArbitrary(min, max) {
       'https://treetracker-dev.nyc3.digitaloceanspaces.com/2018.06.19.18.20.59_5559d3ad-9090-4456-a81e-00a7653483c0_IMG_20180619_142743_1430885612.jpg',
     ];
 
+    const planterImages = [
+      'https://treetracker-production-images.s3.eu-central-1.amazonaws.com/2020.11.19.15.23.46_8.42080836_-13.17032878_3c58d106-1893-493c-986b-061f66009b5a_IMG_20201118_110629_7276172223528929867.jpg',
+      'https://treetracker-production-images.s3.eu-central-1.amazonaws.com/2020.11.17.12.45.48_8.42419553_-13.16719857_11d157fb-1bb0-4497-a7d7-7c16ce658158_IMG_20201117_104118_1916638584657622896.jpg',
+    ];
+
     // insert fake tree captures
-    const trees = [];
-    for (let i = 0; i < 5000; i++) {
+    let trees = [];
+    for (i = 0; i < 1000; i++) {
       const captureData = {
         time_created: new Date(),
         time_updated: new Date(),
@@ -92,6 +97,8 @@ function getRandomArbitrary(min, max) {
         lat: getRandomArbitrary(-15, 0),
         lon: getRandomArbitrary(15, 35),
         image_url: images[Math.floor(getRandomArbitrary(1, 9.99))],
+        planter_photo_url:
+          planterImages[Math.floor(getRandomArbitrary(1, 1.99))],
         uuid: uuidv4(),
         approved: true,
       };
@@ -123,6 +130,10 @@ function getRandomArbitrary(min, max) {
     await trx.commit();
 
     knex.destroy();
+
+    console.log('wallet ' + username);
+    console.log('password ' + password);
+    console.log('apiKey ' + apiKey);
 
     console.log(`wallet ${username}`);
     console.log(`password ${password}`);

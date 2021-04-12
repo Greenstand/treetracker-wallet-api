@@ -17,6 +17,10 @@ function getRandomArbitrary(min, max) {
 
   const targetWallet = 'GreenstandEscrow';
   const csvFile = './GS_Not_Owned_20210313.csv';
+  const dryRun = true;
+
+  const targetWallet = 'GreenstandEscrow';
+  const csvFile = './GS_Not_Owned_20210313.csv';
   const dryRun = false;
 
   const trx = await knex.transaction();
