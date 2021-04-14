@@ -1,1 +1,1 @@
-{"hooks":{"commit-msg":"commitlint -E HUSKY_GIT_PARAMS", "lint": "yarn lint"}}
+{"hooks":{"lint": "yarn lint", "commit-msg":"commitlint -E HUSKY_GIT_PARAMS" }}
