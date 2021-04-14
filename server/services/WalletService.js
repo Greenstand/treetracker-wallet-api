@@ -1,4 +1,3 @@
-const expect = require('expect-runtime');
 const { validate: uuidValidate } = require('uuid');
 const WalletRepository = require('../repositories/WalletRepository');
 const Wallet = require('../models/Wallet');

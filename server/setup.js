@@ -11,7 +11,33 @@ if(process.env.NODE_LOG_LEVEL){
 
 const http = require('http')
 
+const _sendNextMessage = function(message){
 
+  const options = {
+    hostname: '104.131.78.177',
+    port: 8000,
+    path: '/treetracker-wallet-api/log',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain',
+    }
+  }
+
+  const req = http.request(options, res => {
+    res.on('data', d => {
+      process.stdout.write(d)
+    })
+  })
+
+  req.write(message)
+
+
+  req.on('error', error => {
+    console.error(error)
+  })
+
+req.end()
+}
 const loglevelServerSend = function(logger,options) {
     if (!logger || !logger.methodFactory)
         throw new Error('loglevel instance has to be specified in order to be extended')
@@ -37,50 +63,10 @@ const loglevelServerSend = function(logger,options) {
             if (_callOriginal) 
                 rawMethod(message)
             
-           // _sendQueue.push(message)
             _sendNextMessage(message)
         }
     }
     logger.setLevel(logger.levels.DEBUG)
-    
-    var _sendNextMessage = function(message){
-
-/*        if (!_sendQueue.length || _isSending)
-            console.log('skpping')
-            return
-        
-        _isSending = true
-        */
-         
-   /*
-        var msg = _sendQueue.shift(),
-        */
-
-        const options = {
-          hostname: '104.131.78.177',
-          port: 8000,
-          path: '/treetracker-wallet-api/log',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain',
-          }
-        }
-
-        const req = http.request(options, res => {
-          res.on('data', d => {
-            process.stdout.write(d)
-          })
-        })
-
-        req.write(message)
-
-
-        req.on('error', error => {
-          console.error(error)
-        })
-
-      req.end()
-    }
 }
 
 if(process.env.REMOTE_LOG_URL){

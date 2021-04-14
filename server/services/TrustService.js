@@ -1,4 +1,3 @@
-const expect = require("expect-runtime");
 const WalletService = require("./WalletService");
 const Session = require("../models/Session");
 
