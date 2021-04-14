@@ -1,12 +1,9 @@
 const express = require('express');
 
 const trustRouter = express.Router();
-const { check, validationResult } = require('express-validator');
-const assert = require('assert');
 const Joi = require('joi');
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
-const Wallet = require('../models/Wallet');
 const helper = require('./utils');
 const Session = require('../models/Session');
 const TrustRelationship = require('../models/TrustRelationship');
@@ -15,7 +12,7 @@ trustRouter.get(
   '/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
-  helper.handlerWrapper(async (req, res, next) => {
+  helper.handlerWrapper(async (req, res) => {
     Joi.assert(
       req.query,
       Joi.object({
