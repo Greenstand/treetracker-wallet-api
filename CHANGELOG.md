@@ -1,3 +1,10 @@
+## [1.12.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.4...v1.12.5) (2021-04-16)
+
+
+### Bug Fixes
+
+* downgraded husky version to support node-run env required by IDEs ([e3656f5](https://github.com/Greenstand/treetracker-wallet-api/commit/e3656f55f3bbc2b9f98d44af29e8ac258cffda2f))
+
 ## [1.12.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.3...v1.12.4) (2021-04-03)
 
 
