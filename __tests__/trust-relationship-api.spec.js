@@ -1,26 +1,24 @@
-require('dotenv').config()
+require('dotenv').config();
 const request = require('supertest');
-const server = require("../server/app");
 const { expect } = require('chai');
-const seed = require('./seed');
 const log = require('loglevel');
-const Transfer = require("../server/models/Transfer");
-const TrustRelationship = require("../server/models/TrustRelationship");
-const sinon = require("sinon");
-const chai = require("chai");
+const sinon = require('sinon');
+const chai = require('chai');
+const server = require('../server/app');
+const seed = require('./seed');
+const Transfer = require('../server/models/Transfer');
+const TrustRelationship = require('../server/models/TrustRelationship');
 chai.use(require('chai-uuid'));
 
-const apiKey = seed.apiKey;
+const { apiKey } = seed;
 
 describe('Trust relationship management', () => {
-
   let bearerToken;
   let bearerTokenB;
   let bearerTokenC;
   let trustRelationshipId;
 
-  before( async () => {
-
+  before(async () => {
     await seed.clear();
     await seed.seed();
 
@@ -69,123 +67,121 @@ describe('Trust relationship management', () => {
 
   beforeEach(async () => {
     sinon.restore();
-  })
+  });
 
-
-  it("Creates send relationship", async () => {
+  it('Creates send relationship', async () => {
     const res = await request(server)
-      .post("/trust_relationships")
+      .post('/trust_relationships')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         trust_request_type: 'send',
         requestee_wallet: seed.walletC.name,
       });
-    expect(res).property("statusCode").to.eq(200);
+    expect(res).property('statusCode').to.eq(200);
   });
 
-  it("GET /trust_relationships", async () => {
+  it('GET /trust_relationships', async () => {
     const res = await request(server)
-      .get("/trust_relationships")
+      .get('/trust_relationships')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
-    expect(res).property("statusCode").to.eq(200); // Integration
-    expect(res).property("body").property("trust_relationships").lengthOf(1); // Integration
-    expect(res.body.trust_relationships[0]).property("id").to.be.a.uuid('v4') // Unit test, or use Joi to evaluate entire payload
+    expect(res).property('statusCode').to.eq(200); // Integration
+    expect(res).property('body').property('trust_relationships').lengthOf(1); // Integration
+    expect(res.body.trust_relationships[0]).property('id').to.be.a.uuid('v4'); // Unit test, or use Joi to evaluate entire payload
   });
 
-  it("POST /trust_relationships with wrong request type", async () => {
+  it('POST /trust_relationships with wrong request type', async () => {
     const res = await request(server)
-      .post("/trust_relationships")
+      .post('/trust_relationships')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         trust_request_type: 'wrongtype',
         wallet: 'any',
       });
-    expect(res).property("statusCode").to.eq(422);
+    expect(res).property('statusCode').to.eq(422);
   });
 
-  it("POST /trust_relationships", async () => {
+  it('POST /trust_relationships', async () => {
     const res = await request(server)
-      .post("/trust_relationships")
+      .post('/trust_relationships')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         trust_request_type: 'send',
         requestee_wallet: seed.walletB.name,
       });
-    console.log(res.body)
-    expect(res).property("statusCode").to.eq(200);
+    console.log(res.body);
+    expect(res).property('statusCode').to.eq(200);
   });
 
   it(`${seed.walletB.name} try to request "manage" relationship to ${seed.wallet.name}`, async () => {
     await seed.clear();
     await seed.seed();
-    let res = await request(server)
-      .post("/trust_relationships")
+    const res = await request(server)
+      .post('/trust_relationships')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`)
       .send({
         trust_request_type: 'manage',
         requestee_wallet: seed.wallet.name,
       });
-    console.log('ww')
-    console.log(res.body)
-    expect(res).property("statusCode").to.eq(200);
-    trustRelationship = res.body;
-    expect(trustRelationship).property("id").to.be.a.uuid('v4')
-    expect(trustRelationship).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested);
+    console.log('ww');
+    console.log(res.body);
+    expect(res).property('statusCode').to.eq(200);
+    const trustRelationship = res.body;
+    expect(trustRelationship).property('id').to.be.a.uuid('v4');
+    expect(trustRelationship)
+      .property('state')
+      .eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested);
     trustRelationshipId = trustRelationship.id;
-  })
+  });
 
   it(`${seed.wallet.name} accept this request`, async () => {
     const res = await request(server)
       .post(`/trust_relationships/${trustRelationshipId}/accept`)
-      .set('Content-Type', "application/json")
+      .set('Content-Type', 'application/json')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
 
-    expect(res).property("statusCode").to.eq(200);
-    expect(res.body).property("state").eq("trusted");
-    expect(res.body).property("type").eq("manage");
-    expect(res.body).property("actor_wallet").eq(seed.walletB.name);
-    expect(res.body).property("target_wallet").eq(seed.wallet.name);
+    expect(res).property('statusCode').to.eq(200);
+    expect(res.body).property('state').eq('trusted');
+    expect(res.body).property('type').eq('manage');
+    expect(res.body).property('actor_wallet').eq(seed.walletB.name);
+    expect(res.body).property('target_wallet').eq(seed.wallet.name);
   });
 
   it(`${seed.walletB.name} try to request "yield" relationship to ${seed.wallet.name}`, async () => {
     await seed.clear();
     await seed.seed();
-    res = await request(server)
-      .post("/trust_relationships")
+    const res = await request(server)
+      .post('/trust_relationships')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`)
       .send({
         trust_request_type: 'yield',
         requestee_wallet: seed.wallet.name,
       });
-    expect(res).property("statusCode").to.eq(200);
-    trustRelationship = res.body;
-    expect(trustRelationship).property("id").to.be.a.uuid('v4');
-    expect(trustRelationship).property("state").eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested);
+    expect(res).property('statusCode').to.eq(200);
+    const trustRelationship = res.body;
+    expect(trustRelationship).property('id').to.be.a.uuid('v4');
+    expect(trustRelationship)
+      .property('state')
+      .eq(TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested);
     trustRelationshipId = trustRelationship.id;
-  })
+  });
 
   it(`${seed.wallet.name} accept yeild request`, async () => {
     const res = await request(server)
       .post(`/trust_relationships/${trustRelationshipId}/accept`)
-      .set('Content-Type', "application/json")
+      .set('Content-Type', 'application/json')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
-    expect(res).property("statusCode").to.eq(200);
-    expect(res.body).property("state").eq("trusted");
-    expect(res.body).property("type").eq("manage");
-    expect(res.body).property("actor_wallet").eq(seed.walletB.name);
-    expect(res.body).property("target_wallet").eq(seed.wallet.name);
+    expect(res).property('statusCode').to.eq(200);
+    expect(res.body).property('state').eq('trusted');
+    expect(res.body).property('type').eq('manage');
+    expect(res.body).property('actor_wallet').eq(seed.walletB.name);
+    expect(res.body).property('target_wallet').eq(seed.wallet.name);
   });
 });
-
-
-
-
-

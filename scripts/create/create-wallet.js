@@ -30,13 +30,13 @@ function getRandomArbitrary(min, max) {
   });
 
   const sha512 = function(password, salt){
-    var hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
+    const hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
     hash.update(password);
-    var value = hash.digest('hex');
+    const value = hash.digest('hex');
     return value;
   };
 
-  const salt = Crypto.randomBytes(32).toString('base64')  //create a secure salt
+  const salt = Crypto.randomBytes(32).toString('base64')  // create a secure salt
   const passwordHash = sha512(password, salt)
   
   const apiKey = generator.generate({
@@ -64,7 +64,7 @@ function getRandomArbitrary(min, max) {
     const result = await trx('wallet.wallet').insert({
       name: username,
       password: passwordHash,
-      salt: salt
+      salt
     }).returning('*')
     const wallet = result[0]
     console.log(wallet)
@@ -73,9 +73,9 @@ function getRandomArbitrary(min, max) {
 
     knex.destroy()
 
-    console.log('wallet ' + username);
-    console.log('password ' + password);
-    console.log('api key ' + apiKey);
+    console.log(`wallet ${  username}`);
+    console.log(`password ${  password}`);
+    console.log(`api key ${  apiKey}`);
 
   } catch (error) {
 

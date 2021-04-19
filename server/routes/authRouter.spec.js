@@ -1,11 +1,11 @@
 const request = require("supertest");
 const express = require("express");
-const authRouter = require("./authRouter");
 const {expect} = require("chai");
-const {errorHandler} = require("./utils");
 const sinon = require("sinon");
-const ApiKeyService = require("../services/ApiKeyService");
 const bodyParser = require('body-parser');
+const authRouter = require("./authRouter");
+const {errorHandler} = require("./utils");
+const ApiKeyService = require("../services/ApiKeyService");
 const WalletService = require("../services/WalletService");
 const JWTService = require("../services/JWTService");
 

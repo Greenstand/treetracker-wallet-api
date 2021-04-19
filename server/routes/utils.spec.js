@@ -1,11 +1,11 @@
 const request = require("supertest");
 const express = require("express");
-//const {handlerWrapper, errorHandler} = require("./utils");
-const helper = require("./utils");
+// const {handlerWrapper, errorHandler} = require("./utils");
 const {expect} = require("chai");
+const sinon = require("sinon");
+const helper = require("./utils");
 const HttpError = require("../utils/HttpError");
 const ApiKeyService = require("../services/ApiKeyService");
-const sinon = require("sinon");
 const JWTService = require("../services/JWTService");
 
 describe("routers/utils", () => {
@@ -92,7 +92,7 @@ describe("routers/utils", () => {
 
     it("check failed, should get response with code 401", async () => {
       const app = express();
-      //mock
+      // mock
       sinon.stub(ApiKeyService.prototype, "check").rejects(new HttpError(401));
       app.get("/test", 
         [
@@ -110,7 +110,7 @@ describe("routers/utils", () => {
 
     it("check passed, should get response with code 200", async () => {
       const app = express();
-      //mock
+      // mock
       sinon.stub(ApiKeyService.prototype, "check").rejects(new HttpError(401));
       app.get("/test", 
         [
@@ -131,7 +131,7 @@ describe("routers/utils", () => {
 
     it("pass correct token should pass the verify", async () => {
       const app = express();
-      //mock
+      // mock
       sinon.stub(ApiKeyService.prototype, "check").rejects(new HttpError(401));
       app.get("/test", 
         [
@@ -153,7 +153,7 @@ describe("routers/utils", () => {
 
     it("pass corupt token should get response with code 403", async () => {
       const app = express();
-      //mock
+      // mock
       sinon.stub(ApiKeyService.prototype, "check").rejects(new HttpError(401));
       app.get("/test", 
         [
@@ -168,7 +168,7 @@ describe("routers/utils", () => {
       const token = jwt.sign(payload);
       const res = await request(app)
         .get("/test")
-        .set('Authorization', `Bearer ${token.slice(1)}`);//NOTE corupt here
+        .set('Authorization', `Bearer ${token.slice(1)}`);// NOTE corupt here
       expect(res.statusCode).eq(403);
       ApiKeyService.prototype.check.restore();
     });

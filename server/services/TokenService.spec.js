@@ -1,22 +1,23 @@
-const TokenService = require("./TokenService");
 const sinon = require("sinon");
-const TokenRepository = require("../repositories/TokenRepository");
-const HttpError = require("../utils/HttpError");
 const jestExpect = require("expect");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const uuid = require('uuid');
+const TokenService = require("./TokenService");
+const TokenRepository = require("../repositories/TokenRepository");
+const HttpError = require("../utils/HttpError");
+
 chai.use(sinonChai);
 const {expect} = chai;
 const Wallet = require("../models/Wallet");
 const Token = require("../models/Token");
-const WalletService = require("../services/WalletService");
+const WalletService = require("./WalletService");
 const Session = require("../models/Session");
 const TransactionRepository = require("../repositories/TransactionRepository");
-const uuid = require('uuid');
 
 describe("Token", () => {
   let tokenService;
-  let session = new Session();
+  const session = new Session();
 
   beforeEach(() => {
     tokenService = new TokenService();

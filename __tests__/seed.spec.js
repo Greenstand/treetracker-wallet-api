@@ -1,7 +1,7 @@
-const seed = require("./seed");
 const {expect} = require("chai");
 const Crypto = require('crypto');
 const log = require("loglevel");
+const seed = require("./seed");
 const knex = require("../server/database/knex");
 
 describe("Seed data into DB", () => {
