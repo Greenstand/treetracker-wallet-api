@@ -477,7 +477,7 @@ class Wallet{
 
       const tokensId = [];
       for(let token of tokens){
-        // check if the tokens you want to transfer is claimed, i.e. not trasfferable
+        // check if the tokens you want to transfer is claimed, i.e. not transferrable
         if (token['_JSON']['claim'] == true) {
           console.log("token is claimed, cannot be transfered");
           let uuid = token['_id'];
@@ -497,7 +497,7 @@ class Wallet{
         claim: claimBoolean,
       });
       log.debug("now, deal with tokens");
-      await this.tokenService.completeTransfer(tokens, transfer);
+      await this.tokenService.completeTransfer(tokens, transfer, claimBoolean);
       return transfer;
       
       // TODO: Do I need claim boolean in below cases?
