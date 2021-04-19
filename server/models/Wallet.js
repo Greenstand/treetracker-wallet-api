@@ -631,7 +631,8 @@ class Wallet{
               bundle: {
                 bundleSize: bundleSize,
               }
-            }
+            },
+            claim: claimBoolean
           });
           return transfer;
         }else{

@@ -51,17 +51,23 @@ class Token{
   async completeTransfer(transfer){
     
     log.debug("Token complete transfer");
-    await this.tokenRepository.update({
+    log.debug({
       id: this._id,
       transfer_pending: false,
       transfer_pending_id: null,
       wallet_id: transfer.destination_wallet_id,
     });
+
+    await this.tokenRepository.update({
+      id: this._id,
+      transfer_pending: false,
+      transfer_pending_id: null,
+      wallet_id: transfer.destination_wallet_id,
+      claim: transfer.claim ? true : false
+    });
     await this.transactionRepository.create({
       token_id: this._id,
       transfer_id: transfer.id,
-      source_entity_id: transfer.source_entity_id,
-      destination_entity_id: transfer.destination_entity_id,
       //TODO: add a boolean for claim.
       claim: transfer.claim,
       source_wallet_id: transfer.source_wallet_id,

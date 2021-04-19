@@ -20,7 +20,8 @@ describe("Token", () => {
   const walletId = uuid.v4()
   const wallet2Id = uuid.v4()
 
-  beforeEach(() => {
+  afterEach(() => {
+    sinon.restore();
   })
 
   it("constructor by object", () => {
@@ -65,17 +66,15 @@ describe("Token", () => {
         wallet_id: wallet2Id,
         transfer_pending: false,
         transfer_pending_id: null,
-        claim: false,
-      });
+        claim: false
+      }); 
       expect(fn2).calledWith({
         token_id: tokenId,
         transfer_id: transferId,
         source_wallet_id: walletId,
         destination_wallet_id: wallet2Id,
-        claim: false,
+        claim: false
       });
-      fn1.restore();
-      fn2.restore();
     });
   });
 
@@ -97,8 +96,6 @@ describe("Token", () => {
         transfer_pending_id: null,
       });
       expect(fn2).not.calledWith();
-      fn1.restore();
-      fn2.restore();
     });
   });
 
@@ -113,7 +110,6 @@ describe("Token", () => {
       });
       expect(await token.belongsTo(wallet)).eq(true);
       expect(fn1).calledWith();
-      fn1.restore();
     });
 
     it("not belongsTo", async () => {
@@ -125,7 +121,6 @@ describe("Token", () => {
       });
       expect(await token.belongsTo(wallet)).eq(false);
       expect(fn1).calledWith();
-      fn1.restore();
     });
   });
 
