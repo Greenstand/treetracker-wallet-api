@@ -129,7 +129,10 @@ Next, create a new wallets schema in your local database. Navigate to the databa
     "database" : "[your_dbname]",
     "host" : "localhost",
     "port" : "5432",
-    "schema" : "wallets"
+    "schema" : "wallet",
+    "ssl" : {
+      "rejectUnauthorized": false
+    }
   }
 }
 ```
