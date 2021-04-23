@@ -49,16 +49,21 @@ You can use docker-compose, to start a database. To do that:
     "database" : "wallet_user",
     "host" : "localhost",
     "port" : "5432",
-    "schema" : "wallet"
+    "schema" : "wallet",
+    "ssl" : {
+      "rejectUnauthorized": false
+    }
   }
 }
 ```
 
-your .env file to have a line
+3. Copy .env.example to .env, and update the DATABASE_URL environment variable
 
 ```
-DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user
+DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user?ssl=no-verify
 ```
+
+Note here the non-standard ssl=no-verify which is equivalent to sslmode=require
 
 3. run `docker-compose up ` to run the database (or `docker-compose up -d` to run detached)
 4. then run migrations
