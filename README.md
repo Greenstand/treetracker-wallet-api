@@ -97,8 +97,8 @@ We recommend setting up your Postgres server/database locally and assigning sett
 .env file should look like this:
 
 ```
-DATABASE_URL=postgresql://[your_username]:[password]@localhost:5432/[database_name]
-DATABASE_SCHEMA=wallets
+DATABASE_URL=postgresql://[your_username]:[password]@localhost:5432/[database_name]?ssl=no-verify
+DATABASE_SCHEMA=wallet
 PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
 PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
 NODE_LOG_LEVEL=trace
