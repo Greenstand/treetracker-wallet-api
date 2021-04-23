@@ -1,6 +1,6 @@
-const ApiKeyService = require("./ApiKeyService");
 const jestExpect = require("expect");
 const sinon = require("sinon");
+const ApiKeyService = require("./ApiKeyService");
 const ApiKeyRepository = require("../repositories/ApiKeyRepository");
 const HttpError = require("../utils/HttpError");
 const Session = require("../models/Session");

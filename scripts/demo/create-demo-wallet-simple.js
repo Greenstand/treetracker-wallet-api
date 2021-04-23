@@ -18,9 +18,9 @@ function getRandomArbitrary(min, max) {
 
   const Crypto = require('crypto');
   const sha512 = function(password, salt){
-    let hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
+    const hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
     hash.update(password);
-    let value = hash.digest('hex');
+    const value = hash.digest('hex');
     return value;
   };
 

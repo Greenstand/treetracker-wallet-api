@@ -1,9 +1,11 @@
-const TrustRepository = require("./TrustRepository");
 const {expect} = require("chai");
-const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
+const TrustRepository = require("./TrustRepository");
+const knex = require("../database/knex");
+
 const tracker = mockKnex.getTracker();
 const Session = require("../models/Session");
+const uuid = require('uuid');
 
 
 describe("TrustRepository", () => {
@@ -46,8 +48,7 @@ describe("TrustRepository", () => {
         }
       ][step - 1]();
     });
-    const result = await trustRepository.create({});
-    expect(result).property('id').a('number');
+    await trustRepository.create({id:uuid.v4(),state: "ok"});
   });
 
   it("getById", async () => {
@@ -67,7 +68,10 @@ describe("TrustRepository", () => {
       expect(query.sql).match(/update.*trust.*/);
       query.response([{}]);
     });
-    await trustRepository.update({id:1});
+    await trustRepository.update({
+      id:uuid.v4(),
+      actor_wallet_id: uuid.v4(),
+    });
   });
 });
 

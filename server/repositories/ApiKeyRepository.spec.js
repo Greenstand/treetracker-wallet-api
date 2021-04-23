@@ -1,6 +1,7 @@
 const {expect} = require("chai");
-const knex = require("../database/knex");
 const mockKnex = require("mock-knex");
+const knex = require("../database/knex");
+
 const tracker = mockKnex.getTracker();
 const ApiKeyRepository = require("./ApiKeyRepository");
 const Session = require("../models/Session");

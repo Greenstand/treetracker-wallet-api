@@ -1,20 +1,18 @@
-const WalletService = require("./WalletService");
-const expect = require("expect-runtime");
+const WalletService = require('./WalletService');
 
-class TransferService{
-
-  constructor(session){
+class TransferService {
+  constructor(session) {
     this._session = session;
     this.walletService = new WalletService(session);
   }
 
-  async convertToResponse(transferObject){
+  async convertToResponse(transferObject) {
     const {
       originator_wallet_id,
       source_wallet_id,
-      destination_wallet_id
+      destination_wallet_id,
     } = transferObject;
-    const result = {...transferObject};
+    const result = { ...transferObject };
     {
       const wallet = await this.walletService.getById(originator_wallet_id);
       const json = await wallet.toJSON();
@@ -35,7 +33,6 @@ class TransferService{
     }
     return result;
   }
-
 }
 
 module.exports = TransferService;
