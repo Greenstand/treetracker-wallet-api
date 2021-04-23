@@ -49,7 +49,7 @@ You can use docker-compose, to start a database. To do that:
     "database" : "wallet_user",
     "host" : "localhost",
     "port" : "5432",
-    "schema" : "wallets"
+    "schema" : "wallet"
   }
 }
 ```
