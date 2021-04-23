@@ -18,9 +18,9 @@ function getRandomArbitrary(min, max) {
 
   const Crypto = require('crypto');
   const sha512 = function(password, salt){
-    var hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
+    let hash = Crypto.createHmac('sha512', salt); /** Hashing algorithm sha512 */
     hash.update(password);
-    var value = hash.digest('hex');
+    let value = hash.digest('hex');
     return value;
   };
 
@@ -50,13 +50,14 @@ function getRandomArbitrary(min, max) {
     const result = await trx('wallet.wallet').insert({
       name: username,
       password: passwordHash,
-      salt: salt
+      salt
     }).returning('*')
     const wallet = result[0]
     console.log(wallet)
 
 
     // create fake tokens
+    let i = 0;
     for(i=0; i<5000; i++){
       const tokenData = {
         capture_id: uuidv4(),
@@ -71,9 +72,9 @@ function getRandomArbitrary(min, max) {
 
     knex.destroy()
 
-    console.log('wallet ' + username);
-    console.log('password ' + password);
-    console.log('apiKey ' + apiKey);
+    // console.log('wallet ' + username);
+    // console.log('password ' + password);
+    // console.log('apiKey ' + apiKey);
 
   } catch (error) {
 

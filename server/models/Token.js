@@ -63,12 +63,12 @@ class Token{
       transfer_pending: false,
       transfer_pending_id: null,
       wallet_id: transfer.destination_wallet_id,
-      claim: transfer.claim ? true : false
+      claim: transfer.claim
     });
     await this.transactionRepository.create({
       token_id: this._id,
       transfer_id: transfer.id,
-      //TODO: add a boolean for claim.
+      // TODO: add a boolean for claim.
       claim: transfer.claim,
       source_wallet_id: transfer.source_wallet_id,
       destination_wallet_id: transfer.destination_wallet_id,

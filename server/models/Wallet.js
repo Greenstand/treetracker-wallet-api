@@ -476,11 +476,11 @@ class Wallet{
     ){
 
       const tokensId = [];
-      for(let token of tokens){
+      for(const token of tokens){
         // check if the tokens you want to transfer is claimed, i.e. not transferrable
-        if (token['_JSON']['claim'] == true) {
+        if (token._JSON.claim === true) {
           console.log("token is claimed, cannot be transfered");
-          let uuid = token['_id'];
+          const uuid = token._id;
         throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
         }
         tokensId.push(token.getId());
@@ -499,8 +499,6 @@ class Wallet{
       log.debug("now, deal with tokens");
       await this.tokenService.completeTransfer(tokens, transfer, claimBoolean);
       return transfer;
-      
-      // TODO: Do I need claim boolean in below cases?
     }else{  
         if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
@@ -522,9 +520,9 @@ class Wallet{
           await this.tokenService.pendingTransfer(tokens, transfer);
           // check if the tokens you want to transfer is claimed, i.e. not trasfferable
           for (const token of tokens) {
-            if (token['_JSON']['claim'] == true) {
+            if (token._JSON.claim === true) {
               console.log("token is claimed, cannot be transfered");
-              let uuid = token['_id'];
+              const uuid = token._id;
             throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
             }
           }
@@ -549,15 +547,15 @@ class Wallet{
           await this.tokenService.pendingTransfer(tokens, transfer);
           // check if the tokens you want to transfer is claimed, i.e. not trasfferable
           for (const token of tokens) {
-            if (token['_JSON']['claim'] == true) {
+            if (token._JSON.claim === true) {
               console.log("token is claimed, cannot be transfered");
-              let uuid = token['_id'];
+              const uuid = token._id;
             throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
             }
           }
           return transfer;
         }else{
-          //TODO
+          // TODO
           expect.fail();
         }
     }
