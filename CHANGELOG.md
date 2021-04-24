@@ -1,3 +1,31 @@
+## [1.12.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.4...v1.12.5) (2021-04-16)
+
+
+### Bug Fixes
+
+* downgraded husky version to support node-run env required by IDEs ([e3656f5](https://github.com/Greenstand/treetracker-wallet-api/commit/e3656f55f3bbc2b9f98d44af29e8ac258cffda2f))
+
+## [1.12.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.3...v1.12.4) (2021-04-03)
+
+
+### Bug Fixes
+
+* remove unnecessary CORS ([1b711a2](https://github.com/Greenstand/treetracker-wallet-api/commit/1b711a250d440a2b6bb0c709512e93ba4dd8ea57))
+
+## [1.12.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.2...v1.12.3) (2021-04-02)
+
+
+### Bug Fixes
+
+* syntax error ([5036b1e](https://github.com/Greenstand/treetracker-wallet-api/commit/5036b1e20b08b6c1221a4026a63ae4bdf0070b0d))
+
+## [1.12.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.1...v1.12.2) (2021-04-02)
+
+
+### Bug Fixes
+
+* update CORS ([8793c73](https://github.com/Greenstand/treetracker-wallet-api/commit/8793c732eabca832ced6af7d98a6b0ef884295dc))
+
 ## [1.12.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.0...v1.12.1) (2021-03-28)
 
 

@@ -5,12 +5,13 @@ const jestExpect = require("expect");
 const sinon = require("sinon");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+
 chai.use(sinonChai);
 const {expect} = chai;
 const uuid = require('uuid');
 
 describe("TrustService", () => {
-  let trustService = new TrustService();
+  const trustService = new TrustService();
 
   describe("", () => {
   });

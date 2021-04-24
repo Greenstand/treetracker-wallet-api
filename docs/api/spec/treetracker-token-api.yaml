@@ -56,9 +56,9 @@ paths:
             type: integer
             format: int32
             example: 10
-        - name: start
+        - name: offset
           in: query
-          description: 'Where does the list start, 1 means start from the beginning of the list'
+          description: 'Where does the list offset, 0 means start from the beginning of the list'
           required: false
           style: form
           explode: true
@@ -135,9 +135,9 @@ paths:
             type: integer
             format: int32
             example: 10
-        - name: start
+        - name: offset
           in: query
-          description: 'Where does the list start, 1 means start from the beginning of the list'
+          description: 'Where does the list offset, 0 means offset from the beginning of the list'
           required: false
           style: form
           explode: true
@@ -261,9 +261,9 @@ paths:
             type: integer
             format: int32
             example: 10
-        - name: start
+        - name: offset
           in: query
-          description: 'Where does the list start, 1 means start from the beginning of the list'
+          description: 'Where does the list offset, 0 means offset from the beginning of the list'
           required: false
           style: form
           explode: true
@@ -302,9 +302,9 @@ paths:
             type: integer
             format: int32
             example: 10
-        - name: start
+        - name: offset
           in: query
-          description: 'Where does the list start, 1 means start from the beginning of the list'
+          description: 'Where does the list offset, 0 means offset from the beginning of the list'
           required: false
           style: form
           explode: true
@@ -458,9 +458,9 @@ paths:
             type: integer
             format: int32
             example: 10
-        - name: start
+        - name: offset
           in: query
-          description: 'Where does the list start, 1 means start from the beginning of the list'
+          description: 'Where does the list offset, 0 means offset from the beginning of the list'
           required: false
           style: form
           explode: true
@@ -538,9 +538,9 @@ paths:
             type: integer
             format: int32
             example: 10
-        - name: start
+        - name: offset
           in: query
-          description: 'Where does the list start, 1 means start from the beginning of the list'
+          description: 'Where does the list offset, 0 means start from the beginning of the list'
           required: false
           style: form
           explode: true

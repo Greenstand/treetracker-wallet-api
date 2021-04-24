@@ -1,8 +1,10 @@
 {
     "env": {
-        "node": true
+        "node": true,
+        "mocha": true,
+        "commonjs": true
     },
-    "plugins": ["prettier"],
+    "plugins": ["prettier", "simple-import-sort", "eslint-plugin-import"],
     "extends": [
         "airbnb-base",
         "prettier"
@@ -11,5 +13,26 @@
         "ecmaVersion": 12
     },
     "rules": {
-    }
+        "simple-import-sort/imports": "error",
+        "no-underscore-dangle": "off",
+        "camelcase":"off",
+        "no-unused-vars":"warn",
+        "func-names": "off",
+        "no-param-reassign": "warn",
+        "consistent-return":"warn",
+        "no-restricted-syntax":"warn",
+        "global-require":"off",
+        "radix":"off",
+        "no-await-in-loop":"off",
+        "class-methods-use-this":"warn",
+        "no-return-await":"warn",
+        "no-new-wrappers": "warn",
+        "prefer-destructuring": "warn",
+        "no-shadow":"warn",
+        "import/order": "warn",
+        "no-unused-expressions": "warn",
+        "import/no-extraneous-dependencies": "warn" ,
+        "import/no-unresolved": "warn",
+        "no-plusplus":"warn",
+        "no-continue":"off"   }
 }

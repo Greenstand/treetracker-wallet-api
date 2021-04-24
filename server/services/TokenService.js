@@ -1,8 +1,8 @@
+const log = require("loglevel");
+const Joi = require("joi");
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
-const log = require("loglevel");
-const Joi = require("joi");
 
 class TokenService{
 
@@ -10,7 +10,7 @@ class TokenService{
     this._session =  session
     this.tokenRepository = new TokenRepository(session);
     this.transactionRepository = new TransactionRepository(session);
-    const WalletService  = require("../services/WalletService");
+    const WalletService  = require("./WalletService");
     this.walletService = new WalletService(session);
   }
 
@@ -27,10 +27,10 @@ class TokenService{
     return tokensObject.map(object => new Token(object, this._session));
   }
 
-  async getTokensByPendingTransferId(transferId){
+  async getTokensByPendingTransferId(transferId, limit, offset = 0){
     const result = await this.tokenRepository.getByFilter({
       transfer_pending_id: transferId,
-    });
+    }, {limit, offset});
     return result.map(object => {
       return new Token(object, this._session);
     });
@@ -87,8 +87,8 @@ class TokenService{
     return result;
   }
 
-  async getTokensByTransferId(transferId){
-    const result = await this.tokenRepository.getByTransferId(transferId);
+  async getTokensByTransferId(transferId, limit, offset = 0){
+    const result = await this.tokenRepository.getByTransferId(transferId, limit, offset);
     const tokens = [];
     for(const r of result){
       const token = new Token(r);
