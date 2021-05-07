@@ -1,3 +1,28 @@
+# [1.13.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.5...v1.13.0) (2021-05-07)
+
+
+### Bug Fixes
+
+* add claim boolean column to transaction table, update yaml ([f1bf00d](https://github.com/Greenstand/treetracker-wallet-api/commit/f1bf00d97708162cfe50f8f516deac127806b01d))
+* add countNotClaimedTokenByWallet ([cf98269](https://github.com/Greenstand/treetracker-wallet-api/commit/cf98269cfd1e719e46d4cad7d946bb93ff37acf4))
+* add countNotClaimedTokenByWallet ([50414d6](https://github.com/Greenstand/treetracker-wallet-api/commit/50414d614dfd2dedca955c82c902731f43feb4cf))
+* eslint ([88e5dfd](https://github.com/Greenstand/treetracker-wallet-api/commit/88e5dfd0cebcceda875ec50117350d1fd8313b08))
+* integration test ([04d4e69](https://github.com/Greenstand/treetracker-wallet-api/commit/04d4e69b6d60ff77613f65ae223e84b632b16dec))
+* merge confilcts ([82d46f6](https://github.com/Greenstand/treetracker-wallet-api/commit/82d46f6d2eac88504979105ca5ab8276b011b322))
+* merge conflict ([a3b06de](https://github.com/Greenstand/treetracker-wallet-api/commit/a3b06de5f7e8e8743dbeca93b53b48206e74b299))
+* tests after claim feature code added ([6b43e88](https://github.com/Greenstand/treetracker-wallet-api/commit/6b43e88e84b524572beee5366f2c04003ee024e8))
+* update ([1390482](https://github.com/Greenstand/treetracker-wallet-api/commit/1390482c6b1f9b40154212637e862ee1b1ea833d))
+
+
+### Features
+
+* 1st round test finish for claim ([993a0d6](https://github.com/Greenstand/treetracker-wallet-api/commit/993a0d681a45923eb8e60b96f719a6e356334d82))
+* add more code for transfer bundle and check if token is already claimed ([4dbdbb8](https://github.com/Greenstand/treetracker-wallet-api/commit/4dbdbb8b3f37b7dd63f1ea569175b1986bbcc4a0))
+* comment out test ([5da94e4](https://github.com/Greenstand/treetracker-wallet-api/commit/5da94e49e52682d74592d8e25e2595762594cc5a))
+* fix some tests ([aa69ff0](https://github.com/Greenstand/treetracker-wallet-api/commit/aa69ff069bddaf97f8ed6c75e577bddc8776458e))
+* inital commit for [#152](https://github.com/Greenstand/treetracker-wallet-api/issues/152) transfer claim feature ([4f37463](https://github.com/Greenstand/treetracker-wallet-api/commit/4f374630549024a33d8ea82ad41909e83291c8f1))
+* more work on the claim feature ([c9a2af1](https://github.com/Greenstand/treetracker-wallet-api/commit/c9a2af17bfa7c37a4d8cad79215531d5f4d1dc18))
+
 ## [1.12.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.4...v1.12.5) (2021-04-16)
 
 
