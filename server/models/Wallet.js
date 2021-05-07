@@ -452,7 +452,7 @@ class Wallet{
   /*
    * Transfer some tokens from the sender to receiver
    */
-  async transfer(sender, receiver, tokens){
+  async transfer(sender, receiver, tokens, claimBoolean){
 //    await this.checkDeduct(sender, receiver);
     // check tokens belong to sender
     for(const token of tokens){
@@ -465,7 +465,6 @@ class Wallet{
         throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
       }
     }
-
     const isDeduct = await this.isDeduct(sender,receiver);
     const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
     const hasControlOverSender = await this.hasControlOver(sender);
@@ -475,8 +474,15 @@ class Wallet{
       (hasControlOverSender && hasControlOverReceiver) ||
       (!isDeduct && hasTrust)
     ){
+
       const tokensId = [];
       for(const token of tokens){
+        // check if the tokens you want to transfer is claimed, i.e. not transferrable
+        if (token._JSON.claim === true) {
+          console.log("token is claimed, cannot be transfered");
+          const uuid = token._id;
+        throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+        }
         tokensId.push(token.getId());
       }
       const transfer = await this.transferRepository.create({
@@ -487,12 +493,20 @@ class Wallet{
         parameters: {
           tokens: tokensId,
         },
+        // TODO: add boolean for claim in transferRepository
+        claim: claimBoolean,
       });
       log.debug("now, deal with tokens");
-      await this.tokenService.completeTransfer(tokens, transfer);
+      await this.tokenService.completeTransfer(tokens, transfer, claimBoolean);
       return transfer;
       
+
+      // TODO: Do I need claim boolean in below cases?
     }
+    // else{  
+
+    // }
+
         if(hasControlOverSender){
           log.debug("OK, no permission, source under control, now pending it");
           const tokensId = [];
@@ -506,9 +520,19 @@ class Wallet{
             state: Transfer.STATE.pending,
             parameters: {
               tokens: tokensId,
+              
             },
+            claim: claimBoolean,
           });
           await this.tokenService.pendingTransfer(tokens, transfer);
+          // check if the tokens you want to transfer is claimed, i.e. not trasfferable
+          for (const token of tokens) {
+            if (token._JSON.claim === true) {
+              console.log("token is claimed, cannot be transfered");
+              const uuid = token._id;
+            throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+            }
+          }
           return transfer;
         }if(hasControlOverReceiver){
           log.debug("OK, no permission, receiver under control, now request it");
@@ -523,9 +547,19 @@ class Wallet{
             state: Transfer.STATE.requested,
             parameters: {
               tokens: tokensId,
+              
             },
+            claim: claimBoolean,
           });
           await this.tokenService.pendingTransfer(tokens, transfer);
+          // check if the tokens you want to transfer is claimed, i.e. not trasfferable
+          for (const token of tokens) {
+            if (token._JSON.claim === true) {
+              console.log("token is claimed, cannot be transfered");
+              const uuid = token._id;
+            throw new HttpError(403, `The token ${uuid} is claimed, cannot be transfered`);
+            }
+          }
           return transfer;
         }
           // TODO
@@ -534,10 +568,17 @@ class Wallet{
     
   }
 
-  async transferBundle(sender, receiver, bundleSize){
+
+  async transferBundle(sender, receiver, bundleSize, claimBoolean){
     // check has enough tokens to sender
     const tokenCount = await this.tokenService.countTokenByWallet(sender);
-    if(tokenCount < bundleSize){
+    // count number of tokens not claimed 
+    const notClaimedTokenCount = await this.tokenService.countNotClaimedTokenByWallet(sender);
+    // if(tokenCount < bundleSize){
+    // throw new HttpError(403, `Do not have enough tokens to send`);
+    // }
+    // console.log(notClaimedTokenCount);
+    if(notClaimedTokenCount < bundleSize){
       throw new HttpError(403, `Do not have enough tokens to send`);
     }
 
@@ -559,11 +600,14 @@ class Wallet{
           bundle: {
             bundleSize,
           }
-        }
+        },
+        // TODO: boolean for claim
+        claim: claimBoolean,
       });
       log.debug("now, deal with tokens");
-      const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize)
-      await this.tokenService.completeTransfer(tokens, transfer);
+      const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize, claimBoolean)
+      // need to check if tokens are not claim
+      await this.tokenService.completeTransfer(tokens, transfer, claimBoolean);
       return transfer;
     }
         if(hasControlOverSender){
@@ -577,7 +621,9 @@ class Wallet{
               bundle: {
                 bundleSize,
               }
-            }
+            },
+            // TODO: boolean for claim
+            claim: claimBoolean,
           });
           return transfer;
         }if(hasControlOverReceiver){
@@ -591,7 +637,8 @@ class Wallet{
               bundle: {
                 bundleSize,
               }
-            }
+            },
+            claim: claimBoolean
           });
           return transfer;
         }

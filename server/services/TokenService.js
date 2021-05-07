@@ -39,12 +39,16 @@ class TokenService{
   /*
    * Get n tokens from a wallet
    */
-  async getTokensByBundle(wallet, bundleSize){
+  async getTokensByBundle(wallet, bundleSize, claimBoolean){
+    console.log(claimBoolean);
+    // TODO: getByFilter should be able to handle claim boolean
     const result = await this.tokenRepository.getByFilter({
       wallet_id: wallet.getId(),
       transfer_pending: false,
     },{
       limit: bundleSize,
+      // add claim
+      claim: claimBoolean,
     });
     return result.map(json => new Token(json, this._session));
   }
@@ -55,6 +59,17 @@ class TokenService{
   async countTokenByWallet(wallet){
     const result = await this.tokenRepository.countByFilter({
       wallet_id: wallet.getId(),
+    });
+    return result;
+  }
+
+  /*
+   * Count how many not claimed tokens a wallet has
+   */
+  async countNotClaimedTokenByWallet(wallet) {
+    const result = await this.tokenRepository.countByFilter({
+      wallet_id: wallet.getId(),
+      claim: false
     });
     return result;
   }
@@ -100,12 +115,13 @@ class TokenService{
   /*
    * To replace token.completeTransfer, as a bulk operaction
    */
-  async completeTransfer(tokens, transfer){
+  async completeTransfer(tokens, transfer, claimBoolean){
     log.debug("Token complete transfer batch");
     await this.tokenRepository.updateByIds({
         transfer_pending: false,
         transfer_pending_id: null,
         wallet_id: transfer.destination_wallet_id,
+        claim: claimBoolean,
       },
       tokens.map(token => token.getId()),
     );
@@ -114,6 +130,7 @@ class TokenService{
       transfer_id: transfer.id,
       source_wallet_id: transfer.source_wallet_id,
       destination_wallet_id: transfer.destination_wallet_id,
+      claim: claimBoolean,
     })));
   }
 
