@@ -49,16 +49,21 @@ You can use docker-compose, to start a database. To do that:
     "database" : "wallet_user",
     "host" : "localhost",
     "port" : "5432",
-    "schema" : "wallets"
+    "schema" : "wallet",
+    "ssl" : {
+      "rejectUnauthorized": false
+    }
   }
 }
 ```
 
-your .env file to have a line
+3. Copy .env.example to .env, and update the DATABASE_URL environment variable
 
 ```
-DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user
+DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user?ssl=no-verify
 ```
+
+Note here the non-standard ssl=no-verify which is equivalent to sslmode=require
 
 3. run `docker-compose up ` to run the database (or `docker-compose up -d` to run detached)
 4. then run migrations
@@ -92,8 +97,8 @@ We recommend setting up your Postgres server/database locally and assigning sett
 .env file should look like this:
 
 ```
-DATABASE_URL=postgresql://[your_username]:[password]@localhost:5432/[database_name]
-DATABASE_SCHEMA=wallets
+DATABASE_URL=postgresql://[your_username]:[password]@localhost:5432/[database_name]?ssl=no-verify
+DATABASE_SCHEMA=wallet
 PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
 PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
 NODE_LOG_LEVEL=trace
@@ -124,7 +129,10 @@ Next, create a new wallets schema in your local database. Navigate to the databa
     "database" : "[your_dbname]",
     "host" : "localhost",
     "port" : "5432",
-    "schema" : "wallets"
+    "schema" : "wallet",
+    "ssl" : {
+      "rejectUnauthorized": false
+    }
   }
 }
 ```
