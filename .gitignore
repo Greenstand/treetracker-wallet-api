@@ -9,3 +9,10 @@ database.json
 .env
 .env.test
 .vscode
+
+# Logs and databases #
+######################
+*.log
+
+#IDEA
+.idea
