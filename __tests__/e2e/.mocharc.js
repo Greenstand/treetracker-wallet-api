@@ -11,7 +11,7 @@ module.exports = {
     //'check-leaks': false,
     color: true,
     //delay: false,
-    //diff: true,
+    diff: true,
     exit: true, // could be expressed as "'no-exit': true"
     //extension: ['js'],
     // fgrep: something, // fgrep and grep are mutually exclusive
