@@ -1,5 +1,8 @@
 name: E2E test for dev
 on:
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       git-tag:
