@@ -1,5 +1,11 @@
-name: Tests
+name: E2E test
 on:
+  workflow_dispatch:
+    inputs:
+      git-tag:
+        description: "Branch/hash/tag"
+        required: true
+        default: 'master'
 #  push:
 #    branches: [ main ]
 #  pull_request:
