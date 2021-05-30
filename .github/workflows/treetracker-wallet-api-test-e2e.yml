@@ -13,13 +13,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      PASSWORD: ${{ secrets.PASSWORD }}
-      DATABASE: ${{ secrets.DATABASE }}
-      DATABASE_SCHEMA: ${{ secrets.DATABASE_SCHEMA }}
-      DBUSERNAME: ${{ secrets.DBUSERNAME }}
-      HOST: ${{ secrets.HOST }}
-      PORT: ${{ secrets.PORT }}
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js 12.x
@@ -27,5 +20,4 @@ jobs:
       with:
         node-version: 12
     - run: npm ci
-    - run: node -e "console.log('ok')"
-    - run: echo 'ok'
+    - run: ${{ secrets.DEVELOPMENT_ENV }} node -e "console.log('env password:%s, database:%s, database_schema:%s, username:%s, host:%, port:%',process.env.DB_PASSWORD && process.env.DB_PASSWORD.replace(/\w/g,'x'), process.env.DB_NAME, process.env.DB_SCHEMA, process.env.DB_HOST, process.env.DB_PORT )"
