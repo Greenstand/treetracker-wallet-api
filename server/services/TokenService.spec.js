@@ -44,7 +44,7 @@ describe("Token", () => {
         id: tokenId1,
       }
     ], session);
-    const result = await tokenService.getTokensByBundle(wallet, 1);
+    const result = await tokenService.getTokensByBundle(wallet, 1, false);
     expect(result).a("array").lengthOf(1);
     expect(result[0]).instanceOf(Token);
     expect(fn).calledWith({
@@ -52,7 +52,9 @@ describe("Token", () => {
       transfer_pending: false,
     },{
       limit: 1,
-    });
+      claim: false
+    },
+    );
   });
 
   it("countTokenByWallet", async () => {

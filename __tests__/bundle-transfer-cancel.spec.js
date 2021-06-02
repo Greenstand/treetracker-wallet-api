@@ -68,6 +68,7 @@ describe('Create and accept a bundle transfer', () => {
         },
         sender_wallet: seed.wallet.name,
         receiver_wallet: seed.walletB.name,
+        claim: false,
       });
     expect(res).property("statusCode").to.eq(202);
     pendingTransfer = res.body

@@ -181,7 +181,7 @@ paths:
       tags:
         - Transfers
       summary: 'Move, request, and send tokens between wallets'
-      description: 'Move, request, and send tokens between wallets (by name or id) as allowed by trust relationships.  Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer.  The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debut, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval'
+      description: 'Move, request, and send tokens between wallets (by name or id) as allowed by trust relationships.  Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer.  The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debut, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval. A claim boolean is entered to specify if the tokens are transferrable. Claimed tokens cannot participate in further transfers after they are received.'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -199,6 +199,7 @@ paths:
                     - e533653e-2dbf-48cd-940a-a87e5a393158
                   sender_wallet: zaven4
                   receiver_wallet: 2
+                  claim: false
               Bundle:
                 value:
                   bundle:
@@ -206,6 +207,7 @@ paths:
                     matching_all_tags:
                       - pine
                       - Tanzania
+                  claim: false
               ImpactValue:
                 value:
                   impact:

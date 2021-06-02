@@ -1,0 +1,26 @@
+name: E2E test for dev
+on:
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      git-tag:
+        description: "Branch/hash/tag"
+        required: true
+        default: 'master'
+#  push:
+#    branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12
+    - run: npm ci
+    - run: ${{ secrets.DEVELOPMENT_ENV }} node -e "console.log('env password:%s, database:%s, database_schema:%s, username:%s, host:%s, port:%s',process.env.DB_PASSWORD && process.env.DB_PASSWORD.replace(/\w/g,'x'), process.env.DB_NAME, process.env.DB_SCHEMA, process.env.DB_HOST, process.env.DB_USERNAME, process.env.DB_PORT )"

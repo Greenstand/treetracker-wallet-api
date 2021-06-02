@@ -30,6 +30,7 @@ describe("transferRouter", () => {
   const authenticatedWallet = new Wallet(uuid.v4())
 
   beforeEach(() => {
+    sinon.stub(Session.prototype);
     sinon.stub(ApiKeyService.prototype, "check");
     sinon.stub(JWTService.prototype, "verify").returns({
       id: authenticatedWallet.getId(),
@@ -197,6 +198,48 @@ describe("transferRouter", () => {
     expect(res).property('statusCode').eq(201);
   });
 
+  // //TODO: test for case 1: with trust relationship, tokens specified
+  // it.only('claim transfer with existing trust relationship, and specified tokens', async () => {
+  //   sinon
+  //     .stub(WalletService.prototype, 'getById')
+  //     .resolves(new Wallet(1));
+  //   sinon
+  //     .stub(WalletService.prototype, 'getByIdOrName')
+  //     .onFirstCall()
+  //     .resolves(new Wallet(1))
+  //     .onSecondCall()
+  //     .resolves(new Wallet(2));
+  //   sinon.stub(TokenService.prototype, 'getByUUID').resolves(
+  //     new Token({
+  //       id: 1,
+  //       entity_id: 1,
+  //     }),
+  //   );
+  //   sinon.stub(Wallet.prototype, 'transfer').resolves({
+  //     id: 1,
+  //     state: Transfer.STATE.completed,
+  //   });
+  //   sinon.stub(TransferService.prototype, 'convertToResponse').resolves({
+  //     id: 1,
+  //     state: Transfer.STATE.completed,
+  //   });
+
+  //   const res = await request(app)
+  //     .post('/')
+  //     .send({
+  //       tokens: ['1'],
+  //       sender_wallet: 1,
+  //       receiver_wallet: 2,
+  //       claim: true,
+  //     });
+    
+  //   console.log(res);
+  //   expect(res).property('statusCode').eq(201);
+  // });
+
+  // check what's in the db, after transfer claim
+  // test transfer, in wallet.spec.js
+
   it("all parameters fine, but no trust relationship, should return 202", async () => {
     const walletId = uuid.v4()
     const wallet2Id = uuid.v4()
@@ -236,6 +279,7 @@ describe("transferRouter", () => {
     sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: tokenId,
       wallet_id: walletId,
+      claim: false,
     }, session));
     WalletService.prototype.getById.restore();    
     sinon.stub(WalletService.prototype, "getById").resolves({
@@ -251,6 +295,7 @@ describe("transferRouter", () => {
         },
         sender_wallet: walletId,
         receiver_wallet: wallet2Id,
+        claim: false,
       });
     expect(res).property("statusCode").eq(202);
   });

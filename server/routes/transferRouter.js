@@ -21,60 +21,60 @@ transferRouter.post(
     Joi.assert(
       req.body,
       Joi.alternatives()
-        // if there is tokens field
-        .conditional(
-          Joi.object({
-            tokens: Joi.any().required(),
-          }).unknown(),
-          {
-            then: Joi.object({
-              tokens: Joi.array().items(Joi.string()).required().unique(),
-              sender_wallet: Joi.alternatives().try(Joi.string()).required(),
-              receiver_wallet: Joi.alternatives().try(Joi.string()).required(),
-            }),
-            otherwise: Joi.object({
-              bundle: Joi.object({
-                bundle_size: Joi.number().min(1).max(10000).integer(),
-              }).required(),
-              sender_wallet: Joi.string().required(),
-              receiver_wallet: Joi.string().required(),
-            }),
-          },
-        ),
+      // if there is tokens field
+      .conditional(Joi.object({
+        tokens: Joi.any().required(),
+      }).unknown(),{
+        then: Joi.object({
+          tokens: Joi.array().items(Joi.string()).required().unique(),
+          sender_wallet: Joi.alternatives().try(
+            Joi.string(),
+          ).required(),
+          receiver_wallet: Joi.alternatives().try(
+            Joi.string(),
+          ).required(),
+          // TODO: add boolean for claim, but default to false.
+          claim: Joi.boolean(),
+        }),
+        otherwise: Joi.object({
+          bundle: Joi.object({
+            bundle_size: Joi.number().min(1).max(10000).integer(),
+          }).required(),
+          sender_wallet: Joi.string()
+          .required(),
+          receiver_wallet: Joi.string()
+          .required(),
+          claim: Joi.boolean().required(),
+        }),
+      })
     );
     const session = new Session();
+    
     // begin transaction
-    try {
+    try{
       await session.beginTransaction();
       const walletService = new WalletService(session);
       const walletLogin = await walletService.getById(res.locals.wallet_id);
-
-      const walletSender = await walletService.getByIdOrName(
-        req.body.sender_wallet,
-      );
-      const walletReceiver = await walletService.getByIdOrName(
-        req.body.receiver_wallet,
-      );
+      const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
+      const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
+      // check if this transfer is a claim (claim == not transferrrable tokens)
+      const claim = req.body.claim;
 
       let result;
-      if (req.body.tokens) {
+      // TODO: put the claim boolean into each tokens
+      if(req.body.tokens){
         const tokens = [];
         const tokenService = new TokenService(session);
         for (const id of req.body.tokens) {
           const token = await tokenService.getById(id);
           tokens.push(token);
         }
-        result = await walletLogin.transfer(
-          walletSender,
-          walletReceiver,
-          tokens,
-        );
-      } else {
-        result = await walletLogin.transferBundle(
-          walletSender,
-          walletReceiver,
-          req.body.bundle.bundle_size,
-        );
+        // Case 1: with trust, token transfer
+        result = await walletLogin.transfer(walletSender, walletReceiver, tokens, claim);
+      }else{
+        // Case 2: with trust, bundle transfer
+        // TODO: get only transferrable tokens
+        result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size, claim);
       }
       const transferService = new TransferService(session);
       result = await transferService.convertToResponse(result);
@@ -89,12 +89,12 @@ transferRouter.post(
         throw new Error(`Unexpected state ${result.state}`);
       }
       await session.commitTransaction();
-    } catch (e) {
-      if (e instanceof HttpError && !e.shouldRollback()) {
+    }catch(e){
+      if(e instanceof HttpError && !e.shouldRollback()){
         // if the error type is HttpError, means the exception has been handled
         await session.commitTransaction();
         throw e;
-      } else {
+      }else{
         // unknown exception, rollback the transaction
         await session.rollbackTransaction();
         throw e;
@@ -120,9 +120,9 @@ transferRouter.post(
       await session.beginTransaction();
       const walletService = new WalletService(session);
       const walletLogin = await walletService.getById(res.locals.wallet_id);
-      const transferJson = await walletLogin.acceptTransfer(
-        req.params.transfer_id,
-      );
+
+      // TODO: claim 
+      const transferJson = await walletLogin.acceptTransfer(req.params.transfer_id);
       const transferService = new TransferService(session);
       const transferJson2 = await transferService.convertToResponse(
         transferJson,

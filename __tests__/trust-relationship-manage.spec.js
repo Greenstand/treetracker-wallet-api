@@ -81,6 +81,7 @@ describe('Trust relationship: manage', () => {
         },
         sender_wallet: seed.wallet.name,
         receiver_wallet: seed.walletC.name,
+        claim: false,
       });
     expect(res).property("statusCode").to.eq(202);
   });
