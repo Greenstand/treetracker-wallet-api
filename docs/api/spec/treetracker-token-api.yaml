@@ -223,6 +223,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/sendRequestProcessedResponse'
+              examples:
+                example-1:
+                  value:
+                    originating_wallet: johnwallet1
+                    source_wallet: planeter
+                    destination_wallet: just.a.guy
+                    type: send
+                    parameters:
+                      $ref: '#/components/schemas/requestBundleRequestParameters'
+                    state: completed
+                    created_at: '2020-07-09T00:41:49+00:00'
+                    closed_at: '2020-07-09T00:41:49+00:00'
+            application/xml:
+              schema:
+                type: object
+                properties: {}
         '202':
           description: 'The transfer could not be completely processed because a trust relationship does not exist allowing for automated processing.  If a the source wallet is controlled by the authenitcated user, a  transfer in the pending state has been created. If the source wallet is not controlled but the authenticated user, but the destination wallet is, then a transfer in the requested state has been created'
           content:
@@ -905,6 +921,16 @@ components:
     sendRequestProcessedResponse:
       title: sendRequestProcessedResponse
       type: object
+      example:
+        originating_wallet: johnwallet1
+        source_wallet: planeter
+        destination_wallet: just.a.guy
+        type: send
+        parameters:
+          $ref: '#/components/schemas/requestBundleRequestParameters'
+        state: completed
+        created_at: '2020-07-09T00:41:49+00:00'
+        closed_at: '2020-07-09T00:41:49+00:00'
       properties:
         id:
           type: string
@@ -927,16 +953,35 @@ components:
           type: string
         closed_at:
           type: string
-      example:
-        originating_wallet: johnwallet1
-        source_wallet: planeter
-        destination_wallet: just.a.guy
-        type: send
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        state: completed
-        created_at: '2020-07-09T00:41:49+00:00'
-        closed_at: '2020-07-09T00:41:49+00:00'
+        impact_value_transfered:
+          type: integer
+          description: 'The number of impact valued that has been actually transfered, this field is just valid when the transfer request type is setting impact value as the parameter'
+        '':
+          type: string
+      x-examples:
+        example-1:
+          value:
+            originating_wallet: johnwallet1
+            source_wallet: planeter
+            destination_wallet: just.a.guy
+            type: send
+            parameters:
+              $ref: '#/components/schemas/requestBundleRequestParameters'
+            state: completed
+            created_at: '2020-07-09T00:41:49+00:00'
+            closed_at: '2020-07-09T00:41:49+00:00'
+        example-impact-value:
+          value:
+            originating_wallet: johnwallet1
+            source_wallet: planeter
+            destination_wallet: just.a.guy
+            type: send
+            parameters:
+              $ref: '#/components/schemas/requestBundleRequestParameters'
+            state: completed
+            created_at: '2020-07-09T00:41:49+00:00'
+            closed_at: '2020-07-09T00:41:49+00:00'
+            impact_value_transfered: 22
     sendRequestPendingResponse:
       title: sendRequestPendingResponse
     sendBundleRequest:
