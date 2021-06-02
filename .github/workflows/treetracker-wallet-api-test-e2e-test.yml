@@ -19,5 +19,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 12
+    - name: Install mocha
+      run: npm install -g mocha
     - run: npm ci
-    - run: ${{ secrets.TEST_ENV }} node -e "console.log('env password:%s, database:%s, database_schema:%s, username:%s, host:%s, port:%s',process.env.DB_PASSWORD && process.env.DB_PASSWORD.replace(/\w/g,'x'), process.env.DB_NAME, process.env.DB_SCHEMA, process.env.DB_HOST, process.env.DB_USERNAME, process.env.DB_PORT )"
+    - run: ${{ secrets.TEST_ENV }} NODE_TLS_REJECT_UNAUTHORIZED='0' mocha --config ./__tests__/e2e/.mocharc.js
+#    - run: ${{ secrets.TEST_ENV }} node -e "console.log('env password:%s, database:%s, database_schema:%s, username:%s, host:%s, port:%s',process.env.DB_PASSWORD && process.env.DB_PASSWORD.replace(/\w/g,'x'), process.env.DB_NAME, process.env.DB_SCHEMA, process.env.DB_HOST, process.env.DB_USERNAME, process.env.DB_PORT )"
