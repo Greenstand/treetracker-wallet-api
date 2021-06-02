@@ -648,6 +648,87 @@ class Wallet{
     
   }
 
+  async transferImpact(sender, receiver, value, accept_deviation){
+    // check if the impact value can be acceptted 
+    const tokens = await this.tokenService.makeImpactPackage(sender, value, accept_deviation);
+    // count number of tokens not claimed 
+    const notClaimedTokenCount = await this.tokenService.countNotClaimedTokenByWallet(sender);
+    // if(tokenCount < bundleSize){
+    // throw new HttpError(403, `Do not have enough tokens to send`);
+    // }
+    // console.log(notClaimedTokenCount);
+
+    /* eslint-disable */
+    if(notClaimedTokenCount < bundleSize){
+      throw new HttpError(403, `Do not have enough tokens to send`);
+    }
+
+    const isDeduct = await this.isDeduct(sender,receiver);
+    // If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
+    const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const hasControlOverSender = await this.hasControlOver(sender);
+    const hasControlOverReceiver = await this.hasControlOver(receiver);
+    if(
+      (hasControlOverSender && hasControlOverReceiver) ||
+      (!isDeduct && hasTrust)
+    ){
+      const transfer = await this.transferRepository.create({
+        originator_wallet_id: this._id, 
+        source_wallet_id: sender.getId(),
+        destination_wallet_id: receiver.getId(),
+        state: Transfer.STATE.completed,
+        parameters: {
+          bundle: {
+            bundleSize,
+          }
+        },
+        // TODO: boolean for claim
+        claim: claimBoolean,
+      });
+      log.debug("now, deal with tokens");
+      const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize, claimBoolean)
+      // need to check if tokens are not claim
+      await this.tokenService.completeTransfer(tokens, transfer, claimBoolean);
+      return transfer;
+    }
+        if(hasControlOverSender){
+          log.debug("OK, no permission, source under control, now pending it");
+          const transfer = await this.transferRepository.create({
+            originator_wallet_id: this._id, 
+            source_wallet_id: sender.getId(),
+            destination_wallet_id: receiver.getId(),
+            state: Transfer.STATE.pending,
+            parameters: {
+              bundle: {
+                bundleSize,
+              }
+            },
+            // TODO: boolean for claim
+            claim: claimBoolean,
+          });
+          return transfer;
+        }if(hasControlOverReceiver){
+          log.debug("OK, no permission, receiver under control, now request it");
+          const transfer = await this.transferRepository.create({
+            originator_wallet_id: this._id, 
+            source_wallet_id: sender.getId(),
+            destination_wallet_id: receiver.getId(),
+            state: Transfer.STATE.requested,
+            parameters: {
+              bundle: {
+                bundleSize,
+              }
+            },
+            claim: claimBoolean
+          });
+          return transfer;
+        }
+          // TODO
+          expect.fail();
+        
+    /* eslint-enable */ 
+  }
+
   /*
    * I have control over given wallet
    */

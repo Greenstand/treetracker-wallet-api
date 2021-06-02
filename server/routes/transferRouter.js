@@ -36,15 +36,31 @@ transferRouter.post(
           // TODO: add boolean for claim, but default to false.
           claim: Joi.boolean(),
         }),
-        otherwise: Joi.object({
-          bundle: Joi.object({
-            bundle_size: Joi.number().min(1).max(10000).integer(),
-          }).required(),
-          sender_wallet: Joi.string()
-          .required(),
-          receiver_wallet: Joi.string()
-          .required(),
-          claim: Joi.boolean().required(),
+        otherwise: Joi.alternatives()
+          // if there is tokens field
+          .conditional(Joi.object({
+            impact: Joi.any().required(),
+          }).unknown(),{
+            then: Joi.object({
+              impact: Joi.object({
+                value: Joi.number().min(1).max(10000).integer(),
+                accept_deviation: Joi.number().min(1).max(10).integer(),
+              }).required(),
+              sender_wallet: Joi.string()
+              .required(),
+              receiver_wallet: Joi.string()
+              .required(),
+            }),
+            otherwise: Joi.object({
+              bundle: Joi.object({
+                bundle_size: Joi.number().min(1).max(10000).integer(),
+              }).required(),
+              sender_wallet: Joi.string()
+              .required(),
+              receiver_wallet: Joi.string()
+              .required(),
+              claim: Joi.boolean().required(),
+            })
         }),
       })
     );
@@ -71,6 +87,10 @@ transferRouter.post(
         }
         // Case 1: with trust, token transfer
         result = await walletLogin.transfer(walletSender, walletReceiver, tokens, claim);
+      }else if(req.body.impact){
+        // impact case
+        result = await walletLogin.transferImpact(walletSender, walletReceiver, req.body.impact.value, req.body.impact.accept_deviation);
+
       }else{
         // Case 2: with trust, bundle transfer
         // TODO: get only transferrable tokens

@@ -3,6 +3,7 @@ const Joi = require("joi");
 const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
+const HttpError = require("../utils/HttpError");
 
 class TokenService{
 
@@ -162,6 +163,59 @@ class TokenService{
       },
       tokens.map(token => token.getId()),
     );
+  }
+
+  /*
+   * To get a token package whose value equal to impactValue, deviation is 
+   * under acceptDeviation
+   * TODO a better algorithm to make the package, currently, just use a simple 
+   * way to try to calculate the impact value sum.
+   */
+  async makeImpactPackage(wallet, impactValue, acceptDeviation){
+    const limit = 200;
+    const maximumRecord = 100000;
+    let offset = 0;
+    const tokenPackage = [];
+    let total = 0;
+    while(true){
+      const tokens = await this.tokenRepository.getByFilter({
+        wallet_id: wallet.getId(),
+        claim: false,
+      },{
+        limit,
+        offset,
+      });
+      if(tokens.length === 0){
+        throw new HttpError(403, "Do not have enough tokens for this amount of impact value");
+      }
+      for(const token of tokens){
+        log.debug("total:%d", total);
+        log.warn("token:", token);
+        // check the token value
+        Joi.assert(token.value, Joi.number().min(0).required().error(new HttpError(403, `Token has bad value field, token id:${token.id}, value: ${token.value}`)));
+        if(token.value + total <= impactValue){
+          tokenPackage.push(token);
+          total += token.value;
+        }else{
+          break;
+        }
+      }
+      if(impactValue - total < acceptDeviation){
+        log.debug("Meet the condition, total:%d, impact value:%d, deviation:%d, tokens:%d",
+          total,
+          impactValue,
+          acceptDeviation,
+          tokenPackage.length,
+        );
+        return tokenPackage;
+      }
+      offset += tokens.length;
+      if(offset > maximumRecord){
+        log.warn("Reach to the maximum record to make the package!");
+        throw HttpError(403, "Can not get token package for this amount of impact value");
+      }
+    }
+
   }
 
 }

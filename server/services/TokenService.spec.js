@@ -149,4 +149,23 @@ describe("Token", () => {
     expect(updateByIds).calledWith(sinon.match({transfer_pending: false, transfer_pending_id:null}), [tokenId1]);
   });
 
+  describe("makeImpactPackage", () => {
+
+    it("Successfully get the package", async () => {
+      const walletId1 = uuid.v4();
+      const tokenId1 = uuid.v4();
+      const wallet = new Wallet(walletId1, session);
+      sinon.stub(TokenRepository.prototype, "getByFilter").resolves([{
+        id: tokenId1,
+        value: 4,
+      }]);
+      const tokens = await tokenService.makeImpactPackage(wallet, 4, 4);
+      expect(tokens).to.have.lengthOf(1);
+    });
+
+    // TODO
+    // it("Don't have enough token to make the package")
+
+  });
+
 });
