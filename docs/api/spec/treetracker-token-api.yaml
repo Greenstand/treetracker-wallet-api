@@ -402,6 +402,16 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  impace_value_transfered:
+                    type: integer
+                    description: 'The number of impact valued that has been actually transfered, this field is just valid when the transfer request type is setting impact value as the parameter'
+                  '':
+                    type: string
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   '/transfers/{transfer_id}/decline':
@@ -449,6 +459,14 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  impact_value_transfered:
+                    type: integer
+                    description: 'The number of impact valued that has been actually transfered, this field is just valid when the transfer request type is setting impact value as the parameter'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   '/transfers/{transfer_id}/tokens':
@@ -970,18 +988,7 @@ components:
             state: completed
             created_at: '2020-07-09T00:41:49+00:00'
             closed_at: '2020-07-09T00:41:49+00:00'
-        example-impact-value:
-          value:
-            originating_wallet: johnwallet1
-            source_wallet: planeter
-            destination_wallet: just.a.guy
-            type: send
-            parameters:
-              $ref: '#/components/schemas/requestBundleRequestParameters'
-            state: completed
-            created_at: '2020-07-09T00:41:49+00:00'
-            closed_at: '2020-07-09T00:41:49+00:00'
-            impact_value_transfered: 22
+      description: ''
     sendRequestPendingResponse:
       title: sendRequestPendingResponse
     sendBundleRequest:
