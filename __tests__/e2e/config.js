@@ -1,4 +1,4 @@
-// const request = require("supertest")("https://test-k8s.treetracker.org/wallet");
+//const request = require("supertest")(process.env.ENV);
 const request = require("supertest")("https://dev-k8s.treetracker.org/wallet");
 const expect = require("chai").expect;
 const responseStatus = require("http-status-codes");
