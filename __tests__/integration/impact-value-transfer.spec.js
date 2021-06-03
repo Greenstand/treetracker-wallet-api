@@ -21,6 +21,7 @@ describe("Impact Value", () => {
   describe("Zaven request to send 4 impact value to Meisze", () => {
     let transferId;
 
+
     beforeEach(async () => {
       await request(server)
         .post(`/transfers`)
@@ -42,7 +43,7 @@ describe("Impact Value", () => {
         });
     });
 
-    it.only("Meisze accept the transfer", async () => {
+    it("Meisze accept the transfer", async () => {
       await request(server)
         .post(`/transfers/${transferId}/accept`)
         .set('Content-Type', "application/json")
@@ -50,16 +51,65 @@ describe("Impact Value", () => {
         .set('Authorization', `Bearer ${registeredMeisze.token}`)
         .expect(200);
 
-      // Meisze should have one token, Zaven is zero
+      // Meisze should have one token
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
       expect(token).property("wallet_id").eq(registeredMeisze.id);
 
     });
 
+    it("Meisze decline the transfer", async () => {
+      await request(server)
+        .post(`/transfers/${transferId}/decline`)
+        .set('Content-Type', "application/json")
+        .set('treetracker-api-key', registeredMeisze.apiKey)
+        .set('Authorization', `Bearer ${registeredMeisze.token}`)
+        .expect(200);
+
+      // Zeven still have the token
+      const token = await testUtils.getTokenById(TokenA.id);
+      expect(token).property("id").a("string");
+      expect(token).property("wallet_id").eq(registeredZaven.id);
+
+    });
+
   });
 
-  it("Meisze decline the request, then token worth 4 impact should belong to Zaven", () => {
+  describe("Zaven request to send 4 impact value to Meisze, with the trust relationship between Z and M", () => {
+    let transferId;
+
+    beforeEach(async () => {
+      log.warn("Add trust Z to M");
+      testUtils.trustASendToB(registeredZaven, registeredMeisze);
+    });
+
+    beforeEach(async () => {
+      await request(server)
+        .post(`/transfers`)
+        .set('Content-Type', "application/json")
+        .set('treetracker-api-key', registeredMeisze.apiKey)
+        .set('Authorization', `Bearer ${registeredZaven.token}`)
+        .send({
+          sender_wallet: registeredZaven.name,
+          receiver_wallet: registeredMeisze.name,
+          impact: {
+            value: 4,
+            accept_deviation: 2,
+          }
+        })
+        .expect(201)
+        .then(res => {
+          expect(res).property("body").property("id").a("string");
+          transferId = res.body.id;
+        });
+    });
+
+    it.only("Meisze already has the token", async () => {
+      // Meisze should have one token
+      const token = await testUtils.getTokenById(TokenA.id);
+      expect(token).property("id").a("string");
+      expect(token).property("wallet_id").eq(registeredMeisze.id);
+    });
   });
 
 });

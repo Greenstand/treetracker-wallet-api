@@ -669,17 +669,15 @@ class Wallet{
         destination_wallet_id: receiver.getId(),
         state: Transfer.STATE.completed,
         parameters: {
-          bundle: {
-            bundleSize,
+          impact: {
+            value,
+            accept_deviation,
           }
         },
-        // TODO: boolean for claim
-        claim: claimBoolean,
       });
       log.debug("now, deal with tokens");
-      const tokens = await this.tokenService.getTokensByBundle(sender, bundleSize, claimBoolean)
       // need to check if tokens are not claim
-      await this.tokenService.completeTransfer(tokens, transfer, claimBoolean);
+      await this.tokenService.completeTransfer(tokens, transfer);
       return transfer;
     }
         if(hasControlOverSender){

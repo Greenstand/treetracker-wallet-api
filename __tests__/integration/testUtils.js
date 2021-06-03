@@ -5,6 +5,7 @@ const generator = require('generate-password');
 const { expect } = require('chai');
 const JWTService = require("../../server/services/JWTService");
 const Transfer = require("../../server/models/Transfer");
+const TrustRelationship = require("../../server/models/TrustRelationship");
 const knex = require("../../server/database/knex");
 
 /*
@@ -120,6 +121,22 @@ async function getTokenById(id){
   return tokens[0];
 }
 
+async function trustASendToB(walletA, walletB){
+  const result = await knex("wallet_trust")
+    .insert({
+      id: uuid.v4(),
+      actor_wallet_id: walletA.id,
+      target_wallet_id: walletB.id,
+      originator_wallet_id: walletA.id,
+      type: TrustRelationship.ENTITY_TRUST_TYPE.send,
+      request_type: TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+      state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      active: true,
+    }).returning("*");
+  expect(result[0]).property("id").a("string");
+  return result[0];
+}
+
 module.exports = {
   register,
   registerAndLogin,
@@ -127,4 +144,5 @@ module.exports = {
   sendAndPend,
   addToken,
   getTokenById,
+  trustASendToB,
 }
