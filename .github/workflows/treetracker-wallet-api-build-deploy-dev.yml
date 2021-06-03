@@ -91,7 +91,7 @@ jobs:
     - name: Install kustomize
       run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
     - name: Run kustomize
-      run: (cd deployment && ../kustomize edit set image ximena9201/treetracker-wallet-api:${{ steps.image-tag-name.outputs.image-tag-name }} )
+      run: (cd deployment/base && ../../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.image-tag-name.outputs.image-tag-name }} )
     - name: Install doctl for kubernetes
       uses: digitalocean/action-doctl@v2
       with:
