@@ -651,17 +651,8 @@ class Wallet{
   async transferImpact(sender, receiver, value, accept_deviation){
     // check if the impact value can be acceptted 
     const tokens = await this.tokenService.makeImpactPackage(sender, value, accept_deviation);
-    // count number of tokens not claimed 
-    const notClaimedTokenCount = await this.tokenService.countNotClaimedTokenByWallet(sender);
-    // if(tokenCount < bundleSize){
-    // throw new HttpError(403, `Do not have enough tokens to send`);
-    // }
-    // console.log(notClaimedTokenCount);
 
     /* eslint-disable */
-    if(notClaimedTokenCount < bundleSize){
-      throw new HttpError(403, `Do not have enough tokens to send`);
-    }
 
     const isDeduct = await this.isDeduct(sender,receiver);
     // If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
@@ -699,12 +690,11 @@ class Wallet{
             destination_wallet_id: receiver.getId(),
             state: Transfer.STATE.pending,
             parameters: {
-              bundle: {
-                bundleSize,
+              impact: {
+                value,
+                accept_deviation,
               }
             },
-            // TODO: boolean for claim
-            claim: claimBoolean,
           });
           return transfer;
         }if(hasControlOverReceiver){

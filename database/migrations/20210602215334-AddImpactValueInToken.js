@@ -1,3 +1,4 @@
+// 'use strict';
 
 let dbm;
 let type;
@@ -14,11 +15,11 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.addColumn('token', 'claim', { type: 'boolean', notNull: true, defaultValue: false })
+  return db.addColumn('token', 'value', { type: 'int', notNull: true, defaultValue: 0 })
 };
 
 exports.down = function(db) {
-  return db.removeColumn('token', 'claim');
+  return db.removeColumn('token', 'value');
 };
 
 exports._meta = {

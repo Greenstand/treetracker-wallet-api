@@ -32,7 +32,7 @@ describe("Impact Value", () => {
           accept_deviation: 2,
         }
       })
-      .expect(200);
+      .expect(202);
   });
 
   it("Meisze accept the request, then token worth 4 impact should belong to Meisze", () => {

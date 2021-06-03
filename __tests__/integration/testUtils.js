@@ -79,6 +79,7 @@ async function clear() {
  * Add a token to a wallet
  */
 async function addToken(wallet, token){
+  expect(token).property("value").a("number");
   const result = await knex("token")
     .insert({
       ...token,
