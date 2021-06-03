@@ -29,8 +29,6 @@ jobs:
           path: ./
       - name: Install kustomize
         run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-      - name: Copy kustomize.yml
-        run: cp deployment/kustomize/kustomization.yaml deployment/kustomization.yaml
       - name: Run kustomize
         run: (cd deployment && ../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }} )
       - name: Install doctl for kubernetes
@@ -42,4 +40,4 @@ jobs:
       - name: Delete completed migration jobs prior to deployment
         run: kubectl -n wallet-api delete job wallet-db-migration-job
       - name: Update kubernetes resources
-        run: kubectl -n wallet-api apply --wait -k ./deployment/
+        run: kustomize build deployment/overlays/test | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -

@@ -1,7 +1,7 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Wallet API CI/CD Pipeline
+name: Deploy to Dev Env 
 
 on:
   push:
@@ -12,16 +12,6 @@ env:
   project-directory: ./
 
 jobs:
-  #  test:
-  #   - name: npm clean install
-  #    run: npm ci
-  #    working-directory: ${{ env.project-directory }}
-      #    - name: run ESLint
-      # run: npm run lint
-      #working-directory: ${{ env.project-directory }}
-      #- name: build server project
-      #run: npm run build
-      #working-directory: ${{ env.project-directory }}
   build:
     name: Release and Build
     runs-on: ubuntu-latest
@@ -55,7 +45,7 @@ jobs:
       uses: docker/login-action@v1 
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
     - name: Build snapshot with git sha and push on merge
       id: docker_build_snapshot_merge
       uses: docker/build-push-action@v2
@@ -81,7 +71,7 @@ jobs:
     if: |
       !contains(github.event.head_commit.message, 'skip-ci') &&
       github.event_name == 'push' &&
-      github.repository == 'Greenstand/treetracker-wallet-api'
+      github.repository == 'Greenstand/${{ github.event.repository.name }}'
     steps:
     - uses: actions/checkout@v2
     - name: get-npm-version
@@ -100,20 +90,18 @@ jobs:
         echo "::set-output name=image-tag-name::$value"
     - name: Install kustomize
       run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-    - name: Copy kustomize.yml
-      run: cp deployment/kustomize/kustomization.yaml deployment/kustomization.yaml
     - name: Run kustomize
       run: (cd deployment && ../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.image-tag-name.outputs.image-tag-name }} )
     - name: Install doctl for kubernetes
       uses: digitalocean/action-doctl@v2
       with:
-        token: ${{ secrets.DIGITALOCEAN_TOKEN }}
+        token: ${{ secrets.DEV_DIGITALOCEAN_TOKEN }}
     - name: Save DigitalOcean kubeconfig
-      run: doctl kubernetes cluster kubeconfig save ${{ secrets.CLUSTER_NAME }}
+      run: doctl kubernetes cluster kubeconfig save ${{ secrets.DEV_CLUSTER_NAME}}
     - name: Delete completed migration jobs prior to deployment
       run: kubectl -n wallet-api delete job --ignore-not-found=true  wallet-db-migration-job
     - name: Update kubernetes resources
-      run: kubectl -n wallet-api apply --wait -k ./deployment/
+      run: kustomize build deployment/overlays/development | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -    
     - name: Attempt to wait for migration job to complete
       run: kubectl wait --for=condition=complete --timeout=45s job/wallet-db-migration-job
 
