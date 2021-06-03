@@ -18,7 +18,7 @@ jobs:
     if: |
       !contains(github.event.head_commit.message, 'skip-ci') &&
       github.event_name == 'push' &&
-      github.repository == 'Greenstand/treetracker-wallet-api'
+      github.repository == 'ximena9210/treetracker-wallet-api'
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js 12.x
@@ -71,7 +71,7 @@ jobs:
     if: |
       !contains(github.event.head_commit.message, 'skip-ci') &&
       github.event_name == 'push' &&
-      github.repository == 'Greenstand/${{ github.event.repository.name }}'
+      github.repository == 'ximena9210/${{ github.event.repository.name }}'
     steps:
     - uses: actions/checkout@v2
     - name: get-npm-version
