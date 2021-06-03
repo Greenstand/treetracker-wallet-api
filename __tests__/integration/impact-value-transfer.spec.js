@@ -18,24 +18,45 @@ describe("Impact Value", () => {
     registeredMeisze = await testUtils.registerAndLogin(Meisze);
   })
 
-  it.only("Zaven request to send 4 impact value to Meisze", async () => {
-    await request(server)
-      .post(`/transfers`)
-      .set('Content-Type', "application/json")
-      .set('treetracker-api-key', registeredMeisze.apiKey)
-      .set('Authorization', `Bearer ${registeredZaven.token}`)
-      .send({
-        sender_wallet: registeredZaven.name,
-        receiver_wallet: registeredMeisze.name,
-        impact: {
-          value: 4,
-          accept_deviation: 2,
-        }
-      })
-      .expect(202);
-  });
+  describe("Zaven request to send 4 impact value to Meisze", () => {
+    let transferId;
 
-  it("Meisze accept the request, then token worth 4 impact should belong to Meisze", () => {
+    beforeEach(async () => {
+      await request(server)
+        .post(`/transfers`)
+        .set('Content-Type', "application/json")
+        .set('treetracker-api-key', registeredMeisze.apiKey)
+        .set('Authorization', `Bearer ${registeredZaven.token}`)
+        .send({
+          sender_wallet: registeredZaven.name,
+          receiver_wallet: registeredMeisze.name,
+          impact: {
+            value: 4,
+            accept_deviation: 2,
+          }
+        })
+        .expect(202)
+        .then(res => {
+          expect(res).property("body").property("id").a("string");
+          transferId = res.body.id;
+        });
+    });
+
+    it.only("Meisze accept the transfer", async () => {
+      await request(server)
+        .post(`/transfers/${transferId}/accept`)
+        .set('Content-Type', "application/json")
+        .set('treetracker-api-key', registeredMeisze.apiKey)
+        .set('Authorization', `Bearer ${registeredMeisze.token}`)
+        .expect(200);
+
+      // Meisze should have one token, Zaven is zero
+      const token = await testUtils.getTokenById(TokenA.id);
+      expect(token).property("id").a("string");
+      expect(token).property("wallet_id").eq(registeredMeisze.id);
+
+    });
+
   });
 
   it("Meisze decline the request, then token worth 4 impact should belong to Zaven", () => {

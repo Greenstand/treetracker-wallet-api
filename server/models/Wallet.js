@@ -803,6 +803,17 @@ class Wallet{
         throw new HttpError(403, "Do not have enough tokens");
       }
       await this.tokenService.completeTransfer(tokens, transfer);
+    }else if(
+      transfer.parameters &&
+      transfer.parameters.impact &&
+      transfer.parameters.impact.value &&
+      transfer.parameters.impact.accept_deviation
+    ){
+      log.debug("transfer impact of tokens");
+      const {source_wallet_id} = transfer;
+      const senderWallet = new Wallet(source_wallet_id, this._session);
+      const tokens = await this.tokenService.makeImpactPackage(senderWallet, transfer.parameters.impact.value, transfer.parameters.impact.accept_deviation);
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       log.debug("transfer tokens");
       const tokens = await this.tokenService.getTokensByPendingTransferId(transferId);

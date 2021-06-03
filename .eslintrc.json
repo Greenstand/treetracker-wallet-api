@@ -13,6 +13,7 @@
         "ecmaVersion": 12
     },
     "rules": {
+        "no-labels": "off",
         "simple-import-sort/imports": "error",
         "no-underscore-dangle": "off",
         "camelcase":"off",

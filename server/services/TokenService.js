@@ -4,6 +4,7 @@ const Token = require("../models/Token");
 const TokenRepository = require("../repositories/TokenRepository");
 const TransactionRepository = require("../repositories/TransactionRepository");
 const HttpError = require("../utils/HttpError");
+const expect = require("expect-runtime");
 
 class TokenService{
 
@@ -172,6 +173,8 @@ class TokenService{
    * way to try to calculate the impact value sum.
    */
   async makeImpactPackage(wallet, impactValue, acceptDeviation){
+//    expect(impactValue).a("number");
+    log.debug("make package for impact, value:%d, deviation:%d", impactValue, acceptDeviation);
     const limit = 200;
     const maximumRecord = 100000;
     let offset = 0;
@@ -207,7 +210,7 @@ class TokenService{
           acceptDeviation,
           tokenPackage.length,
         );
-        return tokenPackage;
+        break;
       }
       offset += tokens.length;
       if(offset > maximumRecord){
@@ -215,6 +218,10 @@ class TokenService{
         throw HttpError(403, "Can not get token package for this amount of impact value");
       }
     }
+    
+    // build model
+    const tokenPackage2 = tokenPackage.map(token => new Token(token, this._session));
+    return tokenPackage2;
 
   }
 

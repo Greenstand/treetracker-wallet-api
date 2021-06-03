@@ -115,10 +115,16 @@ async function sendAndPend(
   return result[0];
 }
 
+async function getTokenById(id){
+  const tokens = await knex("token").where("id", id);
+  return tokens[0];
+}
+
 module.exports = {
   register,
   registerAndLogin,
   clear,
   sendAndPend,
   addToken,
+  getTokenById,
 }
