@@ -17,7 +17,7 @@ jobs:
     name: Deploy latest to test environment, requires approval
     runs-on: ubuntu-latest
     if: |
-      github.repository == 'ximena9210/treetracker-wallet-api'
+      github.repository == 'ximena9201/treetracker-wallet-api'
     steps:
       - uses: actions/checkout@v2
         with:
