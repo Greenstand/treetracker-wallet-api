@@ -43,7 +43,7 @@ describe("Impact Value", () => {
         });
     });
 
-    it.only("Meisze accept the transfer", async () => {
+    it("Meisze accept the transfer", async () => {
       await request(server)
         .post(`/transfers/${transferId}/accept`)
         .set('Content-Type', "application/json")

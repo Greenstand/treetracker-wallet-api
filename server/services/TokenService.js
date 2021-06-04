@@ -180,7 +180,7 @@ class TokenService{
     let offset = 0;
     const tokenPackage = [];
     let total = 0;
-    while(true){
+    loop: while(true){
       const tokens = await this.tokenRepository.getByFilter({
         wallet_id: wallet.getId(),
         claim: false,
@@ -196,26 +196,24 @@ class TokenService{
         log.warn("token:", token);
         // check the token value
         Joi.assert(token.value, Joi.number().min(0).required().error(new HttpError(403, `Token has bad value field, token id:${token.id}, value: ${token.value}`)));
-        if(token.value + total <= impactValue){
+        if(token.value + total <= impactValue + acceptDeviation){
           tokenPackage.push(token);
           total += token.value;
-        }else{
-          break;
         }
-      }
-      if(impactValue - total < acceptDeviation){
-        log.debug("Meet the condition, total:%d, impact value:%d, deviation:%d, tokens:%d",
-          total,
-          impactValue,
-          acceptDeviation,
-          tokenPackage.length,
-        );
-        break;
+        if(Math.abs(impactValue - total) <= acceptDeviation){
+          log.debug("Meet the condition, total:%d, impact value:%d, deviation:%d, tokens:%d",
+            total,
+            impactValue,
+            acceptDeviation,
+            tokenPackage.length,
+          );
+          break loop;
+        }
       }
       offset += tokens.length;
       if(offset > maximumRecord){
         log.warn("Reach to the maximum record to make the package!");
-        throw HttpError(403, "Can not get token package for this amount of impact value");
+        throw new HttpError(403, "Can not get token package for this amount of impact value");
       }
     }
     

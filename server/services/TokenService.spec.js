@@ -165,6 +165,33 @@ describe("Token", () => {
 
     // TODO
     // it("Don't have enough token to make the package")
+    
+    describe("The money change case: try to find the exact amount of impact", () => {
+      it.only("impact: 6, deviation: 0, the token sequence: 4, 4, 2, 4, ...", async () => {
+        const walletId1 = uuid.v4();
+        const tokenId1 = uuid.v4();
+        const wallet = new Wallet(walletId1, session);
+        const getByFilter = sinon.stub(TokenRepository.prototype, "getByFilter")
+        getByFilter.onCall(0).resolves([{
+          id: tokenId1,
+          value: 4,
+        }]);
+        getByFilter.onCall(1).resolves([{
+          id: tokenId1,
+          value: 4,
+        }]);
+        getByFilter.onCall(2).resolves([{
+          id: tokenId1,
+          value: 2,
+        }]);
+        getByFilter.resolves([{
+          id: tokenId1,
+          value: 4,
+        }]);
+        const tokens = await tokenService.makeImpactPackage(wallet, 6, 0);
+        expect(tokens).to.have.lengthOf(2);// 4,2
+      });
+    });
 
   });
 
