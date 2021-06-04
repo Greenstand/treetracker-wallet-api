@@ -43,13 +43,16 @@ describe("Impact Value", () => {
         });
     });
 
-    it("Meisze accept the transfer", async () => {
+    it.only("Meisze accept the transfer", async () => {
       await request(server)
         .post(`/transfers/${transferId}/accept`)
         .set('Content-Type', "application/json")
         .set('treetracker-api-key', registeredMeisze.apiKey)
         .set('Authorization', `Bearer ${registeredMeisze.token}`)
-        .expect(200);
+        .expect(200)
+        .then(res => {
+          expect(res).property("body").property("impact_value_transferred").eq(4);
+        });
 
       // Meisze should have one token
       const token = await testUtils.getTokenById(TokenA.id);
@@ -105,7 +108,7 @@ describe("Impact Value", () => {
         });
     });
 
-    it.only("Meisze already has the token", async () => {
+    it("Meisze already has the token", async () => {
       // Meisze should have one token
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
