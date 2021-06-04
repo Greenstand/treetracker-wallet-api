@@ -167,7 +167,7 @@ describe("Token", () => {
     // it("Don't have enough token to make the package")
     
     describe("The money change case: try to find the exact amount of impact", () => {
-      it.only("impact: 6, deviation: 0, the token sequence: 4, 4, 2, 4, ...", async () => {
+      it("impact: 6, deviation: 0, the token sequence: 4, 4, 2, 4, ...", async () => {
         const walletId1 = uuid.v4();
         const tokenId1 = uuid.v4();
         const wallet = new Wallet(walletId1, session);
