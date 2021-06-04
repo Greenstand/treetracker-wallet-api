@@ -101,6 +101,7 @@ describe("Impact Value", () => {
         .then(res => {
           expect(res).property("body").property("id").a("string");
           transferId = res.body.id;
+          expect(res).property("body").property("impact_value_transferred").eq(4);
         });
     });
 

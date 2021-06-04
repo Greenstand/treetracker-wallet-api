@@ -1,9 +1,13 @@
 const WalletService = require('./WalletService');
+const _ = require("lodash");
+const Transfer = require("../models/Transfer");
+const TransferRepository = require("../repositories/TransferRepository");
 
 class TransferService {
   constructor(session) {
     this._session = session;
     this.walletService = new WalletService(session);
+    this.transferRepository = new TransferRepository(session);
   }
 
   async convertToResponse(transferObject) {
@@ -30,6 +34,15 @@ class TransferService {
       const json = await wallet.toJSON();
       result.destination_wallet = await json.name;
       delete result.destination_wallet_id;
+    }
+
+    // deal with the impact value
+    if(
+      Transfer.isImpactValue(result) &&
+      Transfer.hasCompleted(result)
+    ){
+      const impactValue = await this.transferRepository.getImpactValue(result.id);
+      result.impact_value_transferred = impactValue;
     }
     return result;
   }

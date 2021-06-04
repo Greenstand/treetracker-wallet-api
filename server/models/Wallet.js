@@ -678,6 +678,7 @@ class Wallet{
       log.debug("now, deal with tokens");
       // need to check if tokens are not claim
       await this.tokenService.completeTransfer(tokens, transfer);
+
       return transfer;
     }
         if(hasControlOverSender){
