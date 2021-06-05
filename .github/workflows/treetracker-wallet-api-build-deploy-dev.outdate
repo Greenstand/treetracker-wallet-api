@@ -1,12 +1,11 @@
-name: API CI/CD Pipeline
 
-#on:
-#  push:
-#    branches:
-#      - master
-#  pull_request:
-#    branches:
-#      - master
+name: Deploy to Dev Env
+
+on:
+ push:
+   branches:
+     - master
+
 
 env:
   project-directory: ./
@@ -35,7 +34,7 @@ jobs:
 
 
   release:
-    name: Release
+    name: Release semantic version
     needs: test
     runs-on: ubuntu-latest
     if: |
@@ -94,7 +93,7 @@ jobs:
       bumped_version: ${{ steps.export_bumped_version.outputs.bumped_version }}
 
   deploy:
-    name: Deploy to dev env
+    name: Deploy latest to development environment
     runs-on: ubuntu-latest
     needs: release
     if: |
