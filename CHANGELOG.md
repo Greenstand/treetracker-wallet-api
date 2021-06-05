@@ -1,3 +1,30 @@
+# [1.14.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.13.0...v1.14.0) (2021-06-05)
+
+
+### Bug Fixes
+
+* .idea added to gitignore ([b59019c](https://github.com/Greenstand/treetracker-wallet-api/commit/b59019ca80f8b5ea4bafaded6342942a7f4093b3))
+* adding npm command to actions ([f08c123](https://github.com/Greenstand/treetracker-wallet-api/commit/f08c123b11280158517e4e146d556dca0388d658))
+* adding npm command to actions ([3e437e3](https://github.com/Greenstand/treetracker-wallet-api/commit/3e437e3539ed55fe2dbefdb42dd533f38db6ee02))
+* adding npm command to actions ([459d53e](https://github.com/Greenstand/treetracker-wallet-api/commit/459d53e875372c739f6050056133ee160a2b2081))
+* adding npm command to actions ([23235b5](https://github.com/Greenstand/treetracker-wallet-api/commit/23235b5921cb317aa9b60ddbb46081ca2ace44e6))
+* adding npm command to actions ([9473b20](https://github.com/Greenstand/treetracker-wallet-api/commit/9473b2011168eca7653c1d042184867051ed059f))
+* config file moved closer to the e2e tests, should not impact other tests ([2bd3d0a](https://github.com/Greenstand/treetracker-wallet-api/commit/2bd3d0a6d8fa38c762f154905ef74ffffcc8128b))
+* diff to true in mocha conf ([ff28aa4](https://github.com/Greenstand/treetracker-wallet-api/commit/ff28aa4fa7be0b2b7b4e2fc8ffa290d0763cccf1))
+* install mocha in the github actions ([7ff4736](https://github.com/Greenstand/treetracker-wallet-api/commit/7ff4736d19191fcec4b8a659d561a05f5ca851a5))
+* readme file updated ([9958333](https://github.com/Greenstand/treetracker-wallet-api/commit/99583334c36f0c8205d6f0fb8f1b51e073579648))
+* readme file updated ([034557f](https://github.com/Greenstand/treetracker-wallet-api/commit/034557f2ccee5c714036780dcad0d945a8420a4a))
+* setting up e2e yml for test env ([9520a3d](https://github.com/Greenstand/treetracker-wallet-api/commit/9520a3d25247e3882adcae3a9f8002c60f8cafa3))
+* testing db connection from github ([8986db1](https://github.com/Greenstand/treetracker-wallet-api/commit/8986db1c3bc59516d790e6fc7ba4f4602556c6ce))
+* testing with ENV ([2c654d8](https://github.com/Greenstand/treetracker-wallet-api/commit/2c654d84427136836a529f1da9861c4532ab6c91))
+* testing with ENV ([e0befba](https://github.com/Greenstand/treetracker-wallet-api/commit/e0befba7ece44035350198dff352fc51adcdea1d))
+* trying tests from yml ([39553dd](https://github.com/Greenstand/treetracker-wallet-api/commit/39553ddd2470df0990e624834d6a18e151802bb4))
+
+
+### Features
+
+* initial commit, e2e moved to __tests__ folder, initial conf file setup, tests running ([8d065e2](https://github.com/Greenstand/treetracker-wallet-api/commit/8d065e200ab5b2c39441615a5e004a0a8689050f))
+
 # [1.13.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.12.5...v1.13.0) (2021-05-07)
 
 
