@@ -3,12 +3,12 @@ on:
   pull_request:
     branches:
       - master
-  workflow_dispatch:
-    inputs:
-      git-tag:
-        description: "Branch/hash/tag"
-        required: true
-        default: 'master'
+#  workflow_dispatch:
+#    inputs:
+#      git-tag:
+#        description: "Branch/hash/tag"
+#        required: true
+#        default: 'master'
 #  push:
 #    branches: [ main ]
 #  pull_request:
@@ -16,12 +16,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: dev
+
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
       with:
         node-version: 12
-    - run: echo ${{ secrets.DEVELOPMENT_ENV }}
+    - name: Install mocha
+      run: npm install -g mocha
     - run: npm ci
-    - run: ${{ secrets.DEVELOPMENT_ENV }} node -e "console.log('env password:%s, database:%s, database_schema:%s, username:%s, host:%s, port:%s',process.env.DB_PASSWORD && process.env.DB_PASSWORD.replace(/\w/g,'x'), process.env.DB_NAME, process.env.DB_SCHEMA, process.env.DB_HOST, process.env.DB_USERNAME, process.env.DB_PORT )"
+    - run: echo ${{ secrets.DEVELOPMENT_ENV }}
+    - run: ${{ secrets.DEVELOPMENT_ENV }} npm run test-e2e
