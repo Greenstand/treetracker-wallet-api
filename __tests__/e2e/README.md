@@ -9,7 +9,8 @@
 3. create ``.env`` file with proper database connection, for example:
 
 ```
-ENVIRONMENT=dev #specify environment where to run the tests against (dev/test)
+#specify environment where to run the tests against (dev/test)
+ENVIRONMENT=dev
 DB_USERNAME=admin
 DB_HOST=host.com
 DB_PASSWORD=password

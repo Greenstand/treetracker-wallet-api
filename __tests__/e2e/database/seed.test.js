@@ -10,36 +10,59 @@ describe("Seed data into DB", () => {
     expect(r).lengthOf(1);
   });
 
-  xit("Should find a token", async () => {
+  it("Should find a token in walletA", async () => {
     expect(seed.token).to.have.property("id");
     const r = await knex.table("token").select().where("id", seed.token.id);
     expect(r).lengthOf(1);
     token = r[0];
-    expect(token).to.have.property("capture_id").to.equal(seed.capture.id);
     expect(token).to.have.property("wallet_id").to.equal(seed.wallet.id);
+  });
+
+  it("walletA exists", async () => {
+    const r = await knex
+      .table("wallet")
+      .select()
+      .where("name", seed.wallet.name);
+    expect(r).lengthOf(1);
+  });
+
+  it("walletB exists", async () => {
+    const r = await knex
+        .table("wallet")
+        .select()
+        .where("name", seed.walletB.name);
+    expect(r).lengthOf(1);
   });
 
   it("walletC exists", async () => {
     const r = await knex
-      .table("wallet")
-      .select()
-      .where("name", seed.walletC.name);
+        .table("wallet")
+        .select()
+        .where("name", seed.walletC.name);
     expect(r).lengthOf(1);
   });
 
-  xit("walletC have manage relationship with wallet", async () => {
-    const r = await knex.table("wallet_trust").select().where({
-      actor_wallet_id: seed.walletB.id,
-      target_wallet_id: seed.walletC.id,
-      type: "manage",
-    });
+  it("Future trust walletD exists", async () => {
+    const r = await knex
+        .table("wallet")
+        .select()
+        .where("name", seed.walletTrustD.name);
     expect(r).lengthOf(1);
   });
 
-  xit("TokenB", async () => {
-    const r = await knex.table("token").select().where("id", seed.tokenB.id);
+  it("Future trust walletE exists", async () => {
+    const r = await knex
+        .table("wallet")
+        .select()
+        .where("name", seed.walletTrustE.name);
     expect(r).lengthOf(1);
-    console.log(r);
-    expect(r[0]).property("capture_id").eq(seed.captureB.id);
+  });
+
+  it("Future managing walletF exists", async () => {
+    const r = await knex
+        .table("wallet")
+        .select()
+        .where("name", seed.managingWallet.name);
+    expect(r).lengthOf(1);
   });
 });

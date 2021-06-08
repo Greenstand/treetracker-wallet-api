@@ -71,18 +71,8 @@ const capture = {
   id: uuid.v4(),
 };
 
-const captureB = {
-  id: uuid.v4(),
-};
-
 const token = {
   id: uuid.v4(),
-};
-
-const tokenB = {
-  id: uuid.v4(),
-  capture_id: captureB.id,
-  wallet_id: walletC.id,
 };
 
 async function createTokens(targetWallet, numberOfTokens) {
@@ -178,9 +168,6 @@ async function clear(wallets) {
   for (const wallet of wallets) {
     await knex("transaction").where("source_wallet_id", wallet).del();
   }
-  // await knex("transaction").where("source_wallet_id", wallet.id).del();
-  // await knex("transaction").where("source_wallet_id", walletB.id).del();
-  // await knex("transaction").where("source_wallet_id", walletC.id).del();
 
   for (const wallet of wallets) {
     await knex("token").where("wallet_id", wallet).del();
@@ -196,14 +183,6 @@ async function clear(wallets) {
   for (const wallet of wallets) {
     await knex("wallet_trust").where("actor_wallet_id", wallet).del();
   }
-  // await knex("wallet_trust").where("actor_wallet_id", walletTrustD.id).del();
-  // await knex("wallet_trust").where("actor_wallet_id", walletTrustE.id).del();
-  // await knex("wallet_trust").where("actor_wallet_id", walletB.id).del();
-  // await knex("wallet_trust").where("actor_wallet_id", walletC.id).del();
-
-  // await knex("transfer").where("originator_wallet_id", walletC.id).del();
-  // await knex("transfer").where("originator_wallet_id", walletC.id).del();
-  // await knex("transfer").where("originator_wallet_id", walletC.id).del();
 
   console.log("done clearing db");
 }
@@ -219,7 +198,5 @@ module.exports = {
   walletTrustE,
   managingWallet,
   capture,
-  token,
-  tokenB,
-  captureB,
+  token
 };
