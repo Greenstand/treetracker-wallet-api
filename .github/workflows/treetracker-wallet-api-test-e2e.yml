@@ -1,6 +1,6 @@
 name: E2E test for dev
 on:
-  pull_request:
+  push:
     branches:
       - master
   workflow_dispatch:
@@ -9,10 +9,6 @@ on:
         description: "Branch/hash/tag"
         required: true
         default: 'master'
-#  push:
-#    branches: [ main ]
-#  pull_request:
-#    branches: [ main ]
 jobs:
   build:
     runs-on: ubuntu-latest
