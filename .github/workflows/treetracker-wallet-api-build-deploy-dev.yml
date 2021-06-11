@@ -108,4 +108,4 @@ jobs:
     name: End to End Test
     runs-on: ubuntu-latest
     steps:
-      - run: echo done
+    - run: echo done
