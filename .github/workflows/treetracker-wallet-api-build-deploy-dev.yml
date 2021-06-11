@@ -109,6 +109,7 @@ jobs:
   test:
     name: End to End Test
     runs-on: ubuntu-latest
+    needs: deploy
     env:
       ENVIRONMENT: dev
 
