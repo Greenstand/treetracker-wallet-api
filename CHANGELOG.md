@@ -1,3 +1,11 @@
+## [1.14.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.14.1...v1.14.2) (2021-06-11)
+
+
+### Bug Fixes
+
+* change e2e dev to manually execution ([f27f2c7](https://github.com/Greenstand/treetracker-wallet-api/commit/f27f2c7521bca03d0399671408ed665d6e1001b8))
+* Try to fix the yaml format problem ([c886742](https://github.com/Greenstand/treetracker-wallet-api/commit/c8867423c6dffa719573e26fbe94b797d1f097ab))
+
 ## [1.14.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.14.0...v1.14.1) (2021-06-08)
 
 
