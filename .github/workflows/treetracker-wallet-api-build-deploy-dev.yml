@@ -104,8 +104,22 @@ jobs:
       run: kustomize build deployment/overlays/development | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -    
     - name: Attempt to wait for migration job to complete
 #       run: kubectl wait --for=condition=complete --timeout=45s job/wallet-db-migration-job
+
+
   test:
     name: End to End Test
     runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: dev
+
     steps:
-    - run: echo done
+    - uses: actions/checkout@v2
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12
+    - name: Install mocha
+      run: npm install -g mocha
+    - run: npm ci
+    - run: echo ${{ secrets.DEVELOPMENT_ENV }}
+    - run: ${{ secrets.DEVELOPMENT_ENV }} npm run test-e2e
