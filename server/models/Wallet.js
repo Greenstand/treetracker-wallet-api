@@ -10,6 +10,7 @@ const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
 const Transfer = require("./Transfer");
 const Token = require("./Token");
+const _ = require("lodash");
 
 
 class Wallet{
@@ -652,8 +653,6 @@ class Wallet{
     // check if the impact value can be acceptted 
     const tokens = await this.tokenService.makeImpactPackage(sender, value, accept_deviation);
 
-    /* eslint-disable */
-
     const isDeduct = await this.isDeduct(sender,receiver);
     // If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
     const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
@@ -708,8 +707,9 @@ class Wallet{
             destination_wallet_id: receiver.getId(),
             state: Transfer.STATE.requested,
             parameters: {
-              bundle: {
-                bundleSize,
+              impact: {
+                value,
+                accept_deviation,
               }
             },
             // TODO remove hard code
@@ -719,8 +719,6 @@ class Wallet{
         }
           // TODO
           expect.fail();
-        
-    /* eslint-enable */ 
   }
 
   /*
@@ -915,6 +913,19 @@ class Wallet{
       const senderWallet = new Wallet(source_wallet_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       await this.tokenService.completeTransfer(tokens, transfer);
+    }else if(
+      _.get(transfer, "parameters.impact.value") &&
+      _.get(transfer, "parameters.impact.accept_deviation")
+    ){
+      log.debug("transfer impact of tokens");
+      const {source_wallet_id} = transfer;
+      const senderWallet = new Wallet(source_wallet_id, this._session);
+      const tokens = await this.tokenService.makeImpactPackage(
+        senderWallet, 
+        transfer.parameters.impact.value, 
+        transfer.parameters.impact.accept_deviation
+      );
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       log.debug("transfer tokens");
       const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
@@ -944,10 +955,12 @@ class Wallet{
 
     // deal with tokens
     if(
-      // TODO optimize
-      transfer.parameters &&
-      transfer.parameters.bundle &&
-      transfer.parameters.bundle.bundleSize){
+      _.get(transfer, "parameters.impact.value")
+    ){
+      throw new HttpError(403, "Impact value type of transfer must set 'implicit' to fulfill the transfer", true);
+    }else if(
+      _.get(transfer, "parameters.bundle.bundleSize")
+    ){
       log.debug("transfer bundle of tokens");
       const {source_wallet_id} = transfer;
       const senderWallet = new Wallet(source_wallet_id, this._session);

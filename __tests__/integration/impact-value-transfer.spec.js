@@ -26,7 +26,7 @@ describe("Impact Value", () => {
       await request(server)
         .post(`/transfers`)
         .set('Content-Type', "application/json")
-        .set('treetracker-api-key', registeredMeisze.apiKey)
+        .set('treetracker-api-key', registeredZaven.apiKey)
         .set('Authorization', `Bearer ${registeredZaven.token}`)
         .send({
           sender_wallet: registeredZaven.name,
@@ -43,7 +43,7 @@ describe("Impact Value", () => {
         });
     });
 
-    it.only("Meisze accept the transfer", async () => {
+    it("Meisze accept the transfer", async () => {
       await request(server)
         .post(`/transfers/${transferId}/accept`)
         .set('Content-Type', "application/json")
@@ -58,9 +58,101 @@ describe("Impact Value", () => {
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
       expect(token).property("wallet_id").eq(registeredMeisze.id);
+      expect(token).property("claim").eq(false);
+
       // the transfer's claim is false (by default)
       const transfer = await testUtils.getKnex().table("transfer").first().where("id", transferId);
       expect(transfer).property("claim").eq(false);
+
+      // the transaction's claim is false (by default)
+      const transactions = await testUtils.getKnex().table("transaction").where("transfer_id", transferId);
+      transactions.forEach(t => expect(t).property("claim").eq(false));
+    });
+
+    it("Meisze decline the transfer", async () => {
+      await request(server)
+        .post(`/transfers/${transferId}/decline`)
+        .set('Content-Type', "application/json")
+        .set('treetracker-api-key', registeredMeisze.apiKey)
+        .set('Authorization', `Bearer ${registeredMeisze.token}`)
+        .expect(200);
+
+      // Zeven still have the token
+      const token = await testUtils.getTokenById(TokenA.id);
+      expect(token).property("id").a("string");
+      expect(token).property("wallet_id").eq(registeredZaven.id);
+
+    });
+
+  });
+
+  describe("Meisze request to receive 4 impact value from Zaven", () => {
+    let transferId;
+
+
+    beforeEach(async () => {
+      await request(server)
+        .post(`/transfers`)
+        .set('Content-Type', "application/json")
+        .set('treetracker-api-key', registeredMeisze.apiKey)
+        .set('Authorization', `Bearer ${registeredMeisze.token}`)
+        .send({
+          sender_wallet: registeredZaven.name,
+          receiver_wallet: registeredMeisze.name,
+          impact: {
+            value: 4,
+            accept_deviation: 2,
+          }
+        })
+        .expect(202)
+        .then(res => {
+          expect(res).property("body").property("id").a("string");
+          transferId = res.body.id;
+        });
+    });
+
+    it("Zaven fulfill the transfer", async () => {
+      await request(server)
+        .post(`/transfers/${transferId}/fulfill`)
+        .set('Content-Type', "application/json")
+        .set('treetracker-api-key', registeredZaven.apiKey)
+        .set('Authorization', `Bearer ${registeredZaven.token}`)
+        .send({
+          implicit: true,
+        })
+        .expect(200)
+        .then(res => {
+          expect(res).property("body").property("impact_value_transferred").eq(4);
+        });
+
+      // Meisze should have one token
+      const token = await testUtils.getTokenById(TokenA.id);
+      expect(token).property("id").a("string");
+      expect(token).property("wallet_id").eq(registeredMeisze.id);
+      expect(token).property("claim").eq(false);
+
+      // the transfer's claim is false (by default)
+      const transfer = await testUtils.getKnex().table("transfer").first().where("id", transferId);
+      expect(transfer).property("claim").eq(false);
+
+      // the transaction's claim is false (by default)
+      const transactions = await testUtils.getKnex().table("transaction").where("transfer_id", transferId);
+      transactions.forEach(t => expect(t).property("claim").eq(false));
+    });
+
+    it.only("Zaven fulfill the transfer with explicit tokens, should throw error", async () => {
+      await request(server)
+        .post(`/transfers/${transferId}/fulfill`)
+        .set('Content-Type', "application/json")
+        .set('treetracker-api-key', registeredZaven.apiKey)
+        .set('Authorization', `Bearer ${registeredZaven.token}`)
+        .send({
+          tokens: [TokenA.id],
+        })
+        .expect(403)
+        .then(res => {
+          expect(res.body).property("message").match(/implicit/);
+        });
 
     });
 

@@ -254,24 +254,24 @@ transferRouter.post(
         transfer_id: Joi.string().guid().required(),
       }),
     );
-    Joi.assert(
-      req.body,
-      Joi.alternatives()
-        // if there is tokens field
-        .conditional(
-          Joi.object({
-            tokens: Joi.any().required(),
-          }).unknown(),
-          {
-            then: Joi.object({
-              tokens: Joi.array().items(Joi.string()).required().unique(),
-            }),
-            otherwise: Joi.object({
-              implicit: Joi.boolean().truthy().required(),
-            }),
-          },
-        ),
-    );
+    // simplify the way to using joi
+    if(req.body.tokens){
+      // explicit
+      Joi.assert(
+        req.body,
+        Joi.object({
+          tokens: Joi.array().items(Joi.string()).required().unique(),
+        })
+      );
+    }else{
+      // implicit
+      Joi.assert(
+        req.body,
+        Joi.object({
+          implicit: Joi.boolean().truthy().required(),
+        })
+      );
+    }
     const session = new Session();
     // begin transaction
     try {
