@@ -452,7 +452,7 @@ class Wallet{
   /*
    * Transfer some tokens from the sender to receiver
    */
-  async transfer(sender, receiver, tokens, claimBoolean){
+  async transfer(sender, receiver, tokens, claimBoolean = false){
 //    await this.checkDeduct(sender, receiver);
     // check tokens belong to sender
     for(const token of tokens){
@@ -674,6 +674,8 @@ class Wallet{
             accept_deviation,
           }
         },
+        // TODO remove hard code
+        claim: false,
       });
       log.debug("now, deal with tokens");
       // need to check if tokens are not claim
@@ -694,6 +696,8 @@ class Wallet{
                 accept_deviation,
               }
             },
+            // TODO remove hard code
+            claim: false,
           });
           return transfer;
         }if(hasControlOverReceiver){
@@ -708,7 +712,8 @@ class Wallet{
                 bundleSize,
               }
             },
-            claim: claimBoolean
+            // TODO remove hard code
+            claim: false,
           });
           return transfer;
         }

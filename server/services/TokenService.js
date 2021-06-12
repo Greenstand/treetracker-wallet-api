@@ -117,7 +117,7 @@ class TokenService{
   /*
    * To replace token.completeTransfer, as a bulk operaction
    */
-  async completeTransfer(tokens, transfer, claimBoolean){
+  async completeTransfer(tokens, transfer, claimBoolean = false){
     log.debug("Token complete transfer batch");
     await this.tokenRepository.updateByIds({
         transfer_pending: false,

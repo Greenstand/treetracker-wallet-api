@@ -145,4 +145,5 @@ module.exports = {
   addToken,
   getTokenById,
   trustASendToB,
+  getKnex: () => knex,
 }

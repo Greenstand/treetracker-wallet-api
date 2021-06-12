@@ -43,7 +43,7 @@ describe("Impact Value", () => {
         });
     });
 
-    it("Meisze accept the transfer", async () => {
+    it.only("Meisze accept the transfer", async () => {
       await request(server)
         .post(`/transfers/${transferId}/accept`)
         .set('Content-Type', "application/json")
@@ -58,6 +58,9 @@ describe("Impact Value", () => {
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
       expect(token).property("wallet_id").eq(registeredMeisze.id);
+      // the transfer's claim is false (by default)
+      const transfer = await testUtils.getKnex().table("transfer").first().where("id", transferId);
+      expect(transfer).property("claim").eq(false);
 
     });
 
