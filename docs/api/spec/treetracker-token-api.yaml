@@ -1065,7 +1065,7 @@ components:
           type: array
           items:
             type: string
-          description: optional array of explicit tokens
+          description: optional array of explicit tokens, NOTE, if the transfer type is impact value, then, can not set explicit 'token' here, must set this fulfillment request to 'implicit' 
         implicit:
           type: boolean
           description: automatically fill the request with tokens matching the specified parameters if set
