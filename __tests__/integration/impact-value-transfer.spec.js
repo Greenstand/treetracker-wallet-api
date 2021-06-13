@@ -54,6 +54,8 @@ describe("Impact Value", () => {
           expect(res).property("body").property("impact_value_transferred").eq(4);
         });
 
+      // TODO bug!
+      await new Promise(r => setTimeout(() => r(), 500));
       // Meisze should have one token
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
@@ -125,6 +127,8 @@ describe("Impact Value", () => {
           expect(res).property("body").property("impact_value_transferred").eq(4);
         });
 
+      // TODO bug!
+      await new Promise(r => setTimeout(() => r(), 500));
       // Meisze should have one token
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
@@ -140,7 +144,7 @@ describe("Impact Value", () => {
       transactions.forEach(t => expect(t).property("claim").eq(false));
     });
 
-    it.only("Zaven fulfill the transfer with explicit tokens, should throw error", async () => {
+    it("Zaven fulfill the transfer with explicit tokens, should throw error", async () => {
       await request(server)
         .post(`/transfers/${transferId}/fulfill`)
         .set('Content-Type', "application/json")
@@ -156,12 +160,12 @@ describe("Impact Value", () => {
 
     });
 
-    it("Meisze decline the transfer", async () => {
+    it("Zaven decline the transfer", async () => {
       await request(server)
         .post(`/transfers/${transferId}/decline`)
         .set('Content-Type', "application/json")
-        .set('treetracker-api-key', registeredMeisze.apiKey)
-        .set('Authorization', `Bearer ${registeredMeisze.token}`)
+        .set('treetracker-api-key', registeredZaven.apiKey)
+        .set('Authorization', `Bearer ${registeredZaven.token}`)
         .expect(200);
 
       // Zeven still have the token
@@ -198,6 +202,7 @@ describe("Impact Value", () => {
         .expect(201)
         .then(res => {
           expect(res).property("body").property("id").a("string");
+          expect(res).property("body").property("state").eq("completed");
           transferId = res.body.id;
           expect(res).property("body").property("impact_value_transferred").eq(4);
         });
@@ -205,6 +210,8 @@ describe("Impact Value", () => {
 
     it("Meisze already has the token", async () => {
       // Meisze should have one token
+      // TODO bug!
+      await new Promise(r => setTimeout(() => r(), 500));
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
       expect(token).property("wallet_id").eq(registeredMeisze.id);
