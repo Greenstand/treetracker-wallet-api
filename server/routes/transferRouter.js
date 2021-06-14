@@ -76,6 +76,7 @@ transferRouter.post(
         // TODO: get only transferrable tokens
         result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size, claim);
       }
+      await session.commitTransaction();
       const transferService = new TransferService(session);
       result = await transferService.convertToResponse(result);
       if (result.state === Transfer.STATE.completed) {
@@ -88,7 +89,6 @@ transferRouter.post(
       } else {
         throw new Error(`Unexpected state ${result.state}`);
       }
-      await session.commitTransaction();
     }catch(e){
       if(e instanceof HttpError && !e.shouldRollback()){
         // if the error type is HttpError, means the exception has been handled
@@ -127,8 +127,8 @@ transferRouter.post(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      res.status(200).json(transferJson2);
       await session.commitTransaction();
+      res.status(200).json(transferJson2);
     } catch (e) {
       if (e instanceof HttpError && !e.shouldRollback()) {
         // if the error type is HttpError, means the exception has been handled
@@ -167,8 +167,8 @@ transferRouter.post(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      res.status(200).json(transferJson2);
       await session.commitTransaction();
+      res.status(200).json(transferJson2);
     } catch (e) {
       if (e instanceof HttpError && !e.shouldRollback()) {
         // if the error type is HttpError, means the exception has been handled
@@ -207,8 +207,8 @@ transferRouter.delete(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      res.status(200).json(transferJson2);
       await session.commitTransaction();
+      res.status(200).json(transferJson2);
     } catch (e) {
       if (e instanceof HttpError && !e.shouldRollback()) {
         // if the error type is HttpError, means the exception has been handled
@@ -280,8 +280,8 @@ transferRouter.post(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      res.status(200).json(transferJson2);
       await session.commitTransaction();
+      res.status(200).json(transferJson2);
     } catch (e) {
       if (e instanceof HttpError && !e.shouldRollback()) {
         // if the error type is HttpError, means the exception has been handled
