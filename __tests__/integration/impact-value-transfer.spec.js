@@ -54,8 +54,6 @@ describe("Impact Value", () => {
           expect(res).property("body").property("impact_value_transferred").eq(4);
         });
 
-      // TODO bug!
-      await new Promise(r => setTimeout(() => r(), 500));
       // Meisze should have one token
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
@@ -127,8 +125,6 @@ describe("Impact Value", () => {
           expect(res).property("body").property("impact_value_transferred").eq(4);
         });
 
-      // TODO bug!
-      await new Promise(r => setTimeout(() => r(), 500));
       // Meisze should have one token
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
@@ -210,8 +206,6 @@ describe("Impact Value", () => {
 
     it("Meisze already has the token", async () => {
       // Meisze should have one token
-      // TODO bug!
-      await new Promise(r => setTimeout(() => r(), 500));
       const token = await testUtils.getTokenById(TokenA.id);
       expect(token).property("id").a("string");
       expect(token).property("wallet_id").eq(registeredMeisze.id);
