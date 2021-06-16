@@ -148,6 +148,7 @@ describe("transferRouter", () => {
       id: tokenId,
       state: Transfer.STATE.completed,
     });
+    sinon.stub(TransferService.prototype, "sendMessage");
     const res = await request(app)
       .post('/')
       .send({
@@ -158,7 +159,7 @@ describe("transferRouter", () => {
     expect(res).property('statusCode').eq(201);
   });
 
-  it.only('Transfer using sender and receiver id, should return 201', async () => {
+  it('Transfer using sender and receiver id, should return 201', async () => {
     const walletId = uuid.v4()
     const wallet2Id = uuid.v4()
     const tokenId = uuid.v4()
