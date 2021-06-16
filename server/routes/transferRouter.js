@@ -57,6 +57,7 @@ transferRouter.post(
       const walletLogin = await walletService.getById(res.locals.wallet_id);
       const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
       const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
+      const transferService = new TransferService(session);
       // check if this transfer is a claim (claim == not transferrrable tokens)
       const claim = req.body.claim;
 
@@ -76,8 +77,15 @@ transferRouter.post(
         // TODO: get only transferrable tokens
         result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size, claim);
       }
+
+      // send message
+      if (result.state === Transfer.STATE.completed) {
+        await transferService.sendMessage(result.id);
+      }
+
       await session.commitTransaction();
-      const transferService = new TransferService(session);
+
+      // response 
       result = await transferService.convertToResponse(result);
       if (result.state === Transfer.STATE.completed) {
         res.status(201).json(result);

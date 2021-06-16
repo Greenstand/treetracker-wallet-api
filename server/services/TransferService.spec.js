@@ -48,7 +48,7 @@ describe('TransferService', () => {
 
   describe("sendMessage", () => {
 
-    it.only("Successfully", async () => {
+    it("Successfully", async () => {
       const transferId = "x";
       const transfer = {
         id: transferId,

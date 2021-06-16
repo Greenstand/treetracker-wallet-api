@@ -158,7 +158,7 @@ describe("transferRouter", () => {
     expect(res).property('statusCode').eq(201);
   });
 
-  it('Transfer using sender and receiver id, should return 201', async () => {
+  it.only('Transfer using sender and receiver id, should return 201', async () => {
     const walletId = uuid.v4()
     const wallet2Id = uuid.v4()
     const tokenId = uuid.v4()
@@ -188,6 +188,7 @@ describe("transferRouter", () => {
       id: transferId,
       state: Transfer.STATE.completed,
     });
+    const sendMessage = sinon.stub(TransferService.prototype, "sendMessage");
     const res = await request(app)
       .post('/')
       .send({
@@ -196,6 +197,9 @@ describe("transferRouter", () => {
         receiver_wallet: wallet2Id,
       });
     expect(res).property('statusCode').eq(201);
+    
+    // should send message to queue
+    expect(sendMessage).calledWith(transferId);
   });
 
   // //TODO: test for case 1: with trust relationship, tokens specified
