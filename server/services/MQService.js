@@ -10,15 +10,18 @@ class MQService{
   }
 
   sendMessage(payload){
+    log.warn("to send message");
     return new Promise((resolve, reject) => {
-      const broker = Broker.create(config);
-      // TODO
-      Promise.resolve(broker)
+      Broker.create(config)
         .then(broker => {
           broker.publish("raw-capture-created", payload, "field-data.capture.creation")
           .then(publication => {
+            log.warn("publication is on");
             publication
-            .on("success", () => resolve(true))
+            .on("success", () => {
+              log.warn("message sent!");
+              resolve(true);
+            })
             .on("error", (err, messageId)=> {
               const error = `Error with id ${messageId} ${err.message}`;
               log.error(error);
@@ -29,7 +32,11 @@ class MQService{
             log.error(err);
             reject(new HttpError(500, `Error publishing message ${err}`));
           })
-        });
+        })
+        .catch(err => {
+          log.error(err);
+          reject(new HttpError(500, `Error create broker ${err}`));
+        })
     });
   }
 }

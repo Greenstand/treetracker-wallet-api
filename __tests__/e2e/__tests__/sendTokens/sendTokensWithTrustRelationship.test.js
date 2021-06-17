@@ -46,7 +46,7 @@ describe("Sending tokens with trust relationship (Wallet API)",function () {
         receiverBearerToken = await getSession(receiverWallet, password);
     });
 
-    it('Send token from wallet A to wallet B with trust relationship @token @regression', async () => {
+    it.only('Send token from wallet A to wallet B with trust relationship @token @regression', async () => {
         const requestTrustResponse = await sendPostRequest(trustRelationshipUri, headers(senderBearerToken.token), requestTrustRelationshipPayload(receiverWallet));
         const {body: requestTrustBody, status: requestTrustStatus} = requestTrustResponse;
         assert.equals(requestTrustStatus, OK, 'Request trust relationship response status does not equal!', requestTrustBody);

@@ -3,6 +3,7 @@ const Broker = require('rascal').BrokerAsPromised;
 const sinon = require("sinon");
 const {expect} = require("chai");
 const jestExpect = require("expect");
+const log = require("loglevel");
 
 describe("MQService", () => {
   
@@ -37,7 +38,7 @@ describe("MQService", () => {
   });
 
   it("send message with problem", async () => {
-    sinon.stub(Broker, "create").returns({
+    sinon.stub(Broker, "create").resolves({
       publish: async () => {
         console.log("publish");
         return {
@@ -59,4 +60,39 @@ describe("MQService", () => {
 
   });
 
+});
+
+describe("Real operation, just for dev", () => {
+
+  it.skip("Send and receive message", async () => {
+    try{
+      const mqService = new MQService();
+      const payload = {a:1};
+      const result = await mqService.sendMessage(payload);
+      
+
+      await new Promise((resolve, reject) => {
+        // check the message
+        // Consume a message
+        const config = require("./MQConfig").config;
+        Broker.create(config)
+          .then(broker => {
+            log.info("connected to broker");
+            broker.subscribeAll()
+              .then(subscriptions => {
+                subscriptions.forEach( subscription => {
+                  subscription.on('message', (message, content, ackOrNack) => {
+                    log.warn("message:", message, content);
+                    log.warn("message content:", message.content && message.content.toString());
+                    ackOrNack();
+                    resolve();
+                  }).on('error', console.error);
+                });
+              });
+          });
+      });
+    }catch(e){
+      log.error("e:",e );
+    };
+  });
 });

@@ -66,7 +66,7 @@ class TransferService {
       wallet_name_sender : walletSenderObj.name,
       entries: tokenData,
     };
-    this._mqService.sendMessage(message);
+    await this._mqService.sendMessage(message);
   }
 
 }
