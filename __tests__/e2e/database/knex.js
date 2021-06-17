@@ -8,7 +8,8 @@ const knexConfig = {
     port: process.env.DB_PORT,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    ssl: true,
+    // eslint-disable-next-line 
+    ssl: process.env.DB_SSL === "false" ? false : true,
   },
   debug: false,
   searchPath: [process.env.DB_SCHEMA],
