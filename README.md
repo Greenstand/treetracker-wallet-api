@@ -439,6 +439,26 @@ In order to efficiently run our integration tests, we rely on automated database
 npm run test-seedDB
 ```
 
+## End to End test
+
+To run the test:
+
+```
+npm run test-e2e
+```
+
+To run the test locally against the local code/server:
+
+```
+npm run test-e2e-locally
+```
+
+NOTE running e2e needs to set up some env variables like the Database connection, we can attach the env variables on the CLI command line:
+
+```
+> DB_HOST=localhost DB_USERNAME=postgres DB_PORT=23720 DB_PASSWORD=*** DB_NAME=treetracker DB_SCHEMA=public npm run test-e2e-locally
+```
+
 ## Suggestion about how to run tests when developing
 
 There is a command in the `package.json`:
