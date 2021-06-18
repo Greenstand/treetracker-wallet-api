@@ -199,8 +199,8 @@ describe("transferRouter", () => {
       });
     expect(res).property('statusCode').eq(201);
     
-    // should send message to queue
-    expect(sendMessage).calledWith(transferId);
+    // should not send message to queue because ENV = test
+    sinon.assert.notCalled(sendMessage);
   });
 
   // //TODO: test for case 1: with trust relationship, tokens specified

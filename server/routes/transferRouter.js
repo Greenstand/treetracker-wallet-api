@@ -80,7 +80,10 @@ transferRouter.post(
 
       // send message
       if (result.state === Transfer.STATE.completed) {
-        await transferService.sendMessage(result.id);
+        // just send message in production 
+        if(process.env.NODE_ENV !== "test"){
+          await transferService.sendMessage(result.id);
+        }
       }
 
       await session.commitTransaction();
@@ -135,7 +138,10 @@ transferRouter.post(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      await transferService.sendMessage(transferJson.id);
+      // just send message in production 
+      if(process.env.NODE_ENV !== "test"){
+        await transferService.sendMessage(transferJson.id);
+      }
       await session.commitTransaction();
       res.status(200).json(transferJson2);
     } catch (e) {
@@ -289,7 +295,10 @@ transferRouter.post(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      await transferService.sendMessage(transferJson.id);
+      // just send message in production 
+      if(process.env.NODE_ENV !== "test"){
+        await transferService.sendMessage(transferJson.id);
+      }
       await session.commitTransaction();
       res.status(200).json(transferJson2);
     } catch (e) {
