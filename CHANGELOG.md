@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.14.2...v1.15.0) (2021-06-18)
+
+
+### Features
+
+* e2e can run locally ([86e6c97](https://github.com/Greenstand/treetracker-wallet-api/commit/86e6c9709ef2718537187353dc4838502640c0bb))
+
 ## [1.14.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.14.1...v1.14.2) (2021-06-11)
 
 
