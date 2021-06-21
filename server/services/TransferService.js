@@ -58,7 +58,7 @@ class TransferService {
     const walletReceiverObj = await walletReceiver.toJSON();
     const walletSender = await this._walletService.getById(transfer.source_wallet_id);
     const walletSenderObj = await walletSender.toJSON();
-    const tokenData = await this._transferRepository.getTokensById(transferId);
+    const tokenData = await this._transferRepository.getTokenAndCaptureIds(transferId);
     const message = {
       transfer_id: transferId,
       type: "TokensAssigned",

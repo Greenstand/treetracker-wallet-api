@@ -65,7 +65,7 @@ describe('TransferService', () => {
       });
       const sendMessage = sinon.stub(MQService.prototype, "sendMessage");
       sinon.stub(TransferRepository.prototype, "getById").resolves(transfer);
-      sinon.stub(TransferRepository.prototype, "getTokensById").resolves([{
+      sinon.stub(TransferRepository.prototype, "getTokenAndCaptureIds").resolves([{
         token_id: "t",
         capture_id: "c",
       }]);

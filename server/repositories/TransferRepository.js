@@ -29,7 +29,7 @@ class TransferRepository extends BaseRepository{
     });
   }
 
-  async getTokensById(id){
+  async getTokenAndCaptureIds(id){
     return await this._session.getDB().raw(
       `
         SELECT token_id, capture_id FROM "transaction" tr 
