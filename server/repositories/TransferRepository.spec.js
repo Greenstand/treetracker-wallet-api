@@ -90,7 +90,7 @@ describe("TransferRepository", () => {
         },
       ][step - 1]();
     });
-    const result = await transferRepository.getTokensById(1);
+    const result = await transferRepository.getTokenAndCaptureIds(1);
     sinon.assert.match(result, data);
   });
 
