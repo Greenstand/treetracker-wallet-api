@@ -64,33 +64,38 @@ describe("MQService", () => {
 
 describe("Real operation, just for dev", () => {
 
-  it.skip("Send and receive message", async () => {
+  it.only("Send and receive message", async function(){
     try{
+      
       const mqService = new MQService();
       const payload = {a:1};
       const result = await mqService.sendMessage(payload);
+      log.warn("result:", result);
       
 
-      await new Promise((resolve, reject) => {
-        // check the message
-        // Consume a message
-        const config = require("./MQConfig").config;
-        Broker.create(config)
-          .then(broker => {
-            log.info("connected to broker");
-            broker.subscribeAll()
-              .then(subscriptions => {
-                subscriptions.forEach( subscription => {
-                  subscription.on('message', (message, content, ackOrNack) => {
-                    log.warn("message:", message, content);
-                    log.warn("message content:", message.content && message.content.toString());
-                    ackOrNack();
-                    resolve();
-                  }).on('error', console.error);
-                });
-              });
-          });
-      });
+//      await new Promise((resolve, reject) => {
+//        // check the message
+//        // Consume a message
+//        const config = require("./MQConfig").config;
+//        Broker.create(config)
+//          .then(broker => {
+//            log.info("connected to broker");
+//            broker.subscribeAll()
+//              .then(subscriptions => {
+//                subscriptions.forEach( subscription => {
+//                  subscription.on('message', (message, content, ackOrNack) => {
+//                    log.warn("message:", message, content);
+//                    log.warn("message content received:", message.content && message.content.toString());
+//                    ackOrNack();
+//                    resolve();
+//                  }).on('error', console.error);
+//                });
+//              });
+//          });
+//        const mqService = new MQService();
+//        const payload = {a:1};
+//        mqService.sendMessage(payload);
+//      });
     }catch(e){
       log.error("e:",e );
     };

@@ -14,7 +14,7 @@ class MQService{
     return new Promise((resolve, reject) => {
       Broker.create(config)
         .then(broker => {
-          broker.publish("raw-capture-created", payload, "field-data.capture.creation")
+          broker.publish("token-assigned", payload)
           .then(publication => {
             log.warn("publication is on");
             publication
