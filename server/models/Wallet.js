@@ -10,6 +10,7 @@ const TransferRepository = require("../repositories/TransferRepository");
 const HttpError = require("../utils/HttpError");
 const Transfer = require("./Transfer");
 const Token = require("./Token");
+const _ = require("lodash");
 
 
 class Wallet{
@@ -452,7 +453,7 @@ class Wallet{
   /*
    * Transfer some tokens from the sender to receiver
    */
-  async transfer(sender, receiver, tokens, claimBoolean){
+  async transfer(sender, receiver, tokens, claimBoolean = false){
 //    await this.checkDeduct(sender, receiver);
     // check tokens belong to sender
     for(const token of tokens){
@@ -648,6 +649,78 @@ class Wallet{
     
   }
 
+  async transferImpact(sender, receiver, value, accept_deviation){
+    // check if the impact value can be acceptted 
+    const tokens = await this.tokenService.makeImpactPackage(sender, value, accept_deviation);
+
+    const isDeduct = await this.isDeduct(sender,receiver);
+    // If has the trust, and is not deduct request (now, if wallet request some token from another wallet, can not pass the transfer directly)
+    const hasTrust = await this.hasTrust(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send, sender, receiver);   
+    const hasControlOverSender = await this.hasControlOver(sender);
+    const hasControlOverReceiver = await this.hasControlOver(receiver);
+    if(
+      (hasControlOverSender && hasControlOverReceiver) ||
+      (!isDeduct && hasTrust)
+    ){
+      const transfer = await this.transferRepository.create({
+        originator_wallet_id: this._id, 
+        source_wallet_id: sender.getId(),
+        destination_wallet_id: receiver.getId(),
+        state: Transfer.STATE.completed,
+        parameters: {
+          impact: {
+            value,
+            accept_deviation,
+          }
+        },
+        // TODO remove hard code
+        claim: false,
+      });
+      log.debug("now, deal with tokens");
+      // need to check if tokens are not claim
+      await this.tokenService.completeTransfer(tokens, transfer);
+
+      return transfer;
+    }
+        if(hasControlOverSender){
+          log.debug("OK, no permission, source under control, now pending it");
+          const transfer = await this.transferRepository.create({
+            originator_wallet_id: this._id, 
+            source_wallet_id: sender.getId(),
+            destination_wallet_id: receiver.getId(),
+            state: Transfer.STATE.pending,
+            parameters: {
+              impact: {
+                value,
+                accept_deviation,
+              }
+            },
+            // TODO remove hard code
+            claim: false,
+          });
+          return transfer;
+        }if(hasControlOverReceiver){
+          log.debug("OK, no permission, receiver under control, now request it");
+          const transfer = await this.transferRepository.create({
+            originator_wallet_id: this._id, 
+            source_wallet_id: sender.getId(),
+            destination_wallet_id: receiver.getId(),
+            state: Transfer.STATE.requested,
+            parameters: {
+              impact: {
+                value,
+                accept_deviation,
+              }
+            },
+            // TODO remove hard code
+            claim: false,
+          });
+          return transfer;
+        }
+          // TODO
+          expect.fail();
+  }
+
   /*
    * I have control over given wallet
    */
@@ -731,6 +804,17 @@ class Wallet{
       if(tokens.length < transfer.parameters.bundle.bundleSize){
         throw new HttpError(403, "Do not have enough tokens");
       }
+      await this.tokenService.completeTransfer(tokens, transfer);
+    }else if(
+      transfer.parameters &&
+      transfer.parameters.impact &&
+      transfer.parameters.impact.value &&
+      transfer.parameters.impact.accept_deviation
+    ){
+      log.debug("transfer impact of tokens");
+      const {source_wallet_id} = transfer;
+      const senderWallet = new Wallet(source_wallet_id, this._session);
+      const tokens = await this.tokenService.makeImpactPackage(senderWallet, transfer.parameters.impact.value, transfer.parameters.impact.accept_deviation);
       await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       log.debug("transfer tokens");
@@ -829,6 +913,19 @@ class Wallet{
       const senderWallet = new Wallet(source_wallet_id, this._session);
       const tokens = await this.tokenService.getTokensByBundle(senderWallet, transfer.parameters.bundle.bundleSize);
       await this.tokenService.completeTransfer(tokens, transfer);
+    }else if(
+      _.get(transfer, "parameters.impact.value") &&
+      _.get(transfer, "parameters.impact.accept_deviation")
+    ){
+      log.debug("transfer impact of tokens");
+      const {source_wallet_id} = transfer;
+      const senderWallet = new Wallet(source_wallet_id, this._session);
+      const tokens = await this.tokenService.makeImpactPackage(
+        senderWallet, 
+        transfer.parameters.impact.value, 
+        transfer.parameters.impact.accept_deviation
+      );
+      await this.tokenService.completeTransfer(tokens, transfer);
     }else{
       log.debug("transfer tokens");
       const tokens = await this.tokenService.getTokensByPendingTransferId(transfer.id);
@@ -858,10 +955,12 @@ class Wallet{
 
     // deal with tokens
     if(
-      // TODO optimize
-      transfer.parameters &&
-      transfer.parameters.bundle &&
-      transfer.parameters.bundle.bundleSize){
+      _.get(transfer, "parameters.impact.value")
+    ){
+      throw new HttpError(403, "Impact value type of transfer must set 'implicit' to fulfill the transfer", true);
+    }else if(
+      _.get(transfer, "parameters.bundle.bundleSize")
+    ){
       log.debug("transfer bundle of tokens");
       const {source_wallet_id} = transfer;
       const senderWallet = new Wallet(source_wallet_id, this._session);

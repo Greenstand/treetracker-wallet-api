@@ -208,6 +208,13 @@ paths:
                       - pine
                       - Tanzania
                   claim: false
+              ImpactValue:
+                value:
+                  impact:
+                    value: 100
+                    accept_deviation: true
+                  sender_wallet: zaven4
+                  receiver_wallet: zaven
         required: true
       responses:
         '201':
@@ -216,6 +223,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/sendRequestProcessedResponse'
+              examples:
+                example-1:
+                  value:
+                    originating_wallet: johnwallet1
+                    source_wallet: planeter
+                    destination_wallet: just.a.guy
+                    type: send
+                    parameters:
+                      $ref: '#/components/schemas/requestBundleRequestParameters'
+                    state: completed
+                    created_at: '2020-07-09T00:41:49+00:00'
+                    closed_at: '2020-07-09T00:41:49+00:00'
+            application/xml:
+              schema:
+                type: object
+                properties: {}
         '202':
           description: 'The transfer could not be completely processed because a trust relationship does not exist allowing for automated processing.  If a the source wallet is controlled by the authenitcated user, a  transfer in the pending state has been created. If the source wallet is not controlled but the authenticated user, but the destination wallet is, then a transfer in the requested state has been created'
           content:
@@ -379,6 +402,16 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  impace_value_transfered:
+                    type: integer
+                    description: 'The number of impact valued that has been actually transfered, this field is just valid when the transfer request type is setting impact value as the parameter'
+                  '':
+                    type: string
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   '/transfers/{transfer_id}/decline':
@@ -426,6 +459,14 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  impact_value_transfered:
+                    type: integer
+                    description: 'The number of impact valued that has been actually transfered, this field is just valid when the transfer request type is setting impact value as the parameter'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   '/transfers/{transfer_id}/tokens':
@@ -468,6 +509,7 @@ paths:
           description: ''
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      description: ''
   /events:
     get:
       tags:
@@ -772,6 +814,12 @@ components:
           type: string
         capture:
           type: string
+        value:
+          type: integer
+          description: impact value
+        value_matrix_id:
+          type: integer
+          description: The id of the impact value matrix
     accountrequest:
       title: accountrequest
       required:
@@ -802,17 +850,13 @@ components:
           type: integer
     transferrequest:
       title: transferrequest
-      required:
-        - tokens
-        - sender_wallet
-        - receiver_wallet
       type: object
       properties:
         tokens:
           type: array
+          description: ''
           items:
             type: string
-          description: ''
         bundle:
           type: object
           properties:
@@ -832,12 +876,23 @@ components:
           oneOf:
             - type: string
             - type: number
-      example:
-        tokens:
-          - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-          - e533653e-2dbf-48cd-940a-a87e5a393158
-        sender_wallet: zaven4
-        receiver_wallet: zaven
+        impact:
+          type: object
+          description: Use impact value to express how many tokens should be tranfered
+          properties:
+            value:
+              type: integer
+              description: 'The totla amount of the impact value '
+              minimum: 0
+              maximum: 10000
+            accept_deviation:
+              type: boolean
+              description: 'If this transfer accept deviation when transfer happens, it means, when user choose to accept it, there might be some deviation between the actual transfered impact value and the value given here, the range of the deviation will be defined in the impact value matrix.'
+              default: true
+      required:
+        - tokens
+        - sender_wallet
+        - receiver_wallet
     transferbundlerequest:
       title: transferbundlerequest
       required:
@@ -884,6 +939,16 @@ components:
     sendRequestProcessedResponse:
       title: sendRequestProcessedResponse
       type: object
+      example:
+        originating_wallet: johnwallet1
+        source_wallet: planeter
+        destination_wallet: just.a.guy
+        type: send
+        parameters:
+          $ref: '#/components/schemas/requestBundleRequestParameters'
+        state: completed
+        created_at: '2020-07-09T00:41:49+00:00'
+        closed_at: '2020-07-09T00:41:49+00:00'
       properties:
         id:
           type: string
@@ -906,16 +971,24 @@ components:
           type: string
         closed_at:
           type: string
-      example:
-        originating_wallet: johnwallet1
-        source_wallet: planeter
-        destination_wallet: just.a.guy
-        type: send
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        state: completed
-        created_at: '2020-07-09T00:41:49+00:00'
-        closed_at: '2020-07-09T00:41:49+00:00'
+        impact_value_transfered:
+          type: integer
+          description: 'The number of impact valued that has been actually transfered, this field is just valid when the transfer request type is setting impact value as the parameter'
+        '':
+          type: string
+      x-examples:
+        example-1:
+          value:
+            originating_wallet: johnwallet1
+            source_wallet: planeter
+            destination_wallet: just.a.guy
+            type: send
+            parameters:
+              $ref: '#/components/schemas/requestBundleRequestParameters'
+            state: completed
+            created_at: '2020-07-09T00:41:49+00:00'
+            closed_at: '2020-07-09T00:41:49+00:00'
+      description: ''
     sendRequestPendingResponse:
       title: sendRequestPendingResponse
     sendBundleRequest:
@@ -969,17 +1042,19 @@ components:
       properties:
         tokens:
           type: array
+          description: optional array of explicit tokens
           items:
             type: string
-          description: optional array of explicit tokens
         bundle_size:
           type: integer
           description: required number of trees to transfer
         matching_all_tags:
           type: array
+          description: optional list of tags that trees must match ALL of
           items:
             type: string
-          description: optional list of tags that trees must match ALL of
+        impact:
+          type: object
       required:
         - bundle_size
     requestBundleFulfillBody:
@@ -990,7 +1065,7 @@ components:
           type: array
           items:
             type: string
-          description: optional array of explicit tokens
+          description: optional array of explicit tokens, NOTE, if the transfer type is impact value, then, can not set explicit 'token' here, must set this fulfillment request to 'implicit' 
         implicit:
           type: boolean
           description: automatically fill the request with tokens matching the specified parameters if set

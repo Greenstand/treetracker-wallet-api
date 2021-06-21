@@ -36,15 +36,31 @@ transferRouter.post(
           // TODO: add boolean for claim, but default to false.
           claim: Joi.boolean(),
         }),
-        otherwise: Joi.object({
-          bundle: Joi.object({
-            bundle_size: Joi.number().min(1).max(10000).integer(),
-          }).required(),
-          sender_wallet: Joi.string()
-          .required(),
-          receiver_wallet: Joi.string()
-          .required(),
-          claim: Joi.boolean().required(),
+        otherwise: Joi.alternatives()
+          // if there is tokens field
+          .conditional(Joi.object({
+            impact: Joi.any().required(),
+          }).unknown(),{
+            then: Joi.object({
+              impact: Joi.object({
+                value: Joi.number().min(1).max(10000).integer(),
+                accept_deviation: Joi.number().min(1).max(10).integer(),
+              }).required(),
+              sender_wallet: Joi.string()
+              .required(),
+              receiver_wallet: Joi.string()
+              .required(),
+            }),
+            otherwise: Joi.object({
+              bundle: Joi.object({
+                bundle_size: Joi.number().min(1).max(10000).integer(),
+              }).required(),
+              sender_wallet: Joi.string()
+              .required(),
+              receiver_wallet: Joi.string()
+              .required(),
+              claim: Joi.boolean().required(),
+            })
         }),
       })
     );
@@ -71,11 +87,16 @@ transferRouter.post(
         }
         // Case 1: with trust, token transfer
         result = await walletLogin.transfer(walletSender, walletReceiver, tokens, claim);
+      }else if(req.body.impact){
+        // impact case
+        result = await walletLogin.transferImpact(walletSender, walletReceiver, req.body.impact.value, req.body.impact.accept_deviation);
+
       }else{
         // Case 2: with trust, bundle transfer
         // TODO: get only transferrable tokens
         result = await walletLogin.transferBundle(walletSender, walletReceiver, req.body.bundle.bundle_size, claim);
       }
+      await session.commitTransaction();
       const transferService = new TransferService(session);
       result = await transferService.convertToResponse(result);
       if (result.state === Transfer.STATE.completed) {
@@ -88,7 +109,6 @@ transferRouter.post(
       } else {
         throw new Error(`Unexpected state ${result.state}`);
       }
-      await session.commitTransaction();
     }catch(e){
       if(e instanceof HttpError && !e.shouldRollback()){
         // if the error type is HttpError, means the exception has been handled
@@ -127,8 +147,8 @@ transferRouter.post(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      res.status(200).json(transferJson2);
       await session.commitTransaction();
+      res.status(200).json(transferJson2);
     } catch (e) {
       if (e instanceof HttpError && !e.shouldRollback()) {
         // if the error type is HttpError, means the exception has been handled
@@ -167,8 +187,8 @@ transferRouter.post(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      res.status(200).json(transferJson2);
       await session.commitTransaction();
+      res.status(200).json(transferJson2);
     } catch (e) {
       if (e instanceof HttpError && !e.shouldRollback()) {
         // if the error type is HttpError, means the exception has been handled
@@ -207,8 +227,8 @@ transferRouter.delete(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      res.status(200).json(transferJson2);
       await session.commitTransaction();
+      res.status(200).json(transferJson2);
     } catch (e) {
       if (e instanceof HttpError && !e.shouldRollback()) {
         // if the error type is HttpError, means the exception has been handled
@@ -234,24 +254,24 @@ transferRouter.post(
         transfer_id: Joi.string().guid().required(),
       }),
     );
-    Joi.assert(
-      req.body,
-      Joi.alternatives()
-        // if there is tokens field
-        .conditional(
-          Joi.object({
-            tokens: Joi.any().required(),
-          }).unknown(),
-          {
-            then: Joi.object({
-              tokens: Joi.array().items(Joi.string()).required().unique(),
-            }),
-            otherwise: Joi.object({
-              implicit: Joi.boolean().truthy().required(),
-            }),
-          },
-        ),
-    );
+    // simplify the way to using joi
+    if(req.body.tokens){
+      // explicit
+      Joi.assert(
+        req.body,
+        Joi.object({
+          tokens: Joi.array().items(Joi.string()).required().unique(),
+        })
+      );
+    }else{
+      // implicit
+      Joi.assert(
+        req.body,
+        Joi.object({
+          implicit: Joi.boolean().truthy().required(),
+        })
+      );
+    }
     const session = new Session();
     // begin transaction
     try {
@@ -280,8 +300,8 @@ transferRouter.post(
       const transferJson2 = await transferService.convertToResponse(
         transferJson,
       );
-      res.status(200).json(transferJson2);
       await session.commitTransaction();
+      res.status(200).json(transferJson2);
     } catch (e) {
       if (e instanceof HttpError && !e.shouldRollback()) {
         // if the error type is HttpError, means the exception has been handled
