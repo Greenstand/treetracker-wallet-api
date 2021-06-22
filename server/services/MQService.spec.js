@@ -64,7 +64,7 @@ describe("MQService", () => {
 
 describe("Real operation, just for dev", () => {
 
-  it.only("Send and receive message", async function(){
+  it("Send and receive message", async function(){
     try{
       
       const mqService = new MQService();
