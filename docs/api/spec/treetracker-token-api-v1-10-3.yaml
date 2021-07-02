@@ -65,7 +65,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 1099
         - name: matching_all_tags
           description: An array of tags.  Tokens returned by the endpoints must be attached to trees that have ALL of these tags assigned
           in: query
