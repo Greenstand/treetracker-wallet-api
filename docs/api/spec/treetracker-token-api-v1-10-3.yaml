@@ -66,13 +66,6 @@ paths:
             type: integer
             format: int32
             example: 10
-        - name: matching_all_tags
-          description: An array of tags.  Tokens returned by the endpoints must be attached to trees that have ALL of these tags assigned
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
         - name: wallet
           description: Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet
           in: query
@@ -752,24 +745,10 @@ components:
     tokenItem:
       title: Token
       type: object
-      example:
-        token: d895cf1b-de4c-40ea-85c9-99540f2489a9
-        map_url: 'http://test.treetracker.org/?treeid=156867'
-        image_url: 'https://treetracker-test.eu-central-1/2019.08.13.17.56.13_5f87e44c-1b90-4d15-8ab8-ae4e75f8a898_IMG_20190813_175243_67017802.jpg'
-        tree_captured_at: '+051586-06-14T15:10:00.000Z'
-        latitude: 37.77295869
-        longitude: -122.1781304
-        region: United States
-        bill_of_value: json
       properties:
-        token:
+        id:
           type: string
-        map:
-          type: string
-        image:
-          type: string
-        capture:
-          type: string
+            format: uuid
     accountrequest:
       title: accountrequest
       required:
