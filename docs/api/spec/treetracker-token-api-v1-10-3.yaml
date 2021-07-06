@@ -19,15 +19,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/authrequest'
-            examples:
-              ById:
-                value:
-                  wallet: 1
-                  password: walnut
-              ByName:
-                value:
-                  wallet: zaven
-                  password: walnut
         required: true
       responses:
         '200':
@@ -55,7 +46,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 100
         - name: start
           in: query
           description: 'Where does the list start, 1 means start from the beginning of the list'
@@ -65,15 +56,13 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 1
         - name: wallet
           description: Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet
           in: query
+          required: false
           schema:
-            oneOf:
-              - type: string
-              - type: number
-            example: zaven2
+            $ref: '#/components/schemas/walletNameOrId'
       responses:
         '200':
           description: ''
@@ -127,7 +116,8 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 100
+            default: 100
         - name: start
           in: query
           description: 'Where does the list start, 1 means start from the beginning of the list'
@@ -137,7 +127,8 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 1
+            default: 1
       responses:
         '200':
           description: ''
@@ -191,7 +182,7 @@ paths:
                     - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
                     - e533653e-2dbf-48cd-940a-a87e5a393158
                   sender_wallet: zaven4
-                  receiver_wallet: 2
+                  receiver_wallet: dadiorchen
               Bundle:
                 value:
                   bundle:
@@ -227,14 +218,13 @@ paths:
           name: state
           schema:
             type: string
+            example: pending
           required: false
           description: 'requested, pending, completed, cancelled, failed'
         - in: query
           name: wallet
-          schema:
-            oneOf:
-              - type: string
-              - type: number
+          schema: 
+            $ref: '#/components/schemas/walletNameOrId'
           required: false
           description: 'filter transfers matches the source, destination, or originating wallet (by name or id) of a transfer'
         - name: limit
@@ -246,7 +236,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 100
         - name: start
           in: query
           description: 'Where does the list start, 1 means start from the beginning of the list'
@@ -256,7 +246,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 1
       responses:
         '200':
           description: Return array of matching transfers
@@ -287,7 +277,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 100
         - name: start
           in: query
           description: 'Where does the list start, 1 means start from the beginning of the list'
@@ -297,7 +287,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 1
       responses:
         '200':
           description: ''
@@ -319,8 +309,7 @@ paths:
           description: ''
           required: true
           schema:
-            type: integer
-            format: int32
+            $ref: '#/components/schemas/uuid'
       responses:
         '200':
           description: ''
@@ -339,8 +328,7 @@ paths:
           description: ''
           required: true
           schema:
-            type: integer
-            format: int32
+            $ref: '#/components/schemas/uuid'
       responses:
         '200':
           description: Transfer was marked canceled
@@ -365,8 +353,7 @@ paths:
           description: ''
           required: true
           schema:
-            type: integer
-            format: int32
+            $ref: '#/components/schemas/uuid'
       responses:
         '200':
           description: ''
@@ -385,8 +372,7 @@ paths:
           description: ''
           required: true
           schema:
-            type: integer
-            format: int32
+            $ref: '#/components/schemas/uuid'
       responses:
         '200':
           description: ''
@@ -408,7 +394,7 @@ paths:
           required: true
           style: simple
           schema:
-            type: integer
+            $ref: '#/components/schemas/uuid'
       requestBody:
         content:
           application/json:
@@ -432,8 +418,7 @@ paths:
           description: ''
           required: true
           schema:
-            type: integer
-            format: int32
+            $ref: '#/components/schemas/uuid'
         - name: limit
           in: query
           description: Number of items to return
@@ -443,7 +428,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 100
         - name: start
           in: query
           description: 'Where does the list start, 1 means start from the beginning of the list'
@@ -453,56 +438,10 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 1
       responses:
         '200':
           description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-  /events:
-    get:
-      tags:
-        - Event stream
-      summary: Get event stream for wallet
-      description: 'The event stream contains notifications about execute and pending transfers, transfer request, trust requests, trust deletions, and trust approvals.  Event streams for managed wallets can also be requested'
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: limit
-          in: query
-          description: The number of records to return
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 10
-        - name: since
-          in: query
-          description: Only return events since a given timestamp
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: string
-            format: timestamp
-            example: '2019-10-12T07:20:50.52Z'
-        - name: wallet
-          description: Wallet (by name or id) can be specified if the authenticated wallet manages other wallets.  The default is to return events matching the authenticated wallet
-          in: query
-          schema:
-            oneOf:
-              - type: string
-              - type: number
-            example: zaven2
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/eventStream'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   /trust_relationships:
@@ -522,7 +461,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 100
         - name: start
           in: query
           description: 'Where does the list start, 1 means start from the beginning of the list'
@@ -532,7 +471,7 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 10
+            example: 1
         - name: state
           in: query
           description: Filter by state of the trust relationship
@@ -642,7 +581,7 @@ paths:
           required: true
           style: simple
           schema:
-            type: integer
+            $ref: '#/components/schemas/uuid'
       responses:
         '200':
           description: ''
@@ -662,7 +601,7 @@ paths:
           required: true
           style: simple
           schema:
-            type: integer
+            $ref: '#/components/schemas/uuid'
       responses:
         '200':
           description: ''
@@ -684,7 +623,7 @@ paths:
           required: true
           style: simple
           schema:
-            type: integer
+            $ref: '#/components/schemas/uuid'
       responses:
         '200':
           description: ''
@@ -702,6 +641,7 @@ components:
       style: simple
       schema:
         type: string
+        example: '{{apiKey}}'
     contentTypeJsonHeader:
       name: Content-Type
       in: header
@@ -722,12 +662,14 @@ components:
         wallet:
           oneOf:
             - type: string
-            - type: number
+              format: string
+              example: zaven
+            - type: string
+              format: uuid
+              example: 21af8154-b7f1-48d3-8520-2e376efae45e
         password:
           type: string
-      example:
-        wallet: zaven
-        password: walnut
+          example: walnut
     bearerToken:
       title: Successful Authentication Response
       type: object
@@ -813,42 +755,45 @@ components:
           type: integer
     transferrequest:
       title: transferrequest
-      required:
-        - tokens
-        - sender_wallet
-        - receiver_wallet
-      type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: ''
-        bundle:
-          type: object
-          properties:
-            bundle_size:
-              type: integer
-              description: required number of trees to transfer
-            matching_all_tags:
+      oneOf:
+        - properties:
+            tokens:
               type: array
               items:
                 type: string
-                description: optional list of tags that trees must match ALL of
-        sender_wallet:
-          oneOf:
-            - type: string
-            - type: number
-        receiver_wallet:
-          oneOf:
-            - type: string
-            - type: number
-      example:
-        tokens:
-          - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-          - e533653e-2dbf-48cd-940a-a87e5a393158
-        sender_wallet: zaven4
-        receiver_wallet: zaven
+              description: 'Explicitly transfer tokens'
+            sender_wallet:
+              oneOf:
+              - type: string
+              - type: number
+            receiver_wallet:
+              oneOf:
+              - type: string
+              - type: number
+          required:
+            - tokens
+            - sender_wallet
+            - receiver_wallet
+        - properties:
+            bundle:
+              type: object
+              description: 'Transfer some amount of token'
+              properties:
+                bundle_size:
+                  type: integer
+                  description: required number of trees to transfer
+            sender_wallet:
+              oneOf:
+              - type: string
+              - type: number
+            receiver_wallet:
+              oneOf:
+              - type: string
+              - type: number
+          required:
+            - bundle
+            - sender_wallet
+            - receiver_wallet
     transferbundlerequest:
       title: transferbundlerequest
       required:
@@ -1002,21 +947,22 @@ components:
           items:
             type: string
           description: optional array of explicit tokens
+          example: ['ed155d71-67f0-4d21-a73d-f5445b8c43c8']
         implicit:
           type: boolean
           description: automatically fill the request with tokens matching the specified parameters if set
+          example: false
     trustRequest:
       title: Trust Request
       type: object
       properties:
         trust_request_type:
           type: string
-        requester_wallet:
-          type: string
-          description: 'This is optional, if ignore it, then the default requester_wallet should be the current logged in wallet'
+          example: send
         requestee_wallet:
           type: string
           description: The wallet to who this request are targetting
+          example: dadiorchen
     historyResponse:
       title: History Response
       type: object
@@ -1092,6 +1038,18 @@ components:
           type: string
         created_at:
           type: string
+    walletNameOrId:
+      oneOf:
+        - type: string
+          format: string
+          example: zaven
+        - type: string
+          format: uuid
+          example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
+    uuid:
+      type: string
+      format: uuid
+      example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
   responses:
     UnauthorizedError:
       description: Access bearer token is missing or invalid
