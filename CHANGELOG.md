@@ -1,3 +1,12 @@
+# [1.16.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.15.0...v1.16.0) (2021-07-06)
+
+
+### Features
+
+* add postman tools/scripts ([06cbda3](https://github.com/Greenstand/treetracker-wallet-api/commit/06cbda35a10769948304f81c1248940c6b24ed35))
+* postman environment files ([bfdc49c](https://github.com/Greenstand/treetracker-wallet-api/commit/bfdc49ccc947f4b35e3b42fe25ffe4f84084fd5b))
+* revised the yaml doc for v1.10.3 ([61b1f8c](https://github.com/Greenstand/treetracker-wallet-api/commit/61b1f8c2ef2f2ac26ff32f21c5d6d5f8517f85e4))
+
 # [1.15.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.14.2...v1.15.0) (2021-06-18)
 
 
