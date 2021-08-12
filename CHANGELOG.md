@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.16.0...v1.16.1) (2021-08-12)
+
+
+### Bug Fixes
+
+* remove timeout for wallet api ([2b299f4](https://github.com/Greenstand/treetracker-wallet-api/commit/2b299f4377bea02f2dcbcb216a11e5a78fb87eb7))
+
 # [1.16.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.15.0...v1.16.0) (2021-07-06)
 
 
