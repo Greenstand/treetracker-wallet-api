@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.17.0...v1.18.0) (2021-08-18)
+
+
+### Features
+
+* add index for wallet_id in token ([0d1389f](https://github.com/Greenstand/treetracker-wallet-api/commit/0d1389f8339f767a5bda07eef0286d630de9123d))
+
 # [1.17.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.16.1...v1.17.0) (2021-08-18)
 
 
