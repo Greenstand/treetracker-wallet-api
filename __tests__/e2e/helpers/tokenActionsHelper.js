@@ -1,4 +1,4 @@
-const expect = require("chai").expect;
+const {expect} = require("chai");
 const {ACCEPTED} = require("http-status-codes");
 const assert = require("../libs/assertionLibrary.js");
 

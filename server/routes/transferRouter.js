@@ -58,7 +58,7 @@ transferRouter.post(
       const walletSender = await walletService.getByIdOrName(req.body.sender_wallet);
       const walletReceiver = await walletService.getByIdOrName(req.body.receiver_wallet);
       // check if this transfer is a claim (claim == not transferrrable tokens)
-      const claim = req.body.claim;
+      const {claim} = req.body;
 
       let result;
       // TODO: put the claim boolean into each tokens

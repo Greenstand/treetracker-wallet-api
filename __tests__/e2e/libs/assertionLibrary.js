@@ -2,7 +2,7 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
-const assert = chai.assert;
+const {assert} = chai;
 
 /**
  * Assert that the expected value is included in the array/object

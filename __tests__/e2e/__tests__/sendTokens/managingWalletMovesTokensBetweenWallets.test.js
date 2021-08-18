@@ -7,7 +7,7 @@ const {testData} = require("../../libs/bootstrap.js");
 let walletAToken = null;
 let walletBToken = null;
 let managingWalletToken = null;
-const apiKey = testData.apiKey;
+const {apiKey} = testData;
 const sendTokensUri = '/transfers';
 const trustRelationshipUri = '/trust_relationships';
 const acceptTrustRelationshipUri = (id) => `/trust_relationships/${id}/accept`;
@@ -16,7 +16,7 @@ const getWalletInfoUri = (limit) => `/wallets?limit=${limit}`;
 const walletA = testData.wallet.name;
 const managingWallet = testData.managingWallet.name;
 const walletB = testData.walletB.name;
-const password = testData.wallet.password;
+const {password} = testData.wallet;
 
 const headers = (token) => {
     return {

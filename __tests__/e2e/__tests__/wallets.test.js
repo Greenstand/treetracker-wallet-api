@@ -1,12 +1,12 @@
+const faker = require('faker');
 const { sendGetRequest, sendPostRequest, responseStatus: {OK}, assert } = require("../config");
 const { getSession } = require("../libs/sessionLibrary");
 const { testData } = require("../libs/bootstrap.js");
-const faker = require('faker');
 
 let bearer = null;
-const apiKey = testData.apiKey;
+const {apiKey} = testData;
 const wallet = testData.wallet.name;
-const password = testData.wallet.password;
+const {password} = testData.wallet;
 const limit = 50;
 const url = `/wallets?limit=${limit}`;
 

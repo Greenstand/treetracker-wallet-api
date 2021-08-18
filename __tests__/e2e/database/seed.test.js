@@ -1,5 +1,5 @@
-const seed = require("./seed");
 const { expect } = require("chai");
+const seed = require("./seed");
 const knex = require("./knex");
 
 describe("Seed data into DB", () => {

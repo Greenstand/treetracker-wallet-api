@@ -7,7 +7,7 @@ const {assertTokenInWallet, getNumberOfTokensFromWallet} = require("../../helper
 let senderBearerToken = null;
 let receiverBearerToken = null;
 let receiverEmptyBearerToken = null;
-const apiKey = testData.apiKey;
+const {apiKey} = testData;
 const tokenUid = testData.token.id;
 const getTokenInfoUri = `/tokens/${tokenUid}`;
 const sendTokensUri = '/transfers';
@@ -17,7 +17,7 @@ const getWalletInfoUri = (limit) => `/wallets?limit=${limit}`;
 const receiverWallet = testData.walletB.name;
 const receiverEmptyWallet = testData.walletC.name;
 const senderWallet = testData.wallet.name;
-const password = testData.wallet.password;
+const {password} = testData.wallet;
 
 const headers = (token) => {
     return {
