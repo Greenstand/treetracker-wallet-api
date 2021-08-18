@@ -3,7 +3,7 @@ kind: Mapping
 metadata:
   name: treetracker-wallet-api
 spec:
-  prefix: /wallet/
+  prefix: /wallet/v2-provisional/
   service: treetracker-wallet-api
   rewrite: /
   timeout_ms: 0
