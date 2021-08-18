@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.16.1...v1.17.0) (2021-08-18)
+
+
+### Features
+
+* move to v2-provisional endpoint to support API changes related to limit/offset ([b7217e9](https://github.com/Greenstand/treetracker-wallet-api/commit/b7217e9ab93b37d407b8197679a92258e43b4bb3))
+
 ## [1.16.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.16.0...v1.16.1) (2021-08-12)
 
 
