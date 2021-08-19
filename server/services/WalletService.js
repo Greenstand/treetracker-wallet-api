@@ -40,7 +40,10 @@ class WalletService {
    */
   async getSubWalletList(walletId, offset, limit){
     const result = await this._session.getDB().raw(`
-      SELECT w.*, tokens_in_wallet FROM
+      SELECT 
+        w.*, 
+        CASE WHEN tokens_in_wallet IS NULL THEN 0 ELSE tokens_in_wallet END
+      FROM
       wallet w
       JOIN 
       (
@@ -68,7 +71,7 @@ class WalletService {
         AND wt.request_type = 'yield'
       ) sub_wallet_ids
       ON w.id = sub_wallet_ids.sub_wallet_id
-      JOIN (
+      LEFT JOIN (
         SELECT wallet_id, count(wallet_id) tokens_in_wallet FROM "token" GROUP BY wallet_id
       ) token_stat
       ON w.id = token_stat.wallet_id
@@ -76,7 +79,6 @@ class WalletService {
       OFFSET ${offset} 
       LIMIT ${limit}
     `);
-    console.log("xxx:", result);
     return result.rows;
   }
 }
