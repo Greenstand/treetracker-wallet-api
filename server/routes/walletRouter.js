@@ -18,13 +18,13 @@ walletRouter.get(
       req.query,
       Joi.object({
         limit: Joi.number().required(),
-        offset: Joi.number().min(1).integer(),
+        offset: Joi.number().min(0).integer(),
       }),
     );
     const { limit, offset } = req.query;
     const session = new Session();
     const walletService = new WalletService(session);
-    const walletsJson = await walletService.getSubWalletList(res.locals.wallet_id, parseInt(offset || 1) - 1, parseInt(limit))
+    const walletsJson = await walletService.getSubWalletList(res.locals.wallet_id, parseInt(offset || 0), parseInt(limit))
 
     res.status(200).json({
       wallets: walletsJson.map((wallet) =>
