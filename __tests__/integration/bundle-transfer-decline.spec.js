@@ -5,34 +5,34 @@ const log = require('loglevel');
 const chai = require("chai");
 const server = require("../../server/app");
 chai.use(require('chai-uuid'));
-const Zaven = require("../mock-data/Zaven.json");
-const Meisze = require("../mock-data/Meisze.json");
+const walletA = require("../mock-data/walletA.json");
+const walletB = require("../mock-data/walletB.json");
 const testUtils = require("./testUtils");
 const Transfer = require("../../server/models/Transfer");
 const TokenA = require("../mock-data/TokenA");
 
-describe('Zaven request to send 1 token to Meisze', () => {
-  let registeredZaven;
-  let registeredMeisze;
+describe('walletA request to send 1 token to walletB', () => {
+  let registeredWalletA;
+  let registeredWalletB;
   let transfer;
 
   beforeEach(async () => {
     await testUtils.clear();
-    registeredZaven = await testUtils.registerAndLogin(Zaven);
-    await testUtils.addToken(registeredZaven, TokenA);
-    expect(registeredZaven).property("id").a("string");
-    registeredMeisze = await testUtils.registerAndLogin(Meisze);
-    transfer = await testUtils.sendAndPend(registeredZaven,registeredMeisze, 1);
+    registeredWalletA = await testUtils.registerAndLogin(walletA);
+    await testUtils.addToken(registeredWalletA, TokenA);
+    expect(registeredWalletA).property("id").a("string");
+    registeredWalletB = await testUtils.registerAndLogin(walletB);
+    transfer = await testUtils.sendAndPend(registeredWalletA,registeredWalletB, 1);
   })
 
-  describe("Meisze decline the request", () => {
+  describe("walletB decline the request", () => {
 
     beforeEach(async () => {
       await request(server)
         .post(`/transfers/${transfer.id}/decline`)
         .set('Content-Type', "application/json")
-        .set('treetracker-api-key', registeredMeisze.apiKey)
-        .set('Authorization', `Bearer ${registeredMeisze.token}`)
+        .set('treetracker-api-key', registeredWalletB.apiKey)
+        .set('Authorization', `Bearer ${registeredWalletB.token}`)
         .expect(200);
     });
 
@@ -40,8 +40,8 @@ describe('Zaven request to send 1 token to Meisze', () => {
 
       await request(server)
         .get(`/transfers?limit=1000`)
-        .set('treetracker-api-key', registeredMeisze.apiKey)
-        .set('Authorization', `Bearer ${registeredMeisze.token}`)
+        .set('treetracker-api-key', registeredWalletB.apiKey)
+        .set('Authorization', `Bearer ${registeredWalletB.token}`)
         .expect(200)
         .then(res => {
           expect(res.body.transfers).lengthOf(1);
@@ -50,12 +50,12 @@ describe('Zaven request to send 1 token to Meisze', () => {
 
     });
 
-    it("Zaven should still have 1 token", async () =>{
+    it("walletA should still have 1 token", async () =>{
 
       await request(server)
         .get(`/tokens?limit=10`)
-        .set('treetracker-api-key', registeredZaven.apiKey)
-        .set('Authorization', `Bearer ${registeredZaven.token}`)
+        .set('treetracker-api-key', registeredWalletA.apiKey)
+        .set('Authorization', `Bearer ${registeredWalletA.token}`)
         .expect(200)
         .then(res => {
           expect(res.body.tokens).lengthOf(1);
