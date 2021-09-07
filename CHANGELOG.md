@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.18.0...v1.19.0) (2021-09-07)
+
+
+### Features
+
+* postman tutorial ([8c06cf4](https://github.com/Greenstand/treetracker-wallet-api/commit/8c06cf45f23f523972c19178b7b3d5f28dde6675))
+
 # [1.18.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.17.0...v1.18.0) (2021-08-18)
 
 
