@@ -483,6 +483,14 @@ npm run server-test
 
 This command would run a API server locally, and seed some basic data into DB (the same with the data we used in the integration test).
 
+### Set up Postman to operate wallet API
+
+We can use Postman to operate the wallet API, to create wallet, to trade tokens between wallet... all those business, just like an app for wallet, but some steps are needed to set Postman up, we created some scripts for this, to minimize the setting steps, mainly, you just need to import some files into Postman, then you can star to work. 
+
+Please check this tutorial video:
+
+[tutorial to set up Postman](https://www.loom.com/share/a9428383796140568f4c6fb965259588)
+
 # Troubleshooting
 
 ## Be aware of dependency circle
