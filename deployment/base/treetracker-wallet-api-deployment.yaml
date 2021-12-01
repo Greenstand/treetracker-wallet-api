@@ -17,7 +17,7 @@ spec:
       initContainers:
       - name: "wallet-db-migration-job-init"
         image: "groundnuty/k8s-wait-for:1.3"
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         args: 
         - "job"
         - "wallet-db-migration-job"
