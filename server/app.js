@@ -36,6 +36,16 @@ app.use(helper.handlerWrapper(async (req, _res, next) => {
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
 
+// issue 280: redirect request paths that start with two slashes
+app.use(function(req, res, next) {
+  //console.log('> '+req.url);
+  if(req.url.slice(0,2)==="//"){
+    res.redirect(308,req.url.slice(1));
+    res.send();
+  }//if
+  else{next();}
+});
+
 // routers
 app.use('/auth', authRouter);
 app.use('/tokens', tokenRouter);
