@@ -474,8 +474,7 @@ NOTE: There is another command: `test-watch-debug`, it is the same with `test-wa
 ## Postman
 
 Can also use Postman to test the API in a more real environment. 
-Import the API spec from [here]
-(https://github.com/Greenstand/treetracker-wallet-api/blob/master/docs/api/spec/treetracker-token-api-v1-10-3.yaml).
+Import the API spec from [here](https://github.com/Greenstand/treetracker-wallet-api/blob/master/docs/api/spec/treetracker-token-api-v1-10-3.yaml).
 
 To run a local server with some seed data, run command:
 
