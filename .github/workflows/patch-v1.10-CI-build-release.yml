@@ -66,7 +66,6 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
           CI: true
-
   build:
       name: Release and Build
       runs-on: ubuntu-latest
