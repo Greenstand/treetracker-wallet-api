@@ -69,10 +69,6 @@ jobs:
   release:
     name: Release and Build
     runs-on: ubuntu-latest
-    if: |
-      !contains(github.event.head_commit.message, 'skip-ci') &&
-      github.event_name == 'push' &&
-      github.repository == 'Greenstand/treetracker-wallet-api'
     steps:
     - uses: actions/checkout@v2
       # just care about the v1.10.x version, this is the current online version
