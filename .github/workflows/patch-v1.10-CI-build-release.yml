@@ -1,5 +1,8 @@
 # Patch the online version (v1.10.x), will run the test and build the version
-
+name: Patch v1.10.x and Release
+on:
+  workflow_dispatch:
+  
 env:
   project-directory: ./
 
