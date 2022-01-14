@@ -74,10 +74,10 @@ jobs:
       # just care about the v1.10.x version, this is the current online version
       with:
         ref: v1.10
-    - name: Use Node.js 12.x
+    - name: Use Node.js 14.x
       uses: actions/setup-node@v1
       with:
-        node-version: '12.x'
+        node-version: '14.x'
     - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
     - run: semantic-release
       env:
