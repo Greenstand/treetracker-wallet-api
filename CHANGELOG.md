@@ -1,3 +1,10 @@
+## [1.10.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.4...v1.10.5) (2022-01-14)
+
+
+### Bug Fixes
+
+* remove start limitation ([b60b5e8](https://github.com/Greenstand/treetracker-wallet-api/commit/b60b5e8b6716d50c8bb9a33e351548106504ca28))
+
 ## [1.10.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.3...v1.10.4) (2021-03-10)
 
 
