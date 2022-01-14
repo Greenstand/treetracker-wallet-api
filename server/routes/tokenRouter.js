@@ -43,7 +43,7 @@ tokenRouter.get('/',
       req.query,
       Joi.object({
         limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        start: Joi.number().min(1).integer(),
         wallet: Joi.string(),
       })
     );
