@@ -1,0 +1,118 @@
+# Patch the online version (v1.10.x), will run the test and build the version
+name: Patch v1.10.x and Release
+on:
+  workflow_dispatch:
+  
+env:
+  project-directory: ./
+
+jobs:
+  test:
+    name: Run all tests
+    runs-on: ubuntu-latest
+    container: node:10.18-jessie
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+        # just care about the v1.10.x version, this is the current online version
+      - uses: actions/checkout@v2
+        with:
+          ref: v1.10
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: npm clean install
+        run: npm ci
+        working-directory: ${{ env.project-directory }}
+
+      - name: run db-migrate
+        run: npm run db-migrate-ci
+        working-directory: ${{ env.project-directory }}
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
+
+      - name: run unit tests
+        run: npm run test-unit-ci
+        working-directory: ${{ env.project-directory }}
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
+          CI: true
+
+      - name: run integration tests
+        run: npm run test-integration-ci
+        working-directory: ${{ env.project-directory }}
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
+          CI: true
+
+      - name: run repository tests
+        run: npm run test-repository
+        working-directory: ${{ env.project-directory }}
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
+          CI: true
+  release:
+    name: Release and Build
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      # just care about the v1.10.x version, this is the current online version
+      with:
+        ref: v1.10
+    - name: Use Node.js 14.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: '14.x'
+    - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
+    - run: semantic-release --branches v1.10
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: npm clean install
+      run: npm ci
+      working-directory: ${{ env.project-directory }}
+    - name: get-npm-version
+      id: package-version
+      uses: martinbeentjes/npm-get-version-action@master
+      with:
+        path: ./
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1 
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build snapshot with git sha and push on merge
+      id: docker_build_snapshot_merge
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        file: ./Dockerfile
+        push: true
+        tags: greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }}
+    - shell: bash
+      run: |
+        echo '${{ steps.package-version.outputs.current-version }}' > image-tag
+    - name: persist tag name
+      uses: actions/upload-artifact@v1
+      with:
+        name: image-tag-${{github.sha}}
+        path: image-tag
