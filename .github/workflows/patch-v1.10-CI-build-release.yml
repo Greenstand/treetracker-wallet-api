@@ -68,6 +68,7 @@ jobs:
           CI: true
   release:
     name: Release and Build
+    needs: test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -79,7 +80,7 @@ jobs:
       with:
         node-version: '14.x'
     - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
-    - run: semantic-release
+    - run: semantic-release --branches v1.10
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: npm clean install
