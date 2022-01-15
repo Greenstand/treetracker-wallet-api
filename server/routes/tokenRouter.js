@@ -42,7 +42,7 @@ tokenRouter.get('/',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().required(),
+        limit: Joi.number().min(1).max(1000).required(),
         start: Joi.number().min(1).integer(),
         wallet: Joi.string(),
       })
