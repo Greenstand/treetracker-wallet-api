@@ -1,3 +1,10 @@
+## [1.10.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.5...v1.10.6) (2022-01-15)
+
+
+### Bug Fixes
+
+* limit the 'limit' parameter ([5e3051d](https://github.com/Greenstand/treetracker-wallet-api/commit/5e3051deaf9eb287c1164c5a93fe71615f8f3942))
+
 ## [1.10.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.4...v1.10.5) (2022-01-14)
 
 
