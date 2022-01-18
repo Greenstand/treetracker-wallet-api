@@ -90,6 +90,24 @@ describe('GET tokens', () => {
     expect(res.body.tokens[0]).to.have.property('id').eq(seed.tokenB.id);
   });
 
+  it(`walletB, GET /tokens?limit=10&wallet=walletC&start=2 Should be able to get a token, which length 0`, async () => {
+    const res = await request(server)
+      .get(`/tokens?limit=10&wallet=walletC`)
+      .set('treetracker-api-key',seed.apiKey)
+      .set('Authorization', `Bearer ${bearerTokenB}`);
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body.tokens).lengthOf(0);
+  });
+
+  it(`walletB, GET /tokens?limit=10&wallet=walletC&start=1 Should be able to get a token, which length 1`, async () => {
+    const res = await request(server)
+      .get(`/tokens?limit=10&wallet=walletC`)
+      .set('treetracker-api-key',seed.apiKey)
+      .set('Authorization', `Bearer ${bearerTokenB}`);
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body.tokens).lengthOf(1);
+  });
+
   it(`walletB, GET /tokens/${seed.tokenB.id} Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.tokenB.id}`)
