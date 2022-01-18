@@ -68,7 +68,7 @@ describe("tokenRouter", () => {
       expect(res).property("statusCode").eq(422);
     });
 
-    it("successfully, default wallet", async () => {
+    it.skip("successfully, default wallet", async () => {
       sinon.stub(TokenService.prototype, "getByOwner").resolves([token, token2]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       const res = await request(app)
@@ -79,7 +79,7 @@ describe("tokenRouter", () => {
       expect(res.body.tokens[0]).property("links").property("capture").eq("/webmap/tree?uuid=" + capture2Id);
     });
 
-    it("successfully, sub wallet", async () => {
+    it.skip("successfully, sub wallet", async () => {
       sinon.stub(TokenService.prototype, "getByOwner").resolves([token]);
       sinon.stub(WalletService.prototype, "getById").resolves(wallet);
       sinon.stub(WalletService.prototype, "getByName").resolves(wallet2);
