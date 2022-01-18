@@ -1,3 +1,13 @@
+## [1.10.7](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.6...v1.10.7) (2022-01-18)
+
+
+### Bug Fixes
+
+* skip broken tests ([cdd5d1d](https://github.com/Greenstand/treetracker-wallet-api/commit/cdd5d1d08d60c7a85f8343b45d85e810cc09fd93))
+* test to cover start ([8931e4f](https://github.com/Greenstand/treetracker-wallet-api/commit/8931e4f868ec79e03340f23a50c44ab31974038f))
+* tests ([7433254](https://github.com/Greenstand/treetracker-wallet-api/commit/743325458e462d684f82b9e5ac31e3d2dbfb011a))
+* use raw sql to get token, solve limit calculation problem ([8631bf1](https://github.com/Greenstand/treetracker-wallet-api/commit/8631bf1656c6b6ef7e7f24ed7539282541ba9863))
+
 ## [1.10.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.5...v1.10.6) (2022-01-15)
 
 
