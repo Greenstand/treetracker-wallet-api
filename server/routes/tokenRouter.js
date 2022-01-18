@@ -53,26 +53,44 @@ tokenRouter.get('/',
     const walletService = new WalletService(session);
     const walletLogin = await walletService.getById(res.locals.wallet_id);
     let tokens = [];
+    async function getTokens(walletId, _limit, _offset){
+      console.warn("getTokens", walletId, _limit, _offset);
+      const knex = require("../database/knex");
+      const result = await knex.raw(`
+        SELECT *
+        FROM token
+        WHERE wallet_id = '${walletId}'
+        LIMIT ${_limit}
+        OFFSET ${_offset};
+      `)
+      console.warn("get result with rows:", result.rows.length);
+      return result.rows;
+    }
+    function convertStartToOffset(_start){
+      return _start ? _start - 1 : 0;
+    }
+
     if(wallet){
       const walletInstance = await walletService.getByName(wallet);
       const isSub = await walletLogin.hasControlOver(walletInstance);
       if(!isSub){
         throw new HttpError(403, "Wallet do not belongs to wallet logged in");
       }
-      tokens = await tokenService.getByOwner(walletInstance);
+      tokens = await getTokens(walletInstance.getId(), limit, convertStartToOffset(start));
     }else{
-      tokens = await tokenService.getByOwner(walletLogin);
+      tokens = await getTokens(walletLogin.getId(), limit, convertStartToOffset(start));
     }
 
     //filter tokens by query, TODO optimization required
-    tokens = tokens.slice(start? start-1:0, limit);
-    const tokensJson = [];
-    for(const token of tokens){
-      const json = await token.toJSON();
-      tokensJson.push(json);
-    }
+    // tokens = tokens.slice(start? start-1:0, limit);
+    // const tokensJson = [];
+    // for(const token of tokens){
+    //   const json = await token.toJSON();
+    //   tokensJson.push(json);
+    // }
     res.status(200).json({
-      tokens: tokensJson,
+      // tokens: tokensJson,
+      tokens,
     });
   })
 )
