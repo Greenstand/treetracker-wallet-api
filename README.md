@@ -550,3 +550,15 @@ Please follow this convention for commit messages [here](https://www.conventiona
 Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. You can make a draft pull request as you are working on any open issue that interests you, and any changes you make on your local branch can be continually synced with this draft until you are ready to submit. Remember to push your changes up to your forked repository and then make any pull requests from your forked branch to the Greenstand master repository branch.
 
 When you are ready to submit a pull request, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting.
+
+# How to patch v1.10.x
+
+Now the online version of wallet API is v1.10.x, to patch this version:
+
+1. Checkout branch: v1.10
+2. Do the work, commit, NOTE, just commit with comment `fix:` rather than `feat`
+3. Raise PR against v1.10
+4. Run action: Patch v1.10.x and Release (NOTE, choose running on branch v1.10)
+5. Check if new tag with name v1.10.x created
+6. Run action: Deploy to Production (NOTE, choose running on branch v1.10, and the tag name just created)
+7. Check the online version, it should be the one you released.
