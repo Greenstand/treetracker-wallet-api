@@ -92,7 +92,7 @@ describe('GET tokens', () => {
 
   it(`walletB, GET /tokens?limit=10&wallet=walletC&start=2 Should be able to get a token, which length 0`, async () => {
     const res = await request(server)
-      .get(`/tokens?limit=10&wallet=walletC`)
+      .get(`/tokens?limit=10&wallet=walletC&start=2`)
       .set('treetracker-api-key',seed.apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
@@ -101,7 +101,7 @@ describe('GET tokens', () => {
 
   it(`walletB, GET /tokens?limit=10&wallet=walletC&start=1 Should be able to get a token, which length 1`, async () => {
     const res = await request(server)
-      .get(`/tokens?limit=10&wallet=walletC`)
+      .get(`/tokens?limit=10&wallet=walletC&start=1`)
       .set('treetracker-api-key',seed.apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
