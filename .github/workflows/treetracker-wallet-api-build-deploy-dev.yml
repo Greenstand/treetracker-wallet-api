@@ -1,14 +1,14 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Deploy to Dev Env 
+name: Deploy to Dev Env
 
 on:
   push:
     branches:
       - master
 
-env: 
+env:
   project-directory: ./
 
 jobs:
@@ -27,6 +27,9 @@ jobs:
         node-version: '12.x'
     - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
     - run: semantic-release
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16.x'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: npm clean install
@@ -42,7 +45,7 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
     - name: Login to DockerHub
-      uses: docker/login-action@v1 
+      uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -83,7 +86,7 @@ jobs:
       uses: actions/download-artifact@v1
       with:
         name: image-tag-${{github.sha}}
-    - name: Set image tag name 
+    - name: Set image tag name
       id: image-tag-name
       run: |
         value=`cat image-tag-${{github.sha}}/image-tag`
@@ -101,7 +104,7 @@ jobs:
     - name: Delete completed migration jobs prior to deployment
       run: kubectl -n wallet-api delete job --ignore-not-found=true  wallet-db-migration-job
     - name: Update kubernetes resources
-      run: kustomize build deployment/overlays/development | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -    
+      run: kustomize build deployment/overlays/development | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -
 #    - name: Attempt to wait for migration job to complete
 #       run: kubectl wait --for=condition=complete --timeout=45s job/wallet-db-migration-job
 
