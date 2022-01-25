@@ -1,3 +1,10 @@
+## [1.10.8](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.7...v1.10.8) (2022-01-25)
+
+
+### Bug Fixes
+
+* wallet list optimization ([a7f6c1f](https://github.com/Greenstand/treetracker-wallet-api/commit/a7f6c1f17d9c9f244e1e9c2237fd1c68f1174737))
+
 ## [1.10.7](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.6...v1.10.7) (2022-01-18)
 
 
