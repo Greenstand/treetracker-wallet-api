@@ -54,15 +54,18 @@ describe('Authentication', () => {
   });
 
   it.only(`[POST /auth] login with using walletB id: ${seed.walletB.id}`, async () => {
+    console.warn("start...");
     let res = await request(server)
       .post('/auth')
       .set('treetracker-api-key', seed.apiKey)
       .send({wallet: seed.walletB.id, password: seed.walletB.password})
       .expect('Content-Type', /application\/json/)
+    console.warn("login:", res.body);
     
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('token');
     bearerToken = res.body.token;
+    console.warn("beartoken:", bearerToken);
 
     res = await request(server)
       .get(`/wallet?limit=100&start=1`)
