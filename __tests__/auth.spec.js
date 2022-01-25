@@ -53,17 +53,26 @@ describe('Authentication', () => {
       });
   });
 
-  it.only(`[POST /auth] login with using walletB id: ${seed.walletB.id}`, (done) => {
-    request(server)
+  it.only(`[POST /auth] login with using walletB id: ${seed.walletB.id}`, async () => {
+    let res = await request(server)
       .post('/auth')
       .set('treetracker-api-key', seed.apiKey)
       .send({wallet: seed.walletB.id, password: seed.walletB.password})
       .expect('Content-Type', /application\/json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) done(err);
-        expect(res.body).to.have.property('token');
-        done();
-      });
+    
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body).to.have.property('token');
+    bearerToken = res.body.token;
+
+    res = await request(server)
+      .get(`/wallet`)
+      .set('treetracker-api-key', seed.apiKey)
+      .set('Authorization', `Bearer ${bearerToken}`);
+    
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body.wallets).lengthOf(2);
+    expect(res.body.wallets[0]).property('name').a('string');
+    expect(res.body.wallets[0]).property('tokens_in_wallet').a('number');
+    
   });
 });
