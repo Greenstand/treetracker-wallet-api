@@ -65,7 +65,7 @@ describe('Authentication', () => {
     bearerToken = res.body.token;
 
     res = await request(server)
-      .get(`/wallet`)
+      .get(`/wallet?limit=100&start=1`)
       .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     
