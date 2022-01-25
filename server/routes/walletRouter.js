@@ -31,33 +31,32 @@ walletRouter.get('/',
       const knex = require("../database/knex");
       const SQL = `
         with wallet_ids as (
-        (select ${walletId} as sub_wallet_id) 
+        (select '${walletId}' as sub_wallet_id) 
         union
         (
         select target_wallet_id as sub_wallet_id from 
-        wallet.wallet_trust w
+        wallet_trust w
         where 
-          w.actor_wallet_id = ${walletId} and 
+          w.actor_wallet_id = '${walletId}' and 
           w.request_type = 'manage' and
           w.state = 'trusted')
         union
         (
         select actor_wallet_id as sub_wallet_id from
-        wallet.wallet_trust w
+        wallet_trust w
         where
-          w.target_wallet_id = ${walletId} and
+          w.target_wallet_id = '${walletId}' and
           w.request_type = 'yield' and
           w.state = 'trusted'
         )
         )
         select w.id, name, logo_url, w.created_at, count(t.id) tokens_in_wallet from 
-        wallet.wallet w 
-        left join wallet.token t
+        wallet w 
+        left join token t
         on w.id = t.wallet_id
         where w.id in (select sub_wallet_id from wallet_ids)
         group by w.id, w.name, w.logo_url, w.created_at
         limit ${_limit} offset ${_offset};
-
       `
       console.warn("SQL", SQL);
       const result = await knex.raw(SQL)
