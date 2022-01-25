@@ -12,6 +12,7 @@ walletRouter.get('/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    console.warn("get wallet...");
     Joi.assert(
       req.query,
       Joi.object({
@@ -26,6 +27,7 @@ walletRouter.get('/',
     const subWallets = await loggedInWallet.getSubWallets();
     // at logged in wallets to list of wallets
     subWallets.push(loggedInWallet);
+    console.warn("sub...", subWallets);
     
     let walletsJson = [];
 
@@ -42,6 +44,7 @@ walletRouter.get('/',
     let numEnd=numBegin+numLimit;
     walletsJson = walletsJson.slice(numBegin, numEnd);
 
+    console.warn("get wallet:", walletsJson);
     res.status(200).json({
       wallets: walletsJson
     });
