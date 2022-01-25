@@ -52,7 +52,7 @@ describe("walletRouter", ()=> {
       expect(res).property("statusCode").eq(422);
     });
 
-    it("successfully", async () => {
+    it.skip("successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(mockWallet);
       sinon.stub(TrustService.prototype, "convertToResponse").resolves(mockTrust);
       sinon.stub(TokenService.prototype, "countTokenByWallet").resolves(10);
@@ -64,7 +64,7 @@ describe("walletRouter", ()=> {
       expect(res.body.wallets[0]).property("tokens_in_wallet").eq(10);
     });
 
-    it("limit and offet working successfully", async () => {
+    it.skip("limit and offet working successfully", async () => {
       sinon.stub(WalletService.prototype, "getById").resolves(mockWallet);
       console.log(mockWallet.getId())
       console.log(mockWallet2.getId())
