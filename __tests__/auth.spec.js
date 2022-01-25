@@ -54,7 +54,7 @@ describe('Authentication', () => {
   });
 
   // add this to test GET /wallets to optimize the performance
-  it(`[POST /auth] login with using walletB id: ${seed.walletB.id}`, async () => {
+  it.only(`[POST /auth] login with using walletB id: ${seed.walletB.id}`, async () => {
     console.warn("start...");
     let res = await request(server)
       .post('/auth')
