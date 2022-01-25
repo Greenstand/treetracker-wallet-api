@@ -58,7 +58,7 @@ describe('Authentication', () => {
     let res = await request(server)
       .post('/auth')
       .set('treetracker-api-key', seed.apiKey)
-      .send({wallet: seed.walletB.id, password: seed.walletB.password})
+      .send({wallet: seed.wallet.id, password: seed.wallet.password})
       .expect('Content-Type', /application\/json/)
     console.warn("login:", res.body);
     
