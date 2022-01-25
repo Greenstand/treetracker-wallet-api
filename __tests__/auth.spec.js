@@ -53,4 +53,18 @@ describe('Authentication', () => {
       });
   });
 
+  it.only(`[POST /auth] login with using walletB id: ${seed.walletB.id}`, (done) => {
+    request(server)
+      .post('/auth')
+      .set('treetracker-api-key', seed.apiKey)
+      .send({wallet: seed.walletB.id, password: seed.walletB.password})
+      .expect('Content-Type', /application\/json/)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        expect(res.body).to.have.property('token');
+        done();
+      });
+  });
+
 });
