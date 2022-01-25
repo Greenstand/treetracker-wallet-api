@@ -77,7 +77,7 @@ describe('Authentication', () => {
     console.warn("res.body", res.body);
     expect(res.body.wallets).lengthOf(2);
     expect(res.body.wallets[0]).property('name').a('string');
-    expect(res.body.wallets[0]).property('tokens_in_wallet').a('number');
+    expect(res.body.wallets[0]).property('tokens_in_wallet').match(/\d+/);
 
     // change limit offset
     res = await request(server)
@@ -89,7 +89,8 @@ describe('Authentication', () => {
     console.warn("res.body", res.body);
     expect(res.body.wallets).lengthOf(1);
     expect(res.body.wallets[0]).property('name').a('string');
-    expect(res.body.wallets[0]).property('tokens_in_wallet').a('number');
+    expect(res.body.wallets[0]).property('tokens_in_wallet').match(/\d+/);
+
     
   });
 });
