@@ -70,6 +70,7 @@ describe('Authentication', () => {
       .set('Authorization', `Bearer ${bearerToken}`);
     
     expect(res).to.have.property('statusCode', 200);
+    console.warn("res.body", res.body);
     expect(res.body.wallets).lengthOf(2);
     expect(res.body.wallets[0]).property('name').a('string');
     expect(res.body.wallets[0]).property('tokens_in_wallet').a('number');
