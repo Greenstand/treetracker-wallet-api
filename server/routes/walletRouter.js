@@ -35,27 +35,27 @@ walletRouter.get('/',
         union
         (
         select target_wallet_id as sub_wallet_id from 
-        wallet_trust w
+        wallet_trust wt
         where 
-          w.actor_wallet_id = '${walletId}' and 
-          w.request_type = 'manage' and
-          w.state = 'trusted')
+          wt.actor_wallet_id = '${walletId}' and 
+          wt.request_type = 'manage' and
+          wt.state = 'trusted')
         union
         (
         select actor_wallet_id as sub_wallet_id from
-        wallet_trust w
+        wallet_trust wt
         where
-          w.target_wallet_id = '${walletId}' and
-          w.request_type = 'yield' and
-          w.state = 'trusted'
+          wt.target_wallet_id = '${walletId}' and
+          wt.request_type = 'yield' and
+          wt.state = 'trusted'
         )
         )
-        select w.id, name, logo_url, w.created_at, count(t.id) tokens_in_wallet from 
-        wallet w 
+        select w.id, name, logo_url, count(t.id) tokens_in_wallet 
+        from wallet w 
         left join token t
         on w.id = t.wallet_id
         where w.id in (select sub_wallet_id from wallet_ids)
-        group by w.id, w.name, w.logo_url, w.created_at
+        group by w.id, w.name, w.logo_url 
         limit ${_limit} offset ${_offset};
       `
       console.warn("SQL", SQL);
