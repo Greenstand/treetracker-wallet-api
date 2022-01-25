@@ -68,7 +68,7 @@ describe('Authentication', () => {
     console.warn("beartoken:", bearerToken);
 
     res = await request(server)
-      .get(`/wallet?limit=100&start=1`)
+      .get(`/wallets?limit=100&start=1`)
       .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     
