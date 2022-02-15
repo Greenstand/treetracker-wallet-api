@@ -14,13 +14,15 @@ spec:
       labels:
         app: treetracker-wallet-api
     spec:
-      initContainers:
-      - name: "wallet-db-migration-job-init"
-        image: "groundnuty/k8s-wait-for:1.3"
-        imagePullPolicy: Always
-        args: 
-        - "job"
-        - "wallet-db-migration-job"
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: doks.digitalocean.com/node-pool
+                    operator: In
+                    values:
+                      - microservices-node-pool
       containers:
       - name: treetracker-wallet-api
         image: greenstand/treetracker-wallet-api:latest
