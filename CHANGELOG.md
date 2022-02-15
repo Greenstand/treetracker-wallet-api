@@ -1,3 +1,10 @@
+## [1.10.9](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.8...v1.10.9) (2022-02-15)
+
+
+### Bug Fixes
+
+* remove broken initContainer, add node affinity ([862ef58](https://github.com/Greenstand/treetracker-wallet-api/commit/862ef5800d412ed510f0a802b30957c1c9b1bae4))
+
 ## [1.10.8](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.7...v1.10.8) (2022-01-25)
 
 
