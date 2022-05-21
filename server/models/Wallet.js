@@ -21,7 +21,7 @@ class Wallet{
       this._id = idOrJSON.id;
       this._JSON = idOrJSON;
     }else{
-      throw new HttpError(500);
+      throw new HttpError(500, "Wrong constructor arg for wallet");
     }
     const WalletService = require("../services/WalletService");
     this.walletRepository = new WalletRepository(session);

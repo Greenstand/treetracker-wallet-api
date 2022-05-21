@@ -28,6 +28,18 @@ class TransferRepository extends BaseRepository{
       state: Transfer.STATE.pending,
     });
   }
+
+  async getTokenAndCaptureIds(id){
+    return await this._session.getDB().raw(
+      `
+        SELECT token_id, capture_id FROM "transaction" tr 
+        LEFT JOIN "token" t
+        ON tr.token_id = t.id
+        WHERE transfer_id = ?
+      `,
+      [id],
+    );
+  }
 }
 
 module.exports = TransferRepository;

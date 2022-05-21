@@ -22,7 +22,7 @@
     "test-watch": "NODE_ENV=test NODE_LOG_LEVEL=info mocha -r dotenv/config dotenv_config_path=.env.test --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
     "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --timeout 10000 --require co-mocha -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/**/*.spec.js'",
     "test-e2e": "NODE_TLS_REJECT_UNAUTHORIZED='0' mocha --config ./__tests__/e2e/.mocharc.js",
-    "test-e2e-locally": "RUN_E2E_LOCALLY=true DB_SSL=false NODE_ENV=test NODE_LOG_LEVEL=debug NODE_TLS_REJECT_UNAUTHORIZED='0' mocha --config ./__tests__/e2e/.mocharc.js ./server/setup.js",
+    "test-e2e-locally": "RUN_E2E_LOCALLY=true DB_SSL=false NODE_LOG_LEVEL=debug NODE_TLS_REJECT_UNAUTHORIZED='0' mocha --config ./__tests__/e2e/.mocharc.js ./server/setup.js",
     "prettier-fix": "prettier ./ --write",
     "db-migrate-ci": "cd database; db-migrate up",
     "start-db": "docker-compose up"
@@ -34,6 +34,7 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@sentry/node": "^5.1.0",
+    "amqplib": "^0.8.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.2",
     "chai-uuid": "^1.0.6",
@@ -51,6 +52,7 @@
     "morgan": "^1.9.1",
     "nodemon": "^2.0.4",
     "pg": "^8.5.1",
+    "rascal": "^13.0.3",
     "uuid": "^8.2.0"
   },
   "devDependencies": {

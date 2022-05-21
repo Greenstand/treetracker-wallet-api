@@ -6,6 +6,7 @@ const knex = require("../database/knex");
 const tracker = mockKnex.getTracker();
 const Session = require("../models/Session");
 const uuid = require('uuid');
+const sinon = require('sinon');
 
 describe("TransferRepository", () => {
   let transferRepository;
@@ -72,6 +73,25 @@ describe("TransferRepository", () => {
     });
     const result = await transferRepository.getPendingTransfers(1);
     expect(result).lengthOf(1);
+  });
+
+  it("getTokensById", async () => {
+    const data = [{
+            capture_id: "c",
+            token_id: "t",
+          }];
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', function sendResult(query, step) {
+      [
+        function firstQuery() {
+          expect(query.sql).match(/capture_id/);
+          query.response(data);
+        },
+      ][step - 1]();
+    });
+    const result = await transferRepository.getTokenAndCaptureIds(1);
+    sinon.assert.match(result, data);
   });
 
 });

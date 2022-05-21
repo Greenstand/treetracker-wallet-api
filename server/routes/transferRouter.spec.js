@@ -148,6 +148,7 @@ describe("transferRouter", () => {
       id: tokenId,
       state: Transfer.STATE.completed,
     });
+    sinon.stub(TransferService.prototype, "sendMessage");
     const res = await request(app)
       .post('/')
       .send({
@@ -188,6 +189,7 @@ describe("transferRouter", () => {
       id: transferId,
       state: Transfer.STATE.completed,
     });
+    const sendMessage = sinon.stub(TransferService.prototype, "sendMessage");
     const res = await request(app)
       .post('/')
       .send({
@@ -196,6 +198,9 @@ describe("transferRouter", () => {
         receiver_wallet: wallet2Id,
       });
     expect(res).property('statusCode').eq(201);
+    
+    // should not send message to queue because ENV = test
+    sinon.assert.notCalled(sendMessage);
   });
 
   // //TODO: test for case 1: with trust relationship, tokens specified
