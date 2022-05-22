@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
 const tokenRouter = require('./tokenRouter');
-const { errorHandler } = require('./utils');
+const { errorHandler, apiKeyHandler } = require('../utils/utils');
 const ApiKeyService = require('../services/ApiKeyService');
 const WalletService = require('../services/WalletService');
 const JWTService = require('../services/JWTService');
@@ -28,9 +28,9 @@ describe('tokenRouter', () => {
       id: authenticatedWallet.id,
     });
     app = express();
-    app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
-    app.use(bodyParser.json()); // parse application/json
-    app.use(tokenRouter);
+    app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
+    app.use(express.json()); // parse application/json
+    app.use(apiKeyHandler, tokenRouter);
     app.use(errorHandler);
   });
 
@@ -62,14 +62,14 @@ describe('tokenRouter', () => {
     const wallet2 = new Wallet(wallet2Id);
 
     it('limit parameters missed', async () => {
-      const res = await request(app).get('/');
+      const res = await request(app).get('/tokens');
       expect(res).property('statusCode').eq(422);
     });
 
     it('successfully, default wallet', async () => {
       sinon.stub(TokenService.prototype, 'getByOwner').resolves([token2]);
       sinon.stub(WalletService.prototype, 'getById').resolves(wallet);
-      const res = await request(app).get('/?limit=10&offset=1');
+      const res = await request(app).get('/tokens?limit=10&offset=1');
       expect(res).property('statusCode').eq(200);
       expect(res.body.tokens).lengthOf(1);
       expect(res.body.tokens[0]).property('id').eq(token2Id);
@@ -84,7 +84,9 @@ describe('tokenRouter', () => {
       sinon.stub(WalletService.prototype, 'getById').resolves(wallet);
       sinon.stub(WalletService.prototype, 'getByName').resolves(wallet2);
       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-      const res = await request(app).get(`/?limit=10&wallet=${wallet2Id}`);
+      const res = await request(app).get(
+        `/tokens?limit=10&wallet=${wallet2Id}`,
+      );
       expect(res).property('statusCode').eq(200);
       expect(res.body.tokens[0]).property('id').eq(tokenId);
       expect(res.body.tokens[0])
@@ -98,7 +100,7 @@ describe('tokenRouter', () => {
       sinon.stub(WalletService.prototype, 'getById').resolves(wallet);
       sinon.stub(WalletService.prototype, 'getByName').resolves(wallet2);
       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(false);
-      const res = await request(app).get('/?limit=10&wallet=B');
+      const res = await request(app).get('/tokens?limit=10&wallet=B');
       expect(res).property('statusCode').eq(403);
     });
   });
@@ -135,7 +137,7 @@ describe('tokenRouter', () => {
         sender_wallet: walletId,
         receiver_wallet: wallet2Id,
       });
-      const res = await request(app).get(`/${tokenId}`);
+      const res = await request(app).get(`/tokens/${tokenId}`);
       expect(res).property('statusCode').eq(200);
       expect(res.body).property('id').eq(tokenId);
       expect(res.body)
@@ -161,7 +163,9 @@ describe('tokenRouter', () => {
         receiver_wallet: wallet2Id,
       });
       sinon.stub(Wallet.prototype, 'getSubWallets').resolves([]);
-      const res = await request(app).get(`/${tokenId}/transactions/?limit=1`);
+      const res = await request(app).get(
+        `/tokens/${tokenId}/transactions/?limit=1`,
+      );
       expect(res).property('statusCode').eq(200);
       expect(res.body.history).lengthOf(1);
       expect(res.body.history[0]).property('token').eq(tokenId);
@@ -170,7 +174,9 @@ describe('tokenRouter', () => {
     });
 
     it('/{token_uuid}/transactions: limit parameters missed', async () => {
-      const res = await request(app).get(`/${transactionId}/transactions`);
+      const res = await request(app).get(
+        `/tokens/${transactionId}/transactions`,
+      );
       expect(res).property('statusCode').eq(422);
     });
 
@@ -216,7 +222,7 @@ describe('tokenRouter', () => {
       const limit = '3';
       const offset = '5';
       const res = await request(app).get(
-        `/${tokenId}/transactions?limit=${limit}&offset=${offset}`,
+        `/tokens/${tokenId}/transactions?limit=${limit}&offset=${offset}`,
       );
       expect(res).property('statusCode').eq(200);
       expect(getTransactionsStub.getCall(0).args).deep.to.equal([

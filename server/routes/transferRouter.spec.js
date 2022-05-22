@@ -6,8 +6,8 @@ const sinonChai = require('sinon-chai');
 const bodyParser = require('body-parser');
 const { extractExpectedAssertionsErrors } = require('expect');
 const uuid = require('uuid');
-const transferRouter = require('../routes/transferRouter');
-const { errorHandler } = require('./utils');
+const transferRouter = require('./transferRouter');
+const { errorHandler, apiKeyHandler } = require('../utils/utils');
 
 chai.use(sinonChai);
 const { expect } = chai;
@@ -36,9 +36,9 @@ describe('transferRouter', () => {
       id: authenticatedWallet.getId(),
     });
     app = express();
-    app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
-    app.use(bodyParser.json()); // parse application/json
-    app.use(transferRouter);
+    app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
+    app.use(express.json()); // parse application/json
+    app.use(apiKeyHandler, transferRouter);
     app.use(errorHandler);
   });
 
@@ -48,7 +48,7 @@ describe('transferRouter', () => {
 
   // test for limit
   it('limit parameters missed', async () => {
-    const res = await request(app).get('/');
+    const res = await request(app).get('/transfers');
     expect(res).property('statusCode').eq(422);
   });
 
@@ -81,7 +81,9 @@ describe('transferRouter', () => {
       .onCall(2)
       .resolves({ id: token2Id, state: Transfer.STATE.completed });
 
-    const res = await request(app).get('/?limit=3&wallet=testWallet&offset=5');
+    const res = await request(app).get(
+      '/transfers?limit=3&wallet=testWallet&offset=5',
+    );
     expect(res.body.transfers).lengthOf(3);
     expect(getTransfersStub.getCall(0).args[0]).to.deep.equal(undefined, 5, 3);
     expect(res.body.transfers.map((t) => t.id)).to.deep.equal([
@@ -92,7 +94,7 @@ describe('transferRouter', () => {
   });
 
   it('missing tokens should throw error', async () => {
-    const res = await request(app).post('/').send({
+    const res = await request(app).post('/transfers').send({
       sender_wallet: 'ssss',
       receiver_wallet: 'ssss',
     });
@@ -104,7 +106,7 @@ describe('transferRouter', () => {
     const walletId = uuid.v4();
     const tokenId = uuid.v4();
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         tokens: [tokenId],
         receiver_wallet: 'ssss',
@@ -118,7 +120,7 @@ describe('transferRouter', () => {
     const wallet2Id = uuid.v4();
     const tokenId = uuid.v4();
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         tokens: [tokenId, tokenId],
         receiver_wallet: walletId,
@@ -156,7 +158,7 @@ describe('transferRouter', () => {
       state: Transfer.STATE.completed,
     });
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         tokens: ['1'],
         sender_wallet: 'wallet1',
@@ -196,7 +198,7 @@ describe('transferRouter', () => {
       state: Transfer.STATE.completed,
     });
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         tokens: [tokenId],
         sender_wallet: walletId,
@@ -206,7 +208,7 @@ describe('transferRouter', () => {
   });
 
   // //TODO: test for case 1: with trust relationship, tokens specified
-  // it.only('claim transfer with existing trust relationship, and specified tokens', async () => {
+  // it('claim transfer with existing trust relationship, and specified tokens', async () => {
   //   sinon
   //     .stub(WalletService.prototype, 'getById')
   //     .resolves(new Wallet(1));
@@ -273,7 +275,7 @@ describe('transferRouter', () => {
       },
     });
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         tokens: [tokenId],
         sender_wallet: walletId,
@@ -309,7 +311,7 @@ describe('transferRouter', () => {
       },
     });
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         bundle: {
           bundle_size: 1,
@@ -325,7 +327,7 @@ describe('transferRouter', () => {
     const walletId = uuid.v4();
     const wallet2Id = uuid.v4();
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         bundle: {
           bundle_size: -1,
@@ -341,7 +343,7 @@ describe('transferRouter', () => {
     const walletId = uuid.v4();
     const wallet2Id = uuid.v4();
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         bundle: {
           bundle_size: 1.1,
@@ -357,7 +359,7 @@ describe('transferRouter', () => {
     const walletId = uuid.v4();
     const wallet2Id = uuid.v4();
     const res = await request(app)
-      .post('/')
+      .post('/transfers')
       .send({
         bundle: {
           bundle_size: 10001,
@@ -375,14 +377,16 @@ describe('transferRouter', () => {
     const token2Id = uuid.v4();
 
     it('Nether tokens nor implicit is specified, should throw error', async () => {
-      const res = await request(app).post(`/${transferId}/fulfill`).send({});
+      const res = await request(app)
+        .post(`/transfers/${transferId}/fulfill`)
+        .send({});
       expect(res).property('statusCode').eq(422);
       expect(res.body.message).match(/implicit.*required/i);
     });
 
     it('Duplicated token uuid should throw error', async () => {
       const res = await request(app)
-        .post(`/${transferId}/fulfill`)
+        .post(`/transfers/${transferId}/fulfill`)
         .send({
           tokens: [tokenId, tokenId],
         });
@@ -405,7 +409,7 @@ describe('transferRouter', () => {
       const fn3 = sinon
         .stub(TransferService.prototype, 'convertToResponse')
         .resolves(transfer);
-      const res = await request(app).get(`/${transferId}`);
+      const res = await request(app).get(`/transfers/${transferId}`);
       expect(fn).calledWith(authenticatedWallet.getId());
       expect(fn2).calledWith(transferId);
       expect(fn3).calledWith(transfer);
@@ -433,7 +437,9 @@ describe('transferRouter', () => {
       const fn2 = sinon
         .stub(Wallet.prototype, 'getTokensByTransferId')
         .resolves([token]);
-      const res = await request(app).get(`/${transferId}/tokens?limit=1`);
+      const res = await request(app).get(
+        `/transfers/${transferId}/tokens?limit=1`,
+      );
       expect(fn).calledWith(authenticatedWallet.getId());
       expect(fn2).calledWith(transferId);
       expect(res).property('statusCode').eq(200);
@@ -448,7 +454,7 @@ describe('transferRouter', () => {
         .stub(Wallet.prototype, 'getTokensByTransferId')
         .resolves([token2, token3, token4]);
       const res = await request(app).get(
-        `/${transferId}/tokens?limit=3&offset=2`,
+        `/transfers/${transferId}/tokens?limit=3&offset=2`,
       );
       expect(fn).calledWith(authenticatedWallet.getId());
 

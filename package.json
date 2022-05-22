@@ -35,7 +35,6 @@
   "dependencies": {
     "@sentry/node": "^5.1.0",
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.18.2",
     "chai-uuid": "^1.0.6",
     "dotenv": "^8.2.0",
     "expect": "^26.4.2",
@@ -54,9 +53,9 @@
     "uuid": "^8.2.0"
   },
   "devDependencies": {
-    "assert": "1.5.0",
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
+    "assert": "1.5.0",
     "chai": "3.5.0",
     "chai-as-promised": "7.1.1",
     "chai-http": "^4.3.0",
@@ -72,16 +71,16 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "expect-runtime": "^0.7.0",
     "faker": "^5.3.1",
-    "http-status-codes": "1.4.0",
     "generate-password": "^1.6.0",
+    "http-status-codes": "1.4.0",
     "husky": "^3.1.0",
+    "mocha": "^10.0.0",
     "mock-knex": "^0.4.9",
-    "mocha": "^8.3.0",
     "prettier": "^2.1.2",
+    "set-cookie-parser": "2.4.6",
     "sinon": "^9.0.3",
     "sinon-chai": "^2.14.0",
-    "supertest": "^4.0.2",
-    "set-cookie-parser": "2.4.6"
+    "supertest": "^4.0.2"
   },
   "directories": {
     "doc": "docs"
