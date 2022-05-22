@@ -1,42 +1,11 @@
-const express = require("express");
+const express = require('express');
 
-const authRouter = express.Router();
-const Joi = require("joi");
-const helper = require("./utils");
-const Wallet = require("../models/Wallet");
-const WalletService = require("../services/WalletService");
-const JWTService = require("../services/JWTService");
-const Session = require("../models/Session");
+const router = express.Router();
+const routerWrapper = express.Router();
+const { handlerWrapper } = require('../utils/utils');
+const { authPost } = require('../handlers/authHandler');
 
-authRouter.post(
-  "/",
-  helper.apiKeyHandler,
-  helper.handlerWrapper(async (req, res, next) => {
-    Joi.assert(
-      req.body,
-      Joi.object({
-        wallet: Joi.alternatives().try(
-          Joi.string().min(4).max(36),
-        ).required(),
-        password: Joi.string()
-          .max(32)
-          .required(),
-      })
-    );
-    const { wallet, password } = req.body;
-    const session = new Session();
-    const walletService = new WalletService(session);
-    
-    let walletObject = await walletService.getByIdOrName(wallet);
-    walletObject = await walletObject.authorize(password);
+router.post('/', handlerWrapper(authPost));
+routerWrapper.use('/auth', router);
 
-    const jwtService = new JWTService();
-    const token = jwtService.sign(walletObject);
-    res.locals.jwt = token;
-    res.locals.id = walletObject.id;
-    res.status(200).json({ token: res.locals.jwt });
-    next();
-  })
-);
-
-module.exports = authRouter;
+module.exports = routerWrapper;

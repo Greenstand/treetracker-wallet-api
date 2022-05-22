@@ -1,25 +1,23 @@
-require('dotenv').config()
+require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
 const log = require('loglevel');
-const sinon = require("sinon");
-const chai = require("chai");
-const server = require("../server/app");
+const sinon = require('sinon');
+const chai = require('chai');
+const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require("../server/models/Transfer");
-const TrustRelationship = require("../server/models/TrustRelationship");
+const Transfer = require('../server/models/Transfer');
+const TrustRelationship = require('../server/models/TrustRelationship');
 chai.use(require('chai-uuid'));
 
-const {apiKey} = seed;
+const { apiKey } = seed;
 
-describe('Create and accept a bundle transfer', () => {
-
+describe('Create and decline a bundle transfer', () => {
   let bearerToken;
   let bearerTokenB;
   let pendingTransfer;
 
-  before( async () => {
-
+  before(async () => {
     await seed.clear();
     await seed.seed();
 
@@ -54,12 +52,12 @@ describe('Create and accept a bundle transfer', () => {
 
   beforeEach(async () => {
     sinon.restore();
-  })
-
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  });
 
   it(`create Bundle transfer tokens from ${seed.wallet.name} to ${seed.walletB.name}`, async () => {
     const res = await request(server)
-      .post("/transfers")
+      .post('/transfers')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
@@ -70,12 +68,16 @@ describe('Create and accept a bundle transfer', () => {
         receiver_wallet: seed.walletB.name,
         claim: false,
       });
-    expect(res).property("statusCode").to.eq(202);
-    expect(res).property("body").property("parameters").property("bundle").property("bundleSize").eq(1);
-  })
+    expect(res).property('statusCode').to.eq(202);
+    expect(res)
+      .property('body')
+      .property('parameters')
+      .property('bundle')
+      .property('bundleSize')
+      .eq(1);
+  });
 
-
-  it("get all pending transfers belongs to walletB, should have one", async () => {
+  it('get all pending transfers belongs to walletB, should have one', async () => {
     const res = await request(server)
       .get('/transfers?state=pending&limit=1000')
       .set('treetracker-api-key', apiKey)
@@ -83,18 +85,20 @@ describe('Create and accept a bundle transfer', () => {
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.transfers).lengthOf(1);
     pendingTransfer = res.body.transfers[0];
-    expect(pendingTransfer).property("destination_wallet").eq(seed.walletB.name);
-  })
+    expect(pendingTransfer)
+      .property('destination_wallet')
+      .eq(seed.walletB.name);
+  });
 
-  it("Decline the pending transfer", async () => {
+  it('Decline the pending transfer', async () => {
     const res = await request(server)
       .post(`/transfers/${pendingTransfer.id}/decline`)
-      .set('Content-Type', "application/json")
+      .set('Content-Type', 'application/json')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
-    console.log(res.body)
+    console.log(res.body);
     expect(res).to.have.property('statusCode', 200);
-  })
+  });
 
   it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be cancelled`, async () => {
     const res = await request(server)
@@ -103,7 +107,9 @@ describe('Create and accept a bundle transfer', () => {
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.transfers).lengthOf(1);
-    expect(res.body.transfers[0]).property("state").eq(Transfer.STATE.cancelled);
+    expect(res.body.transfers[0])
+      .property('state')
+      .eq(Transfer.STATE.cancelled);
   });
 
   it(`Token:#${seed.token.id} now should still belong to ${seed.wallet.name}`, async () => {

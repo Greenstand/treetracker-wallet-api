@@ -1,13 +1,22 @@
-const {expect, sendPostRequest, sendGetRequest, responseStatus: {OK}, assert} = require("../../config");
-const {assertTransferCompletedBody, assertSendTokensBody} = require("../../helpers/tokenActionsHelper.js");
-const {assertTokenInWallet} = require("../../helpers/walletActionsHelper.js");
-const {getSession} = require("../../libs/sessionLibrary");
-const {testData} = require("../../libs/bootstrap.js");
+const {
+  expect,
+  sendPostRequest,
+  sendGetRequest,
+  responseStatus: { OK },
+  assert,
+} = require('../../config');
+const {
+  assertTransferCompletedBody,
+  assertSendTokensBody,
+} = require('../../helpers/tokenActionsHelper.js');
+const { assertTokenInWallet } = require('../../helpers/walletActionsHelper.js');
+const { getSession } = require('../../libs/sessionLibrary');
+const { testData } = require('../../libs/bootstrap.js');
 
 let walletAToken = null;
 let walletBToken = null;
 let managingWalletToken = null;
-const {apiKey} = testData;
+const { apiKey } = testData;
 const sendTokensUri = '/transfers';
 const trustRelationshipUri = '/trust_relationships';
 const acceptTrustRelationshipUri = (id) => `/trust_relationships/${id}/accept`;
@@ -16,62 +25,96 @@ const getWalletInfoUri = (limit) => `/wallets?limit=${limit}`;
 const walletA = testData.wallet.name;
 const managingWallet = testData.managingWallet.name;
 const walletB = testData.walletB.name;
-const {password} = testData.wallet;
+const { password } = testData.wallet;
 
 const headers = (token) => {
-    return {
-        'Authorization': `Bearer ${token}`,
-        'treetracker-api-key': apiKey
-    }
+  return {
+    Authorization: `Bearer ${token}`,
+    'treetracker-api-key': apiKey,
+  };
 };
 
 const payload = (walletA, walletB) => {
-    return {
-        "bundle": {
-            "bundle_size": 1
-        },
-        "sender_wallet": walletA,
-        "receiver_wallet": walletB,
-        "claim": false
-    }
+  return {
+    bundle: {
+      bundle_size: 1,
+    },
+    sender_wallet: walletA,
+    receiver_wallet: walletB,
+    claim: false,
+  };
 };
 
 const requestTrustRelationshipPayload = (wallet) => {
-    return {
-        "trust_request_type": "manage",
-        "requestee_wallet": wallet
-    }
+  return {
+    trust_request_type: 'manage',
+    requestee_wallet: wallet,
+  };
 };
 
-describe("Sending tokens via managed wallet (Wallet API)",function () {
-    before(async () => {
-        walletAToken = await getSession(walletA, password);
-        walletBToken = await getSession(walletB, password);
-        managingWalletToken = await getSession(managingWallet, password);
-    });
+describe('Sending tokens via managed wallet (Wallet API)', function () {
+  before(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    walletAToken = await getSession(walletA, password);
+    walletBToken = await getSession(walletB, password);
+    managingWalletToken = await getSession(managingWallet, password);
+  });
 
-    it('Managing wallet C sends from A to B with manage rights on wallet A @token @regression', async () => {
-        const requestTrustResponse = await sendPostRequest(trustRelationshipUri, headers(managingWalletToken.token), requestTrustRelationshipPayload(walletA));
-        const {body: requestTrustBody, status: requestTrustStatus} = requestTrustResponse;
-        assert.equals(requestTrustStatus, OK, 'Request trust relationship response status does not equal!');
+  it('Managing wallet C sends from A to B with manage rights on wallet A @token @regression', async () => {
+    const requestTrustResponse = await sendPostRequest(
+      trustRelationshipUri,
+      headers(managingWalletToken.token),
+      requestTrustRelationshipPayload(walletA),
+    );
+    const {
+      body: requestTrustBody,
+      status: requestTrustStatus,
+    } = requestTrustResponse;
+    assert.equals(
+      requestTrustStatus,
+      OK,
+      'Request trust relationship response status does not equal!',
+    );
 
-        expect(requestTrustBody).to.have.property("state").eq('requested');
-        const requestRelationshipId = requestTrustBody.id;
-
-        const acceptTrustResponse = await sendPostRequest(acceptTrustRelationshipUri(requestRelationshipId), headers(walletAToken.token), {})
-        const {body: acceptedTrustBody, status: acceptedTrustStatus} = acceptTrustResponse;
-        assert.equals(acceptedTrustStatus, OK, 'Accept trust relationship response status does not equal!');
-        expect(acceptedTrustBody).to.have.property("state").eq('trusted');
-
-        const sendTokenResponse = await sendPostRequest(sendTokensUri, headers(managingWalletToken.token), payload(walletA, walletB));
-        assertSendTokensBody(sendTokenResponse, managingWallet, walletB);
-        const {id} = sendTokenResponse.body;
-
-        const acceptTransferResponse = await sendPostRequest(acceptTokenTransferUri(id), headers(walletBToken.token), {});
-        assertTransferCompletedBody(acceptTransferResponse, walletA, walletB);
-
-        const limit = 50;
-        const getWalletInfoResponse = await sendGetRequest(getWalletInfoUri(limit), headers(walletBToken.token));
-        await assertTokenInWallet(getWalletInfoResponse, walletB, 1);
-    });
+    expect(requestTrustBody).to.have.property('state').eq('requested');
+    const requestRelationshipId = requestTrustBody.id;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const acceptTrustResponse = await sendPostRequest(
+      acceptTrustRelationshipUri(requestRelationshipId),
+      headers(walletAToken.token),
+      {},
+    );
+    const {
+      body: acceptedTrustBody,
+      status: acceptedTrustStatus,
+    } = acceptTrustResponse;
+    assert.equals(
+      acceptedTrustStatus,
+      OK,
+      'Accept trust relationship response status does not equal!',
+    );
+    expect(acceptedTrustBody).to.have.property('state').eq('trusted');
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const sendTokenResponse = await sendPostRequest(
+      sendTokensUri,
+      headers(managingWalletToken.token),
+      payload(walletA, walletB),
+    );
+    assertSendTokensBody(sendTokenResponse, managingWallet, walletB);
+    const { id } = sendTokenResponse.body;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const acceptTransferResponse = await sendPostRequest(
+      acceptTokenTransferUri(id),
+      headers(walletBToken.token),
+      {},
+    );
+    assertTransferCompletedBody(acceptTransferResponse, walletA, walletB);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const limit = 50;
+    const getWalletInfoResponse = await sendGetRequest(
+      getWalletInfoUri(limit),
+      headers(walletBToken.token),
+    );
+    await assertTokenInWallet(getWalletInfoResponse, walletB, 1);
+  });
 });
