@@ -1,18 +1,17 @@
-const expect = require("expect-runtime");
-const knex = require("../database/knex");
-const Transfer = require("../models/Transfer");
-const BaseRepository = require("./BaseRepository");
-const Session = require("../models/Session");
+const expect = require('expect-runtime');
+const knex = require('../database/knex');
+const Transfer = require('../models/Transfer');
+const BaseRepository = require('./BaseRepository');
+const Session = require('../database/Session');
 
-class TransferRepository extends BaseRepository{
-
-  constructor(session){
-    super("transfer", session);
-    this._tableName = "transfer";
+class TransferRepository extends BaseRepository {
+  constructor(session) {
+    super('transfer', session);
+    this._tableName = 'transfer';
     this._session = session;
   }
 
-  async create(object){
+  async create(object) {
     object.type = Transfer.TYPE.send;
     object.active = true;
     const result = await super.create(object);
@@ -22,7 +21,7 @@ class TransferRepository extends BaseRepository{
     return result;
   }
 
-  async getPendingTransfers(id){
+  async getPendingTransfers(id) {
     return await this._session.getDB()(this._tableName).where({
       destination_wallet_id: id,
       state: Transfer.STATE.pending,

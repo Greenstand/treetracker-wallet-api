@@ -3,7 +3,7 @@ const knex = require('../database/knex');
 const config = require('../../config/config');
 const HttpError = require('../utils/HttpError');
 const BaseRepository = require('./BaseRepository');
-const Session = require('../models/Session');
+const Session = require('../database/Session');
 
 class TokenRepository extends BaseRepository {
   constructor(session) {

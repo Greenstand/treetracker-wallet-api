@@ -1,6 +1,6 @@
 const HttpError = require('../utils/HttpError');
 const BaseRepository = require('./BaseRepository');
-const Session = require('../models/Session');
+const Session = require('../database/Session');
 
 class TrustRepository extends BaseRepository {
   constructor(session) {

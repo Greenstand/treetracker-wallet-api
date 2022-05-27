@@ -1,25 +1,20 @@
 const Joi = require('joi');
-const WalletService = require('../services/WalletService');
-const JWTService = require('../services/JWTService');
-const Session = require('../models/Session');
+const AuthService = require('../services/AuthService');
+const HttpError = require('../utils/HttpError');
 
 const authPostSchema = Joi.object({
   wallet: Joi.string().min(4).max(36).required(),
   password: Joi.string().max(32).required(),
 }).unknown(false);
 
-const authPost = async (req, res, next) => {
+const authPost = async (req, res) => {
   await authPostSchema.validateAsync(req.body, { abortEarly: false });
-
   const { wallet, password } = req.body;
-  const session = new Session();
-  const walletService = new WalletService(session);
 
-  let walletObject = await walletService.getByIdOrName(wallet);
-  walletObject = await walletObject.authorize(password);
+  const authService = new AuthService();
+  const token = await authService.signIn({ wallet, password });
 
-  const jwtService = new JWTService();
-  const token = jwtService.sign(walletObject);
+  if (!token) throw new HttpError(401, 'Invalid Credentials');
 
   res.status(200).json({ token });
 };

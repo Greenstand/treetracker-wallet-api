@@ -1,20 +1,19 @@
-const WalletService = require("./WalletService");
-const Session = require("../models/Session");
+const WalletService = require('./WalletService');
+const Session = require('../database/Session');
 
-class TrustService{
-
-  constructor(){
+class TrustService {
+  constructor() {
     const session = new Session();
     this.walletService = new WalletService(session);
   }
 
-  async convertToResponse(trustObject){
+  async convertToResponse(trustObject) {
     const {
       actor_wallet_id,
       target_wallet_id,
       originator_wallet_id,
     } = trustObject;
-    const result = {...trustObject};
+    const result = { ...trustObject };
     {
       const wallet = await this.walletService.getById(originator_wallet_id);
       const json = await wallet.toJSON();

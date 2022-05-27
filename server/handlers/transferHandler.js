@@ -4,7 +4,7 @@ const TransferService = require('../services/TransferService');
 const TokenService = require('../services/TokenService');
 const HttpError = require('../utils/HttpError');
 const Transfer = require('../models/Transfer');
-const Session = require('../models/Session');
+const Session = require('../database/Session');
 
 const transferPostSchema = Joi.alternatives()
   // if there is tokens field

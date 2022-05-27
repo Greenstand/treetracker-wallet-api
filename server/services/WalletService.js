@@ -1,36 +1,30 @@
 const { validate: uuidValidate } = require('uuid');
-const WalletRepository = require('../repositories/WalletRepository');
 const Wallet = require('../models/Wallet');
-const HttpError = require("../utils/HttpError");
+const Session = require('../database/Session');
 
 class WalletService {
-  constructor(session){
-    this._session = session;
-    this.walletRepository = new WalletRepository(session);
+  constructor() {
+    this._session = new Session();
+    this._wallet = new Wallet(this._session); // to remove
   }
 
   async getById(id) {
-    const object = await this.walletRepository.getById(id);
-    const wallet = new Wallet(object.id, this._session);
+    const wallet = await this._wallet.getById(id);
     return wallet;
   }
 
   async getByName(name) {
-    const object = await this.walletRepository.getByName(name);
-    const wallet = new Wallet(object.id, this._session);
+    const wallet = await this._wallet.getByName(name);
     return wallet;
   }
 
   async getByIdOrName(idOrName) {
-    let walletObject;
-    if(uuidValidate(idOrName)){
-      walletObject = await this.walletRepository.getById(idOrName);
-    } else if (typeof idOrName === 'string') {
-      walletObject = await this.walletRepository.getByName(idOrName);
+    let wallet;
+    if (uuidValidate(idOrName)) {
+      wallet = await this.getById(idOrName);
     } else {
-      throw new HttpError(404, `Type must be number or string: ${idOrName}`);
+      wallet = await this.getByName(idOrName);
     }
-    const wallet = new Wallet(walletObject.id, this._session);
     return wallet;
   }
 }

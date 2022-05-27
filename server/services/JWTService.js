@@ -32,7 +32,7 @@ class JWTService {
 
   verify(authorization) {
     if (!authorization) {
-      throw new Error(
+      throw new HttpError(
         403,
         'ERROR: Authentication, no token supplied for protected path',
       );

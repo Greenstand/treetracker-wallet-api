@@ -2,7 +2,7 @@ const Joi = require('joi');
 const TokenService = require('../services/TokenService');
 const WalletService = require('../services/WalletService');
 const HttpError = require('../utils/HttpError');
-const Session = require('../models/Session');
+const Session = require('../database/Session');
 
 const tokenGet = async (req, res, _next) => {
   Joi.assert(

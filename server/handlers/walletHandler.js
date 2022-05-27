@@ -3,7 +3,7 @@ const _ = require('lodash');
 const WalletService = require('../services/WalletService');
 const TokenService = require('../services/TokenService');
 const TrustService = require('../services/TrustService');
-const Session = require('../models/Session');
+const Session = require('../database/Session');
 
 const walletGetQuerySchema = Joi.object({
   limit: Joi.number().required(),

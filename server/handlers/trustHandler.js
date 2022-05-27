@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
-const Session = require('../models/Session');
+const Session = require('../database/Session');
 const TrustRelationship = require('../models/TrustRelationship');
 
 const trustGetQuerySchema = Joi.object({
