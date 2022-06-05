@@ -2,7 +2,11 @@ const express = require('express');
 
 const router = express.Router();
 const routerWrapper = express.Router();
-const { verifyJWTHandler, handlerWrapper } = require('../utils/utils');
+const {
+  verifyJWTHandler,
+  handlerWrapper,
+  apiKeyHandler,
+} = require('../utils/utils');
 
 const {
   trustGet,
@@ -24,5 +28,10 @@ router.post(
 );
 router.delete('/:trustRelationshipId', handlerWrapper(trustRelationshipDelete));
 
-routerWrapper.use('/trust_relationships', verifyJWTHandler, router);
+routerWrapper.use(
+  '/trust_relationships',
+  apiKeyHandler,
+  verifyJWTHandler,
+  router,
+);
 module.exports = routerWrapper;

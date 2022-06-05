@@ -2,7 +2,11 @@ const express = require('express');
 
 const router = express.Router();
 const routerWrapper = express.Router();
-const { handlerWrapper, verifyJWTHandler } = require('../utils/utils');
+const {
+  handlerWrapper,
+  verifyJWTHandler,
+  apiKeyHandler,
+} = require('../utils/utils');
 const {
   walletGet,
   walletGetTrustRelationships,
@@ -18,5 +22,5 @@ router.get(
 );
 router.post('/', handlerWrapper(walletPost));
 
-routerWrapper.use('/wallets', verifyJWTHandler, router);
+routerWrapper.use('/wallets', apiKeyHandler, verifyJWTHandler, router);
 module.exports = routerWrapper;

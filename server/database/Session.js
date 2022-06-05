@@ -15,6 +15,10 @@ class Session {
     return knex;
   }
 
+  isTransactionInProgress() {
+    return this.thx !== undefined;
+  }
+
   async beginTransaction() {
     if (this.thx) {
       throw new Error('Can not start transaction in transaction');

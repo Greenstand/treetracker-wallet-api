@@ -39,7 +39,7 @@ app.use(
 app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(express.json()); // parse application/json
 
-app.use(apiKeyHandler, routes);
+app.use(routes);
 
 // Global error handler
 app.use(errorHandler);

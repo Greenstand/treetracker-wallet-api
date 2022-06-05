@@ -49,6 +49,11 @@ class JWTService {
           throw new HttpError(403, 'ERROR: Authentication, token not verified');
         }
         result = decod;
+        if (!result.id)
+          throw new HttpError(
+            403,
+            'ERROR: Authentication, invalid token received',
+          );
       });
     } else {
       throw new HttpError(403, 'ERROR: Authentication, token not verified');

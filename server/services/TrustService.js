@@ -1,39 +1,29 @@
-const WalletService = require('./WalletService');
+const Trust = require('../models/Trust');
 const Session = require('../database/Session');
+const Wallet = require('../models/Wallet');
 
 class TrustService {
   constructor() {
-    const session = new Session();
-    this.walletService = new WalletService(session);
+    this._session = new Session();
+    this._trust = new Trust(this._session);
   }
 
-  async convertToResponse(trustObject) {
-    const {
-      actor_wallet_id,
-      target_wallet_id,
-      originator_wallet_id,
-    } = trustObject;
-    const result = { ...trustObject };
-    {
-      const wallet = await this.walletService.getById(originator_wallet_id);
-      const json = await wallet.toJSON();
-      result.originating_wallet = json.name;
-      delete result.originator_wallet_id;
-    }
-    {
-      const wallet = await this.walletService.getById(actor_wallet_id);
-      const json = await wallet.toJSON();
-      result.actor_wallet = await json.name;
-      delete result.actor_wallet_id;
-    }
-    {
-      const wallet = await this.walletService.getById(target_wallet_id);
-      const json = await wallet.toJSON();
-      result.target_wallet = await json.name;
-      delete result.target_wallet_id;
-    }
-    delete result.active;
-    return result;
+  async getTrustRelationships({
+    walletId,
+    state,
+    type,
+    request_type,
+    offset,
+    limit,
+  }) {
+    return this._trust.getTrustRelationships({
+      walletId,
+      state,
+      type,
+      request_type,
+      offset,
+      limit,
+    });
   }
 }
 

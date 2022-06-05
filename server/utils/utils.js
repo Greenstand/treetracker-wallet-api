@@ -3,7 +3,7 @@
  */
 const log = require('loglevel');
 const { ValidationError } = require('joi');
-const HttpError = require("./HttpError");
+const HttpError = require('./HttpError');
 const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService.js');
 const Session = require('../database/Session');
@@ -33,7 +33,7 @@ exports.handlerWrapper = (fn) =>
   };
 
 exports.errorHandler = (err, req, res, next) => {
-  log.debug('catch error:', err);
+  log.error('catch error:', err);
   if (err instanceof HttpError) {
     res.status(err.code).send({
       code: err.code,
@@ -61,7 +61,7 @@ exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
 
 exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
   const jwtService = new JWTService();
-  const decode = jwtService.verify(req.headers.authorization);
-  res.locals.wallet_id = decode.id;
+  const result = jwtService.verify(req.headers.authorization);
+  req.wallet_id = result.id;
   next();
 });

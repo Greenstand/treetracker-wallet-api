@@ -4,7 +4,8 @@ const expect = require('expect-runtime'); // TODO: We should use Joi for validat
 const Joi = require('joi');
 const WalletRepository = require('../repositories/WalletRepository');
 const TrustRepository = require('../repositories/TrustRepository');
-const TrustRelationship = require('./TrustRelationship');
+const Trust = require('./Trust');
+const TrustRelationshipEnums = require('../utils/trust-enums');
 const TransferRepository = require('../repositories/TransferRepository');
 const HttpError = require('../utils/HttpError');
 const Transfer = require('./Transfer');
@@ -13,19 +14,16 @@ const Token = require('./Token');
 class Wallet {
   constructor(session) {
     this._session = session;
+    this._trust = new Trust(session);
     this._walletRepository = new WalletRepository(session);
     this._trustRepository = new TrustRepository(session);
     this._transferRepository = new TransferRepository(session);
   }
 
-  async addManagedWallet(wallet) {
-    if (!wallet) {
-      throw new HttpError(400, 'No wallet supplied');
-    }
-
+  async createWallet(loggedInWalletId, wallet) {
     // check name
     try {
-      await this.walletRepository.getByName(wallet);
+      await this._walletRepository.getByName(wallet);
       throw new HttpError(403, `The wallet '${wallet}' has been existed`);
     } catch (e) {
       if (e instanceof HttpError && e.code === 404) {
@@ -36,62 +34,23 @@ class Wallet {
     }
 
     // TO DO: check if wallet is expected format type?
-
     // TO DO: Need to check account permissions -> manage accounts
+
     // need to create a wallet object
-    const newWallet = await this.walletRepository.create({
+    const newWallet = await this._walletRepository.create({
       name: wallet,
     });
 
-    // Is this how to check if db action was successful?
-    if (!newWallet) {
-      throw new HttpError(403, 'The wallet already exists');
-    }
-
-    const newTrustRelationship = await this.trustRepository.create({
-      actor_wallet_id: this._id,
-      originator_wallet_id: this._id,
+    await this._trustRepository.create({
+      actor_wallet_id: loggedInWalletId,
+      originator_wallet_id: loggedInWalletId,
       target_wallet_id: newWallet.id,
-      request_type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
-      type: TrustRelationship.ENTITY_TRUST_TYPE.manage,
-      state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      request_type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
+      type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
+      state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
     });
 
-    const managedWallet = await this.walletRepository.getById(newWallet.id);
-
-    return managedWallet;
-  }
-
-  /*
-   * Get trust relationships by filters, setting filter to undefined to allow all data
-   */
-  async getTrustRelationships(state, type, request_type, offset, limit) {
-    const filter = {
-      and: [],
-    };
-    if (state) {
-      filter.and.push({ state });
-    }
-    if (type) {
-      filter.and.push({ type });
-    }
-    if (request_type) {
-      filter.and.push({ request_type });
-    }
-    filter.and.push({
-      or: [
-        {
-          actor_wallet_id: this._id,
-        },
-        {
-          target_wallet_id: this._id,
-        },
-        {
-          originator_wallet_id: this._id,
-        },
-      ],
-    });
-    return await this.trustRepository.getByFilter(filter, { offset, limit });
+    return newWallet;
   }
 
   /*
@@ -1095,27 +1054,36 @@ class Wallet {
   /*
    * Get all wallet managed by me
    */
-  async getSubWallets() {
-    const trustRelationships = await this.getTrustRelationships();
+  async getSubWallets(id) {
+    const trustRelationships = await this._trust.getTrustRelationships({
+      walletId: id,
+    });
+    console.log('trustRelationships', trustRelationships);
     const subWallets = [];
     for (const e of trustRelationships) {
       if (
-        e.actor_wallet_id === this._id &&
-        e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
-        e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+        e.actor_wallet_id === id &&
+        e.request_type ===
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage &&
+        e.state === TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted
       ) {
-        const subWallet = await this.walletService.getById(e.target_wallet_id);
+        const subWallet = await this.getById(e.target_wallet_id);
         subWallets.push(subWallet);
       } else if (
-        e.target_wallet_id === this._id &&
-        e.request_type === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
-        e.state === TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted
+        e.target_wallet_id === id &&
+        e.request_type ===
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield &&
+        e.state === TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted
       ) {
-        const subWallet = await this.walletService.getById(e.actor_wallet_id);
+        const subWallet = await this.getById(e.actor_wallet_id);
         subWallets.push(subWallet);
       }
     }
     return subWallets;
+  }
+
+  async getAllWallets(id, limitOptions) {
+    return this._walletRepository.getAllWallets(id, limitOptions);
   }
 }
 

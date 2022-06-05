@@ -7,11 +7,15 @@ const {
   tokenGetById,
   tokenGetTransactionsById,
 } = require('../handlers/tokenHandler');
-const { handlerWrapper, verifyJWTHandler } = require('../utils/utils');
+const {
+  handlerWrapper,
+  verifyJWTHandler,
+  apiKeyHandler,
+} = require('../utils/utils');
 
 router.get('/', handlerWrapper(tokenGet));
 router.get('/:id', handlerWrapper(tokenGetById));
 router.get('/:id/transactions', handlerWrapper(tokenGetTransactionsById));
 
-routerWrapper.use('/tokens', verifyJWTHandler, router);
+routerWrapper.use('/tokens', apiKeyHandler, verifyJWTHandler, router);
 module.exports = routerWrapper;

@@ -2,7 +2,7 @@ const Joi = require('joi');
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
 const Session = require('../database/Session');
-const TrustRelationship = require('../models/TrustRelationship');
+const TrustRelationship = require('../utils/trust-enums');
 
 const trustGetQuerySchema = Joi.object({
   state: Joi.string(),
