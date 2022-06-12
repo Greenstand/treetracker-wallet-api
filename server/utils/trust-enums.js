@@ -1,4 +1,5 @@
-const HttpError = require('../utils/HttpError');
+const HttpError = require("./HttpError");
+
 const TrustRelationship = {};
 
 TrustRelationship.ENTITY_TRUST_TYPE = {

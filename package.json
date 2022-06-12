@@ -93,6 +93,6 @@
   },
   "homepage": "https://github.com/Greenstand/treetracker-wallet-api#readme",
   "engines": {
-    "node": ">= 12 < 13"
+    "node": ">= 16"
   }
 }

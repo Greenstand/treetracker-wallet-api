@@ -10,7 +10,7 @@ const Transfer = require('../server/models/Transfer');
 const TrustRelationship = require('../server/models/TrustRelationship');
 chai.use(require('chai-uuid'));
 
-describe.only('Authentication', () => {
+describe('Authentication', () => {
   let bearerToken;
   let bearerTokenB;
 

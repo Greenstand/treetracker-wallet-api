@@ -15,7 +15,7 @@ const { password } = testData.wallet;
 const limit = 50;
 const url = `/wallets?limit=${limit}`;
 
-describe.only('Wallets (Wallet API)', function () {
+describe('Wallets (Wallet API)', function () {
   before(async () => {
     bearer = await getSession(wallet, password);
   });
