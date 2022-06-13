@@ -2,12 +2,7 @@ const express = require('express');
 const Sentry = require('@sentry/node');
 const HttpError = require('./utils/HttpError');
 const routes = require('./routes');
-const walletRouter = require('./routes/walletRouter');
-const {
-  errorHandler,
-  apiKeyHandler,
-  handlerWrapper,
-} = require('./utils/utils');
+const { errorHandler, handlerWrapper } = require('./utils/utils');
 
 const app = express();
 
@@ -19,7 +14,7 @@ Sentry.init({ dsn: config.sentry_dsn });
  * Check request
  */
 app.use(
-  handlerWrapper(async (req, _res, next) => {
+  handlerWrapper(async (req, res, next) => {
     if (
       req.method === 'POST' ||
       req.method === 'PATCH' ||

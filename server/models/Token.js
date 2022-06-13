@@ -46,9 +46,8 @@ class Token {
   /*
    * To transfer this token according the transfer object
    */
-  async completeTransfer(transfer){
-    
-    log.debug("Token complete transfer");
+  async completeTransfer(transfer) {
+    log.debug('Token complete transfer');
     log.debug({
       id: this._id,
       transfer_pending: false,
@@ -60,7 +59,7 @@ class Token {
       transfer_pending: false,
       transfer_pending_id: null,
       wallet_id: transfer.destination_wallet_id,
-      claim: transfer.claim
+      claim: transfer.claim,
     });
     await this.transactionRepository.create({
       token_id: this._id,
@@ -112,14 +111,29 @@ class Token {
     return false;
   }
 
-  async getTransactions(limit, offset = 0) {
+  async getTransactions({ limit, offset = 0, tokenId }) {
     const transactions = await this.transactionRepository.getByFilter(
       {
-        token_id: this._id,
+        token_id: tokenId,
       },
       { limit, offset },
     );
     return transactions;
+  }
+
+  async getByOwner(wallet, limit, offset) {
+    const tokensObject = await this.tokenRepository.getByFilter(
+      {
+        wallet_id: wallet.id,
+      },
+      { limit, offset },
+    );
+    return tokensObject;
+  }
+
+  async getById(id) {
+    const tokenObject = await this.tokenRepository.getById(id);
+    return tokenObject;
   }
 }
 

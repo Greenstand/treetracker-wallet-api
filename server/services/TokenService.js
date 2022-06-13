@@ -3,31 +3,64 @@ const Joi = require('joi');
 const Token = require('../models/Token');
 const TokenRepository = require('../repositories/TokenRepository');
 const TransactionRepository = require('../repositories/TransactionRepository');
+const WalletService = require('./WalletService');
+const Session = require('../database/Session');
 
 class TokenService {
   constructor(session) {
-    this._session = session;
+    this._session = new Session();
+    this._token = new Token(this._session);
     this.tokenRepository = new TokenRepository(session);
     this.transactionRepository = new TransactionRepository(session);
-    const WalletService = require('./WalletService');
-    this.walletService = new WalletService(session);
+    this._walletService = new WalletService();
   }
 
-  async getById(id) {
-    const tokenObject = await this.tokenRepository.getById(id);
-    const token = new Token(tokenObject, this._session);
+  async getTokens({ wallet, limit, offset, walletLoginId }) {
+    const walletLogin = await this._walletService.getById(walletLoginId);
+    let tokens = [];
+
+    if (wallet) {
+      const walletInstance = await this._walletService.getByName(wallet);
+      const isSub = await this._walletService.hasControlOver(
+        walletLoginId,
+        wwalletInstance.id,
+      );
+      if (!isSub) {
+        throw new HttpError(403, 'Wallet does not belong to wallet logged in');
+      }
+      tokens = await this._token.getByOwner(walletInstance, limit, offset);
+    } else {
+      tokens = await this._token.getByOwner(walletLogin, limit, offset);
+    }
+
+    return tokens;
+  }
+
+  async getById({ id, walletLoginId }) {
+    // check permission
+    const token = this._token.getById(id);
+    const allWallets = await this._walletService.getAllWallets(walletLoginId);
+
+    const walletIds = [...allWallets.map((e) => e.id)];
+    if (!walletIds.includes(token.wallet_id)) {
+      throw new HttpError(401, 'Have no permission to visit this token');
+    }
     return token;
   }
 
-  async getByOwner(wallet, limit, offset) {
-    const tokensObject = await this.tokenRepository.getByFilter(
-      {
-        wallet_id: wallet.getId(),
-      },
-      { limit, offset },
-    );
-    return tokensObject.map((object) => new Token(object, this._session));
+  async getTransactions({ tokenId, limit, offset, walletLoginId }) {
+    // verify permission
+    await this.getById({ id: tokenId, walletLoginId });
+    const transactions = await this._token.getTransactions({
+      limit,
+      offset,
+      tokenId,
+    });
+
+    return transactions;
   }
+
+  // =================================================================================================
 
   async getTokensByPendingTransferId(transferId, limit, offset = 0) {
     const result = await this.tokenRepository.getByFilter(
@@ -79,34 +112,6 @@ class TokenService {
       wallet_id: wallet.getId(),
       claim: false,
     });
-    return result;
-  }
-
-  async convertToResponse(transactionObject) {
-    const {
-      token_id,
-      source_wallet_id,
-      destination_wallet_id,
-      processed_at,
-    } = transactionObject;
-    const result = {
-      processed_at,
-    };
-    {
-      const token = await this.getById(token_id);
-      const json = await token.toJSON();
-      result.token = json.uuid;
-    }
-    {
-      const wallet = await this.walletService.getById(source_wallet_id);
-      const json = await wallet.toJSON();
-      result.sender_wallet = await json.name;
-    }
-    {
-      const wallet = await this.walletService.getById(destination_wallet_id);
-      const json = await wallet.toJSON();
-      result.receiver_wallet = await json.name;
-    }
     return result;
   }
 

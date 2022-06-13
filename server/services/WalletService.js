@@ -63,6 +63,10 @@ class WalletService {
     }
     return this._wallet.getAllWallets(id, limitOptions);
   }
+
+  async hasControlOver(parentId, childId) {
+    return this._wallet.hasControlOver(parentId, childId);
+  }
 }
 
 module.exports = WalletService;
