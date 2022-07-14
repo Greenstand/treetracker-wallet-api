@@ -1,13 +1,10 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -52,7 +49,6 @@ describe('Request and fulfill a bundle transfer', () => {
 
   beforeEach(async () => {
     sinon.restore();
-    await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
   it(`WalletB:${seed.walletB.name} request a bundle of token from ${seed.wallet.name}, should get 202`, async () => {

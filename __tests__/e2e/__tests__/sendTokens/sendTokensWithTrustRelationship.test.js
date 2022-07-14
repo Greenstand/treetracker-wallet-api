@@ -50,7 +50,6 @@ const requestTrustRelationshipPayload = (wallet) => {
 
 describe('Sending tokens with trust relationship (Wallet API)', function () {
   before(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
     senderBearerToken = await getSession(senderWallet, password);
     receiverBearerToken = await getSession(receiverWallet, password);
   });
@@ -73,7 +72,7 @@ describe('Sending tokens with trust relationship (Wallet API)', function () {
     );
     expect(requestTrustBody).to.have.property('state').eq('requested');
     const requestRelationshipId = requestTrustBody.id;
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const acceptTrustResponse = await sendPostRequest(
       acceptTrustRelationshipUri(requestRelationshipId),
       headers(receiverBearerToken.token),
@@ -90,7 +89,7 @@ describe('Sending tokens with trust relationship (Wallet API)', function () {
       acceptedTrustBody,
     );
     expect(acceptedTrustBody).to.have.property('state').eq('trusted');
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const sendTokenResponse = await sendPostRequest(
       sendTokensUri,
       headers(senderBearerToken.token),
@@ -101,7 +100,7 @@ describe('Sending tokens with trust relationship (Wallet API)', function () {
       senderWallet,
       receiverWallet,
     );
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const limit = 50;
     const getWalletInfoResponse = await sendGetRequest(
       getWalletInfoUri(limit),

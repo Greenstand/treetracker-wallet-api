@@ -1,13 +1,10 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -52,7 +49,6 @@ describe('Request and fulfill an explicit transfer', () => {
 
   beforeEach(async () => {
     sinon.restore();
-    await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
   it(`WalletB:${seed.walletB.name} request a token from ${seed.wallet.name}, should get 202`, async () => {
@@ -65,8 +61,6 @@ describe('Request and fulfill an explicit transfer', () => {
         sender_wallet: seed.wallet.name,
         receiver_wallet: seed.walletB.name,
       });
-    console.log('AA');
-    console.log(res.body);
     expect(res).property('statusCode').to.eq(202);
   });
 
@@ -80,12 +74,9 @@ describe('Request and fulfill an explicit transfer', () => {
     expect(res.body.transfers[0]).property('state').eq('requested');
     expect(res.body.transfers[0]).property('id').to.be.a.uuid('v4');
     requestedTransferId = res.body.transfers[0].id;
-    console.log('JJ');
-    console.log(requestedTransferId);
   });
 
   it(`${seed.wallet.name} fulfill this requested transfer`, async () => {
-    console.log(requestedTransferId);
     const res = await request(server)
       .post(`/transfers/${requestedTransferId}/fulfill`)
       .set('treetracker-api-key', apiKey)
@@ -93,7 +84,6 @@ describe('Request and fulfill an explicit transfer', () => {
       .send({
         implicit: true,
       });
-    console.log(res.body);
     expect(res).property('statusCode').to.eq(200);
   });
 

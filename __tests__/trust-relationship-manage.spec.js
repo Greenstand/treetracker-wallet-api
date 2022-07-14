@@ -1,13 +1,11 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
+const TrustRelationship = require('../server/utils/trust-enums');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -15,7 +13,6 @@ const { apiKey } = seed;
 describe('Trust relationship: manage', () => {
   let bearerToken;
   let bearerTokenB;
-  let requestedTransferId;
 
   before(async () => {
     await seed.clear();
@@ -52,7 +49,6 @@ describe('Trust relationship: manage', () => {
 
   beforeEach(async () => {
     sinon.restore();
-    await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
   it(`Should be able to find the trust relationship: manage ${seed.walletC.name}`, async () => {
@@ -60,7 +56,6 @@ describe('Trust relationship: manage', () => {
       .get('/trust_relationships?limit=1000')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
-    console.log(res.body);
     expect(res).property('statusCode').to.eq(200);
     expect(res).property('body').property('trust_relationships').lengthOf(1);
     expect(res.body.trust_relationships[0]).property('id').to.be.a.uuid('v4');

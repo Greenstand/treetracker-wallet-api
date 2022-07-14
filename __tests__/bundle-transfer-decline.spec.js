@@ -1,13 +1,11 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
+const TransferEnums = require('../server/utils/transfer-enum');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -52,7 +50,6 @@ describe('Create and decline a bundle transfer', () => {
 
   beforeEach(async () => {
     sinon.restore();
-    await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
   it(`create Bundle transfer tokens from ${seed.wallet.name} to ${seed.walletB.name}`, async () => {
@@ -96,7 +93,6 @@ describe('Create and decline a bundle transfer', () => {
       .set('Content-Type', 'application/json')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
-    console.log(res.body);
     expect(res).to.have.property('statusCode', 200);
   });
 
@@ -109,7 +105,7 @@ describe('Create and decline a bundle transfer', () => {
     expect(res.body.transfers).lengthOf(1);
     expect(res.body.transfers[0])
       .property('state')
-      .eq(Transfer.STATE.cancelled);
+      .eq(TransferEnums.STATE.cancelled);
   });
 
   it(`Token:#${seed.token.id} now should still belong to ${seed.wallet.name}`, async () => {

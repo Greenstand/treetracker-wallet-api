@@ -1,5 +1,5 @@
 const HttpError = require('../utils/HttpError');
-const Session = require('../database/Session');
+const Session = require('../infra/database/Session');
 const ApiKey = require('../models/ApiKey');
 
 class ApiKeyService {

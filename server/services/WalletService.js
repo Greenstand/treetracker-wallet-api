@@ -1,7 +1,7 @@
 const { validate: uuidValidate } = require('uuid');
 const Wallet = require('../models/Wallet');
-const Session = require('../database/Session');
-const TokenService = require('./TokenService');
+const Session = require('../infra/database/Session');
+const Token = require('../models/Token');
 
 class WalletService {
   constructor() {
@@ -49,14 +49,12 @@ class WalletService {
 
   async getAllWallets(id, limitOptions, getTokenCount = true) {
     if (getTokenCount) {
-      const tokenService = new TokenService(this._session);
+      const token = new Token(this._session);
       const wallets = await this._wallet.getAllWallets(id, limitOptions);
       return Promise.all(
         wallets.map(async (wallet) => {
           const json = { ...wallet };
-          json.tokens_in_wallet = await tokenService.countTokenByWallet(
-            wallet.id,
-          );
+          json.tokens_in_wallet = await token.countTokenByWallet(wallet.id);
           return json;
         }),
       );

@@ -131,7 +131,7 @@ class BaseRepository {
    * return ids created
    */
   async batchCreate(objects) {
-    log.warn('object batch:', objects);
+    log.debug('object batch:', objects);
     const result = await this._session
       .getDB()
       .batchInsert(this._tableName, objects)

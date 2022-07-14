@@ -1,15 +1,14 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const chai = require('chai');
 const server = require('../../server/app');
 chai.use(require('chai-uuid'));
 const Zaven = require('../mock-data/Zaven.json');
 const Meisze = require('../mock-data/Meisze.json');
 const testUtils = require('./testUtils');
-const Transfer = require('../../server/models/Transfer');
 const TokenA = require('../mock-data/TokenA');
+const TransferEnums = require('../../server/utils/transfer-enum');
 
 describe('Zaven request to send 1 token to Meisze', () => {
   let registeredZaven;
@@ -37,8 +36,6 @@ describe('Zaven request to send 1 token to Meisze', () => {
         .set('treetracker-api-key', registeredMeisze.apiKey)
         .set('Authorization', `Bearer ${registeredMeisze.token}`)
         .expect(200);
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     });
 
     it('The transfer status should be cancelled', async () => {
@@ -51,7 +48,7 @@ describe('Zaven request to send 1 token to Meisze', () => {
           expect(res.body.transfers).lengthOf(1);
           expect(res.body.transfers[0])
             .property('state')
-            .eq(Transfer.STATE.cancelled);
+            .eq(TransferEnums.STATE.cancelled);
         });
     });
 

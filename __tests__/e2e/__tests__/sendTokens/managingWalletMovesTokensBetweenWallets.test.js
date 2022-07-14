@@ -54,7 +54,6 @@ const requestTrustRelationshipPayload = (wallet) => {
 
 describe('Sending tokens via managed wallet (Wallet API)', function () {
   before(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
     walletAToken = await getSession(walletA, password);
     walletBToken = await getSession(walletB, password);
     managingWalletToken = await getSession(managingWallet, password);
@@ -78,7 +77,7 @@ describe('Sending tokens via managed wallet (Wallet API)', function () {
 
     expect(requestTrustBody).to.have.property('state').eq('requested');
     const requestRelationshipId = requestTrustBody.id;
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const acceptTrustResponse = await sendPostRequest(
       acceptTrustRelationshipUri(requestRelationshipId),
       headers(walletAToken.token),
@@ -94,7 +93,7 @@ describe('Sending tokens via managed wallet (Wallet API)', function () {
       'Accept trust relationship response status does not equal!',
     );
     expect(acceptedTrustBody).to.have.property('state').eq('trusted');
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const sendTokenResponse = await sendPostRequest(
       sendTokensUri,
       headers(managingWalletToken.token),
@@ -102,14 +101,14 @@ describe('Sending tokens via managed wallet (Wallet API)', function () {
     );
     assertSendTokensBody(sendTokenResponse, managingWallet, walletB);
     const { id } = sendTokenResponse.body;
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const acceptTransferResponse = await sendPostRequest(
       acceptTokenTransferUri(id),
       headers(walletBToken.token),
       {},
     );
     assertTransferCompletedBody(acceptTransferResponse, walletA, walletB);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const limit = 50;
     const getWalletInfoResponse = await sendGetRequest(
       getWalletInfoUri(limit),

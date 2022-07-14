@@ -1,13 +1,11 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
+const TrustRelationship = require('../server/utils/trust-enums');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -112,7 +110,6 @@ describe('Trust relationship management', () => {
         trust_request_type: 'send',
         requestee_wallet: seed.walletB.name,
       });
-    console.log(res.body);
     expect(res).property('statusCode').to.eq(200);
   });
 
@@ -127,8 +124,6 @@ describe('Trust relationship management', () => {
         trust_request_type: 'manage',
         requestee_wallet: seed.wallet.name,
       });
-    console.log('ww');
-    console.log(res.body);
     expect(res).property('statusCode').to.eq(200);
     const trustRelationship = res.body;
     expect(trustRelationship).property('id').to.be.a.uuid('v4');

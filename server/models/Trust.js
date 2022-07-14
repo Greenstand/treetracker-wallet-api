@@ -1,6 +1,8 @@
+const expect = require('expect-runtime');
+const log = require('loglevel');
 const TrustRepository = require('../repositories/TrustRepository');
 const HttpError = require('../utils/HttpError');
-const TrustRelationship = require('../utils/trust-enums');
+const TrustRelationshipEnums = require('../utils/trust-enums');
 const Wallet = require('./Wallet');
 
 class Trust {
@@ -55,7 +57,7 @@ class Trust {
   async getTrustRelationshipsTrusted(walletId) {
     return this.getTrustRelationships({
       walletId,
-      state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
+      state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
     });
   }
 
@@ -63,7 +65,7 @@ class Trust {
    * send a trust request to another wallet
    */
   async requestTrustFromAWallet({
-    requestType,
+    trustRequestType,
     requesterWallet,
     requesteeWallet,
     originatorWallet,
@@ -78,8 +80,8 @@ class Trust {
     const actorWallet = requesterWallet; // case of: manage/send
     const targetWallet = requesteeWallet; // case of: mange/send
     //    if(
-    //      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.receive ||
-    //      requestType === TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield){
+    //      trustRequestType === TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.receive ||
+    //      trustRequestType === TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.yield){
     //      actorWallet = requesteeWallet;
     //      targetWallet = requesterWallet;
     //    }
@@ -97,22 +99,22 @@ class Trust {
     // check if the target wallet can accept the request
     // function below currently empty
     // await walletModel.checkTrustRequestSentToMe(
-    //   requestType,
+    //   trustRequestType,
     //   originatorWallet.id,
     //   targetWallet.id,
     // );
 
     // create this request
     const trustRelationship = {
-      type: TrustRelationship.getTrustTypeByRequestType(requestType),
-      request_type: requestType,
+      type: TrustRelationshipEnums.getTrustTypeByRequestType(trustRequestType),
+      request_type: trustRequestType,
       actor_wallet_id: actorWallet.id,
       originator_wallet_id: originatorWallet.id,
       target_wallet_id: targetWallet.id,
-      state: TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested,
+      state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
     };
     await this.checkDuplicateRequest({
-      walletId: originatorWallet,
+      walletId: originatorWallet.id,
       trustRelationship,
     });
     const result = await this._trustRepository.create(trustRelationship);
@@ -135,24 +137,25 @@ class Trust {
   async checkDuplicateRequest({ walletId, trustRelationship }) {
     const trustRelationships = await this.getTrustRelationships({ walletId });
     if (
-      trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.send ||
-      trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.manage
+      trustRelationship.type ===
+        TrustRelationshipEnums.ENTITY_TRUST_TYPE.send ||
+      trustRelationship.type === TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage
     ) {
       if (
         trustRelationships.some((e) => {
           if (
             (e.request_type === trustRelationship.request_type &&
               (e.state ===
-                TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested ||
+                TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested ||
                 e.state ===
-                  TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted) &&
+                  TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted) &&
               e.actor_wallet_id === trustRelationship.actor_wallet_id &&
               e.target_wallet_id === trustRelationship.target_wallet_id) ||
             (e.request_type !== trustRelationship.request_type &&
               (e.state ===
-                TrustRelationship.ENTITY_TRUST_STATE_TYPE.requested ||
+                TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested ||
                 e.state ===
-                  TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted) &&
+                  TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted) &&
               e.actor_wallet_id === trustRelationship.target_wallet_id &&
               e.target_wallet_id === trustRelationship.actor_wallet_id)
           ) {
@@ -178,23 +181,25 @@ class Trust {
       walletId,
     );
     // just manage type of trust relationship
-    if (trustRelationship.type === TrustRelationship.ENTITY_TRUST_TYPE.manage) {
+    if (
+      trustRelationship.type === TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage
+    ) {
       // if is manage request
       if (
         trustRelationship.request_type ===
-        TrustRelationship.ENTITY_TRUST_TYPE.manage
+        TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage
       ) {
         if (
           trustRelationshipTrusted.some((e) => {
             if (
-              (e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              (e.type === TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage &&
                 e.request_type ===
-                  TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
+                  TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage &&
                 e.actor_wallet_id === trustRelationship.target_wallet_id &&
                 e.target_wallet_id === trustRelationship.actor_wallet_id) ||
-              (e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              (e.type === TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage &&
                 e.request_type ===
-                  TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
+                  TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield &&
                 e.actor_wallet_id === trustRelationship.actor_wallet_id &&
                 e.target_wallet_id === trustRelationship.target_wallet_id)
             ) {
@@ -210,19 +215,19 @@ class Trust {
         }
       } else if (
         trustRelationship.request_type ===
-        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield
+        TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield
       ) {
         if (
           trustRelationshipTrusted.some((e) => {
             if (
-              (e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              (e.type === TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage &&
                 e.request_type ===
-                  TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.yield &&
+                  TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield &&
                 e.actor_wallet_id === trustRelationship.target_wallet_id &&
                 e.target_wallet_id === trustRelationship.actor_wallet_id) ||
-              (e.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+              (e.type === TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage &&
                 e.request_type ===
-                  TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.manage &&
+                  TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage &&
                 e.actor_wallet_id === trustRelationship.actor_wallet_id &&
                 e.target_wallet_id === trustRelationship.target_wallet_id)
             ) {
@@ -257,6 +262,21 @@ class Trust {
     });
   }
 
+  async updateTrustState(trustRelationship, state) {
+    const trustRelationshipToUpdate = { ...trustRelationship };
+
+    trustRelationshipToUpdate.state = state;
+    delete trustRelationshipToUpdate.originating_wallet;
+    delete trustRelationshipToUpdate.actor_wallet;
+    delete trustRelationshipToUpdate.target_wallet;
+
+    const updatedTrustRelationship = await this._trustRepository.update(
+      trustRelationshipToUpdate,
+    );
+
+    return { ...trustRelationship, ...updatedTrustRelationship };
+  }
+
   /*
    * Accept a trust relationship request
    */
@@ -278,9 +298,11 @@ class Trust {
       );
     }
     await this.checkManageCircle({ walletId, trustRelationship });
-    trustRelationship.state = TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted;
-    const json = await this._trustRepository.update(trustRelationship);
-    return json;
+
+    return this.updateTrustState(
+      trustRelationship,
+      TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+    );
   }
 
   /*
@@ -303,10 +325,11 @@ class Trust {
         'Have no permission to decline this relationship',
       );
     }
-    trustRelationship.state =
-      TrustRelationship.ENTITY_TRUST_STATE_TYPE.canceled_by_target;
-    const json = await this.trustRepository.update(trustRelationship);
-    return json;
+
+    return this.updateTrustState(
+      trustRelationship,
+      TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.canceled_by_target,
+    );
   }
 
   /*
@@ -314,19 +337,62 @@ class Trust {
    */
   async cancelTrustRequestSentToMe({ trustRelationshipId, walletId }) {
     const trustRelationships = await this._trustRepository.getByFilter({
-      id: trustRelationshipId,
+      'wallet_trust.id': trustRelationshipId,
     });
     const [trustRelationship] = trustRelationships;
-    if (trustRetrustRelationship?.originator_wallet_id !== walletId) {
+    if (trustRelationship?.originator_wallet_id !== walletId) {
       throw new HttpError(
         403,
         'Have no permission to cancel this relationship',
       );
     }
-    trustRelationship.state =
-      TrustRelationship.ENTITY_TRUST_STATE_TYPE.cancelled_by_originator;
-    const json = await this._trustRepository.update(trustRelationship);
-    return { ...trustRelationship, updated_at: json.updated_at };
+
+    return this.updateTrustState(
+      trustRelationship,
+      TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.cancelled_by_originator,
+    );
+  }
+
+  /*
+   * To check if the indicated trust relationship exist between the source and
+   * target wallet
+   */
+  async hasTrust(walletLoginId, trustType, senderWallet, receiveWallet) {
+    expect(trustType).oneOf(
+      Object.keys(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
+    );
+    const trustRelationships = await this.getTrustRelationshipsTrusted(
+      walletLoginId,
+    );
+    // check if the trust exist
+    if (
+      trustRelationships.some((trustRelationship) => {
+        if (
+          trustRelationship.actor_wallet_id === senderWallet.id &&
+          trustRelationship.target_wallet_id === receiveWallet.id &&
+          trustRelationship.request_type ===
+            TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send
+        ) {
+          return true;
+        }
+        return false;
+      }) ||
+      trustRelationships.some((trustRelationship) => {
+        if (
+          trustRelationship.actor_wallet_id === receiveWallet.id &&
+          trustRelationship.target_wallet_id === senderWallet.id &&
+          trustRelationship.request_type ===
+            TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.receive
+        ) {
+          return true;
+        }
+        return false;
+      })
+    ) {
+      log.debug('check trust passed');
+      return true;
+    }
+    return false;
   }
 }
 

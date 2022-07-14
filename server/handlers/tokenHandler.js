@@ -34,8 +34,11 @@ const tokenGet = async (req, res) => {
 
 const tokenGetById = async (req, res) => {
   const { id } = req.params;
-  const tokenService = new TokenService(session);
-  const token = await tokenService.getById(id);
+  const tokenService = new TokenService();
+  const token = await tokenService.getById({
+    id,
+    walletLoginId: req.wallet_id,
+  });
 
   res.status(200).json(token);
 };
@@ -48,7 +51,7 @@ const tokenGetTransactionsById = async (req, res) => {
   const { limit, offset } = req.query;
   const { id } = req.params;
   const tokenService = new TokenService();
-  const transactions = tokenService.getTransactions({
+  const transactions = await tokenService.getTransactions({
     tokenId: id,
     limit,
     offset,

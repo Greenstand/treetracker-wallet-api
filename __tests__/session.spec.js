@@ -2,10 +2,9 @@
  * Test session mechanism
  */
 const jestExpect = require('expect');
-const sinon = require('sinon');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
-const Session = require('../server/database/Session');
+const Session = require('../server/infra/database/Session');
 const seed = require('./seed');
 
 chai.use(sinonChai);

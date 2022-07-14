@@ -1,22 +1,21 @@
-const HttpError = require('../utils/HttpError');
 const BaseRepository = require('./BaseRepository');
-const Session = require('../database/Session');
 
 class TrustRepository extends BaseRepository {
   constructor(session) {
     super('wallet_trust', session);
     this._tableName = 'wallet_trust';
-    this._knex = session.getDB();
+    this._session = session;
   }
 
   async get() {
     // const trust_relationship_instance = new trust_relationship(1);
-    const list = await this._knex.select().table(this._tableName);
+    const list = await this._session.getDB().select().table(this._tableName);
     return list;
   }
 
   async getByOriginatorId(id) {
-    const list = await this._knex
+    const list = await this._session
+      .getDB()
       .select()
       .table(this._tableName)
       .where('originator_wallet_id', id);
@@ -24,7 +23,8 @@ class TrustRepository extends BaseRepository {
   }
 
   async getByTargetId(id) {
-    const list = await this._knex
+    const list = await this._session
+      .getDB()
       .select()
       .table(this._tableName)
       .where('target_wallet_id', id);
@@ -32,7 +32,8 @@ class TrustRepository extends BaseRepository {
   }
 
   async getTrustedByOriginatorId(id) {
-    const list = await this._knex
+    const list = await this._session
+      .getDB()
       .select()
       .table(this._tableName)
       .where({
@@ -43,10 +44,11 @@ class TrustRepository extends BaseRepository {
   }
 
   async getByFilter(filter, limitOptions) {
-    const promise = this._knex
+    const promise = this._session
+      .getDB()
       .select(
         'wallet_trust.*',
-        'originator_wallet.name as originator_wallet',
+        'originator_wallet.name as originating_wallet',
         'actor_wallet.name as actor_wallet',
         'target_wallet.name as target_wallet',
       )

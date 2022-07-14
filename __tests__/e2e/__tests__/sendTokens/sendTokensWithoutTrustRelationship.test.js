@@ -52,7 +52,6 @@ const payload = (walletA, walletB) => {
 
 describe('Sending tokens without trust relationship (Wallet API)', function () {
   before(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
     senderBearerToken = await getSession(senderWallet, password);
     receiverBearerToken = await getSession(receiverWallet, password);
     receiverEmptyBearerToken = await getSession(receiverEmptyWallet, password);
@@ -82,12 +81,12 @@ describe('Sending tokens without trust relationship (Wallet API)', function () {
       getWalletInfoUri(limit),
       headers(receiverBearerToken.token),
     );
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const initialNumberOfTokens = await getNumberOfTokensFromWallet(
       initialWalletInfoResponse,
       receiverWallet,
     );
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const response = await sendPostRequest(
       sendTokensUri,
       headers(senderBearerToken.token),
@@ -95,7 +94,7 @@ describe('Sending tokens without trust relationship (Wallet API)', function () {
     );
     assertSendTokensBody(response, senderWallet, receiverWallet);
     const { id } = response.body;
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const acceptTransferResponse = await sendPostRequest(
       acceptTokenTransferUri(id),
       headers(receiverBearerToken.token),
@@ -107,7 +106,7 @@ describe('Sending tokens without trust relationship (Wallet API)', function () {
       senderWallet,
       receiverWallet,
     );
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const getWalletInfoResponse = await sendGetRequest(
       getWalletInfoUri(limit),
       headers(receiverBearerToken.token),
@@ -120,7 +119,6 @@ describe('Sending tokens without trust relationship (Wallet API)', function () {
   });
 
   it('Tokens - Declined transfer of a token from A to B without trust relationship @token @regression @debug', async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
     const response = await sendPostRequest(
       sendTokensUri,
       headers(senderBearerToken.token),
@@ -129,7 +127,6 @@ describe('Sending tokens without trust relationship (Wallet API)', function () {
     assertSendTokensBody(response, senderWallet, receiverEmptyWallet);
     const { id } = response.body;
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
     const declineTransferResponse = await sendPostRequest(
       declineTokenTransferUri(id),
       headers(receiverEmptyBearerToken.token),
@@ -140,7 +137,7 @@ describe('Sending tokens without trust relationship (Wallet API)', function () {
       senderWallet,
       receiverEmptyWallet,
     );
-    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const limit = 50;
     const getWalletInfoResponse = await sendGetRequest(
       getWalletInfoUri(limit),

@@ -1,37 +1,251 @@
+const Session = require('../infra/database/Session');
+const Transfer = require('../models/Transfer');
+const HttpError = require('../utils/HttpError');
 const WalletService = require('./WalletService');
+const TokenService = require('./TokenService');
+const TransferEnums = require('../utils/transfer-enum');
 
 class TransferService {
-  constructor(session) {
-    this._session = session;
-    this.walletService = new WalletService(session);
+  constructor() {
+    this._session = new Session();
+    this._transfer = new Transfer(this._session);
+    this._walletService = new WalletService();
   }
 
-  async convertToResponse(transferObject) {
-    const {
-      originator_wallet_id,
-      source_wallet_id,
-      destination_wallet_id,
-    } = transferObject;
-    const result = { ...transferObject };
-    {
-      const wallet = await this.walletService.getById(originator_wallet_id);
-      const json = await wallet.toJSON();
-      result.originating_wallet = json.name;
-      delete result.originator_wallet_id;
+  async getByFilter(query, walletLoginId) {
+    const { state, wallet, limit, offset } = query;
+
+    let walletId;
+
+    if (wallet) {
+      const walletDetails = await this._walletService.getByIdOrName(wallet);
+      walletId = walletDetails.id;
     }
-    {
-      const wallet = await this.walletService.getById(source_wallet_id);
-      const json = await wallet.toJSON();
-      result.source_wallet = await json.name;
-      delete result.source_wallet_id;
+
+    const results = await this._transfer.getTransfers({
+      state,
+      walletId,
+      offset,
+      limit,
+      walletLoginId,
+    });
+
+    return results;
+  }
+
+  async initiateTransfer(transferBody, walletLoginId) {
+    // begin transaction
+    try {
+      await this._session.beginTransaction();
+      const walletSender = await this._walletService.getByIdOrName(
+        transferBody.sender_wallet,
+      );
+      const walletReceiver = await this._walletService.getByIdOrName(
+        transferBody.receiver_wallet,
+      );
+
+      const { claim, bundle, tokens } = transferBody;
+
+      let result;
+
+      // TODO: put the claim boolean into each tokens
+      if (tokens) {
+        const gottentokens = [];
+        const tokenService = new TokenService();
+        for (const id of tokens) {
+          const token = await tokenService.getById({ id }, true);
+          gottentokens.push(token);
+        }
+        // Case 1: with trust, token transfer
+        result = await this._transfer.transfer(
+          walletLoginId,
+          walletSender,
+          walletReceiver,
+          gottentokens,
+          claim,
+        );
+      } else {
+        // Case 2: with trust, bundle transfer
+        // TODO: get only transferrable tokens
+        result = await this._transfer.transferBundle(
+          walletLoginId,
+          walletSender,
+          walletReceiver,
+          bundle.bundle_size,
+          claim,
+        );
+      }
+
+      let status;
+      if (result.state === TransferEnums.STATE.completed) {
+        status = 201;
+      } else if (
+        result.state === TransferEnums.STATE.pending ||
+        result.state === TransferEnums.STATE.requested
+      ) {
+        status = 202;
+      } else {
+        throw new Error(`Unexpected state ${result.state}`);
+      }
+      await this._session.commitTransaction();
+      return { status, result };
+    } catch (e) {
+      if (e instanceof HttpError && !e.shouldRollback()) {
+        // if the error type is HttpError, means the exception has been handled
+        await this._session.commitTransaction();
+        throw e;
+      } else {
+        // unknown exception, rollback the transaction
+        await this._session.rollbackTransaction();
+        throw e;
+      }
     }
-    {
-      const wallet = await this.walletService.getById(destination_wallet_id);
-      const json = await wallet.toJSON();
-      result.destination_wallet = await json.name;
-      delete result.destination_wallet_id;
+  }
+
+  async acceptTransfer(transferId, walletLoginId) {
+    try {
+      await this._session.beginTransaction();
+
+      // TODO: claim
+      const result = await this._transfer.acceptTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      await this._session.commitTransaction();
+
+      return result;
+    } catch (e) {
+      if (e instanceof HttpError && !e.shouldRollback()) {
+        // if the error type is HttpError, means the exception has been handled
+        await this._session.commitTransaction();
+        throw e;
+      } else {
+        // unknown exception, rollback the transaction
+        await this._session.rollbackTransaction();
+        throw e;
+      }
     }
-    return result;
+  }
+
+  async declineTransfer(transferId, walletLoginId) {
+    try {
+      await this._session.beginTransaction();
+
+      const result = await this._transfer.declineTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      await this._session.commitTransaction();
+      return result;
+    } catch (e) {
+      if (e instanceof HttpError && !e.shouldRollback()) {
+        // if the error type is HttpError, means the exception has been handled
+        await this._session.commitTransaction();
+        throw e;
+      } else {
+        // unknown exception, rollback the transaction
+        await this._session.rollbackTransaction();
+        throw e;
+      }
+    }
+  }
+
+  async cancelTransfer(transferId, walletLoginId) {
+    try {
+      await this._session.beginTransaction();
+
+      const result = await this._transfer.cancelTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      await this._session.commitTransaction();
+      return result;
+    } catch (e) {
+      if (e instanceof HttpError && !e.shouldRollback()) {
+        // if the error type is HttpError, means the exception has been handled
+        await this._session.commitTransaction();
+        throw e;
+      } else {
+        // unknown exception, rollback the transaction
+        await this._session.rollbackTransaction();
+        throw e;
+      }
+    }
+  }
+
+  async fulfillTransfer(walletLoginId, transferId, requestBody) {
+    try {
+      await this._session.beginTransaction();
+
+      let result;
+      if (requestBody.implicit) {
+        result = await this._transfer.fulfillTransfer(
+          transferId,
+          walletLoginId,
+        );
+      } else {
+        // load tokens
+        const tokens = [];
+        const tokenService = new TokenService();
+        for (const id of requestBody.tokens) {
+          const token = await tokenService.getById({ id }, true);
+          tokens.push(token);
+        }
+        result = await this._transfer.fulfillTransferWithTokens(
+          transferId,
+          tokens,
+          walletLoginId,
+        );
+      }
+      await this._session.commitTransaction();
+      return result;
+    } catch (e) {
+      if (e instanceof HttpError && !e.shouldRollback()) {
+        // if the error type is HttpError, means the exception has been handled
+        await this._session.commitTransaction();
+        throw e;
+      } else {
+        // unknown exception, rollback the transaction
+        await this._session.rollbackTransaction();
+        throw e;
+      }
+    }
+  }
+
+  async getTransferById(transferId, walletLoginId) {
+    const transfer = this._transfer.getById({
+      transferId,
+      walletLoginId,
+    });
+    if (!transfer) {
+      throw new HttpError(
+        404,
+        'Can not find this transfer or it is related to this wallet',
+      );
+    }
+  }
+
+  async getTokensByTransferId(transferId, limit, offset) {
+    const transfer = await this.getTransferById(transferId);
+    const tokenService = new TokenService();
+    let tokens;
+    if (transfer.state === TransferEnums.STATE.completed) {
+      tokens = await tokenService.getTokensByTransferId(
+        transfer.id,
+        limit,
+        offset,
+      );
+    } else {
+      tokens = await tokenService.getTokensByPendingTransferId(
+        transfer.id,
+        limit,
+        offset,
+      );
+    }
+    return tokens;
   }
 }
 

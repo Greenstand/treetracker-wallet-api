@@ -1,6 +1,6 @@
 const Joi = require('joi');
 const TrustService = require('../services/TrustService');
-const TrustRelationship = require('../utils/trust-enums');
+const TrustRelationshipEnums = require('../utils/trust-enums');
 
 const trustGetQuerySchema = Joi.object({
   state: Joi.string(),
@@ -13,7 +13,7 @@ const trustGetQuerySchema = Joi.object({
 const trustPostSchema = Joi.object({
   trust_request_type: Joi.string()
     .required()
-    .valid(...Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE)),
+    .valid(...Object.keys(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE)),
   requestee_wallet: Joi.string().required(),
   requester_wallet: Joi.string(),
 });
@@ -48,7 +48,7 @@ const trustPost = async (req, res) => {
 
   const trustService = new TrustService();
   const trustRelationship = await trustService.createTrustRelationship({
-    walletId: req.wallet_id,
+    walletLoginId: req.wallet_id,
     requesteeWallet: req.body.requestee_wallet,
     requesterWallet: req.body.requester_wallet,
     trustRequestType: req.body.trust_request_type,
@@ -66,7 +66,7 @@ const trustRelationshipAccept = async (req, res) => {
   const trustService = new TrustService();
   const json = await trustService.acceptTrustRequestSentToMe({
     trustRelationshipId,
-    walletId: req.wallet_id,
+    walletLoginId: req.wallet_id,
   });
   res.status(200).json(json);
 };
@@ -79,7 +79,7 @@ const trustRelationshipDecline = async (req, res) => {
   const { trustRelationshipId } = req.params;
   const trustService = new TrustService();
   const json = await trustService.declineTrustRequestSentToMe({
-    walletId: req.wallet_id,
+    walletLoginId: req.wallet_id,
     trustRelationshipId,
   });
   res.status(200).json(json);
@@ -93,7 +93,7 @@ const trustRelationshipDelete = async (req, res) => {
   const { trustRelationshipId } = req.params;
   const trustService = new TrustService();
   const json = await trustService.cancelTrustRequestSentToMe({
-    walletId: req.wallet_id,
+    walletLoginId: req.wallet_id,
     trustRelationshipId,
   });
   res.status(200).json(json);

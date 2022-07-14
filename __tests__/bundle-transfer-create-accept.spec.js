@@ -1,13 +1,11 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
+const TransferEnums = require('../server/utils/transfer-enum');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -52,7 +50,6 @@ describe('Create and accept a bundle transfer', () => {
 
   beforeEach(async () => {
     sinon.restore();
-    await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
   it(`create Bundle transfer tokens from ${seed.wallet.name} to ${seed.walletB.name}`, async () => {
@@ -104,12 +101,11 @@ describe('Create and accept a bundle transfer', () => {
       .get(`/transfers?limit=1000`)
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
-    console.log(res.body);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.transfers).lengthOf(1);
     expect(res.body.transfers[0])
       .property('state')
-      .eq(Transfer.STATE.completed);
+      .eq(TransferEnums.STATE.completed);
   });
 
   it(`Token:#${seed.token.id} now should belong to ${seed.walletB.name}`, async () => {

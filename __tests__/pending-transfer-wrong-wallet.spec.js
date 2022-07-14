@@ -1,13 +1,10 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -65,11 +62,9 @@ describe('Create and fail to accept a pending transfer with wrong wallet', () =>
 
   beforeEach(async () => {
     sinon.restore();
-    await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
   let transferId;
-  let pendingTransfer;
 
   it(`Creates a pending transaction `, async () => {
     const res = await request(server)

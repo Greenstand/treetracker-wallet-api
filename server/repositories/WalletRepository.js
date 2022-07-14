@@ -11,7 +11,6 @@ class WalletRepository extends BaseRepository {
     super('wallet', session);
     this._tableName = 'wallet';
     this._session = session;
-    this._knex = this._session.getDB();
   }
 
   async getByName(wallet) {
@@ -19,7 +18,8 @@ class WalletRepository extends BaseRepository {
       wallet,
       () => new HttpError(400, `invalid wallet name:${wallet}`),
     ).match(/^\S+$/);
-    const list = await this._knex
+    const list = await this._session
+      .getDB()
       .select()
       .table(this._tableName)
       .where('name', wallet);
@@ -34,7 +34,8 @@ class WalletRepository extends BaseRepository {
   }
 
   async getById(id) {
-    const object = await this._knex
+    const object = await this._session
+      .getDB()
       .select()
       .table(this._tableName)
       .where('id', id)
@@ -47,12 +48,14 @@ class WalletRepository extends BaseRepository {
 
   // Get a wallet itself including its sub wallets
   async getAllWallets(id, limitOptions) {
-    let promise = this._knex
+    let promise = this._session
+      .getDB()
       .select('id', 'name', 'logo_url', 'created_at')
       .table('wallet')
       .where('id', id)
       .union(
-        this._knex
+        this._session
+          .getDB()
           .select(
             'wallet.id',
             'wallet.name',
@@ -68,7 +71,8 @@ class WalletRepository extends BaseRepository {
             'wallet_trust.state':
               TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
           }),
-        this._knex
+        this._session
+          .getDB()
           .select(
             'wallet.id',
             'wallet.name',

@@ -6,7 +6,6 @@ const { ValidationError } = require('joi');
 const HttpError = require('./HttpError');
 const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService.js');
-const Session = require('../database/Session');
 
 /*
  * This is from the library https://github.com/Abazhenov/express-async-handler

@@ -1,13 +1,11 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
+const TransferEnums = require('../server/utils/transfer-enum');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -51,7 +49,6 @@ describe('Create and accept a pending transfer', () => {
 
   beforeEach(async () => {
     sinon.restore();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   let transferId;
@@ -67,6 +64,7 @@ describe('Create and accept a pending transfer', () => {
         sender_wallet: seed.wallet.name,
         receiver_wallet: seed.walletB.name,
       });
+
     expect(res).property('statusCode').to.eq(202);
     expect(res).property('body').property('id').to.be.a.uuid('v4');
     expect(res)
@@ -119,7 +117,7 @@ describe('Create and accept a pending transfer', () => {
     expect(res.body.transfers).lengthOf(1);
     expect(res.body.transfers[0])
       .property('state')
-      .eq(Transfer.STATE.completed);
+      .eq(TransferEnums.STATE.completed);
   });
 
   it(`Token:#${seed.token.id} now should belong to ${seed.walletB.name}`, async () => {

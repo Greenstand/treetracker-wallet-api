@@ -1,13 +1,11 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require('../server/models/Transfer');
-const TrustRelationship = require('../server/models/TrustRelationship');
+const TransferEnums = require('../server/utils/transfer-enum');
 chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
@@ -51,7 +49,6 @@ describe('Create and cancel a pending transfer', () => {
 
   beforeEach(async () => {
     sinon.restore();
-    await new Promise((resolve) => setTimeout(resolve, 500));
   });
 
   let transferId;
@@ -108,7 +105,7 @@ describe('Create and cancel a pending transfer', () => {
     expect(res.body.transfers).lengthOf(1);
     expect(res.body.transfers[0])
       .property('state')
-      .eq(Transfer.STATE.cancelled);
+      .eq(TransferEnums.STATE.cancelled);
   });
 
   it(`Token:#${seed.token.id} now shouldn't be pending `, async () => {

@@ -1,5 +1,5 @@
 const Trust = require('../models/Trust');
-const Session = require('../database/Session');
+const Session = require('../infra/database/Session');
 const Wallet = require('../models/Wallet');
 const WalletService = require('./WalletService');
 
@@ -59,13 +59,13 @@ class TrustService {
   }
 
   async createTrustRelationship({
-    walletId,
+    walletLoginId,
     requesteeWallet,
     requesterWallet,
     trustRequestType,
   }) {
     const walletService = new WalletService();
-    const originatorWallet = await walletService.getById(walletId);
+    const originatorWallet = await walletService.getById(walletLoginId);
     const requesteeWalletDetails = await walletService.getByName(
       requesteeWallet,
     );
@@ -86,23 +86,23 @@ class TrustService {
     return trustRelationship;
   }
 
-  async acceptTrustRequestSentToMe({ walletId, trustRelationshipId }) {
+  async acceptTrustRequestSentToMe({ walletLoginId, trustRelationshipId }) {
     return this._trust.acceptTrustRequestSentToMe({
-      walletId,
+      walletId: walletLoginId,
       trustRelationshipId,
     });
   }
 
-  async declineTrustRequestSentToMe({ walletId, trustRelationshipId }) {
+  async declineTrustRequestSentToMe({ walletLoginId, trustRelationshipId }) {
     return this._trust.declineTrustRequestSentToMe({
-      walletId,
+      walletId: walletLoginId,
       trustRelationshipId,
     });
   }
 
-  async cancelTrustRequestSentToMe({ walletId, trustRelationshipId }) {
+  async cancelTrustRequestSentToMe({ walletLoginId, trustRelationshipId }) {
     return this._trust.cancelTrustRequestSentToMe({
-      walletId,
+      walletId: walletLoginId,
       trustRelationshipId,
     });
   }
