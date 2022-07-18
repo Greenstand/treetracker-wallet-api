@@ -81,7 +81,7 @@ describe('Create and decline a bundle transfer', () => {
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.transfers).lengthOf(1);
-    pendingTransfer = res.body.transfers[0];
+    [pendingTransfer] = res.body.transfers;
     expect(pendingTransfer)
       .property('destination_wallet')
       .eq(seed.walletB.name);

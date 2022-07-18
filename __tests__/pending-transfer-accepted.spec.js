@@ -51,7 +51,6 @@ describe('Create and accept a pending transfer', () => {
     sinon.restore();
   });
 
-  let transferId;
   let pendingTransfer;
 
   it(`Creates a pending transaction `, async () => {
@@ -73,7 +72,6 @@ describe('Create and accept a pending transfer', () => {
       .property('tokens')
       .lengthOf(1);
     expect(res.body.parameters.tokens[0]).eq(seed.token.id);
-    transferId = res.body.id;
   });
 
   it(`Token:#${seed.token.id} now should be pending `, async () => {
@@ -92,7 +90,7 @@ describe('Create and accept a pending transfer', () => {
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.transfers).lengthOf(1);
-    pendingTransfer = res.body.transfers[0];
+    [pendingTransfer] = res.body.transfers;
     expect(pendingTransfer)
       .property('destination_wallet')
       .eq(seed.walletB.name);

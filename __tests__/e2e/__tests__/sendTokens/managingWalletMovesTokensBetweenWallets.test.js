@@ -34,13 +34,13 @@ const headers = (token) => {
   };
 };
 
-const payload = (walletA, walletB) => {
+const payload = (senderWallet, receiverWalletB) => {
   return {
     bundle: {
       bundle_size: 1,
     },
-    sender_wallet: walletA,
-    receiver_wallet: walletB,
+    sender_wallet: senderWallet,
+    receiver_wallet: receiverWalletB,
     claim: false,
   };
 };

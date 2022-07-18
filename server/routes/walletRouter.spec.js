@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const uuid = require('uuid');
-const bodyParser = require('body-parser');
 const walletRouter = require('./walletRouter');
 const { errorHandler, apiKeyHandler } = require('../utils/utils');
 
@@ -15,13 +14,11 @@ const WalletService = require('../services/WalletService');
 const TokenService = require('../services/TokenService');
 const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
-const HttpError = require('../utils/HttpError');
 const Wallet = require('../models/Wallet');
 
 describe('walletRouter', () => {
   let app;
   const authenticatedWallet = new Wallet({ id: uuid.v4() });
-  const subWallet = new Wallet({ id: uuid.v4() });
 
   beforeEach(() => {
     sinon.stub(ApiKeyService.prototype, 'check');
@@ -57,7 +54,7 @@ describe('walletRouter', () => {
         .stub(TrustService.prototype, 'convertToResponse')
         .resolves(mockTrust);
       sinon.stub(TokenService.prototype, 'countTokenByWallet').resolves(10);
-      const fn = sinon
+      const _fn = sinon
         .stub(Wallet.prototype, 'getSubWallets')
         .resolves([mockWallet2]);
       const res = await request(app).get('/wallets?limit=2');
@@ -90,22 +87,16 @@ describe('walletRouter', () => {
 
     it('limit and offet working successfully', async () => {
       sinon.stub(WalletService.prototype, 'getById').resolves(mockWallet);
-      console.log(mockWallet.getId());
-      console.log(mockWallet2.getId());
-      console.log(mockWallet3.getId());
-      console.log(mockWallet4.getId());
       sinon
         .stub(TrustService.prototype, 'convertToResponse')
         .resolves(mockTrust);
       sinon.stub(TokenService.prototype, 'countTokenByWallet').resolves(10);
-      const fn = sinon
+      const _fn = sinon
         .stub(Wallet.prototype, 'getSubWallets')
         .resolves([mockWallet2, mockWallet3, mockWallet4]);
       const res = await request(app).get('/wallets?limit=3&offset=2');
       expect(res).property('statusCode').eq(200);
       expect(res.body.wallets).lengthOf(3);
-      console.log(authenticatedWallet.getId());
-      console.log(res.body);
       expect(res.body.wallets[0]).property('tokens_in_wallet').eq(10);
       expect(res.body.wallets[0]).property('id').eq(mockWallet3.getId());
       expect(res.body.wallets[1]).property('id').eq(mockWallet4.getId());
@@ -122,7 +113,7 @@ describe('walletRouter', () => {
       sinon
         .stub(TrustService.prototype, 'convertToResponse')
         .resolves(mockTrust);
-      const fn = sinon
+      const _fn = sinon
         .stub(Wallet.prototype, 'getTrustRelationships')
         .resolves([mockTrust]);
       const res = await request(app).get(
@@ -136,7 +127,6 @@ describe('walletRouter', () => {
   describe('post /wallets', () => {
     const mockWallet = new Wallet(uuid.v4());
     const mockWallet2 = new Wallet({ id: uuid.v4(), name: 'test-wallet-2' });
-    const mockTrust = { id: uuid.v4() };
 
     it('successfully creates managed wallet', async () => {
       sinon.stub(WalletService.prototype, 'getById').resolves(mockWallet);
@@ -146,7 +136,6 @@ describe('walletRouter', () => {
       const res = await request(app).post('/wallets').send({
         wallet: mockWallet2._JSON.name,
       });
-      console.log(res.body);
       expect(res).property('statusCode').eq(200);
       expect(res.body).to.have.property('wallet').eq(mockWallet2._JSON.name);
       expect(fn).calledWith(mockWallet2._JSON.name);

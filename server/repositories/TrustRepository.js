@@ -44,7 +44,7 @@ class TrustRepository extends BaseRepository {
   }
 
   async getByFilter(filter, limitOptions) {
-    const promise = this._session
+    let promise = this._session
       .getDB()
       .select(
         'wallet_trust.*',

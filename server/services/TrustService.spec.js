@@ -1,20 +1,18 @@
-const TrustService = require("./TrustService");
-const WalletService = require("./WalletService");
-const Wallet = require("../models/Wallet");
-const jestExpect = require("expect");
-const sinon = require("sinon");
-const chai = require("chai");
-const sinonChai = require("sinon-chai");
+const uuid = require('uuid');
+const sinon = require('sinon');
+const chai = require('chai');
+const sinonChai = require('sinon-chai');
+const TrustService = require('./TrustService');
+const WalletService = require('./WalletService');
+const Wallet = require('../models/Wallet');
 
 chai.use(sinonChai);
-const {expect} = chai;
-const uuid = require('uuid');
+const { expect } = chai;
 
-describe("TrustService", () => {
+describe('TrustService', () => {
   const trustService = new TrustService();
 
-  describe("", () => {
-  });
+  describe('', () => {});
 
   afterEach(() => {
     sinon.restore();
@@ -34,36 +32,38 @@ describe("TrustService", () => {
     "id": 4062
 }
    */
-  it("convertToResponse", async () => {
+  it('convertToResponse', async () => {
     const trustId1 = uuid.v4();
     const walletId1 = uuid.v4();
     const trustObject = {
-      "actor_wallet_id": 10,
-      "target_wallet_id": 11,
-      "type": "send",
-      "originator_wallet_id": 10,
-      "request_type": "send",
-      "state": "trusted",
-      "created_at": "2020-10-16T07:36:21.955Z",
-      "updated_at": "2020-10-16T07:36:21.955Z",
-      "active": null,
-      "id": trustId1,
-    }
-    sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
-      id: walletId1,
-      name: "testName",
-    }));
+      actor_wallet_id: 10,
+      target_wallet_id: 11,
+      type: 'send',
+      originator_wallet_id: 10,
+      request_type: 'send',
+      state: 'trusted',
+      created_at: '2020-10-16T07:36:21.955Z',
+      updated_at: '2020-10-16T07:36:21.955Z',
+      active: null,
+      id: trustId1,
+    };
+    sinon.stub(WalletService.prototype, 'getById').resolves(
+      new Wallet({
+        id: walletId1,
+        name: 'testName',
+      }),
+    );
     const result = await trustService.convertToResponse(trustObject);
     expect(result).deep.eq({
-      "id": trustId1,
-      "actor_wallet": "testName",
-      "target_wallet": "testName",
-      "originating_wallet": "testName",
-      "type": "send",
-      "state": "trusted",
-      "request_type": "send",
-      "created_at": "2020-10-16T07:36:21.955Z",
-      "updated_at": "2020-10-16T07:36:21.955Z",
+      id: trustId1,
+      actor_wallet: 'testName',
+      target_wallet: 'testName',
+      originating_wallet: 'testName',
+      type: 'send',
+      state: 'trusted',
+      request_type: 'send',
+      created_at: '2020-10-16T07:36:21.955Z',
+      updated_at: '2020-10-16T07:36:21.955Z',
     });
   });
 });

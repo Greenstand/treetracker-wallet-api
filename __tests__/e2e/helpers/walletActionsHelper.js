@@ -19,7 +19,8 @@ async function assertTokenInWallet(
     'Response status does not match!',
   );
 
-  for (const wallet of wallets) {
+  for (let i; i < wallets.length; i += 1) {
+    const wallet = wallets[i];
     if (Object.values(wallet).includes(expectedWallet)) {
       assert.equals(
         wallet.tokens_in_wallet,
@@ -45,11 +46,13 @@ async function getNumberOfTokensFromWallet(walletInfoResponse, expectedWallet) {
     'Response status does not match!',
   );
 
-  for (const wallet of wallets) {
+  for (let i; i < wallets.length; i += 1) {
+    const wallet = wallets[i];
     if (Object.values(wallet).includes(expectedWallet)) {
       return wallet.tokens_in_wallet;
     }
   }
+  return 0;
 }
 
 module.exports = {

@@ -1,11 +1,13 @@
 require('dotenv').config();
 
+const supertest = require('supertest');
+const { expect } = require('chai');
+const responseStatus = require('http-status-codes');
 const server = process.env.RUN_E2E_LOCALLY
   ? require('../../server/app')
   : `https://${process.env.ENVIRONMENT}-k8s.treetracker.org/wallet`;
-const request = require('supertest')(server);
-const { expect } = require('chai');
-const responseStatus = require('http-status-codes');
+
+const request = supertest(server);
 const assert = require('./libs/assertionLibrary.js');
 const seed = require('./database/seed.js');
 

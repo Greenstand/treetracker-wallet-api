@@ -9,7 +9,8 @@ class TransferRepository extends BaseRepository {
     this._session = session;
   }
 
-  async create(object) {
+  async create(objectParam) {
+    const object = { ...objectParam };
     object.type = TransferEnum.TYPE.send;
     object.active = true;
 

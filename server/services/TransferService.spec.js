@@ -8,7 +8,7 @@ const WalletService = require('./WalletService');
 
 chai.use(sinonChai);
 const { expect } = chai;
-const Session = require('../models/Session');
+const Session = require('../infra/database/Session');
 const Wallet = require('../models/Wallet');
 
 describe('TransferService', () => {
@@ -38,7 +38,6 @@ describe('TransferService', () => {
       }),
     );
     const result = await transferService.convertToResponse(transferObject);
-    console.warn('xxx:', result);
     expect(result).property('source_wallet').eq('testName');
     expect(result).property('originating_wallet').eq('testName');
     expect(result).property('destination_wallet').eq('testName');

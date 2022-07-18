@@ -120,12 +120,9 @@ class Transfer {
   async transfer(walletLoginId, sender, receiver, tokens, claimBoolean) {
     //    await this.checkDeduct(sender, receiver);
     // check tokens belong to sender
-    for (const token of tokens) {
-      const tokenBelongsToSender = await this._token.belongsTo(
-        token,
-        sender.id,
-      );
-      const tokenAbleToTransfer = await this._token.beAbleToTransfer(token);
+    tokens.forEach((token) => {
+      const tokenBelongsToSender = Token.belongsTo(token, sender.id);
+      const tokenAbleToTransfer = Token.beAbleToTransfer(token);
       if (!tokenBelongsToSender) {
         throw new HttpError(
           403,
@@ -138,7 +135,8 @@ class Transfer {
           `The token ${token.id} can not be transfer for some reason, for example, it's been pending for another transfer`,
         );
       }
-    }
+    });
+
     const isDeduct = await this.isDeduct(walletLoginId, sender);
     const hasTrust = await this._trust.hasTrust(
       walletLoginId,
@@ -160,7 +158,7 @@ class Transfer {
       (!isDeduct && hasTrust)
     ) {
       const tokensId = [];
-      for (const token of tokens) {
+      tokens.forEach((token) => {
         // check if the tokens you want to transfer is claimed, i.e. not transferrable
         if (token.claim) {
           log.warn('token is claimed, cannot be transfered');
@@ -170,7 +168,7 @@ class Transfer {
           );
         }
         tokensId.push(token.id);
-      }
+      });
       const transfer = await this._transferRepository.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
@@ -192,9 +190,9 @@ class Transfer {
     if (hasControlOverSender) {
       log.debug('OK, no permission, source under control, now pending it');
       const tokensId = [];
-      for (const token of tokens) {
+      tokens.forEach((token) => {
         tokensId.push(token.id);
-      }
+      });
       const transfer = await this._transferRepository.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
@@ -207,7 +205,7 @@ class Transfer {
       });
       await this._token.pendingTransfer(tokens, transfer);
       // check if the tokens you want to transfer is claimed, i.e. not trasfferable
-      for (const token of tokens) {
+      tokens.forEach((token) => {
         if (token.claim === true) {
           log.warn('token is claimed, cannot be transfered');
           throw new HttpError(
@@ -215,16 +213,16 @@ class Transfer {
             `The token ${token.id} is claimed, cannot be transfered`,
           );
         }
-      }
+      });
       return transfer;
     }
 
     if (hasControlOverReceiver) {
       log.debug('OK, no permission, receiver under control, now request it');
       const tokensId = [];
-      for (const token of tokens) {
+      tokens.forEach((token) => {
         tokensId.push(token.id);
-      }
+      });
       const transfer = await this.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
@@ -237,7 +235,7 @@ class Transfer {
       });
       await this._token.pendingTransfer(tokens, transfer);
       // check if the tokens you want to transfer is claimed, i.e. not trasfferable
-      for (const token of tokens) {
+      tokens.forEach((token) => {
         if (token.claim === true) {
           log.warn('token is claimed, cannot be transfered');
           throw new HttpError(
@@ -245,11 +243,11 @@ class Transfer {
             `The token ${token.id} is claimed, cannot be transfered`,
           );
         }
-      }
+      });
       return transfer;
     }
     // TODO
-    expect.fail();
+    return expect.fail();
   }
 
   async transferBundle(
@@ -352,7 +350,7 @@ class Transfer {
       return this.constructor.removeWalletIds(transfer);
     }
     // TODO
-    expect.fail();
+    return expect.fail();
   }
 
   /*
@@ -585,8 +583,8 @@ class Transfer {
           true,
         );
       }
-      for (const token of tokens) {
-        const belongsTo = await this._token.belongsTo(token, senderId);
+      tokens.forEach((token) => {
+        const belongsTo = Token.belongsTo(token, senderId);
         if (!belongsTo) {
           throw new HttpError(
             403,
@@ -594,7 +592,7 @@ class Transfer {
             true,
           );
         }
-      }
+      });
 
       // transfer
       await this._token.completeTransfer(tokens, transfer);

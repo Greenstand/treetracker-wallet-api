@@ -3,7 +3,6 @@ const express = require('express');
 const sinon = require('sinon');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
-const bodyParser = require('body-parser');
 const uuid = require('uuid');
 const trustRouter = require('./trustRouter');
 const { errorHandler, apiKeyHandler } = require('../utils/utils');
@@ -14,11 +13,8 @@ const ApiKeyService = require('../services/ApiKeyService');
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
-const HttpError = require('../utils/HttpError');
-const Token = require('../models/Token');
-const TokenService = require('../services/TokenService');
 const Wallet = require('../models/Wallet');
-const TrustRelationship = require('../models/TrustRelationship');
+const TrustRelationshipEnums = require('../utils/trust-enums');
 
 describe('trustRouter', () => {
   let app;
@@ -42,9 +38,7 @@ describe('trustRouter', () => {
 
   describe('post /trust_relationships', () => {
     const walletId = uuid.v4();
-    const wallet2Id = uuid.v4();
     const wallet = new Wallet(walletId);
-    const wallet2 = new Wallet(wallet2Id);
 
     it('successfully', async () => {
       sinon
@@ -57,7 +51,6 @@ describe('trustRouter', () => {
         trust_request_type: 'send',
         requestee_wallet: walletId,
       });
-      console.log(res.body);
       expect(res).property('statusCode').eq(200);
       expect(fn).calledWith('send', authenticatedWallet, wallet);
     });
@@ -87,9 +80,6 @@ describe('trustRouter', () => {
 
   describe('get /trust_relationships', () => {
     const walletId = uuid.v4();
-    const wallet2Id = uuid.v4();
-    const wallet = new Wallet(walletId);
-    const wallet2 = new Wallet(wallet2Id);
     const trustId = uuid.v4();
 
     it('successfully', async () => {
@@ -103,14 +93,14 @@ describe('trustRouter', () => {
         .stub(Wallet.prototype, 'getTrustRelationships')
         .resolves([{}]);
       const res = await request(app).get(
-        `/trust_relationships?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}&limit=1`,
+        `/trust_relationships?type=${TrustRelationshipEnums.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted}&limit=1`,
       );
       expect(res).property('statusCode').eq(200);
       expect(res.body.trust_relationships).lengthOf(1);
       expect(fn).calledWith(
-        TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
-        TrustRelationship.ENTITY_TRUST_TYPE.send,
-        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+        TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
+        TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
       );
     });
 
@@ -126,13 +116,13 @@ describe('trustRouter', () => {
         .stub(Wallet.prototype, 'getTrustRelationships')
         .resolves([{}, {}, {}]);
       const res = await request(app).get(
-        `/trust_relationships?type=${TrustRelationship.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted}&limit=3`,
+        `/trust_relationships?type=${TrustRelationshipEnums.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted}&limit=3`,
       );
 
       expect(fn).calledWith(
-        TrustRelationship.ENTITY_TRUST_STATE_TYPE.trusted,
-        TrustRelationship.ENTITY_TRUST_TYPE.send,
-        TrustRelationship.ENTITY_TRUST_REQUEST_TYPE.send,
+        TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+        TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
+        TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
         0,
         3,
       );

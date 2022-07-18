@@ -52,10 +52,12 @@ class TransferService {
       if (tokens) {
         const gottentokens = [];
         const tokenService = new TokenService();
-        for (const id of tokens) {
-          const token = await tokenService.getById({ id }, true);
-          gottentokens.push(token);
-        }
+        await Promise.all(
+          tokens.map(async (id) => {
+            const token = await tokenService.getById({ id }, true);
+            gottentokens.push(token);
+          }),
+        );
         // Case 1: with trust, token transfer
         result = await this._transfer.transfer(
           walletLoginId,
@@ -190,10 +192,12 @@ class TransferService {
         // load tokens
         const tokens = [];
         const tokenService = new TokenService();
-        for (const id of requestBody.tokens) {
-          const token = await tokenService.getById({ id }, true);
-          tokens.push(token);
-        }
+        await Promise.all(
+          requestBody.tokens.map(async (id) => {
+            const token = await tokenService.getById({ id }, true);
+            tokens.push(token);
+          }),
+        );
         result = await this._transfer.fulfillTransferWithTokens(
           transferId,
           tokens,

@@ -3,10 +3,7 @@
  * ________________________________________________________________________
  */
 const JWTTools = require('jsonwebtoken');
-const Crypto = require('crypto');
-const FS = require('fs');
 const log = require('loglevel');
-const path = require('path');
 const HttpError = require('../utils/HttpError');
 
 // PRIVATE and PUBLIC key
@@ -26,11 +23,11 @@ const verifyOptions = {
 };
 
 class JWTService {
-  sign(payload) {
+  static sign(payload) {
     return JWTTools.sign(payload, privateKEY, signingOptions);
   }
 
-  verify(authorization) {
+  static verify(authorization) {
     if (!authorization) {
       throw new HttpError(
         403,

@@ -35,25 +35,28 @@ class TrustService {
 
     const alltrustRelationships = [];
 
-    for (const w of wallets) {
-      const trustRelationships = await this.getTrustRelationships({
-        walletId: w.id,
-        state,
-        type,
-        request_type,
-      });
-      alltrustRelationships.push(...trustRelationships);
-    }
+    await Promise.all(
+      wallets.map(async (w) => {
+        const trustRelationships = await this.getTrustRelationships({
+          walletId: w.id,
+          state,
+          type,
+          request_type,
+        });
+        alltrustRelationships.push(...trustRelationships);
+      }),
+    );
 
     // remove possible duplicates
     const ids = {};
     const finalTrustRelationships = [];
 
-    for (const tr of alltrustRelationships) {
-      if (ids[tr.id]) continue;
-      finalTrustRelationships.push(tr);
-      ids[tr.id] = 1;
-    }
+    alltrustRelationships.forEach((tr) => {
+      if (!ids[tr.id]) {
+        finalTrustRelationships.push(tr);
+        ids[tr.id] = 1;
+      }
+    });
 
     return finalTrustRelationships;
   }

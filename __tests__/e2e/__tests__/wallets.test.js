@@ -53,8 +53,9 @@ describe('Wallets (Wallet API)', function () {
     const { wallets } = response.body;
     assert.equals(response.status, OK, 'Created Wallet not found');
 
-    for (const wallet of wallets) {
-      if (Object.values(wallet).includes(expectedWallet)) {
+    for (let i = 0; i < wallets.length; i += 1) {
+      const w = wallets[i];
+      if (Object.values(w).includes(expectedWallet)) {
         walletCreated = true;
         break;
       }

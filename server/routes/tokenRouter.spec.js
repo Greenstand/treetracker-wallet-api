@@ -2,19 +2,15 @@ const request = require('supertest');
 const express = require('express');
 const { expect } = require('chai');
 const sinon = require('sinon');
-const bodyParser = require('body-parser');
 const uuid = require('uuid');
 const tokenRouter = require('./tokenRouter');
 const { errorHandler, apiKeyHandler } = require('../utils/utils');
 const ApiKeyService = require('../services/ApiKeyService');
 const WalletService = require('../services/WalletService');
 const JWTService = require('../services/JWTService');
-const HttpError = require('../utils/HttpError');
 const Token = require('../models/Token');
 const TokenService = require('../services/TokenService');
 const Wallet = require('../models/Wallet');
-const Transfer = require('../models/Transfer');
-const TransferService = require('../services/TransferService');
 
 describe('tokenRouter', () => {
   let app;
@@ -43,7 +39,6 @@ describe('tokenRouter', () => {
     const token2Id = uuid.v4();
     const walletId = uuid.v4();
     const wallet2Id = uuid.v4();
-    const transactionId = uuid.v4();
     const captureId = uuid.v4();
     const capture2Id = uuid.v4();
 
@@ -107,26 +102,17 @@ describe('tokenRouter', () => {
 
   describe('get token, GET /:token_id/transactions', () => {
     const tokenId = uuid.v4();
-    const token2Id = uuid.v4();
     const walletId = uuid.v4();
     const wallet2Id = uuid.v4();
     const transactionId = uuid.v4();
     const captureId = uuid.v4();
-    const capture2Id = uuid.v4();
 
     const token = new Token({
       id: tokenId,
       wallet_id: walletId,
       capture_id: captureId,
     });
-    const token2 = new Token({
-      id: token2Id,
-      wallet_id: wallet2Id,
-      capture_id: capture2Id,
-    });
-
     const wallet = new Wallet(walletId);
-    const wallet2 = new Wallet(wallet2Id);
 
     it('/test-uuid successfully', async () => {
       sinon.stub(TokenService.prototype, 'getById').resolves(token);

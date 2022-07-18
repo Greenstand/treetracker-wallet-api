@@ -3,8 +3,6 @@ const express = require('express');
 const sinon = require('sinon');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
-const bodyParser = require('body-parser');
-const { extractExpectedAssertionsErrors } = require('expect');
 const uuid = require('uuid');
 const transferRouter = require('./transferRouter');
 const { errorHandler, apiKeyHandler } = require('../utils/utils');
@@ -20,8 +18,7 @@ const TokenService = require('../services/TokenService');
 const Wallet = require('../models/Wallet');
 const Transfer = require('../models/Transfer');
 const TransferService = require('../services/TransferService');
-const Session = require('../models/Session');
-const { column } = require('../database/knex');
+const Session = require('../infra/database/Session');
 
 describe('transferRouter', () => {
   let app;
@@ -62,7 +59,7 @@ describe('transferRouter', () => {
 
     const getTransfersStub = sinon.stub(Wallet.prototype, 'getTransfers');
     getTransfersStub.resolves(
-      [{}, {}, {}].map((_, i) => ({
+      [{}, {}, {}].map((_, _i) => ({
         id: uuid.v4(),
         state: Transfer.STATE.completed,
       })),
@@ -103,7 +100,6 @@ describe('transferRouter', () => {
   });
 
   it('missing sender wallet should throw error', async () => {
-    const walletId = uuid.v4();
     const tokenId = uuid.v4();
     const res = await request(app)
       .post('/transfers')
@@ -374,7 +370,6 @@ describe('transferRouter', () => {
   describe('/fulfill', () => {
     const transferId = uuid.v4();
     const tokenId = uuid.v4();
-    const token2Id = uuid.v4();
 
     it('Nether tokens nor implicit is specified, should throw error', async () => {
       const res = await request(app)
@@ -424,7 +419,6 @@ describe('transferRouter', () => {
     const token2Id = uuid.v4();
     const token3Id = uuid.v4();
     const token4Id = uuid.v4();
-    const transfer = { id: transferId };
     const token = new Token({ id: tokenId });
     const token2 = new Token({ id: token2Id });
     const token3 = new Token({ id: token3Id });

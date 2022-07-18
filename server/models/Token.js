@@ -103,14 +103,14 @@ class Token {
     );
   }
 
-  async belongsTo(token, walletId) {
+  static belongsTo(token, walletId) {
     if (token.wallet_id === walletId) {
       return true;
     }
     return false;
   }
 
-  async beAbleToTransfer(token) {
+  static beAbleToTransfer(token) {
     if (token.transfer_pending === false) {
       return true;
     }

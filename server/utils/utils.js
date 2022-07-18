@@ -31,7 +31,7 @@ exports.handlerWrapper = (fn) =>
     });
   };
 
-exports.errorHandler = (err, req, res, next) => {
+exports.errorHandler = (err, req, res, _next) => {
   log.error('catch error:', err);
   if (err instanceof HttpError) {
     res.status(err.code).send({
@@ -59,8 +59,7 @@ exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
 });
 
 exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
-  const jwtService = new JWTService();
-  const result = jwtService.verify(req.headers.authorization);
+  const result = JWTService.verify(req.headers.authorization);
   req.wallet_id = result.id;
   next();
 });

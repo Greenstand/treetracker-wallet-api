@@ -61,8 +61,7 @@ async function register(user) {
  */
 async function registerAndLogin(user) {
   const userRegistered = await register(user);
-  const jwtService = new JWTService();
-  const token = jwtService.sign(userRegistered);
+  const token = JWTService.sign(userRegistered);
   userRegistered.token = token;
   expect(userRegistered).property('apiKey').a('string');
   return userRegistered;

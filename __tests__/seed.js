@@ -81,7 +81,7 @@ const storyOfThisSeed = `
 
 
 `;
-console.debug(
+log.debug(
   '--------------------------story of database ----------------------------------',
   storyOfThisSeed,
   '-----------------------------------------------------------------------------',
@@ -144,7 +144,7 @@ async function seed() {
 }
 
 async function addTokenToWallet(walletId) {
-  return await knex('token').insert(
+  return knex('token').insert(
     {
       id: uuid.v4(),
       capture_id: uuid.v4(),

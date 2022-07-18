@@ -4,7 +4,6 @@ const knex = require('../server/infra/database/knex');
 
 describe('Seed data into DB', () => {
   let token;
-  let tree;
 
   before(async () => {
     await seed.clear();
@@ -20,7 +19,7 @@ describe('Seed data into DB', () => {
     expect(seed.token).to.have.property('id');
     const r = await knex.table('token').select().where('id', seed.token.id);
     expect(r).lengthOf(1);
-    token = r[0];
+    [token] = r;
     expect(token).to.have.property('capture_id').to.equal(seed.capture.id);
     expect(token).to.have.property('wallet_id').to.equal(seed.wallet.id);
   });

@@ -61,7 +61,7 @@ class Wallet {
    * the trust from me
    */
   async getTrustRelationshipsTargeted() {
-    return await this.trustRepository.getByTargetId(this._id);
+    return this.trustRepository.getByTargetId(this._id);
   }
 
   async getById(id) {
@@ -79,9 +79,9 @@ class Wallet {
    *  requestType: trust type,
    *  sourceWalletId: the wallet id related to the trust relationship with me,
    */
-  async checkTrustRequestSentToMe(requestType, sourceWalletId) {
-    // pass
-  }
+  // async checkTrustRequestSentToMe(requestType, sourceWalletId) {
+  //   // pass
+  // }
 
   /*
    * I have control over given wallet

@@ -1,9 +1,10 @@
 require('dotenv').config();
 const expect = require('expect-runtime');
+const log = require('loglevel');
+const knex = require('knex');
 const connection = require('../../../config/config').connectionString;
 
 expect(connection).to.match(/^postgresql:\//);
-const log = require('loglevel');
 
 const knexConfig = {
   client: 'pg',
@@ -36,6 +37,4 @@ if (process.env.DATABASE_SCHEMA) {
 }
 log.debug(knexConfig.searchPath);
 
-const knex = require('knex')(knexConfig);
-
-module.exports = knex;
+module.exports = knex(knexConfig);

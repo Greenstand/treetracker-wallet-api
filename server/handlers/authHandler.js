@@ -11,9 +11,7 @@ const authPost = async (req, res) => {
   await authPostSchema.validateAsync(req.body, { abortEarly: false });
   const { wallet, password } = req.body;
 
-  const authService = new AuthService();
-  const token = await authService.signIn({ wallet, password });
-
+  const token = await AuthService.signIn({ wallet, password });
   if (!token) throw new HttpError(401, 'Invalid Credentials');
 
   res.status(200).json({ token });

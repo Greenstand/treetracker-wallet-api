@@ -252,10 +252,12 @@ class Trust {
     const walletModel = new Wallet(this._session);
     const allWallets = await walletModel.getAllWallets(walletId);
     const allTrustRelationships = [];
-    for (const wallet of allWallets) {
-      const list = await this.getTrustRelationships({ walletId: wallet.id });
-      allTrustRelationships.push(...list);
-    }
+    await Promise.all(
+      allWallets.map(async (wallet) => {
+        const list = await this.getTrustRelationships({ walletId: wallet.id });
+        allTrustRelationships.push(...list);
+      }),
+    );
     const walletIds = [...allWallets.map((e) => e.id)];
     return allTrustRelationships.filter((trustRelationship) => {
       return walletIds.includes(trustRelationship.target_wallet_id);

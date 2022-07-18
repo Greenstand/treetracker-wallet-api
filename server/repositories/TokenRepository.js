@@ -1,9 +1,6 @@
 const expect = require('expect-runtime');
-const knex = require('../infra/database/knex');
-const config = require('../../config/config');
 const HttpError = require('../utils/HttpError');
 const BaseRepository = require('./BaseRepository');
-const Session = require('../infra/database/Session');
 
 class TokenRepository extends BaseRepository {
   constructor(session) {

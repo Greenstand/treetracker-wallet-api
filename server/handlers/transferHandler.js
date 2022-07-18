@@ -69,7 +69,6 @@ const transferPost = async (req, res) => {
   );
 
   res.status(status).send(result);
-  res.end;
 };
 
 const transferIdAcceptPost = async (req, res) => {
@@ -147,6 +146,8 @@ const transferIdTokenGet = async (req, res) => {
   await transferLimitOffsetQuerySchema.validateAsync(req.query, {
     abortEarly: false,
   });
+
+  const { limit, offset } = req.query;
 
   const transferService = new TransferService();
   const tokens = await transferService.getTokensByTransferId(

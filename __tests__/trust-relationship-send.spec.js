@@ -13,7 +13,6 @@ const { apiKey } = seed;
 describe('Trust relationship: send', () => {
   let bearerToken;
   let bearerTokenB;
-  let bearerTokenC;
 
   before(async () => {
     await seed.clear();
@@ -45,19 +44,6 @@ describe('Trust relationship: send', () => {
       expect(res).to.have.property('statusCode', 200);
       bearerTokenB = res.body.token;
       expect(bearerTokenB).to.match(/\S+/);
-    }
-
-    {
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send({
-          wallet: seed.walletC.name,
-          password: seed.walletC.password,
-        });
-      expect(res).to.have.property('statusCode', 200);
-      expect(res).property('body').property('token').a('string');
-      bearerTokenC = res.body.token;
     }
   });
 
