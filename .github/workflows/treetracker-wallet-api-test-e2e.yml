@@ -3,9 +3,10 @@ on:
   workflow_dispatch:
     inputs:
       git-tag:
-        description: "Branch/hash/tag"
+        description: 'Branch/hash/tag'
         required: true
         default: 'master'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,13 +14,17 @@ jobs:
       ENVIRONMENT: dev
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12
-    - name: Install mocha
-      run: npm install -g mocha
-    - run: npm ci
-    - run: echo ${{ secrets.DEVELOPMENT_ENV }}
-    - run: ${{ secrets.DEVELOPMENT_ENV }} npm run test-e2e
+      - uses: actions/checkout@v2
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+
+      - name: Install mocha
+        run: npm install -g mocha
+
+      - name: Run npm ci
+        run: npm ci
+
+      - name: Run e2e for dev environment
+      - run: ${{ secrets.DEVELOPMENT_ENV }} npm run test-e2e

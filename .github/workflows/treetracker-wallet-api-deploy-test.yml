@@ -1,15 +1,14 @@
-
 name: Deploy to Test Env
 
 on:
   workflow_dispatch:
     inputs:
-      git-tag:
-        description: "Branch/hash/tag"
+      environment:
+        description: 'git-tag'
         required: true
         default: 'master'
 
-env: 
+env:
   project-directory: ./
 
 jobs:
@@ -20,24 +19,20 @@ jobs:
       github.repository == 'Greenstand/treetracker-wallet-api'
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.inputs.git-tag }}
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@master
-        with:
-          path: ./
+
       - name: Install kustomize
-        run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+        run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+
       - name: Run kustomize
-        run: (cd deployment/base && ../../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }} )
-      - name: Install doctl for kubernetes
-        uses: digitalocean/action-doctl@v2
+        run: (cd deployment/overlays/test && ../../../kustomize edit set image greenstand/treetracker-wallet-api:${{ github.event.inputs.environment }})
+
+      - name: Commit test kustomization file with new app version
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -am "chore: bump docker image tag ${{ github.event.inputs.environment }} [skip ci]"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
         with:
-          token: ${{ secrets.DIGITALOCEAN_PASSWORD }}
-      - name: Save DigitalOcean kubeconfig
-        run: doctl kubernetes cluster kubeconfig save ${{ secrets.TEST_CLUSTER_NAME }}
-      - name: Delete completed migration jobs prior to deployment
-        run: kubectl -n wallet-api delete job wallet-db-migration-job
-      - name: Update kubernetes resources
-        run: kustomize build deployment/overlays/test | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -
+          github_token: ${{ secrets.GITHUB_TOKEN }}
