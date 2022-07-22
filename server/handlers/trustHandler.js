@@ -27,15 +27,20 @@ const trustGet = async (req, res) => {
     abortEarly: false,
   });
 
-  const { state, type, request_type, limit, offset } = req.query;
+  const {
+    state,
+    type,
+    request_type,
+    // limit, offset
+  } = req.query;
   const trustService = new TrustService();
   const trustRelationships = await trustService.getAllTrustRelationships({
     walletId: req.wallet_id,
     state,
     type,
     request_type,
-    offset,
-    limit,
+    // offset,
+    // limit,
   });
 
   res.status(200).json({
