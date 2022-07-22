@@ -125,9 +125,9 @@ class Token {
     return transactions;
   }
 
-  async getByOwner(wallet, limit, offset) {
+  async getByOwner(walletId, limit, offset) {
     const tokensObject = await this._tokenRepository.getByFilter(
-      { wallet_id: wallet.id },
+      { wallet_id: walletId },
       { limit, offset },
     );
     return tokensObject;

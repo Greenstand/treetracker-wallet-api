@@ -1,9 +1,8 @@
-const jestExpect = require('expect');
+const { expect } = require('chai');
 const sinon = require('sinon');
 const ApiKeyService = require('./ApiKeyService');
-const ApiKeyRepository = require('../repositories/ApiKeyRepository');
-const HttpError = require('../utils/HttpError');
 const Session = require('../infra/database/Session');
+const ApiKey = require('../models/ApiKey');
 
 describe('ApiKey', () => {
   let apiKey;
@@ -13,24 +12,46 @@ describe('ApiKey', () => {
   });
 
   it('empty key should throw error', async () => {
-    await jestExpect(async () => {
-      await apiKey.check(undefined);
-    }).rejects.toThrow(/no API key/);
+    let error;
+    try {
+      await apiKey.check();
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).eql('Invalid access - no API key');
   });
 
   it('key which do not exist should throw error', async () => {
-    sinon
-      .stub(ApiKeyRepository.prototype, 'getByApiKey')
-      .throws(new HttpError(404));
-    await jestExpect(async () => {
-      await apiKey.check('not_exist');
-    }).rejects.toThrow(/Invalid/);
-    ApiKeyRepository.prototype.getByApiKey.restore();
+    let error;
+    const getApiKeyStub = sinon
+      .stub(ApiKey.prototype, 'getByApiKey')
+      .resolves();
+    try {
+      await apiKey.check('api key');
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).eql('Invalid API access');
+    getApiKeyStub.restore();
+  });
+
+  it('key with false tree_token_api_access should not pass', async () => {
+    let error;
+    const getApiKeyStub = sinon
+      .stub(ApiKey.prototype, 'getByApiKey')
+      .resolves({ tree_token_api_access: false });
+    try {
+      await apiKey.check('api key');
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).eql('Invalid API access, apiKey was deprecated');
+    getApiKeyStub.restore();
   });
 
   it('good key should pass', async () => {
-    sinon.stub(ApiKeyRepository.prototype, 'getByApiKey').returns({});
+    sinon.stub(ApiKey.prototype, 'getByApiKey').returns({});
     await apiKey.check('not_exist');
-    ApiKeyRepository.prototype.getByApiKey.restore();
+    ApiKey.prototype.getByApiKey.restore();
   });
 });

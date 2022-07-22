@@ -11,7 +11,6 @@ class TokenService {
   }
 
   async getTokens({ wallet, limit, offset, walletLoginId }) {
-    const walletLogin = await this._walletService.getById(walletLoginId);
     let tokens = [];
 
     if (wallet) {
@@ -21,11 +20,14 @@ class TokenService {
         walletInstance.id,
       );
       if (!isSub) {
-        throw new HttpError(403, 'Wallet does not belong to wallet logged in');
+        throw new HttpError(
+          403,
+          'Wallet does not belong to the logged in wallet',
+        );
       }
-      tokens = await this._token.getByOwner(walletInstance, limit, offset);
+      tokens = await this._token.getByOwner(walletInstance.id, limit, offset);
     } else {
-      tokens = await this._token.getByOwner(walletLogin, limit, offset);
+      tokens = await this._token.getByOwner(walletLoginId, limit, offset);
     }
 
     return tokens;

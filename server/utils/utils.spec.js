@@ -1,6 +1,5 @@
 const request = require('supertest');
 const express = require('express');
-// const {handlerWrapper, errorHandler} = require("./utils");
 const { expect } = require('chai');
 const sinon = require('sinon');
 const helper = require('./utils');
@@ -8,7 +7,7 @@ const HttpError = require('./HttpError');
 const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService');
 
-describe('routers/utils', () => {
+describe.only('routers/utils', () => {
   describe('handlerWrapper', () => {
     it('promise reject from current handler, should be catch and response to client', async () => {
       const app = express();
@@ -137,8 +136,7 @@ describe('routers/utils', () => {
       app.use(helper.errorHandler);
 
       const payload = { id: 1 };
-      const jwtService = new JWTService();
-      const token = jwtService.sign(payload);
+      const token = JWTService.sign(payload);
       const res = await request(app)
         .get('/test')
         .set('Authorization', `Bearer ${token}`);
@@ -157,8 +155,7 @@ describe('routers/utils', () => {
       app.use(helper.errorHandler);
 
       const payload = { id: 1 };
-      const jwt = new JWTService();
-      const token = jwt.sign(payload);
+      const token = JWTService.sign(payload);
       const res = await request(app)
         .get('/test')
         .set('Authorization', `Bearer ${token.slice(1)}`); // NOTE corupt here

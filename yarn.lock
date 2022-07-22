@@ -870,7 +870,7 @@
   "resolved" "https://registry.npmjs.org/camelcase/-/camelcase-6.2.0.tgz"
   "version" "6.2.0"
 
-"chai-as-promised@7.1.1":
+"chai-as-promised@^7.1.1":
   "integrity" "sha512-azL6xMoi+uxu6z4rhWQ1jbdUhOMhis2PvscD/xjLqNMkv3BPPp2JyyuTHOrf9BOosGpNQ11v6BKv/g57RXbiaA=="
   "resolved" "https://registry.npmjs.org/chai-as-promised/-/chai-as-promised-7.1.1.tgz"
   "version" "7.1.1"

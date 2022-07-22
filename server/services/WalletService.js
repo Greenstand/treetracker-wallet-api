@@ -33,10 +33,14 @@ class WalletService {
 
   async createWallet(loggedInWalletId, wallet) {
     try {
+      await this._session.beginTransaction();
+
       const addedWallet = await this._wallet.createWallet(
         loggedInWalletId,
         wallet,
       );
+
+      await this._session.commitTransaction();
 
       return addedWallet.name;
     } catch (e) {
