@@ -120,10 +120,6 @@ describe('Token', () => {
         .resolves(['tokens']);
     });
 
-    afterEach(() => {
-      sinon.restore();
-    });
-
     it('getToken with walletLoginId', async () => {
       const tokens = await tokenService.getTokens({
         walletLoginId: 'walletLoginId',
@@ -187,10 +183,6 @@ describe('Token', () => {
         .stub(Token.prototype, 'getById')
         .resolves({ id: 'id', wallet_id: 'wallet_id' });
       getAllWalletsStub = sinon.stub(WalletService.prototype, 'getAllWallets');
-    });
-
-    afterEach(() => {
-      sinon.restore();
     });
 
     it('getById with permission check -- without required permission', async () => {

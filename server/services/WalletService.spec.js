@@ -13,6 +13,10 @@ describe('WalletService', () => {
     walletService = new WalletService();
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it('getById', async () => {
     const walletId1 = uuid.v4();
     sinon
@@ -83,11 +87,6 @@ describe('WalletService', () => {
         .resolves({ id: walletId, name: 'walletName' });
     });
 
-    afterEach(() => {
-      getByIdStub.restore();
-      getByNameStub.restore();
-    });
-
     it('sending a name as the parameter', async () => {
       expect(walletService).instanceOf(WalletService);
       const wallet = await walletService.getByIdOrName(walletName);
@@ -115,10 +114,16 @@ describe('WalletService', () => {
     let createWalletStub;
 
     beforeEach(() => {
-      sessionBeginTransactionStub = sinon.stub(
+      sessionIsTransactionInProgressStub = sinon.stub(
         Session.prototype,
-        'beginTransaction',
+        'isTransactionInProgress',
       );
+
+      sessionBeginTransactionStub = sinon
+        .stub(Session.prototype, 'beginTransaction')
+        .callsFake(async () =>
+          sessionIsTransactionInProgressStub.returns(true),
+        );
 
       sessionCommitTransactionStub = sinon.stub(
         Session.prototype,
@@ -130,33 +135,17 @@ describe('WalletService', () => {
         'rollbackTransaction',
       );
 
-      sessionIsTransactionInProgressStub = sinon.stub(
-        Session.prototype,
-        'isTransactionInProgress',
-      );
-
       createWalletStub = sinon.stub(Wallet.prototype, 'createWallet');
-    });
-
-    afterEach(() => {
-      sessionBeginTransactionStub.restore();
-      sessionCommitTransactionStub.restore();
-      sessionRollbackTransactionStub.restore();
-      sessionIsTransactionInProgressStub.restore();
-      createWalletStub.restore();
     });
 
     it('should rollback transaction if it errors out', async () => {
       createWalletStub.rejects();
-      sessionIsTransactionInProgressStub.returns(true);
       expect(walletService).instanceOf(WalletService);
       const loggedInWalletId = uuid.v4();
       const wallet = 'wallet';
       try {
         await walletService.createWallet(loggedInWalletId, wallet);
-      } catch (e) {
-        // to prevent no-empty-block eslint rule
-      }
+      } catch (e) {}
       expect(
         createWalletStub.calledOnceWithExactly(loggedInWalletId, wallet),
       ).eql(true);
@@ -207,10 +196,6 @@ describe('WalletService', () => {
       getAllWalletsStub = sinon
         .stub(Wallet.prototype, 'getAllWallets')
         .resolves(result);
-    });
-
-    afterEach(() => {
-      getAllWalletsStub.restore();
     });
 
     it('getAllWallets without getTokenCount', async () => {

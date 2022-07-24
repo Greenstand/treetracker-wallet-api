@@ -7,10 +7,8 @@ const Trust = require('../models/Trust');
 
 const { expect } = chai;
 
-describe.only('TrustService', () => {
+describe('TrustService', () => {
   let trustService;
-
-  describe('', () => {});
 
   beforeEach(() => {
     trustService = new TrustService();
@@ -171,10 +169,6 @@ describe.only('TrustService', () => {
       requestTrustStub = sinon
         .stub(Trust.prototype, 'requestTrustFromAWallet')
         .resolves('trustRelationship');
-    });
-
-    afterEach(() => {
-      sinon.restore();
     });
 
     it('createTrustRelationship -- no requester wallet', async () => {

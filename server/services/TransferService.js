@@ -92,15 +92,10 @@ class TransferService {
       await this._session.commitTransaction();
       return { status, result };
     } catch (e) {
-      if (e instanceof HttpError && !e.shouldRollback()) {
-        // if the error type is HttpError, means the exception has been handled
-        await this._session.commitTransaction();
-        throw e;
-      } else {
-        // unknown exception, rollback the transaction
+      if (this._session.isTransactionInProgress()) {
         await this._session.rollbackTransaction();
-        throw e;
       }
+      throw e;
     }
   }
 
@@ -118,15 +113,10 @@ class TransferService {
 
       return result;
     } catch (e) {
-      if (e instanceof HttpError && !e.shouldRollback()) {
-        // if the error type is HttpError, means the exception has been handled
-        await this._session.commitTransaction();
-        throw e;
-      } else {
-        // unknown exception, rollback the transaction
+      if (this._session.isTransactionInProgress()) {
         await this._session.rollbackTransaction();
-        throw e;
       }
+      throw e;
     }
   }
 
@@ -142,15 +132,10 @@ class TransferService {
       await this._session.commitTransaction();
       return result;
     } catch (e) {
-      if (e instanceof HttpError && !e.shouldRollback()) {
-        // if the error type is HttpError, means the exception has been handled
-        await this._session.commitTransaction();
-        throw e;
-      } else {
-        // unknown exception, rollback the transaction
+      if (this._session.isTransactionInProgress()) {
         await this._session.rollbackTransaction();
-        throw e;
       }
+      throw e;
     }
   }
 
@@ -166,15 +151,10 @@ class TransferService {
       await this._session.commitTransaction();
       return result;
     } catch (e) {
-      if (e instanceof HttpError && !e.shouldRollback()) {
-        // if the error type is HttpError, means the exception has been handled
-        await this._session.commitTransaction();
-        throw e;
-      } else {
-        // unknown exception, rollback the transaction
+      if (this._session.isTransactionInProgress()) {
         await this._session.rollbackTransaction();
-        throw e;
       }
+      throw e;
     }
   }
 
@@ -207,29 +187,25 @@ class TransferService {
       await this._session.commitTransaction();
       return result;
     } catch (e) {
-      if (e instanceof HttpError && !e.shouldRollback()) {
-        // if the error type is HttpError, means the exception has been handled
-        await this._session.commitTransaction();
-        throw e;
-      } else {
-        // unknown exception, rollback the transaction
+      if (this._session.isTransactionInProgress()) {
         await this._session.rollbackTransaction();
-        throw e;
       }
+      throw e;
     }
   }
 
   async getTransferById(transferId, walletLoginId) {
-    const transfer = this._transfer.getById({
+    const transfer = await this._transfer.getById({
       transferId,
       walletLoginId,
     });
     if (!transfer) {
       throw new HttpError(
         404,
-        'Can not find this transfer or it is related to this wallet',
+        'Can not find this transfer or it is not related to this wallet',
       );
     }
+    return transfer;
   }
 
   async getTokensByTransferId(transferId, limit, offset) {

@@ -1,14 +1,13 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const ApiKeyService = require('./ApiKeyService');
-const Session = require('../infra/database/Session');
 const ApiKey = require('../models/ApiKey');
 
 describe('ApiKey', () => {
   let apiKey;
 
   before(() => {
-    apiKey = new ApiKeyService(new Session());
+    apiKey = new ApiKeyService();
   });
 
   it('empty key should throw error', async () => {
