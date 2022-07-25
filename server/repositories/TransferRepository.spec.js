@@ -31,7 +31,7 @@ describe('TransferRepository', () => {
     tracker.on('query', function sendResult(query, step) {
       [
         function firstQuery() {
-          expect(query.sql).match(/insert.*transfer.*/);
+          expect(query.sql).match(/insert.*transfer.*select.*inserted.*/);
           query.response([{ id: 1 }]);
         },
       ][step - 1]();
@@ -44,19 +44,42 @@ describe('TransferRepository', () => {
     expect(result).property('id').a('number');
   });
 
-  it('getById', async () => {
+  it('update', async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on('query', function sendResult(query, step) {
       [
         function firstQuery() {
-          expect(query.sql).match(/select.*transfer.*/);
-          query.response({ id: uuid.v4() });
+          expect(query.sql).match(/update.*transfer.*select.*updated.*/);
+          query.response([{ id: 1 }]);
         },
       ][step - 1]();
     });
-    const result = await transferRepository.getById(1);
-    expect(result).property('id').a('string');
+    console.log(originatorWalletId);
+    const result = await transferRepository.update({
+      originator_wallet_id: originatorWalletId,
+      source_wallet_id: sourceWalletId,
+      destination_wallet_id: destinationWalletId,
+      id: uuid.v4(),
+    });
+    expect(result).property('id').a('number');
+  });
+
+  it('getByFilter', async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', function sendResult(query, step) {
+      [
+        function firstQuery() {
+          expect(query.sql).match(
+            /select.*transfer.*originating_wallet.*source_wallet.*destination_wallet/,
+          );
+          query.response([{ id: uuid.v4() }]);
+        },
+      ][step - 1]();
+    });
+    const result = await transferRepository.getByFilter({});
+    expect(result[0]).property('id').a('string');
   });
 
   it('getPendingTransfers', async () => {

@@ -21,57 +21,46 @@ describe('TrustRepository', () => {
     mockKnex.unmock(knex);
   });
 
-  it('get', async () => {
+  it('getByOriginatorId', async () => {
     tracker.on('query', (query) => {
-      expect(query.sql).match(/select.*trust.*/);
-      query.response([
-        {
-          id: 1,
-        },
-      ]);
+      expect(query.sql).match(
+        /select.*wallet_trust.*where.*originator_wallet_id/,
+      );
+      query.response([{ id: 1 }]);
     });
-    const entity = await trustRepository.get();
+    const entity = await trustRepository.getByOriginatorId(uuid.v4());
     expect(entity).to.be.a('array');
   });
 
-  it('create', async () => {
-    tracker.uninstall();
-    tracker.install();
-    tracker.on('query', function sendResult(query, step) {
-      [
-        function firstQuery() {
-          expect(query.sql).match(/insert.*trust.*/);
-          query.response({});
-        },
-        function secondQuery() {
-          expect(query.sql).match(/select.*trust.*order by.*/);
-          query.response([{ id: 1 }]);
-        },
-      ][step - 1]();
+  it('getTrustedByOriginatorId', async () => {
+    tracker.on('query', (query) => {
+      expect(query.sql).match(
+        /select.*wallet_trust.*where.*originator_wallet_id.*state/,
+      );
+      query.response([{ id: 1 }]);
     });
-    await trustRepository.create({ id: uuid.v4(), state: 'ok' });
+    const entity = await trustRepository.getTrustedByOriginatorId(uuid.v4());
+    expect(entity).to.be.a('array');
   });
 
-  it('getById', async () => {
+  it('getByTargetId', async () => {
+    tracker.on('query', (query) => {
+      expect(query.sql).match(/select.*wallet_trust.*where.*target_wallet_id/);
+      query.response([{ id: 1 }]);
+    });
+    const entity = await trustRepository.getByTargetId(uuid.v4());
+    expect(entity).to.be.a('array');
+  });
+
+  it('getByFilter', async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on('query', (query) => {
-      expect(query.sql).match(/select.*trust.*/);
+      expect(query.sql).match(
+        /select.*wallet_trust.*originating_wallet.*actor_wallet.*target_wallet/,
+      );
       query.response([{}]);
     });
-    await trustRepository.getById(1);
-  });
-
-  it('update', async () => {
-    tracker.uninstall();
-    tracker.install();
-    tracker.on('query', (query) => {
-      expect(query.sql).match(/update.*trust.*/);
-      query.response([{}]);
-    });
-    await trustRepository.update({
-      id: uuid.v4(),
-      actor_wallet_id: uuid.v4(),
-    });
+    await trustRepository.getByFilter({});
   });
 });

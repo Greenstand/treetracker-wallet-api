@@ -7,12 +7,6 @@ class TrustRepository extends BaseRepository {
     this._session = session;
   }
 
-  async get() {
-    // const trust_relationship_instance = new trust_relationship(1);
-    const list = await this._session.getDB().select().table(this._tableName);
-    return list;
-  }
-
   async getByOriginatorId(id) {
     const list = await this._session
       .getDB()

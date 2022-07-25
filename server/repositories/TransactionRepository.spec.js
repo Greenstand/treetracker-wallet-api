@@ -20,14 +20,16 @@ describe('TransactionRepository', () => {
     mockKnex.unmock(knex);
   });
 
-  it('getById', async () => {
+  it('getByFilter', async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on('query', (query) => {
-      expect(query.sql).match(/select.*transaction.*/);
+      expect(query.sql).match(
+        /select.*transaction.*source_wallet.*sender_wallet.*/,
+      );
       query.response({ id: 1 });
     });
-    const entity = await transactionRepository.getById(1);
+    const entity = await transactionRepository.getByFilter({});
     expect(entity).to.be.a('object');
   });
 });
