@@ -3,7 +3,7 @@ const express = require('express');
 const { expect } = require('chai');
 const sinon = require('sinon');
 const uuid = require('uuid');
-const tokenRouter = require('./tokenRouter');
+const tokenRouter = require('../routes/tokenRouter');
 const { errorHandler, apiKeyHandler } = require('../utils/utils');
 const ApiKeyService = require('../services/ApiKeyService');
 const WalletService = require('../services/WalletService');
@@ -12,7 +12,7 @@ const Token = require('../models/Token');
 const TokenService = require('../services/TokenService');
 const Wallet = require('../models/Wallet');
 
-describe('tokenRouter', () => {
+describe.only('tokenRouter', () => {
   let app;
   const authenticatedWallet = {
     id: uuid.v4(),
@@ -20,7 +20,7 @@ describe('tokenRouter', () => {
 
   beforeEach(() => {
     sinon.stub(ApiKeyService.prototype, 'check');
-    sinon.stub(JWTService.prototype, 'verify').returns({
+    sinon.stub(JWTService, 'verify').returns({
       id: authenticatedWallet.id,
     });
     app = express();
@@ -42,28 +42,30 @@ describe('tokenRouter', () => {
     const captureId = uuid.v4();
     const capture2Id = uuid.v4();
 
-    const token = new Token({
+    const token = {
       id: tokenId,
       wallet_id: walletId,
       capture_id: captureId,
-    });
-    const token2 = new Token({
+    };
+    const token2 = {
       id: token2Id,
       wallet_id: wallet2Id,
       capture_id: capture2Id,
-    });
+    };
 
-    const wallet = new Wallet(walletId);
-    const wallet2 = new Wallet(wallet2Id);
+    const wallet = { id: walletId };
+    const wallet2 = { id: wallet2Id };
 
-    it('limit parameters missed', async () => {
+    it.only('limit parameters missed', async () => {
       const res = await request(app).get('/tokens');
       expect(res).property('statusCode').eq(422);
+      expect(res.body.message).match(/limit.*required/);
     });
 
-    it('successfully, default wallet', async () => {
-      sinon.stub(TokenService.prototype, 'getByOwner').resolves([token2]);
-      sinon.stub(WalletService.prototype, 'getById').resolves(wallet);
+    it.only('successfully, default wallet', async () => {
+      const getByTokensStub = sinon
+        .stub(TokenService.prototype, 'getTokens')
+        .resolves([token2]);
       const res = await request(app).get('/tokens?limit=10&offset=1');
       expect(res).property('statusCode').eq(200);
       expect(res.body.tokens).lengthOf(1);
@@ -72,6 +74,13 @@ describe('tokenRouter', () => {
         .property('links')
         .property('capture')
         .eq(`/webmap/tree?uuid=${capture2Id}`);
+      expect(
+        getByTokensStub.calledOnceWithExactly({
+          limit: 10,
+          offset: 1,
+          walletLoginId: authenticatedWallet.id,
+        }),
+      ).eql(true);
     });
 
     it('successfully, sub wallet', async () => {

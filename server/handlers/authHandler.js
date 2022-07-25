@@ -14,7 +14,7 @@ const authPost = async (req, res) => {
   const token = await AuthService.signIn({ wallet, password });
   if (!token) throw new HttpError(401, 'Invalid Credentials');
 
-  res.status(200).json({ token });
+  res.json({ token });
 };
 
 module.exports = { authPost };

@@ -126,11 +126,16 @@ class Token {
   }
 
   async getByOwner(walletId, limit, offset) {
-    const tokensObject = await this._tokenRepository.getByFilter(
+    const tokens = await this._tokenRepository.getByFilter(
       { wallet_id: walletId },
       { limit, offset },
     );
-    return tokensObject;
+    return tokens.map((tokenObject) => {
+      return {
+        ...tokenObject,
+        links: { capture: `/webmap/tree?uuid=${tokenObject.capture_id}` },
+      };
+    });
   }
 
   async getById(id) {
