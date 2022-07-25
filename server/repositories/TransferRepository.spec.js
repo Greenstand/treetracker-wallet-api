@@ -55,7 +55,6 @@ describe('TransferRepository', () => {
         },
       ][step - 1]();
     });
-    console.log(originatorWalletId);
     const result = await transferRepository.update({
       originator_wallet_id: originatorWalletId,
       source_wallet_id: sourceWalletId,
