@@ -1,10 +1,27 @@
 const Joi = require('joi');
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
+const TrustRelationshipEnums = require('../utils/trust-enums');
 
 const walletGetQuerySchema = Joi.object({
   limit: Joi.number().required(),
   offset: Joi.number().integer(),
+});
+
+const walletIdParamSchema = Joi.object({
+  wallet_id: Joi.string().uuid().required(),
+});
+
+const walletGetTrustRelationshipsSchema = Joi.object({
+  state: Joi.string().valid(
+    ...Object.values(TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE),
+  ),
+  type: Joi.string().valid(
+    ...Object.values(TrustRelationshipEnums.ENTITY_TRUST_TYPE),
+  ),
+  request_type: Joi.string().valid(
+    ...Object.values(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
+  ),
 });
 
 const walletPostSchema = Joi.object({
@@ -25,6 +42,10 @@ const walletGet = async (req, res) => {
 };
 
 const walletGetTrustRelationships = async (req, res) => {
+  await walletIdParamSchema.validateAsync(req.params, { abortEarly: false });
+  await walletGetTrustRelationshipsSchema.validateAsync(req.query, {
+    abortEarly: false,
+  });
   const trustService = new TrustService();
   const trust_relationships = await trustService.getTrustRelationships({
     walletId: req.params.wallet_id,

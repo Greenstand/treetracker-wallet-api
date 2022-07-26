@@ -38,7 +38,11 @@ class TokenService {
     const token = await this._token.getById(id);
 
     if (!withoutPermissionCheck) {
-      const allWallets = await this._walletService.getAllWallets(walletLoginId);
+      const allWallets = await this._walletService.getAllWallets(
+        walletLoginId,
+        undefined,
+        false,
+      );
 
       const walletIds = [...allWallets.map((e) => e.id)];
       if (!walletIds.includes(token.wallet_id)) {

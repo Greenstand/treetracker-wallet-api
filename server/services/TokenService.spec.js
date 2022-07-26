@@ -199,9 +199,13 @@ describe('Token', () => {
       expect(error.code).eql(401);
       expect(error.message).eql('Have no permission to visit this token');
       expect(getByIdStub.calledOnceWithExactly('tokenId')).eql(true);
-      expect(getAllWalletsStub.calledOnceWithExactly('walletLoginId')).eql(
-        true,
-      );
+      expect(
+        getAllWalletsStub.calledOnceWithExactly(
+          'walletLoginId',
+          undefined,
+          false,
+        ),
+      ).eql(true);
     });
 
     it('getById with permission check -- with required permission', async () => {
@@ -212,9 +216,13 @@ describe('Token', () => {
       });
       expect(token).eql({ id: 'id', wallet_id: 'wallet_id' });
       expect(getByIdStub.calledOnceWithExactly('tokenId')).eql(true);
-      expect(getAllWalletsStub.calledOnceWithExactly('walletLoginId')).eql(
-        true,
-      );
+      expect(
+        getAllWalletsStub.calledOnceWithExactly(
+          'walletLoginId',
+          undefined,
+          false,
+        ),
+      ).eql(true);
     });
 
     it('getById without permission check', async () => {
