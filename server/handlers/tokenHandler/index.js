@@ -1,18 +1,5 @@
-const Joi = require('joi');
-const TokenService = require('../services/TokenService');
-
-const tokenGetSchema = Joi.object({
-  limit: Joi.number().min(1).max(1000).required().default(1000),
-  offset: Joi.number().min(0).integer().default(0),
-  wallet: Joi.string(),
-});
-
-const tokenGetTransactionsByIdSchema = Joi.object({
-  limit: Joi.number().min(1).max(1000).integer().default(1000).required(),
-  offset: Joi.number().min(0).integer(),
-  id: Joi.string().guid(),
-  transactions: Joi.string(),
-});
+const TokenService = require('../../services/TokenService');
+const { tokenGetSchema, tokenGetTransactionsByIdSchema } = require('./schemas');
 
 const tokenGet = async (req, res) => {
   await tokenGetSchema.validateAsync(req.query, { abortEarly: false });
