@@ -9,10 +9,11 @@ function getRandomArbitrary(min, max) {
   const { v4: uuidv4 } = require('uuid');
   const generator = require('generate-password');
 
-  const Config = require('./config/config');
+  const Config = require('../../config/config');
+  console.log(Config.connectionString)
   const knex = Knex({
     client: 'pg',
-    connection:  Config.connectionString[process.env.NODE_ENV]
+    connection:  Config.connectionString
   })
 
   const Crypto = require('crypto');
@@ -56,12 +57,12 @@ function getRandomArbitrary(min, max) {
       tree_token_api_access: true,
       name: username
     }
-    const result0 = await trx('wallet.api_key').insert(apiKeyData).returning('*')
+    const result0 = await trx('api_key').insert(apiKeyData).returning('*')
     console.log(result0)
 
     // create wallet and password, salt
 
-    const result = await trx('wallet.wallet').insert({
+    const result = await trx('wallet').insert({
       name: username,
       password: passwordHash,
       salt

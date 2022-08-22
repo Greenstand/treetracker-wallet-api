@@ -4,7 +4,7 @@ const connection = require('../../config/config').connectionString;
 
 expect(connection).to.match(/^postgresql:\//);
 const log = require("loglevel");
-
+log.debug(connection)
 const knexConfig = {
   client: 'pg',
   debug: process.env.NODE_LOG_LEVEL === "debug",
@@ -29,7 +29,7 @@ const knexConfig = {
 log.debug(process.env.DATABASE_SCHEMA)
 if(process.env.DATABASE_SCHEMA){
   log.info('setting a schema')
-  knexConfig.searchPath = [process.env.DATABASE_SCHEMA]
+  knexConfig.searchPath = [process.env.DATABASE_SCHEMA, "public"]
 }
 log.debug(knexConfig.searchPath)
 

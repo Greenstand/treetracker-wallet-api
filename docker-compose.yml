@@ -1,13 +1,13 @@
-version: '3.1'
+version: '3.9'
 
 services:
   wallet:
     build:
       context: $PWD
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-server
     image: wallet
     environment:
-      - DATABASE_URL=$DATABASE_URL
+      - DATABASEURL=$DATABASE_URL
       - DATABASE_SCHEMA=$DATABASE_SCHEMA
       - PUBLIC_KEY=$PUBLIC_KEY
       - PRIVATE_KEY=$PRIVATE_KEY
@@ -15,9 +15,13 @@ services:
     ports:
       - "3006:3006"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   db:
-    image: postgres:9-alpine
+    build:
+      context: $PWD
+      dockerfile: Dockerfile-postgres
+    image: postgres-wallet
     restart: always
     environment:
       - POSTGRES_USER=wallet_user
@@ -26,6 +30,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_volume:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U wallet_user" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_volume: {}

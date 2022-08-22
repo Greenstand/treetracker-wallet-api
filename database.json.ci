@@ -1,0 +1,8 @@
+{
+  "dev": {
+    "driver": "pg",
+    "url": "[conn_str]",
+    "schema" : "wallet",
+    "ssl" : false
+  }
+}

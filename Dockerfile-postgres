@@ -1,0 +1,5 @@
+FROM postgres:9-alpine
+
+RUN mkdir -p /docker-entrypoint-initdb.d
+COPY ./database/220822-es-dummy-population.sql /docker-entrypoint-initdb.d/
+
