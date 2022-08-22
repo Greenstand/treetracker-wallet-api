@@ -1,17 +1,31 @@
 version: '3.1'
 
-services: 
-  db: 
+services:
+  wallet:
+    build:
+      context: $PWD
+      dockerfile: Dockerfile
+    image: wallet
+    environment:
+      - DATABASE_URL=$DATABASE_URL
+      - DATABASE_SCHEMA=$DATABASE_SCHEMA
+      - PUBLIC_KEY=$PUBLIC_KEY
+      - PRIVATE_KEY=$PRIVATE_KEY
+      - NODE_LOG_LEVEL=$NODE_LOG_LEVEL
+    ports:
+      - "3006:3006"
+    depends_on:
+      - db
+  db:
     image: postgres:9-alpine
     restart: always
     environment:
       - POSTGRES_USER=wallet_user
       - POSTGRES_PASSWORD=secret
-    ports: 
-      - 5432:5432
-    volumes: 
+    ports:
+      - "5432:5432"
+    volumes:
       - postgres_volume:/var/lib/postgresql
-
 
 volumes:
   postgres_volume: {}
