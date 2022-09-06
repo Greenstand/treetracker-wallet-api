@@ -59,6 +59,6 @@
     await trx.commit();
 
     await knex.destroy();
-
-    process.exit();
 })().catch(e => console.error(e.stack));
+
+process.exit();
