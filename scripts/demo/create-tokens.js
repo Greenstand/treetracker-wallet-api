@@ -1,5 +1,5 @@
 (async () => {
-
+    // configure Knex for making requests to the DB
     const Knex = require('knex');
     const Config = require('../../config/config');
     const knex = Knex({
@@ -16,8 +16,6 @@
         name: 'free'
     }).first();
 
-
-    const tokenArr = [];
     const https = require('https');
     let url = 'https://prod-k8s.treetracker.org/query/trees?limit=1000';
     await new Promise((resolve, reject) => https.get(url, async (res) => {
@@ -29,12 +27,13 @@
 
         await res.on("end", async () => {
             try {
-                const treesJson = JSON.parse(body)
+                const treesJson = JSON.parse(body);
+                // for each tree, insert a token into the DB
                 for (const t of treesJson.trees) {
-                    tokenArr.push({
-                        capture_id: t.uuid,
-                        wallet_id: walletId.id
-                    });
+                    await trx('public.token').insert({
+                        capture_id: t.capture_id,
+                        wallet_id: t.wallet_id
+                    }).returning('*');
                 }
                 resolve()
             } catch (error) {
@@ -43,22 +42,15 @@
             }
         });
 
+        console.log("press ctrl+C to end script");
 
     }).on("error", (error) => {
         console.error(error.message);
         reject(error)
-    }));
-
-    for (const t of tokenArr) {
-        await trx('public.token').insert({
-            capture_id: t.capture_id,
-            wallet_id: t.wallet_id
-        }).returning('*');
-    }
-
-    await trx.commit();
-
-    await knex.destroy();
-})().catch(e => console.error(e.stack));
-
-process.exit();
+    })).then( () => {
+        trx.commit();
+        knex.destroy();
+    });
+})()
+    .catch(e => console.error(e.stack))
+    .finally(() => process.exit(0)) // tell script to quit when done
