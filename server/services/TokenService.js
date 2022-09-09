@@ -91,7 +91,7 @@ class TokenService{
   async getTokensByTransferId(transferId){
     const result = await this.tokenRepository.getByTransferId(transferId);
     const tokens = [];
-    for(const r of result){
+    for(const r of result.rows){
       const token = new Token(r);
       tokens.push(token);
     }
