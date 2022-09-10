@@ -473,3 +473,5 @@ Please follow this convention for commit messages [here](https://www.conventiona
 Any developers joining the project should feel free to review any outstanding pull requests and assign themselves to any open tickets on the Issues list. You can make a draft pull request as you are working on any open issue that interests you, and any changes you make on your local branch can be continually synced with this draft until you are ready to submit. Remember to push your changes up to your forked repository and then make any pull requests from your forked branch to the Greenstand master repository branch. 
 
 When you are ready to submit a pull request, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting. 
+
+.
