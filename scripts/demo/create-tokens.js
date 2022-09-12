@@ -50,6 +50,8 @@
     })).then( () => {
         trx.commit();
         knex.destroy();
+        console.log("Done!")
+        console.log("Press CTRL+C to finish execution.")
     });
 })()
     .catch(e => console.error(e.stack))
