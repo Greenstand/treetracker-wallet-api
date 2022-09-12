@@ -98,7 +98,7 @@ describe("Token", () => {
     it("Successfuly", async () => {
       const tokenId2 = uuid.v4();
       const transferId1 = uuid.v4();
-      const fn = sinon.stub(TokenRepository.prototype, "getByTransferId").resolves([{id:tokenId2}]);
+      const fn = sinon.stub(TokenRepository.prototype, "getByTransferId").resolves({rows:[{id:tokenId2}]});
       const tokens = await tokenService.getTokensByTransferId(transferId1);
       expect(fn).calledWith(transferId1);
       expect(tokens).lengthOf(1);
