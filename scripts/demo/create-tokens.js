@@ -31,8 +31,8 @@
                 // for each tree, insert a token into the DB
                 for (const t of treesJson.trees) {
                     await trx('public.token').insert({
-                        capture_id: t.capture_id,
-                        wallet_id: t.wallet_id
+                        capture_id: t.uuid,
+                        wallet_id: walletId.id
                     }).returning('*');
                 }
                 resolve()
@@ -42,16 +42,12 @@
             }
         });
 
-        console.log("press ctrl+C to end script");
-
     }).on("error", (error) => {
         console.error(error.message);
         reject(error)
     })).then( () => {
         trx.commit();
         knex.destroy();
-        console.log("Done!")
-        console.log("Press CTRL+C to finish execution.")
     });
 })()
     .catch(e => console.error(e.stack))
