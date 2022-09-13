@@ -29,7 +29,7 @@ class TokenRepository extends BaseRepository{
       SELECT "token".* FROM "token"
       JOIN "transaction" 
       ON "token".id = "transaction".token_id
-      WHERE "transaction".transfer_id = '226f76cd-52b0-486b-b58a-98230696c748'
+      WHERE "transaction".transfer_id = '${transferId}'
     `);
     return result;
   }
