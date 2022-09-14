@@ -1,3 +1,10 @@
+## [1.10.10](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.9...v1.10.10) (2022-09-14)
+
+
+### Bug Fixes
+
+* trigger ci on v1.10 ([ef0f728](https://github.com/Greenstand/treetracker-wallet-api/commit/ef0f728d738fcb9fa77a5417985a02f13954bced))
+
 ## [1.10.9](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.8...v1.10.9) (2022-02-15)
 
 
