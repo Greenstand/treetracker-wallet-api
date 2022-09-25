@@ -1,14 +1,14 @@
 # This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
-name: Deploy to Dev Env 
+name: Deploy to Dev Env
 
 on:
   push:
     branches:
       - master
 
-env: 
+env:
   project-directory: ./
 
 jobs:
@@ -20,49 +20,48 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'Greenstand/treetracker-wallet-api'
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-    - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
-    - run: semantic-release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: npm clean install
-      run: npm ci
-      working-directory: ${{ env.project-directory }}
-    - name: get-npm-version
-      id: package-version
-      uses: martinbeentjes/npm-get-version-action@master
-      with:
-        path: ./
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-    - name: Login to DockerHub
-      uses: docker/login-action@v1 
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build snapshot with git sha and push on merge
-      id: docker_build_snapshot_merge
-      uses: docker/build-push-action@v2
-      with:
-        context: ./
-        file: ./Dockerfile
-        push: true
-        tags: greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }}
-    - shell: bash
-      run: |
-        echo '${{ steps.package-version.outputs.current-version }}' > image-tag
-    - name: persist tag name
-      uses: actions/upload-artifact@v1
-      with:
-        name: image-tag-${{github.sha}}
-        path: image-tag
-
+      - uses: actions/checkout@v2
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+      - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
+      - run: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: npm clean install
+        run: npm ci
+        working-directory: ${{ env.project-directory }}
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+        with:
+          path: ./
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build snapshot with git sha and push on merge
+        id: docker_build_snapshot_merge
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags: greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }}
+      - shell: bash
+        run: |
+          echo '${{ steps.package-version.outputs.current-version }}' > image-tag
+      - name: persist tag name
+        uses: actions/upload-artifact@v1
+        with:
+          name: image-tag-${{github.sha}}
+          path: image-tag
 
   deploy:
     name: Deploy latest to development environment
@@ -73,38 +72,37 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'Greenstand/${{ github.event.repository.name }}'
     steps:
-    - uses: actions/checkout@v2
-    - name: get-npm-version
-      id: package-version
-      uses: martinbeentjes/npm-get-version-action@master
-      with:
-        path: ./
-    - name: Download tag name
-      uses: actions/download-artifact@v1
-      with:
-        name: image-tag-${{github.sha}}
-    - name: Set image tag name 
-      id: image-tag-name
-      run: |
-        value=`cat image-tag-${{github.sha}}/image-tag`
-        echo "::set-output name=image-tag-name::$value"
-    - name: Install kustomize
-      run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-    - name: Run kustomize
-      run: (cd deployment/base && ../../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.image-tag-name.outputs.image-tag-name }} )
-    - name: Install doctl for kubernetes
-      uses: digitalocean/action-doctl@v2
-      with:
-        token: ${{ secrets.DEV_DIGITALOCEAN_TOKEN }}
-    - name: Save DigitalOcean kubeconfig
-      run: doctl kubernetes cluster kubeconfig save ${{ secrets.DEV_CLUSTER_NAME}}
-    - name: Delete completed migration jobs prior to deployment
-      run: kubectl -n wallet-api delete job --ignore-not-found=true  wallet-db-migration-job
-    - name: Update kubernetes resources
-      run: kustomize build deployment/overlays/development | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -    
-#    - name: Attempt to wait for migration job to complete
-#       run: kubectl wait --for=condition=complete --timeout=45s job/wallet-db-migration-job
-
+      - uses: actions/checkout@v2
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+        with:
+          path: ./
+      - name: Download tag name
+        uses: actions/download-artifact@v1
+        with:
+          name: image-tag-${{github.sha}}
+      - name: Set image tag name
+        id: image-tag-name
+        run: |
+          value=`cat image-tag-${{github.sha}}/image-tag`
+          echo "::set-output name=image-tag-name::$value"
+      - name: Install kustomize
+        run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+      - name: Run kustomize
+        run: (cd deployment/base && ../../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.image-tag-name.outputs.image-tag-name }} )
+      - name: Install doctl for kubernetes
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DEV_DIGITALOCEAN_TOKEN }}
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ secrets.DEV_CLUSTER_NAME}}
+      - name: Delete completed migration jobs prior to deployment
+        run: kubectl -n wallet-api delete job --ignore-not-found=true  wallet-db-migration-job
+      - name: Update kubernetes resources
+        run: kustomize build deployment/overlays/development | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -
+  #    - name: Attempt to wait for migration job to complete
+  #       run: kubectl wait --for=condition=complete --timeout=45s job/wallet-db-migration-job
 
   test:
     name: End to End Test
@@ -114,13 +112,13 @@ jobs:
       ENVIRONMENT: dev
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12
-    - name: Install mocha
-      run: npm install -g mocha
-    - run: npm ci
-    - run: echo ${{ secrets.DEVELOPMENT_ENV }}
-    - run: ${{ secrets.DEVELOPMENT_ENV }} npm run test-e2e
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install mocha
+        run: npm install -g mocha
+      - run: npm ci
+      - run: echo ${{ secrets.DEVELOPMENT_ENV }}
+      - run: ${{ secrets.DEVELOPMENT_ENV }} npm run test-e2e
