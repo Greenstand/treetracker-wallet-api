@@ -1,3 +1,13 @@
+## [1.19.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.0...v1.19.1) (2022-09-26)
+
+
+### Bug Fixes
+
+* add created_at to wallet table ([769bc63](https://github.com/Greenstand/treetracker-wallet-api/commit/769bc63f43f06d46382da15b1e0bb3858be9b61e))
+* dev workflow ([067903f](https://github.com/Greenstand/treetracker-wallet-api/commit/067903f2e3f338664b22c5acd0c5cb1f122a5d4e))
+* imagePullPolicy: IfNotPresent ([dba5b38](https://github.com/Greenstand/treetracker-wallet-api/commit/dba5b38ce35c6fe60b9bcf99e204f6b873047245))
+* trigger ci, with quote ([a71b8c8](https://github.com/Greenstand/treetracker-wallet-api/commit/a71b8c812a7db880436a4c8fb5869db53b65f150))
+
 # [1.19.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.18.0...v1.19.0) (2021-09-07)
 
 
