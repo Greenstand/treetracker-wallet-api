@@ -6,3 +6,11 @@ spec:
   prefix: /wallet/
   service: treetracker-wallet-api
   rewrite: /
+  cors:
+    headers:
+    - Content-Type
+    - Authorization
+    methods:
+    - GET, POST, PATCH, PUT, OPTIONS, DELETE
+    origins:
+    - '*'
