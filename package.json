@@ -1,6 +1,6 @@
 {
   "name": "treetracker",
-  "version": "1.19.2",
+  "version": "1.19.3",
   "description": "https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest",
   "private": true,
   "main": "server/server.js",
