@@ -1,3 +1,10 @@
+## [1.19.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.3...v1.19.4) (2022-10-28)
+
+
+### Bug Fixes
+
+* cluster role deployment ([915bd6e](https://github.com/Greenstand/treetracker-wallet-api/commit/915bd6ed2fdc2b88e489a926ae49546d886a12bd))
+
 ## [1.19.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.2...v1.19.3) (2022-10-27)
 
 
