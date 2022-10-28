@@ -15,46 +15,46 @@ spec:
         app: treetracker-wallet-api-v2
     spec:
       initContainers:
-        - name: 'wallet-db-migration-job-init'
-          image: 'groundnuty/k8s-wait-for:1.3'
-          imagePullPolicy: IfNotPresent
-          args:
-            - 'job'
-            - 'wallet-db-migration-job'
+      - name: "wallet-db-migration-job-init"
+        image: "groundnuty/k8s-wait-for:1.3"
+        imagePullPolicy: IfNotPresent
+        args: 
+        - "job"
+        - "wallet-db-migration-job"
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
-              - matchExpressions:
-                  - key: doks.digitalocean.com/node-pool
-                    operator: In
-                    values:
-                      - microservices-node-pool
+            - matchExpressions:
+              - key: doks.digitalocean.com/node-pool
+                operator: In
+                values:
+                - microservices-node-pool  
       containers:
-        - name: treetracker-wallet-api-v2
-          image: greenstand/treetracker-wallet-api:latest
-          ports:
-            - containerPort: 80
-          env:
-            - name: PRIVATE_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: treetracker-wallet-jwt-keys
-                  key: private-key
-            - name: PUBLIC_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: treetracker-wallet-jwt-keys
-                  key: public-key
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: treetracker-api-database-connection
-                  key: db
-            - name: DATABASE_SCHEMA
-              valueFrom:
-                secretKeyRef:
-                  name: treetracker-api-database-connection
-                  key: schema
-            - name: NODE_LOG_LEVEL
-              value: debug
+      - name: treetracker-wallet-api-v2
+        image: greenstand/treetracker-wallet-api:latest
+        ports:
+        - containerPort: 80
+        env:
+          - name: PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: treetracker-wallet-jwt-keys
+                key: private-key
+          - name: PUBLIC_KEY
+            valueFrom:
+              secretKeyRef:
+                name: treetracker-wallet-jwt-keys
+                key: public-key
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: treetracker-api-database-connection
+                key: db
+          - name: DATABASE_SCHEMA
+            valueFrom:
+              secretKeyRef:
+                name: treetracker-api-database-connection
+                key: schema
+          - name: NODE_LOG_LEVEL
+            value: debug
