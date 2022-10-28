@@ -1,3 +1,10 @@
+## [1.19.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.5...v1.19.6) (2022-10-28)
+
+
+### Bug Fixes
+
+* remove broken initContainer ([20b1761](https://github.com/Greenstand/treetracker-wallet-api/commit/20b1761cfc4835d1738a8e6283e3f4abcb319da6))
+
 ## [1.19.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.4...v1.19.5) (2022-10-28)
 
 
