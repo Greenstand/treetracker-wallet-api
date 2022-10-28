@@ -61,7 +61,9 @@ class Wallet{
     // check name
     try{
       await this.walletRepository.getByName(wallet);
-      throw new HttpError(403, `The wallet '${wallet}' has been existed`);
+      // issue 266
+      //throw new HttpError(403, `The wallet '${wallet}' has been existed`);
+      throw new HttpError(403, `The wallet '${wallet}' already exists`);
     }catch(e){
       if(e instanceof HttpError && e.code === 404){
         // fine
@@ -458,11 +460,15 @@ class Wallet{
     for(const token of tokens){
       if(!await token.belongsTo(sender)){
         const uuid = await token.getId();
-        throw new HttpError(403, `The token ${uuid} do not belongs to sender wallet`);
+        // issue 272 
+        // throw new HttpError(403, `The token ${uuid} do not belongs to sender wallet`);
+        throw new HttpError(403, `The token ${uuid} does not belong to the sender wallet`);
       }
       if(!await token.beAbleToTransfer()){
         const uuid = await token.getId();
-        throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
+        // issue 271
+        //throw new HttpError(403, `The token ${uuid} can not be transfer for some reason, for example, it's been pending for another transfer`);
+        throw new HttpError(403, `The token ${uuid} cannot be transferred for some reason--for example, it is part of another pending transfer`);
       }
     }
     const isDeduct = await this.isDeduct(sender,receiver);
@@ -876,14 +882,18 @@ class Wallet{
         const belongsTo = await token.belongsTo(senderWallet);
         if(!belongsTo){
           const json = await token.toJSON();
-          throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`, true);
+          // issue 272
+          // throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`, true);
+          throw new HttpError(403, `the token:${json.uuid} does not belong to the sender wallet`, true);
         }
       }
 
       // transfer
       await this.tokenService.completeTransfer(tokens, transfer);
     }else{
-      throw new HttpError(403, "No need to specify tokens", true);
+      // issue 274
+      // throw new HttpError(403, "No need to specify tokens", true);
+      throw new HttpError(403, "Do not specify token IDs, use implicit:true", true);
     }
     return transferJson;
   }
@@ -931,7 +941,9 @@ class Wallet{
       
     }, undefined);
     if(!transfer){
-      throw new HttpError(404, "Can not find this transfer or it is related to this wallet");
+      // issue 269
+      // throw new HttpError(404, "Can not find this transfer or it is related to this wallet");
+      throw new HttpError(404, "Cannot find this transfer, or it is not related to this wallet");
     }
     return transfer;
   }
