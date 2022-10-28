@@ -1,3 +1,48 @@
+## [1.19.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.5...v1.19.6) (2022-10-28)
+
+
+### Bug Fixes
+
+* remove broken initContainer ([20b1761](https://github.com/Greenstand/treetracker-wallet-api/commit/20b1761cfc4835d1738a8e6283e3f4abcb319da6))
+
+## [1.19.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.4...v1.19.5) (2022-10-28)
+
+
+### Bug Fixes
+
+*  deployment ([e4ac3d8](https://github.com/Greenstand/treetracker-wallet-api/commit/e4ac3d8eedd63fe666d56ebe0e49c50757a0bcd9))
+
+## [1.19.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.3...v1.19.4) (2022-10-28)
+
+
+### Bug Fixes
+
+* cluster role deployment ([915bd6e](https://github.com/Greenstand/treetracker-wallet-api/commit/915bd6ed2fdc2b88e489a926ae49546d886a12bd))
+
+## [1.19.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.2...v1.19.3) (2022-10-27)
+
+
+### Bug Fixes
+
+* v2 deployment ([a040ee2](https://github.com/Greenstand/treetracker-wallet-api/commit/a040ee23f6543c9586f991c74e45b28ec2a46224))
+
+## [1.19.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.1...v1.19.2) (2022-09-26)
+
+
+### Bug Fixes
+
+* migration job ([3422185](https://github.com/Greenstand/treetracker-wallet-api/commit/3422185d47b9192da43070033e8b19fa3e978bd0))
+
+## [1.19.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.0...v1.19.1) (2022-09-26)
+
+
+### Bug Fixes
+
+* add created_at to wallet table ([769bc63](https://github.com/Greenstand/treetracker-wallet-api/commit/769bc63f43f06d46382da15b1e0bb3858be9b61e))
+* dev workflow ([067903f](https://github.com/Greenstand/treetracker-wallet-api/commit/067903f2e3f338664b22c5acd0c5cb1f122a5d4e))
+* imagePullPolicy: IfNotPresent ([dba5b38](https://github.com/Greenstand/treetracker-wallet-api/commit/dba5b38ce35c6fe60b9bcf99e204f6b873047245))
+* trigger ci, with quote ([a71b8c8](https://github.com/Greenstand/treetracker-wallet-api/commit/a71b8c812a7db880436a4c8fb5869db53b65f150))
+
 # [1.19.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.18.0...v1.19.0) (2021-09-07)
 
 

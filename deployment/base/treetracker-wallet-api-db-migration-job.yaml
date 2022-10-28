@@ -28,7 +28,7 @@ spec:
                   name: treetracker-api-database-connection
                   key: db
             - name: DATABASE_URL
-              value: '$(BASE_DATABASE_URL)&schema=wallets'
+              value: '$(BASE_DATABASE_URL)&schema=wallet'
           command: ['node']
           args:
             [
