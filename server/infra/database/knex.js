@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 const expect = require('expect-runtime');
 const log = require('loglevel');
 const knex = require('knex');
