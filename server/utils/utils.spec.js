@@ -7,7 +7,7 @@ const HttpError = require('./HttpError');
 const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService');
 
-describe.only('routers/utils', () => {
+describe('routers/utils', () => {
   describe('handlerWrapper', () => {
     it('promise reject from current handler, should be catch and response to client', async () => {
       const app = express();

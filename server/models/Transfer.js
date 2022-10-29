@@ -126,13 +126,13 @@ class Transfer {
       if (!tokenBelongsToSender) {
         throw new HttpError(
           403,
-          `The token ${token.id} do not belongs to sender wallet`,
+          `The token ${token.id} does not belong to the sender wallet`,
         );
       }
       if (!tokenAbleToTransfer) {
         throw new HttpError(
           403,
-          `The token ${token.id} can not be transfer for some reason, for example, it's been pending for another transfer`,
+          `The token ${token.id} cannot be transferred for some reason--for example, it is part of another pending transfer`,
         );
       }
     });
@@ -537,7 +537,7 @@ class Transfer {
   }
 
   /*
-   * Fulfill a requested transfer, if I has the privilege to do so
+   * Fulfill a requested transfer, if I have the privilege to do so
    * Specify tokens
    */
   async fulfillTransferWithTokens(transferId, tokens, walletLoginId) {
@@ -588,7 +588,7 @@ class Transfer {
         if (!belongsTo) {
           throw new HttpError(
             403,
-            `the token:${token.id} do not belongs to sender wallet`,
+            `the token:${token.id} does not belong to the sender wallet`,
             true,
           );
         }

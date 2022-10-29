@@ -396,6 +396,25 @@ class Trust {
     }
     return false;
   }
+
+  // NOT YET IN USE
+  //   /*
+  //  * Get all the trust relationships I have requested
+  //  */
+  //   async getTrustRelationshipsRequested() {
+  //     const result = await this.getTrustRelationships();
+  //     return result.filter((trustRelationship) => {
+  //       return trustRelationship.originator_wallet_id === this._id;
+  //     });
+  //   }
+
+  //   /*
+  //    * Get all the trust relationships targeted to me, means request
+  //    * the trust from me
+  //    */
+  //   async getTrustRelationshipsTargeted() {
+  //     return this.trustRepository.getByTargetId(this._id);
+  //   }
 }
 
 module.exports = Trust;

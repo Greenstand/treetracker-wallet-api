@@ -9,6 +9,7 @@ database.json
 .env.*
 .env.test
 .vscode
+.nyc_output
 
 # Logs and databases #
 ######################

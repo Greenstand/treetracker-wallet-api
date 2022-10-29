@@ -2,7 +2,6 @@ const log = require('loglevel');
 const WalletRepository = require('../repositories/WalletRepository');
 const TrustRepository = require('../repositories/TrustRepository');
 const TrustRelationshipEnums = require('../utils/trust-enums');
-const TransferRepository = require('../repositories/TransferRepository');
 const HttpError = require('../utils/HttpError');
 
 class Wallet {
@@ -10,14 +9,13 @@ class Wallet {
     this._session = session;
     this._walletRepository = new WalletRepository(session);
     this._trustRepository = new TrustRepository(session);
-    this._transferRepository = new TransferRepository(session);
   }
 
   async createWallet(loggedInWalletId, wallet) {
     // check name
     try {
       await this._walletRepository.getByName(wallet);
-      throw new HttpError(403, `The wallet '${wallet}' has been existed`);
+      throw new HttpError(403, `The wallet '${wallet}' already exists`);
     } catch (e) {
       if (e instanceof HttpError && e.code === 404) {
         // fine
@@ -46,24 +44,6 @@ class Wallet {
     return newWallet;
   }
 
-  /*
-   * Get all the trust relationships I have requested
-   */
-  async getTrustRelationshipsRequested() {
-    const result = await this.getTrustRelationships();
-    return result.filter((trustRelationship) => {
-      return trustRelationship.originator_wallet_id === this._id;
-    });
-  }
-
-  /*
-   * Get all the trust relationships targeted to me, means request
-   * the trust from me
-   */
-  async getTrustRelationshipsTargeted() {
-    return this.trustRepository.getByTargetId(this._id);
-  }
-
   async getById(id) {
     return this._walletRepository.getById(id);
   }
@@ -89,13 +69,13 @@ class Wallet {
   async hasControlOver(parentId, childId) {
     // if the given wallet is me, then pass
     if (parentId === childId) {
-      log.debug('The same wallet, control');
+      log.debug('The same wallet');
       return true;
     }
     // check sub wallet
     const result = await this.getSubWallets(parentId, childId);
 
-    if (result.length > 0) {
+    if (result.length) {
       return true;
     }
     return false;
@@ -110,17 +90,12 @@ class Wallet {
       or: [
         {
           and: [
-            {
-              actor_wallet_id: parentId,
-            },
+            { actor_wallet_id: parentId },
             {
               request_type:
                 TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
             },
-
-            {
-              state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-            },
+            { state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted },
           ],
         },
         {
@@ -129,12 +104,8 @@ class Wallet {
               request_type:
                 TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
             },
-            {
-              target_wallet_id: parentId,
-            },
-            {
-              state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-            },
+            { target_wallet_id: parentId },
+            { state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted },
           ],
         },
       ],
