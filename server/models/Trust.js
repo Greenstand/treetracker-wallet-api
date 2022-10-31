@@ -26,15 +26,9 @@ class Trust {
       and: [
         {
           or: [
-            {
-              actor_wallet_id: walletId,
-            },
-            {
-              target_wallet_id: walletId,
-            },
-            {
-              originator_wallet_id: walletId,
-            },
+            { actor_wallet_id: walletId },
+            { target_wallet_id: walletId },
+            { originator_wallet_id: walletId },
           ],
         },
       ],
@@ -171,7 +165,7 @@ class Trust {
         );
       }
     } else {
-      throw HttpError(500, 'Not supported type');
+      throw new HttpError(500, 'Not supported type');
     }
     log.debug('Has no duplicated trust');
   }
@@ -337,7 +331,7 @@ class Trust {
   /*
    * Cancel a trust relationship request
    */
-  async cancelTrustRequestSentToMe({ trustRelationshipId, walletId }) {
+  async cancelTrustRequest({ trustRelationshipId, walletId }) {
     const trustRelationships = await this._trustRepository.getByFilter({
       'wallet_trust.id': trustRelationshipId,
     });

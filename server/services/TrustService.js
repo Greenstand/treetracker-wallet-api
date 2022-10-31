@@ -103,8 +103,8 @@ class TrustService {
     });
   }
 
-  async cancelTrustRequestSentToMe({ walletLoginId, trustRelationshipId }) {
-    return this._trust.cancelTrustRequestSentToMe({
+  async cancelTrustRequest({ walletLoginId, trustRelationshipId }) {
+    return this._trust.cancelTrustRequest({
       walletId: walletLoginId,
       trustRelationshipId,
     });

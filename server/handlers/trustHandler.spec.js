@@ -152,7 +152,7 @@ describe('trustRouter', () => {
     it('successfully', async () => {
       const trustRelationshipId = uuid.v4();
       const declineTrustRequestStub = sinon
-        .stub(TrustService.prototype, 'cancelTrustRequestSentToMe')
+        .stub(TrustService.prototype, 'cancelTrustRequest')
         .resolves({ id: trustRelationshipId });
 
       const res = await request(app).delete(

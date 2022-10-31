@@ -323,7 +323,7 @@
 //         .returns(trustRelationship);
 //       const fn2 = sinon.stub(TrustRepository.prototype, 'update');
 //       await jestExpect(async () => {
-//         await wallet.cancelTrustRequestSentToMe(trustId);
+//         await wallet.cancelTrustRequest(trustId);
 //       }).rejects.toThrow(/no permission/i);
 //       fn1.restore();
 //       fn2.restore();
@@ -338,7 +338,7 @@
 //         .stub(TrustRepository.prototype, 'getById')
 //         .returns(trustRelationship);
 //       const fn2 = sinon.stub(TrustRepository.prototype, 'update');
-//       await wallet.cancelTrustRequestSentToMe(trustId);
+//       await wallet.cancelTrustRequest(trustId);
 //       fn1.restore();
 //       fn2.restore();
 //     });

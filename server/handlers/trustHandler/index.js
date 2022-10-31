@@ -80,7 +80,7 @@ const trustRelationshipDelete = async (req, res) => {
 
   const { trustRelationshipId } = req.params;
   const trustService = new TrustService();
-  const json = await trustService.cancelTrustRequestSentToMe({
+  const json = await trustService.cancelTrustRequest({
     walletLoginId: req.wallet_id,
     trustRelationshipId,
   });

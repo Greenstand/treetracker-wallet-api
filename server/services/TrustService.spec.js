@@ -80,12 +80,12 @@ describe('TrustService', () => {
     ).eql(true);
   });
 
-  it('cancelTrustRequestSentToMe', async () => {
+  it('cancelTrustRequest', async () => {
     const cancelTrustRelationshipStub = sinon
-      .stub(Trust.prototype, 'cancelTrustRequestSentToMe')
+      .stub(Trust.prototype, 'cancelTrustRequest')
       .resolves('trustRelationship');
 
-    const trustRelationship = await trustService.cancelTrustRequestSentToMe({
+    const trustRelationship = await trustService.cancelTrustRequest({
       trustRelationshipId: 'trustRelationshipId',
       walletLoginId: 'walletLoginId',
     });
