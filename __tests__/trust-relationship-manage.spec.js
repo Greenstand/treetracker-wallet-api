@@ -1,25 +1,20 @@
-require('dotenv').config()
+require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const log = require('loglevel');
-const sinon = require("sinon");
-const chai = require("chai");
-const server = require("../server/app");
+const sinon = require('sinon');
+const chai = require('chai');
+const server = require('../server/app');
 const seed = require('./seed');
-const Transfer = require("../server/models/Transfer");
-const TrustRelationship = require("../server/models/TrustRelationship");
+const TrustRelationship = require('../server/utils/trust-enums');
 chai.use(require('chai-uuid'));
 
-const {apiKey} = seed;
+const { apiKey } = seed;
 
 describe('Trust relationship: manage', () => {
-
   let bearerToken;
   let bearerTokenB;
-  let requestedTransferId;
 
-  before( async () => {
-
+  before(async () => {
     await seed.clear();
     await seed.seed();
 
@@ -54,25 +49,29 @@ describe('Trust relationship: manage', () => {
 
   beforeEach(async () => {
     sinon.restore();
-  })
+  });
 
   it(`Should be able to find the trust relationship: manage ${seed.walletC.name}`, async () => {
     const res = await request(server)
-      .get("/trust_relationships?limit=1000")
+      .get('/trust_relationships?limit=1000')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
-    expect(res).property("statusCode").to.eq(200);
-    expect(res).property("body").property("trust_relationships").lengthOf(1);
-    expect(res.body.trust_relationships[0]).property("id").to.be.a.uuid('v4')
-    expect(res.body.trust_relationships.some(trust => {
-      return trust.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
-        trust.target_wallet === seed.walletC.name;
-    })).eq(true);
+    expect(res).property('statusCode').to.eq(200);
+    expect(res).property('body').property('trust_relationships').lengthOf(1);
+    expect(res.body.trust_relationships[0]).property('id').to.be.a.uuid('v4');
+    expect(
+      res.body.trust_relationships.some((trust) => {
+        return (
+          trust.type === TrustRelationship.ENTITY_TRUST_TYPE.manage &&
+          trust.target_wallet === seed.walletC.name
+        );
+      }),
+    ).eq(true);
   });
 
   it(`Via ${seed.walletB.name}, can transfer token between ${seed.walletC.name} and others`, async () => {
     const res = await request(server)
-      .post("/transfers")
+      .post('/transfers')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`)
       .send({
@@ -83,13 +82,13 @@ describe('Trust relationship: manage', () => {
         receiver_wallet: seed.walletC.name,
         claim: false,
       });
-    expect(res).property("statusCode").to.eq(202);
+    expect(res).property('statusCode').to.eq(202);
   });
 
   let transferId = 0;
   it(`Send a token to ${seed.walletC.name}`, async () => {
     const res = await request(server)
-      .post("/transfers")
+      .post('/transfers')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
@@ -97,20 +96,19 @@ describe('Trust relationship: manage', () => {
         sender_wallet: seed.wallet.name,
         receiver_wallet: seed.walletC.name,
       });
-    expect(res).property("statusCode").to.eq(202);
-    expect(res.body).property("id").to.be.a.uuid('v4')
+    expect(res).property('statusCode').to.eq(202);
+    expect(res.body).property('id').to.be.a.uuid('v4');
     transferId = res.body.id;
-  })
-
+  });
 
   it(`${seed.walletB.name} can accept the transfer for ${seed.walletC.name}`, async () => {
     const res = await request(server)
       .post(`/transfers/${transferId}/accept`)
-      .set('Content-Type', "application/json")
+      .set('Content-Type', 'application/json')
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
-  })
+  });
 
   it(`Token:#${seed.token.id} now should belong to walletC:${seed.walletC.name}`, async () => {
     const res = await request(server)
@@ -121,4 +119,3 @@ describe('Trust relationship: manage', () => {
     expect(res.body.wallet_id).eq(seed.walletC.id);
   });
 });
-

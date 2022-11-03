@@ -1,35 +1,56 @@
-const jestExpect = require("expect");
-const sinon = require("sinon");
-const ApiKeyService = require("./ApiKeyService");
-const ApiKeyRepository = require("../repositories/ApiKeyRepository");
-const HttpError = require("../utils/HttpError");
-const Session = require("../models/Session");
+const { expect } = require('chai');
+const sinon = require('sinon');
+const ApiKeyService = require('./ApiKeyService');
+const ApiKey = require('../models/ApiKey');
 
-describe("ApiKey", () => {
+describe('ApiKey', () => {
   let apiKey;
 
   before(() => {
-    apiKey = new ApiKeyService(new Session());
-  })
-
-  it("empty key should throw error", async () => {
-    await jestExpect(async () => {
-      await apiKey.check(undefined);
-    }).rejects.toThrow(/no API key/);
+    apiKey = new ApiKeyService();
   });
 
-  it("key which do not exist should throw error", async () => {
-    sinon.stub(ApiKeyRepository.prototype, "getByApiKey").throws(new HttpError(404));
-    await jestExpect(async () => {
-      await apiKey.check("not_exist");
-    }).rejects.toThrow(/Invalid/);
-    ApiKeyRepository.prototype.getByApiKey.restore();
+  it('empty key should throw error', async () => {
+    let error;
+    try {
+      await apiKey.check();
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).eql('Invalid access - no API key');
   });
 
-  it("good key should pass", async () => {
-    sinon.stub(ApiKeyRepository.prototype, "getByApiKey").returns({});
-    await apiKey.check("not_exist");
-    ApiKeyRepository.prototype.getByApiKey.restore();
+  it('key which do not exist should throw error', async () => {
+    let error;
+    const getApiKeyStub = sinon
+      .stub(ApiKey.prototype, 'getByApiKey')
+      .resolves();
+    try {
+      await apiKey.check('api key');
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).eql('Invalid API access');
+    getApiKeyStub.restore();
   });
 
+  it('key with false tree_token_api_access should not pass', async () => {
+    let error;
+    const getApiKeyStub = sinon
+      .stub(ApiKey.prototype, 'getByApiKey')
+      .resolves({ tree_token_api_access: false });
+    try {
+      await apiKey.check('api key');
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).eql('Invalid API access, apiKey was deprecated');
+    getApiKeyStub.restore();
+  });
+
+  it('good key should pass', async () => {
+    sinon.stub(ApiKey.prototype, 'getByApiKey').returns({});
+    await apiKey.check('not_exist');
+    ApiKey.prototype.getByApiKey.restore();
+  });
 });

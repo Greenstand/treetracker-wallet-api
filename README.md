@@ -306,7 +306,7 @@ By wrapping all the code in a try/catch block, if everything goes well, when the
 2. If this is a error thrown by ourselves, we can chose to commit or rollback by setting the flag in HttpError:
 
 ```
-throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`, true);
+throw new HttpError(403, `the token:${json.uuid} does not belong to the sender wallet`, true);
 ```
 
 The third parameter `true` means please rollback. (This is the default case for HttpError);
@@ -485,7 +485,7 @@ This command would run a API server locally, and seed some basic data into DB (t
 
 ### Set up Postman to operate wallet API
 
-We can use Postman to operate the wallet API, to create wallet, to trade tokens between wallet... all those business, just like an app for wallet, but some steps are needed to set Postman up, we created some scripts for this, to minimize the setting steps, mainly, you just need to import some files into Postman, then you can star to work. 
+We can use Postman to operate the wallet API, to create wallet, to trade tokens between wallet... all those business, just like an app for wallet, but some steps are needed to set Postman up, we created some scripts for this, to minimize the setting steps, mainly, you just need to import some files into Postman, then you can star to work.
 
 Please check this tutorial video:
 

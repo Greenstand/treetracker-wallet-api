@@ -1,139 +1,240 @@
-const jestExpect = require("expect");
-const sinon = require("sinon");
-const chai = require("chai");
-const sinonChai = require("sinon-chai");
-const uuid = require('uuid');
-const Token = require("./Token");
-const TokenRepository = require("../repositories/TokenRepository");
-const HttpError = require("../utils/HttpError");
+const sinonChai = require('sinon-chai');
+const sinon = require('sinon');
+const chai = require('chai');
+const { v4: uuid } = require('uuid');
 
 chai.use(sinonChai);
-const {expect} = chai;
-const TransactionRepository = require("../repositories/TransactionRepository");
-const Wallet = require("./Wallet");
-const Session = require("./Session");
+const { expect } = chai;
+const Session = require('../infra/database/Session');
+const TokenRepository = require('../repositories/TokenRepository');
+const TransactionRepository = require('../repositories/TransactionRepository');
+const Token = require('./Token');
 
-describe("Token", () => {
-  const session = new Session();
+describe('Token Model', () => {
+  let tokenModel;
+  let tokenRepositoryStub;
+  let transactionRepositoryStub;
 
-  const tokenId = uuid.v4()
-  const transferId = uuid.v4()
-  const walletId = uuid.v4()
-  const wallet2Id = uuid.v4()
+  beforeEach(() => {
+    const session = new Session();
+    tokenModel = new Token(session);
+
+    tokenRepositoryStub = sinon.stub(TokenRepository.prototype);
+    transactionRepositoryStub = sinon.stub(TransactionRepository.prototype);
+  });
 
   afterEach(() => {
     sinon.restore();
-  })
-
-  it("constructor by object", () => {
-    const token = new Token({
-      id: tokenId,
-    }, session);
-    expect(token).instanceOf(Token);
-    expect(token.getId()).eq(tokenId);
   });
 
-  describe("pendingTransfer", () => {
-
-    it("pendingTransfer successfully", async () => {
-      const token = new Token(tokenId, session);
-      const transfer = {id:transferId};
-      const fn1 = sinon.stub(TokenRepository.prototype, "update");
-      await token.pendingTransfer(transfer);
-      expect(fn1).calledWith({
-        id: tokenId,
-        transfer_pending: true,
-        transfer_pending_id: transferId,
-      });
-      fn1.restore();
+  it('countTokenByWallet', async () => {
+    const walletId = uuid();
+    tokenRepositoryStub.countByFilter.resolves(44);
+    const result = await tokenModel.countTokenByWallet(walletId);
+    expect(result).eql(44);
+    expect(tokenRepositoryStub.countByFilter).calledOnceWithExactly({
+      wallet_id: walletId,
     });
   });
 
-  describe("completeTransfer", () => {
-
-    it("completeTransfer successfully", async () => {
-      const token = new Token(tokenId, session);
-      const transfer = {
-        id: transferId,
-        source_wallet_id: walletId,
-        destination_wallet_id: wallet2Id,
-        claim: false,
-      };
-      const fn1 = sinon.stub(TokenRepository.prototype, "update");
-      const fn2 = sinon.stub(TransactionRepository.prototype, "create");
-      await token.completeTransfer(transfer);
-      expect(fn1).calledWith({
-        id: tokenId,
-        wallet_id: wallet2Id,
-        transfer_pending: false,
-        transfer_pending_id: null,
-        claim: false
-      }); 
-      expect(fn2).calledWith({
-        token_id: tokenId,
-        transfer_id: transferId,
-        source_wallet_id: walletId,
-        destination_wallet_id: wallet2Id,
-        claim: false
-      });
+  it('countNotClaimedTokenByWallet', async () => {
+    const walletId = uuid();
+    tokenRepositoryStub.countByFilter.resolves(55);
+    const result = await tokenModel.countNotClaimedTokenByWallet(walletId);
+    expect(result).eql(55);
+    expect(tokenRepositoryStub.countByFilter).calledOnceWithExactly({
+      wallet_id: walletId,
+      claim: false,
     });
   });
 
-  describe("cancelTransfer", () => {
-
-    it("cancelTransfer successfully", async () => {
-      const token = new Token(tokenId, session);
-      const transfer = {
-        id: transferId,
-        source_wallet_id: walletId,
-        destination_wallet_id: wallet2Id,
-      };
-      const fn1 = sinon.stub(TokenRepository.prototype, "update");
-      const fn2 = sinon.stub(TransactionRepository.prototype, "create");
-      await token.cancelTransfer(transfer);
-      expect(fn1).calledWith({
-        id: tokenId,
-        transfer_pending: false,
-        transfer_pending_id: null,
-      });
-      expect(fn2).not.calledWith();
-    });
-  });
-
-  describe("belongsTo", () => {
-
-    it("belongsTo", async () => {
-      const token = new Token(tokenId, session);
-      const wallet = new Wallet(walletId, session);
-      const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
-        id: tokenId,
+  it('getTokensByBundle', async () => {
+    const walletId = uuid();
+    tokenRepositoryStub.getByFilter.resolves(['token1', 'token2']);
+    const result = await tokenModel.getTokensByBundle(walletId, 20, true);
+    expect(result).eql(['token1', 'token2']);
+    expect(tokenRepositoryStub.getByFilter).calledOnceWithExactly(
+      {
         wallet_id: walletId,
-      });
-      expect(await token.belongsTo(wallet)).eq(true);
-      expect(fn1).calledWith();
+        transfer_pending: false,
+      },
+      {
+        limit: 20,
+        claim: true,
+      },
+    );
+  });
+
+  it('completeTransfer', async () => {
+    const tokens = [{ id: uuid() }, { id: uuid() }];
+    const transfer = {
+      id: uuid(),
+      destination_wallet_id: uuid(),
+      source_wallet_id: uuid(),
+    };
+    tokenRepositoryStub.updateByIds.resolves();
+    transactionRepositoryStub.batchCreate.resolves();
+
+    await tokenModel.completeTransfer(tokens, transfer, true);
+    expect(tokenRepositoryStub.updateByIds).calledOnceWithExactly(
+      {
+        transfer_pending: false,
+        transfer_pending_id: null,
+        wallet_id: transfer.destination_wallet_id,
+        claim: true,
+      },
+      tokens.map((token) => token.id),
+    );
+    expect(transactionRepositoryStub.batchCreate).calledOnceWithExactly(
+      tokens.map((token) => ({
+        token_id: token.id,
+        transfer_id: transfer.id,
+        source_wallet_id: transfer.source_wallet_id,
+        destination_wallet_id: transfer.destination_wallet_id,
+        claim: true,
+      })),
+    );
+  });
+
+  it('pendingTransfer', async () => {
+    const tokens = [{ id: uuid() }, { id: uuid() }];
+    const transfer = {
+      id: uuid(),
+      destination_wallet_id: uuid(),
+      source_wallet_id: uuid(),
+    };
+    tokenRepositoryStub.updateByIds.resolves();
+    await tokenModel.pendingTransfer(tokens, transfer);
+    expect(tokenRepositoryStub.updateByIds).calledOnceWithExactly(
+      {
+        transfer_pending: true,
+        transfer_pending_id: transfer.id,
+      },
+      tokens.map((token) => token.id),
+    );
+  });
+
+  it('cancelTransfer', async () => {
+    const tokens = [{ id: uuid() }, { id: uuid() }];
+    tokenRepositoryStub.updateByIds.resolves();
+    await tokenModel.cancelTransfer(tokens);
+    expect(tokenRepositoryStub.updateByIds).calledOnceWithExactly(
+      {
+        transfer_pending: false,
+        transfer_pending_id: null,
+      },
+      tokens.map((token) => token.id),
+    );
+  });
+
+  describe('belongsTo', async () => {
+    it('should return true', async () => {
+      const walletId = uuid();
+      const result = Token.belongsTo({ wallet_id: walletId }, walletId);
+      expect(result).eql(true);
     });
 
-    it("not belongsTo", async () => {
-      const token = new Token(tokenId, session);
-      const wallet = new Wallet(walletId, session);
-      const fn1 = sinon.stub(TokenRepository.prototype, "getById").resolves({
-        id: tokenId,
-        wallet_id: wallet2Id,
-      });
-      expect(await token.belongsTo(wallet)).eq(false);
-      expect(fn1).calledWith();
+    it('should return false', async () => {
+      const walletId = uuid();
+      const result = Token.belongsTo({ wallet_id: uuid() }, walletId);
+      expect(result).eql(false);
     });
   });
 
-  describe("Transactions", () => {
-
-    it("getTransactions", async () => {
-      const token = new Token(tokenId);
-      sinon.stub(TransactionRepository.prototype, "getByFilter").resolves([{}]);
-      const transactions = await token.getTransactions();
-      expect(transactions).lengthOf(1);
+  describe('beAbleToTransfer', async () => {
+    it('should return true', async () => {
+      const result = Token.beAbleToTransfer({ transfer_pending: false });
+      expect(result).eql(true);
     });
 
+    it('should return false', async () => {
+      const result = Token.beAbleToTransfer({ transfer_pending: true });
+      expect(result).eql(false);
+    });
   });
 
+  it('getTransactions', async () => {
+    transactionRepositoryStub.getByFilter.resolves([
+      'transaction1',
+      'transaction2',
+    ]);
+    const tokenId = uuid();
+
+    const result = await tokenModel.getTransactions({
+      limit: 1,
+      tokenId,
+    });
+    expect(result).eql(['transaction1', 'transaction2']);
+
+    expect(transactionRepositoryStub.getByFilter).calledOnceWithExactly(
+      { token_id: tokenId },
+      { limit: 1, offset: 0 },
+    );
+  });
+
+  it('getByOwner', async () => {
+    const walletId = uuid();
+    const captureId1 = uuid();
+    const captureId2 = uuid();
+    const stubbedResult = [
+      { capture_id: captureId1 },
+      { capture_id: captureId2 },
+    ];
+    tokenRepositoryStub.getByFilter.resolves(stubbedResult);
+
+    const result = await tokenModel.getByOwner(walletId, 10, 20);
+    expect(result).eql(
+      stubbedResult.map((t) => {
+        return {
+          ...t,
+          links: { capture: `/webmap/tree?uuid=${t.capture_id}` },
+        };
+      }),
+    );
+    expect(tokenRepositoryStub.getByFilter).calledOnceWithExactly(
+      { wallet_id: walletId },
+      { limit: 10, offset: 20 },
+    );
+  });
+
+  it('getById', async () => {
+    const tokenId = uuid();
+    const tokenCaptureId = uuid();
+    const stubbedResult = { id: tokenId, capture_id: tokenCaptureId };
+    tokenRepositoryStub.getById.resolves(stubbedResult);
+
+    const result = await tokenModel.getById(tokenId);
+    expect(result).eql({
+      ...stubbedResult,
+      links: {
+        capture: `/webmap/tree?uuid=${tokenCaptureId}`,
+      },
+    });
+  });
+
+  it('getTokensByPendingTransferId', async () => {
+    const transferId = uuid();
+    tokenRepositoryStub.getByFilter.resolves({ id: transferId });
+    const result = await tokenModel.getTokensByPendingTransferId(
+      transferId,
+      10,
+    );
+    expect(result).eql({ id: transferId });
+    expect(tokenRepositoryStub.getByFilter).calledOnceWithExactly(
+      { transfer_pending_id: transferId },
+      { limit: 10, offset: 0 },
+    );
+  });
+
+  it('getTokensByTransferId', async () => {
+    const transferId = uuid();
+    tokenRepositoryStub.getByTransferId.resolves({ id: transferId });
+    const result = await tokenModel.getTokensByTransferId(transferId, 10, 20);
+    expect(result).eql({ id: transferId });
+    expect(tokenRepositoryStub.getByTransferId).calledOnceWithExactly(
+      transferId,
+      10,
+      20,
+    );
+  });
 });

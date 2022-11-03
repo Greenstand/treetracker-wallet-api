@@ -1,37 +1,73 @@
 const { validate: uuidValidate } = require('uuid');
-const WalletRepository = require('../repositories/WalletRepository');
 const Wallet = require('../models/Wallet');
-const HttpError = require("../utils/HttpError");
+const Session = require('../infra/database/Session');
+const Token = require('../models/Token');
 
 class WalletService {
-  constructor(session){
-    this._session = session;
-    this.walletRepository = new WalletRepository(session);
+  constructor() {
+    this._session = new Session();
+    this._wallet = new Wallet(this._session);
+  }
+
+  async getSubWallets(id) {
+    return this._wallet.getSubWallets(id);
   }
 
   async getById(id) {
-    const object = await this.walletRepository.getById(id);
-    const wallet = new Wallet(object.id, this._session);
-    return wallet;
+    return this._wallet.getById(id);
   }
 
   async getByName(name) {
-    const object = await this.walletRepository.getByName(name);
-    const wallet = new Wallet(object.id, this._session);
-    return wallet;
+    return this._wallet.getByName(name);
   }
 
   async getByIdOrName(idOrName) {
-    let walletObject;
-    if(uuidValidate(idOrName)){
-      walletObject = await this.walletRepository.getById(idOrName);
-    } else if (typeof idOrName === 'string') {
-      walletObject = await this.walletRepository.getByName(idOrName);
+    let wallet;
+    if (uuidValidate(idOrName)) {
+      wallet = await this.getById(idOrName);
     } else {
-      throw new HttpError(404, `Type must be number or string: ${idOrName}`);
+      wallet = await this.getByName(idOrName);
     }
-    const wallet = new Wallet(walletObject.id, this._session);
     return wallet;
+  }
+
+  async createWallet(loggedInWalletId, wallet) {
+    try {
+      await this._session.beginTransaction();
+
+      const addedWallet = await this._wallet.createWallet(
+        loggedInWalletId,
+        wallet,
+      );
+
+      await this._session.commitTransaction();
+
+      return addedWallet.name;
+    } catch (e) {
+      if (this._session.isTransactionInProgress()) {
+        await this._session.rollbackTransaction();
+      }
+      throw e;
+    }
+  }
+
+  async getAllWallets(id, limitOptions, getTokenCount = true) {
+    if (getTokenCount) {
+      const token = new Token(this._session);
+      const wallets = await this._wallet.getAllWallets(id, limitOptions);
+      return Promise.all(
+        wallets.map(async (wallet) => {
+          const json = { ...wallet };
+          json.tokens_in_wallet = await token.countTokenByWallet(wallet.id);
+          return json;
+        }),
+      );
+    }
+    return this._wallet.getAllWallets(id, limitOptions);
+  }
+
+  async hasControlOver(parentId, childId) {
+    return this._wallet.hasControlOver(parentId, childId);
   }
 }
 

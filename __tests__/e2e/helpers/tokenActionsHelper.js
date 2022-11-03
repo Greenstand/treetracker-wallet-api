@@ -1,6 +1,6 @@
-const {expect} = require("chai");
-const {ACCEPTED} = require("http-status-codes");
-const assert = require("../libs/assertionLibrary.js");
+const { expect } = require('chai');
+const { ACCEPTED } = require('http-status-codes');
+const assert = require('../libs/assertionLibrary.js');
 
 /**
  * Assert send tokens response body to have expected properties and correct wallet names are included
@@ -9,11 +9,18 @@ const assert = require("../libs/assertionLibrary.js");
  * @param {String} receiverWallet
  */
 function assertSendTokensBody(response, senderWallet, receiverWallet) {
-    assert.equals(response.status, ACCEPTED, 'Response status does not equal!', response.body);
-    expect(response.body).to.have.property("id");
-    expect(response.body).to.have.property("active").eq(true);
-    expect(response.body).to.have.property("originating_wallet").eq(senderWallet);
-    expect(response.body).to.have.property("destination_wallet").eq(receiverWallet);
+  assert.equals(
+    response.status,
+    ACCEPTED,
+    'Response status does not equal!',
+    response.body,
+  );
+  expect(response.body).to.have.property('id');
+  expect(response.body).to.have.property('active').eq(true);
+  expect(response.body).to.have.property('originating_wallet').eq(senderWallet);
+  expect(response.body)
+    .to.have.property('destination_wallet')
+    .eq(receiverWallet);
 }
 
 /**
@@ -22,8 +29,8 @@ function assertSendTokensBody(response, senderWallet, receiverWallet) {
  * @param {String} senderWallet
  * @param {String} receiverWallet
  */
-function assertTransferCompletedBody(response, senderWallet, receiverWallet) {
-    expect(response.body).to.have.property("state").eq("completed");
+function assertTransferCompletedBody(response, _senderWallet, _receiverWallet) {
+  expect(response.body).to.have.property('state').eq('completed');
 }
 
 /**
@@ -32,12 +39,12 @@ function assertTransferCompletedBody(response, senderWallet, receiverWallet) {
  * @param {String} senderWallet
  * @param {String} receiverWallet
  */
-function assertTransferDeclinedBody(response, senderWallet, receiverWallet) {
-    expect(response.body).to.have.property("state").eq("cancelled");
+function assertTransferDeclinedBody(response, _senderWallet, _receiverWallet) {
+  expect(response.body).to.have.property('state').eq('cancelled');
 }
 
 module.exports = {
-    assertSendTokensBody,
-    assertTransferCompletedBody,
-    assertTransferDeclinedBody
+  assertSendTokensBody,
+  assertTransferCompletedBody,
+  assertTransferDeclinedBody,
 };

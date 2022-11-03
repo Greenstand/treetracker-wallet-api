@@ -3,10 +3,7 @@
  * ________________________________________________________________________
  */
 const JWTTools = require('jsonwebtoken');
-const Crypto = require('crypto');
-const FS = require('fs');
 const log = require('loglevel');
-const path = require('path');
 const HttpError = require('../utils/HttpError');
 
 // PRIVATE and PUBLIC key
@@ -26,13 +23,13 @@ const verifyOptions = {
 };
 
 class JWTService {
-  sign(payload) {
+  static sign(payload) {
     return JWTTools.sign(payload, privateKEY, signingOptions);
   }
 
-  verify(authorization) {
+  static verify(authorization) {
     if (!authorization) {
-      throw new Error(
+      throw new HttpError(
         403,
         'ERROR: Authentication, no token supplied for protected path',
       );
@@ -49,6 +46,11 @@ class JWTService {
           throw new HttpError(403, 'ERROR: Authentication, token not verified');
         }
         result = decod;
+        if (!result.id)
+          throw new HttpError(
+            403,
+            'ERROR: Authentication, invalid token received',
+          );
       });
     } else {
       throw new HttpError(403, 'ERROR: Authentication, token not verified');

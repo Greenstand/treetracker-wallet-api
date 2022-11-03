@@ -1,70 +1,71 @@
 /*
  * seed data to DB for testing
  */
-const uuid = require("uuid");
+const log = require('loglevel');
+const uuid = require('uuid');
 const { v4: uuidV4 } = require('uuid');
-const knex = require("./knex");
+const knex = require('./knex');
 
-const apiKey = "FORTESTFORTESTFORTESTFORTESTFORTEST";
+const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
 
 const wallet = {
   id: uuid.v4(),
-  name: "walletA",
-  password: "test1234",
+  name: 'walletA',
+  password: 'test1234',
   passwordHash:
-    "31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1",
-  salt: "TnDe2LDPS7VaPD9GQWL3fhG4jk194nde",
-  type: "p",
+    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+  type: 'p',
 };
 
 const walletB = {
   id: uuid.v4(),
-  name: "walletB",
-  password: "test1234",
+  name: 'walletB',
+  password: 'test1234',
   passwordHash:
-      "31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1",
-  salt: "TnDe2LDPS7VaPD9GQWL3fhG4jk194nde",
-  type: "p",
+    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+  type: 'p',
 };
 
 const walletC = {
   id: uuid.v4(),
-  name: "walletC",
-  password: "test1234",
+  name: 'walletC',
+  password: 'test1234',
   passwordHash:
-      "31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1",
-  salt: "TnDe2LDPS7VaPD9GQWL3fhG4jk194nde",
-  type: "p",
+    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+  type: 'p',
 };
 
 const walletTrustD = {
   id: uuid.v4(),
-  name: "walletD",
-  password: "test1234",
+  name: 'walletD',
+  password: 'test1234',
   passwordHash:
-      "31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1",
-  salt: "TnDe2LDPS7VaPD9GQWL3fhG4jk194nde",
-  type: "p",
+    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+  type: 'p',
 };
 
 const walletTrustE = {
   id: uuid.v4(),
-  name: "walletE",
-  password: "test1234",
+  name: 'walletE',
+  password: 'test1234',
   passwordHash:
-      "31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1",
-  salt: "TnDe2LDPS7VaPD9GQWL3fhG4jk194nde",
-  type: "p",
+    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+  type: 'p',
 };
 
 const managingWallet = {
   id: uuid.v4(),
-  name: "managingWallet",
-  password: "test1234",
+  name: 'managingWallet',
+  password: 'test1234',
   passwordHash:
-      "31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1",
-  salt: "TnDe2LDPS7VaPD9GQWL3fhG4jk194nde",
-  type: "p",
+    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
+  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
+  type: 'p',
 };
 
 const capture = {
@@ -77,9 +78,9 @@ const token = {
 
 async function createTokens(targetWallet, numberOfTokens) {
   const tokenIds = [];
-  for(let i = 0; i < numberOfTokens; i++) {
+  for (let i = 0; i < numberOfTokens; i += 1) {
     const tokenId = uuidV4();
-    await knex("token").insert({
+    await knex('token').insert({
       id: tokenId,
       capture_id: uuidV4(),
       wallet_id: targetWallet,
@@ -90,17 +91,17 @@ async function createTokens(targetWallet, numberOfTokens) {
 }
 
 async function seed() {
-  console.log("seed api key");
-  await knex("api_key").insert({
+  log.log('seed api key');
+  await knex('api_key').insert({
     key: apiKey,
     tree_token_api_access: true,
-    hash: "test",
-    salt: "test",
-    name: "test",
+    hash: 'test',
+    salt: 'test',
+    name: 'test',
   });
 
   // wallet
-  await knex("wallet").insert({
+  await knex('wallet').insert({
     id: wallet.id,
     name: wallet.name,
     password: wallet.passwordHash,
@@ -108,7 +109,7 @@ async function seed() {
   });
 
   // walletB
-  await knex("wallet").insert({
+  await knex('wallet').insert({
     id: walletB.id,
     name: walletB.name,
     password: walletB.passwordHash,
@@ -116,7 +117,7 @@ async function seed() {
   });
 
   // walletC
-  await knex("wallet").insert({
+  await knex('wallet').insert({
     id: walletC.id,
     name: walletC.name,
     password: walletC.passwordHash,
@@ -124,7 +125,7 @@ async function seed() {
   });
 
   // walletD
-  await knex("wallet").insert({
+  await knex('wallet').insert({
     id: walletTrustD.id,
     name: walletTrustD.name,
     password: walletTrustD.passwordHash,
@@ -132,7 +133,7 @@ async function seed() {
   });
 
   // walletE
-  await knex("wallet").insert({
+  await knex('wallet').insert({
     id: walletTrustE.id,
     name: walletTrustE.name,
     password: walletTrustE.passwordHash,
@@ -140,7 +141,7 @@ async function seed() {
   });
 
   // managing wallet
-  await knex("wallet").insert({
+  await knex('wallet').insert({
     id: managingWallet.id,
     name: managingWallet.name,
     password: managingWallet.passwordHash,
@@ -148,12 +149,12 @@ async function seed() {
   });
 
   // token
-  console.log("seed token");
+  log.log('seed token');
 
   await createTokens(wallet.id, 5);
   await createTokens(walletTrustD.id, 2);
 
-  await knex("token").insert({
+  await knex('token').insert({
     id: token.id,
     capture_id: capture.id,
     wallet_id: wallet.id,
@@ -161,30 +162,36 @@ async function seed() {
 }
 
 async function clear(wallets) {
-  console.log("clearing db");
+  log.log('clearing db');
 
-  await knex("api_key").where("key", apiKey).del();
+  await knex('api_key').where('key', apiKey).del();
 
-  for (const wallet of wallets) {
-    await knex("transaction").where("source_wallet_id", wallet).del();
-  }
+  await Promise.all(
+    wallets.map(async (w) => {
+      await knex('transaction').where('source_wallet_id', w).del();
+    }),
+  );
 
-  for (const wallet of wallets) {
-    await knex("token").where("wallet_id", wallet).del();
-  }
+  await Promise.all(
+    wallets.map(async (w) => {
+      await knex('token').where('wallet_id', w).del();
+    }),
+  );
 
-  await knex("wallet").where("name", wallet.name).del();
-  await knex("wallet").where("name", walletB.name).del();
-  await knex("wallet").where("name", walletC.name).del();
-  await knex("wallet").where("name", walletTrustD.name).del();
-  await knex("wallet").where("name", walletTrustE.name).del();
-  await knex("wallet").where("name", managingWallet.name).del();
+  await knex('wallet').where('name', wallet.name).del();
+  await knex('wallet').where('name', walletB.name).del();
+  await knex('wallet').where('name', walletC.name).del();
+  await knex('wallet').where('name', walletTrustD.name).del();
+  await knex('wallet').where('name', walletTrustE.name).del();
+  await knex('wallet').where('name', managingWallet.name).del();
 
-  for (const wallet of wallets) {
-    await knex("wallet_trust").where("actor_wallet_id", wallet).del();
-  }
+  await Promise.all(
+    wallets.map(async (w) => {
+      await knex('wallet_trust').where('actor_wallet_id', w).del();
+    }),
+  );
 
-  console.log("done clearing db");
+  log.log('done clearing db');
 }
 
 module.exports = {
@@ -198,5 +205,5 @@ module.exports = {
   walletTrustE,
   managingWallet,
   capture,
-  token
+  token,
 };

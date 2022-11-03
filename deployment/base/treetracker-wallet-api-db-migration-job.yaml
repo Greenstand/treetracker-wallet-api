@@ -2,13 +2,25 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: wallet-db-migration-job
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   backoffLimit: 1 # allow for one re-try of the migration
   template:
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: doks.digitalocean.com/node-pool
+                    operator: In
+                    values:
+                      - microservices-node-pool
       containers:
         - name: migration
-          image: greenstand/treetracker-wallet-api:TAG
+          image: greenstand/treetracker-wallet-api:VERSION
           env:
             - name: BASE_DATABASE_URL
               valueFrom:

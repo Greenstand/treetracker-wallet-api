@@ -1,39 +1,39 @@
-const {expect} = require("chai");
-const mockKnex = require("mock-knex");
-const TransferRepository = require("./TransferRepository");
-const knex = require("../database/knex");
+const { expect } = require('chai');
+const mockKnex = require('mock-knex');
+const uuid = require('uuid');
+const TransferRepository = require('./TransferRepository');
+const knex = require('../infra/database/knex');
 
 const tracker = mockKnex.getTracker();
-const Session = require("../models/Session");
-const uuid = require('uuid');
+const Session = require('../infra/database/Session');
 
-describe("TransferRepository", () => {
+describe('TransferRepository', () => {
   let transferRepository;
 
-  const originatorWalletId = uuid.v4()
-  const sourceWalletId = uuid.v4()
-  const destinationWalletId = uuid.v4()
+  const originatorWalletId = uuid.v4();
+  const sourceWalletId = uuid.v4();
+  const destinationWalletId = uuid.v4();
 
   beforeEach(() => {
     mockKnex.mock(knex);
     tracker.install();
     transferRepository = new TransferRepository(new Session());
-  })
+  });
 
   afterEach(() => {
     tracker.uninstall();
     mockKnex.unmock(knex);
   });
 
-  it("create", async () => {
+  it('create', async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on('query', function sendResult(query, step) {
       [
         function firstQuery() {
-          expect(query.sql).match(/insert.*transfer.*/);
-          query.response([{id:1}]);
-        }
+          expect(query.sql).match(/insert.*transfer.*select.*inserted.*/);
+          query.response([{ id: 1 }]);
+        },
       ][step - 1]();
     });
     const result = await transferRepository.create({
@@ -44,35 +44,57 @@ describe("TransferRepository", () => {
     expect(result).property('id').a('number');
   });
 
-  it("getById", async () => {
+  it('update', async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on('query', function sendResult(query, step) {
       [
         function firstQuery() {
-          expect(query.sql).match(/select.*transfer.*/);
-          query.response({id:uuid.v4()});
+          expect(query.sql).match(/update.*transfer.*select.*updated.*/);
+          query.response([{ id: 1 }]);
         },
       ][step - 1]();
     });
-    const result = await transferRepository.getById(1);
-    expect(result).property("id").a("string");
+    const result = await transferRepository.update({
+      originator_wallet_id: originatorWalletId,
+      source_wallet_id: sourceWalletId,
+      destination_wallet_id: destinationWalletId,
+      id: uuid.v4(),
+    });
+    expect(result).property('id').a('number');
   });
 
-  it("getPendingTransfers", async () => {
+  it('getByFilter', async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on('query', function sendResult(query, step) {
       [
         function firstQuery() {
-          expect(query.sql).match(/select.*transfer.*where.*destination_wallet_id.*/);
-          query.response([{id:originatorWalletId}]);
+          expect(query.sql).match(
+            /select.*transfer.*originating_wallet.*source_wallet.*destination_wallet/,
+          );
+          query.response([{ id: uuid.v4() }]);
+        },
+      ][step - 1]();
+    });
+    const result = await transferRepository.getByFilter({});
+    expect(result[0]).property('id').a('string');
+  });
+
+  it('getPendingTransfers', async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', function sendResult(query, step) {
+      [
+        function firstQuery() {
+          expect(query.sql).match(
+            /select.*transfer.*where.*destination_wallet_id.*/,
+          );
+          query.response([{ id: originatorWalletId }]);
         },
       ][step - 1]();
     });
     const result = await transferRepository.getPendingTransfers(1);
     expect(result).lengthOf(1);
   });
-
 });
-

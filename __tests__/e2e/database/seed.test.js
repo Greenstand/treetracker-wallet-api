@@ -1,68 +1,68 @@
-const { expect } = require("chai");
-const seed = require("./seed");
-const knex = require("./knex");
+const { expect } = require('chai');
+const seed = require('./seed');
+const knex = require('./knex');
 
-describe("Seed data into DB", () => {
+describe('Seed data into DB', () => {
   let token;
 
-  it("Should have api key", async () => {
-    const r = await knex.table("api_key").select().where("key", seed.apiKey);
+  it('Should have api key', async () => {
+    const r = await knex.table('api_key').select().where('key', seed.apiKey);
     expect(r).lengthOf(1);
   });
 
-  it("Should find a token in walletA", async () => {
-    expect(seed.token).to.have.property("id");
-    const r = await knex.table("token").select().where("id", seed.token.id);
+  it('Should find a token in walletA', async () => {
+    expect(seed.token).to.have.property('id');
+    const r = await knex.table('token').select().where('id', seed.token.id);
     expect(r).lengthOf(1);
-    token = r[0];
-    expect(token).to.have.property("wallet_id").to.equal(seed.wallet.id);
+    [token] = r;
+    expect(token).to.have.property('wallet_id').to.equal(seed.wallet.id);
   });
 
-  it("walletA exists", async () => {
+  it('walletA exists', async () => {
     const r = await knex
-      .table("wallet")
+      .table('wallet')
       .select()
-      .where("name", seed.wallet.name);
+      .where('name', seed.wallet.name);
     expect(r).lengthOf(1);
   });
 
-  it("walletB exists", async () => {
+  it('walletB exists', async () => {
     const r = await knex
-        .table("wallet")
-        .select()
-        .where("name", seed.walletB.name);
+      .table('wallet')
+      .select()
+      .where('name', seed.walletB.name);
     expect(r).lengthOf(1);
   });
 
-  it("walletC exists", async () => {
+  it('walletC exists', async () => {
     const r = await knex
-        .table("wallet")
-        .select()
-        .where("name", seed.walletC.name);
+      .table('wallet')
+      .select()
+      .where('name', seed.walletC.name);
     expect(r).lengthOf(1);
   });
 
-  it("Future trust walletD exists", async () => {
+  it('Future trust walletD exists', async () => {
     const r = await knex
-        .table("wallet")
-        .select()
-        .where("name", seed.walletTrustD.name);
+      .table('wallet')
+      .select()
+      .where('name', seed.walletTrustD.name);
     expect(r).lengthOf(1);
   });
 
-  it("Future trust walletE exists", async () => {
+  it('Future trust walletE exists', async () => {
     const r = await knex
-        .table("wallet")
-        .select()
-        .where("name", seed.walletTrustE.name);
+      .table('wallet')
+      .select()
+      .where('name', seed.walletTrustE.name);
     expect(r).lengthOf(1);
   });
 
-  it("Future managing walletF exists", async () => {
+  it('Future managing walletF exists', async () => {
     const r = await knex
-        .table("wallet")
-        .select()
-        .where("name", seed.managingWallet.name);
+      .table('wallet')
+      .select()
+      .where('name', seed.managingWallet.name);
     expect(r).lengthOf(1);
   });
 });

@@ -1,23 +1,12 @@
-const sinon = require("sinon");
-const jestExpect = require("expect");
-const chai = require("chai");
-const sinonChai = require("sinon-chai");
-const uuid = require('uuid');
-const TokenService = require("./TokenService");
-const TokenRepository = require("../repositories/TokenRepository");
-const HttpError = require("../utils/HttpError");
+const sinon = require('sinon');
+const { expect } = require('chai');
+const TokenService = require('./TokenService');
+const Wallet = require('../models/Wallet');
+const Token = require('../models/Token');
+const WalletService = require('./WalletService');
 
-chai.use(sinonChai);
-const {expect} = chai;
-const Wallet = require("../models/Wallet");
-const Token = require("../models/Token");
-const WalletService = require("./WalletService");
-const Session = require("../models/Session");
-const TransactionRepository = require("../repositories/TransactionRepository");
-
-describe("Token", () => {
+describe('Token', () => {
   let tokenService;
-  const session = new Session();
 
   beforeEach(() => {
     tokenService = new TokenService();
@@ -27,126 +16,222 @@ describe("Token", () => {
     sinon.restore();
   });
 
-  it("getById() with id which doesn't exist, should throw 404", async () => {
-    sinon.stub(TokenRepository.prototype, "getById").rejects(new HttpError(404, "not found"));
-    await jestExpect(async () => {
-      await tokenService.getById("testUuid");
-    }).rejects.toThrow('not found');
-    TokenRepository.prototype.getById.restore();
-  });
+  it('getTokensByPendingTransferId', async () => {
+    const getTokensByPendingTransferIdStub = sinon
+      .stub(Token.prototype, 'getTokensByPendingTransferId')
+      .resolves('token');
 
-  it("getTokensByBundle", async () => {
-    const walletId1 = uuid.v4();
-    const tokenId1 = uuid.v4();
-    const wallet = new Wallet(walletId1, session);
-    const fn = sinon.stub(TokenRepository.prototype, "getByFilter").resolves([
-      {
-        id: tokenId1,
-      }
-    ], session);
-    const result = await tokenService.getTokensByBundle(wallet, 1, false);
-    expect(result).a("array").lengthOf(1);
-    expect(result[0]).instanceOf(Token);
-    expect(fn).calledWith({
-      wallet_id: walletId1,
-      transfer_pending: false,
-    },{
-      limit: 1,
-      claim: false
-    },
+    const token = await tokenService.getTokensByPendingTransferId(
+      'transferId',
+      10,
+      10,
     );
+    expect(token).eql('token');
+    expect(
+      getTokensByPendingTransferIdStub.calledOnceWithExactly(
+        'transferId',
+        10,
+        10,
+      ),
+    ).eql(true);
   });
 
-  it("countTokenByWallet", async () => {
-    const walletId1 = uuid.v4();
-    const wallet = new Wallet(walletId1, session);
-    const fn = sinon.stub(TokenRepository.prototype, "countByFilter").resolves(1);
-    const result = await tokenService.countTokenByWallet(wallet);
-    expect(result).eq(1);
-    expect(fn).calledWith({
-      wallet_id: walletId1,
+  it('getTokensByTransferId', async () => {
+    const getTokensByTransferIdStub = sinon
+      .stub(Token.prototype, 'getTokensByTransferId')
+      .resolves('token');
+
+    const token = await tokenService.getTokensByTransferId(
+      'transferId',
+      10,
+      10,
+    );
+    expect(token).eql('token');
+    expect(
+      getTokensByTransferIdStub.calledOnceWithExactly('transferId', 10, 10),
+    ).eql(true);
+  });
+
+  it('countNotClaimedTokenByWallet', async () => {
+    const countNotClaimedTokenByWalletStub = sinon
+      .stub(Token.prototype, 'countNotClaimedTokenByWallet')
+      .resolves(10);
+
+    const count = await tokenService.countNotClaimedTokenByWallet('walletId');
+    expect(count).eql(10);
+    expect(
+      countNotClaimedTokenByWalletStub.calledOnceWithExactly('walletId'),
+    ).eql(true);
+  });
+
+  it('countTokenByWallet', async () => {
+    const countTokenByWalletStub = sinon
+      .stub(Token.prototype, 'countTokenByWallet')
+      .resolves(10);
+
+    const count = await tokenService.countTokenByWallet('walletId');
+    expect(count).eql(10);
+    expect(countTokenByWalletStub.calledOnceWithExactly('walletId')).eql(true);
+  });
+
+  it('getTransactions', async () => {
+    const getTransactionsStub = sinon
+      .stub(Token.prototype, 'getTransactions')
+      .resolves(['transactions']);
+
+    const getByIdServiceStub = sinon.stub(TokenService.prototype, 'getById');
+
+    const transactions = await tokenService.getTransactions({
+      limit: 1,
+      offset: 1,
+      tokenId: 'tokenId',
+      walletLoginId: 'walletLoginId',
     });
-    fn.restore();
+    expect(transactions).eql(['transactions']);
+    expect(
+      getTransactionsStub.calledOnceWithExactly({
+        limit: 1,
+        offset: 1,
+        tokenId: 'tokenId',
+      }),
+    ).eql(true);
+    expect(
+      getByIdServiceStub.calledOnceWithExactly({
+        id: 'tokenId',
+        walletLoginId: 'walletLoginId',
+      }),
+    ).eql(true);
   });
 
-  it("convertToResponse", async () => {
-    const transactionId1 = uuid.v4();
-    const tokenId1 = uuid.v4();
-    const walletId1 = uuid.v4();
-    const walletId2 = uuid.v4();
-    const captureId1 = uuid.v4();
-    const transactionObject = {
-      id: transactionId1,
-      token_id: tokenId1,
-      source_wallet_id: walletId1,
-      destination_wallet_id: walletId2,
-    }
-    sinon.stub(TokenService.prototype, "getById").resolves(new Token({
-      id: tokenId1,
-      uuid: "xxx",
-      capture_id: captureId1,
-    }));
-    sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
-      id: walletId1,
-      name: "testName",
-    }));
-    const result = await tokenService.convertToResponse(transactionObject);
-    expect(result).property("token").eq("xxx");
-    expect(result).property("sender_wallet").eq("testName");
-    expect(result).property("receiver_wallet").eq("testName");
-  });
+  describe('getTokens', () => {
+    let getByNameStub;
+    let getByOwnerStub;
+    let hasControlOverStub;
 
-  describe("getTokensByTransferId", () => {
+    beforeEach(() => {
+      getByNameStub = sinon
+        .stub(Wallet.prototype, 'getByName')
+        .resolves({ id: 'walletId' });
 
-    it("Successfuly", async () => {
-      const tokenId2 = uuid.v4();
-      const transferId1 = uuid.v4();
-      const fn = sinon.stub(TokenRepository.prototype, "getByTransferId").resolves([{id:tokenId2}]);
-      const tokens = await tokenService.getTokensByTransferId(transferId1);
-      expect(fn).calledWith(transferId1);
-      expect(tokens).lengthOf(1);
+      hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+
+      getByOwnerStub = sinon
+        .stub(Token.prototype, 'getByOwner')
+        .resolves(['tokens']);
+    });
+
+    it('getToken with walletLoginId', async () => {
+      const tokens = await tokenService.getTokens({
+        walletLoginId: 'walletLoginId',
+        limit: 1,
+        offset: 1,
+      });
+      expect(tokens).eql(['tokens']);
+      expect(getByNameStub.notCalled).eql(true);
+      expect(hasControlOverStub.notCalled).eql(true);
+      expect(getByOwnerStub.calledOnceWithExactly('walletLoginId', 1, 1)).eql(
+        true,
+      );
+    });
+
+    it('getToken with wallet -- no control over', async () => {
+      hasControlOverStub.resolves(false);
+      let error;
+      try {
+        await tokenService.getTokens({
+          wallet: 'wallet',
+          walletLoginId: 'walletLoginId',
+          limit: 1,
+          offset: 1,
+        });
+      } catch (e) {
+        error = e;
+      }
+      expect(error?.message).eql(
+        'Wallet does not belong to the logged in wallet',
+      );
+      expect(error?.code).eql(403);
+      expect(getByNameStub.calledOnceWithExactly('wallet')).eql(true);
+      expect(
+        hasControlOverStub.calledOnceWithExactly('walletLoginId', 'walletId'),
+      ).eql(true);
+      expect(getByOwnerStub.notCalled).eql(true);
+    });
+
+    it('getToken with wallet', async () => {
+      hasControlOverStub.resolves(true);
+      await tokenService.getTokens({
+        wallet: 'wallet',
+        walletLoginId: 'walletLoginId',
+        limit: 1,
+        offset: 1,
+      });
+      expect(getByNameStub.calledOnceWithExactly('wallet')).eql(true);
+      expect(
+        hasControlOverStub.calledOnceWithExactly('walletLoginId', 'walletId'),
+      ).eql(true);
+      expect(getByOwnerStub.calledOnceWithExactly('walletId', 1, 1)).eql(true);
     });
   });
 
-  it("completeTransfer", async () => {
-    const tokenId1 = uuid.v4();
-    const transferId1 = uuid.v4();
-    const token1 = new Token({id:tokenId1});
-    const updateByIds = sinon.stub(TokenRepository.prototype, "updateByIds");
-    const batchCreate = sinon.stub(TransactionRepository.prototype, "batchCreate");
-    const transfer = {
-      destination_wallet_id: transferId1,
-    }
-    const tokens = await tokenService.completeTransfer([token1], transfer);
-    expect(updateByIds).calledWith(sinon.match({wallet_id:transferId1}), [tokenId1]);
-  });
+  describe('getById', () => {
+    let getByIdStub;
+    let getAllWalletsStub;
 
-  it("pendingTransfer", async () => {
-    const tokenId1 = uuid.v4();
-    const transferId1 = uuid.v4();
-    const token1 = new Token({id:tokenId1});
-    const updateByIds = sinon.stub(TokenRepository.prototype, "updateByIds");
-    const batchCreate = sinon.stub(TransactionRepository.prototype, "batchCreate");
-    const transfer = {
-      id: transferId1,
-      destination_wallet_id: transferId1,
-    }
-    const tokens = await tokenService.pendingTransfer([token1], transfer);
-    expect(updateByIds).calledWith(sinon.match({transfer_pending: true, transfer_pending_id:transferId1}), [tokenId1]);
-  });
+    beforeEach(() => {
+      getByIdStub = sinon
+        .stub(Token.prototype, 'getById')
+        .resolves({ id: 'id', wallet_id: 'wallet_id' });
+      getAllWalletsStub = sinon.stub(WalletService.prototype, 'getAllWallets');
+    });
 
-  it("cancelTransfer", async () => {
-    const tokenId1 = uuid.v4();
-    const transferId1 = uuid.v4();
-    const token1 = new Token({id:tokenId1});
-    const updateByIds = sinon.stub(TokenRepository.prototype, "updateByIds");
-    const batchCreate = sinon.stub(TransactionRepository.prototype, "batchCreate");
-    const transfer = {
-      id: transferId1,
-      destination_wallet_id: transferId1,
-    }
-    const tokens = await tokenService.cancelTransfer([token1], transfer);
-    expect(updateByIds).calledWith(sinon.match({transfer_pending: false, transfer_pending_id:null}), [tokenId1]);
-  });
+    it('getById with permission check -- without required permission', async () => {
+      let error;
+      getAllWalletsStub.resolves([]);
+      try {
+        await tokenService.getById({
+          id: 'tokenId',
+          walletLoginId: 'walletLoginId',
+        });
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(401);
+      expect(error.message).eql('Have no permission to visit this token');
+      expect(getByIdStub.calledOnceWithExactly('tokenId')).eql(true);
+      expect(
+        getAllWalletsStub.calledOnceWithExactly(
+          'walletLoginId',
+          undefined,
+          false,
+        ),
+      ).eql(true);
+    });
 
+    it('getById with permission check -- with required permission', async () => {
+      getAllWalletsStub.resolves([{ id: 'wallet_id' }]);
+      const token = await tokenService.getById({
+        id: 'tokenId',
+        walletLoginId: 'walletLoginId',
+      });
+      expect(token).eql({ id: 'id', wallet_id: 'wallet_id' });
+      expect(getByIdStub.calledOnceWithExactly('tokenId')).eql(true);
+      expect(
+        getAllWalletsStub.calledOnceWithExactly(
+          'walletLoginId',
+          undefined,
+          false,
+        ),
+      ).eql(true);
+    });
+
+    it('getById without permission check', async () => {
+      const token = await tokenService.getById(
+        { id: 'tokenId', walletLoginId: 'walletLoginId' },
+        true,
+      );
+      expect(token).eql({ id: 'id', wallet_id: 'wallet_id' });
+      expect(getByIdStub.calledOnceWithExactly('tokenId')).eql(true);
+    });
+  });
 });

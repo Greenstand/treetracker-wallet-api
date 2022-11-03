@@ -1,40 +1,113 @@
-const WalletService = require("./WalletService");
-const Session = require("../models/Session");
+const Trust = require('../models/Trust');
+const Session = require('../infra/database/Session');
+const Wallet = require('../models/Wallet');
+const WalletService = require('./WalletService');
 
-class TrustService{
-
-  constructor(){
-    const session = new Session();
-    this.walletService = new WalletService(session);
+class TrustService {
+  constructor() {
+    this._session = new Session();
+    this._trust = new Trust(this._session);
   }
 
-  async convertToResponse(trustObject){
-    const {
-      actor_wallet_id,
-      target_wallet_id,
-      originator_wallet_id,
-    } = trustObject;
-    const result = {...trustObject};
-    {
-      const wallet = await this.walletService.getById(originator_wallet_id);
-      const json = await wallet.toJSON();
-      result.originating_wallet = json.name;
-      delete result.originator_wallet_id;
+  async getTrustRelationships({
+    walletId,
+    state,
+    type,
+    request_type,
+    offset = 0,
+    limit,
+  }) {
+    return this._trust.getTrustRelationships({
+      walletId,
+      state,
+      type,
+      request_type,
+      offset,
+      limit,
+    });
+  }
+
+  // limit and offset not feasible using the current implementation
+  // except if done manually or coming up with a single query
+  async getAllTrustRelationships({ walletId, state, type, request_type }) {
+    const walletModel = new Wallet(this._session);
+    const wallets = await walletModel.getAllWallets(walletId);
+
+    const alltrustRelationships = [];
+
+    await Promise.all(
+      wallets.map(async (w) => {
+        const trustRelationships = await this.getTrustRelationships({
+          walletId: w.id,
+          state,
+          type,
+          request_type,
+        });
+        alltrustRelationships.push(...trustRelationships);
+      }),
+    );
+
+    // remove possible duplicates
+    const ids = {};
+    const finalTrustRelationships = [];
+
+    alltrustRelationships.forEach((tr) => {
+      if (!ids[tr.id]) {
+        finalTrustRelationships.push(tr);
+        ids[tr.id] = 1;
+      }
+    });
+
+    return finalTrustRelationships;
+  }
+
+  async createTrustRelationship({
+    walletLoginId,
+    requesteeWallet,
+    requesterWallet,
+    trustRequestType,
+  }) {
+    const walletService = new WalletService();
+    const originatorWallet = await walletService.getById(walletLoginId);
+    const requesteeWalletDetails = await walletService.getByName(
+      requesteeWallet,
+    );
+    let requesterWalletDetails;
+    if (requesterWallet) {
+      requesterWalletDetails = await walletService.getByName(requesterWallet);
+    } else {
+      requesterWalletDetails = originatorWallet;
     }
-    {
-      const wallet = await this.walletService.getById(actor_wallet_id);
-      const json = await wallet.toJSON();
-      result.actor_wallet = await json.name;
-      delete result.actor_wallet_id;
-    }
-    {
-      const wallet = await this.walletService.getById(target_wallet_id);
-      const json = await wallet.toJSON();
-      result.target_wallet = await json.name;
-      delete result.target_wallet_id;
-    }
-    delete result.active;
-    return result;
+
+    const trustRelationship = await this._trust.requestTrustFromAWallet({
+      trustRequestType,
+      requesterWallet: requesterWalletDetails,
+      requesteeWallet: requesteeWalletDetails,
+      originatorWallet,
+    });
+
+    return trustRelationship;
+  }
+
+  async acceptTrustRequestSentToMe({ walletLoginId, trustRelationshipId }) {
+    return this._trust.acceptTrustRequestSentToMe({
+      walletId: walletLoginId,
+      trustRelationshipId,
+    });
+  }
+
+  async declineTrustRequestSentToMe({ walletLoginId, trustRelationshipId }) {
+    return this._trust.declineTrustRequestSentToMe({
+      walletId: walletLoginId,
+      trustRelationshipId,
+    });
+  }
+
+  async cancelTrustRequest({ walletLoginId, trustRelationshipId }) {
+    return this._trust.cancelTrustRequest({
+      walletId: walletLoginId,
+      trustRelationshipId,
+    });
   }
 }
 
