@@ -9,7 +9,7 @@
     "lint:fix": "npm run eslint:fix && npm run prettier:fix",
     "eslint": "eslint --report-unused-disable-directives .",
     "eslint:fix": "npm run eslint -- --fix",
-    "test": "npm run test-unit && npm run test-integration && npm run test-repository",
+    "test": "npm run test-unit-ci && npm run test-integration-ci && npm run test-repository",
     "coverage": "nyc npm run test",
     "test-unit": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --exit  --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js'",
     "test-unit-ci": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.ci mocha -r dotenv/config --exit  --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js'",
