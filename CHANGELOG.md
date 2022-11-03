@@ -1,3 +1,10 @@
+## [1.19.9](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.8...v1.19.9) (2022-11-03)
+
+
+### Bug Fixes
+
+* update node to 16 ([8b8de13](https://github.com/Greenstand/treetracker-wallet-api/commit/8b8de13c86edb4e7c1b483dee82b6ca7758ef8ee))
+
 ## [1.19.8](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.7...v1.19.8) (2022-11-03)
 
 
