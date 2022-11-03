@@ -127,7 +127,7 @@ describe.only('Trust relationship: send', () => {
       .lengthOf(0);
   });
 
-  it.only('Try to send bundle token to walletB again, should success, 201', async () => {
+  it('Try to send bundle token to walletB again, should success, 201', async () => {
     const res = await request(server)
       .post('/transfers')
       .set('treetracker-api-key', apiKey)
