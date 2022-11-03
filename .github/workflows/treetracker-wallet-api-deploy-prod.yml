@@ -3,8 +3,8 @@ name: Deploy to Production Env
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'git-tag'
+      git-tag:
+        description: 'Branch/hash/tag'
         required: true
         default: 'master'
 
@@ -12,27 +12,31 @@ env:
   project-directory: ./
 
 jobs:
-  deploy-production:
-    name: Deploy latest to production environment, requires approval
+  deploy-test:
+    name: Deploy selected tag to production environment, requires approval
     runs-on: ubuntu-latest
     if: |
       github.repository == 'Greenstand/treetracker-wallet-api'
     steps:
       - uses: actions/checkout@v2
-
-      - name: Install kustomize
-        run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
-
-      - name: Run kustomize
-        run: (cd deployment/overlays/production && ../../../kustomize edit set image greenstand/treetracker-wallet-api:${{ github.event.inputs.environment }})
-
-      - name: Commit production kustomization file with new app version
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -am "chore: bump docker image tag ${{ github.event.inputs.environment }} [skip ci]"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.inputs.git-tag }}
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+        with:
+          path: ${{ env.project-directory }}
+      - name: Install kustomize
+        run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+      - name: Run kustomize
+        run: (cd deployment/base && ../../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }} )
+      - name: Install doctl for kubernetes
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_PRODUCTION_TOKEN }}
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ secrets.PRODUCTION_CLUSTER_NAME }}
+      - name: Delete completed migration jobs prior to deployment
+        run: kubectl -n wallet-api delete job --ignore-not-found=true  wallet-db-migration-job
+      - name: Update kubernetes resources
+        run: kustomize build deployment/overlays/production | kubectl apply -n ${{ secrets.K8S_NAMESPACE }} --wait -f -
