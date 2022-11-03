@@ -1,3 +1,30 @@
+## [1.19.7](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.6...v1.19.7) (2022-11-03)
+
+
+### Bug Fixes
+
+* add trust and wallet handler unit tests ([e3bef27](https://github.com/Greenstand/treetracker-wallet-api/commit/e3bef27f320542dfd936982d81abf8be9f25d49c))
+* auth route unit test ([c2f7eec](https://github.com/Greenstand/treetracker-wallet-api/commit/c2f7eeca83a8e3406ac6adfd4d6cfeb2ab2b1d34))
+* integration tests ([483d902](https://github.com/Greenstand/treetracker-wallet-api/commit/483d9020e04aa071b720f377e0eb7b3d0d7500d5))
+* linting ([f975dc7](https://github.com/Greenstand/treetracker-wallet-api/commit/f975dc754b1ba0ff31c7067ea9e5794faee8b153))
+* merge latest updates ([c855b08](https://github.com/Greenstand/treetracker-wallet-api/commit/c855b08246974a04ff086eec89f666977d9ed6a2))
+* package.json ([38cd568](https://github.com/Greenstand/treetracker-wallet-api/commit/38cd5685e56ac80cba45f0ce9f5c58ba2b729566))
+* refactor auth module ([235c3b2](https://github.com/Greenstand/treetracker-wallet-api/commit/235c3b2c9ffcc1b7c82f09a95e2a088881849768))
+* refactor routers ([a7bea3e](https://github.com/Greenstand/treetracker-wallet-api/commit/a7bea3e07135e520400648e38f21c8569c246978))
+* refactor token module ([4b1ace5](https://github.com/Greenstand/treetracker-wallet-api/commit/4b1ace5bfb40158717d4985fe81f7dcdc561b2ad))
+* refactor transfer module ([982692b](https://github.com/Greenstand/treetracker-wallet-api/commit/982692b13b2992d7718ee2d33b8b7542b131fc8a))
+* refactor trust module ([88d60f5](https://github.com/Greenstand/treetracker-wallet-api/commit/88d60f52aadc45e9e3f6c210948736b8002a0830))
+* refactor wallet module ([e87d375](https://github.com/Greenstand/treetracker-wallet-api/commit/e87d375d5d66d3731dc66245ad7b5c9df458fd07))
+* router unit tests ([57dd87b](https://github.com/Greenstand/treetracker-wallet-api/commit/57dd87ba632c84d6425496543c92788eacbc36be))
+* services unit tests ([0542d47](https://github.com/Greenstand/treetracker-wallet-api/commit/0542d479e2969f77a39773cefd563285bf5808e2))
+* tests ([866802a](https://github.com/Greenstand/treetracker-wallet-api/commit/866802a8427f9df0cdd892acb0c4f539870f0489))
+* trust model unit tests updated ([4512012](https://github.com/Greenstand/treetracker-wallet-api/commit/4512012629dde353b1dc339c0d311c26c83746fe))
+* update github workflow and kubernetes deployment ([54eb729](https://github.com/Greenstand/treetracker-wallet-api/commit/54eb729cb7bee166c5b17534f0b9d55d917dbb92))
+* update transfer model spec ([0799ba0](https://github.com/Greenstand/treetracker-wallet-api/commit/0799ba0fe135ca811f038b1b8957ce58ff9e22c4))
+* update transfer service unit test ([2f47af0](https://github.com/Greenstand/treetracker-wallet-api/commit/2f47af01f2b673cbc41b2cf795fb5f9d9446163d))
+* updates ([8a963b6](https://github.com/Greenstand/treetracker-wallet-api/commit/8a963b6f7c420c0a6b0d8e4dbfef552c4660833a))
+* workflow ([6adaf1b](https://github.com/Greenstand/treetracker-wallet-api/commit/6adaf1b20c59e770aad830760e4eda693a65957d))
+
 ## [1.19.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.5...v1.19.6) (2022-10-28)
 
 
