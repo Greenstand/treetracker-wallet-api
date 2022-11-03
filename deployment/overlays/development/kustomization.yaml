@@ -1,7 +1,2 @@
-images:
-- name: greenstand/treetracker-wallet-api
-  newTag: 1.19.7
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-- ../../base
+bases:
+  - ../../base
