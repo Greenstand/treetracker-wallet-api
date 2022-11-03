@@ -1,3 +1,10 @@
+## [1.19.11](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.10...v1.19.11) (2022-11-03)
+
+
+### Bug Fixes
+
+* kuztomize deployment ([ce76451](https://github.com/Greenstand/treetracker-wallet-api/commit/ce76451d7d7761077e86daffca0ca1245f2751b2))
+
 ## [1.19.10](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.9...v1.19.10) (2022-11-03)
 
 
