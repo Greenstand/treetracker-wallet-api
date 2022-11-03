@@ -601,17 +601,18 @@ describe('Transfer Model', () => {
         const receiverId = uuid();
         const walletLoginId = uuid();
         const transferId = uuid();
-
-        hasControlOverStub.onCall(0).resolves(true);
-        hasControlOverStub.onCall(1).resolves(true);
-        isDeductStub.resolves(true);
-        hasTrustStub.resolves(true);
         const transferResult = {
           id: transferId,
           originator_wallet_id: walletLoginId,
           source_wallet_id: senderId,
         };
-        transferCreateStub.resolves(transferResult);
+        transferRepositoryStub.create.resolves(transferResult);
+
+        hasControlOverStub.onCall(0).resolves(true);
+        hasControlOverStub.onCall(1).resolves(true);
+        isDeductStub.resolves(true);
+        hasTrustStub.resolves(true);
+
         const tokens = [{ id: uuid() }, { id: uuid() }];
         getTokensByBundleStub.resolves(tokens);
 
@@ -644,7 +645,7 @@ describe('Transfer Model', () => {
           walletLoginId,
           receiverId,
         ]);
-        expect(transferCreateStub).calledOnceWithExactly({
+        expect(transferRepositoryStub.create).calledOnceWithExactly({
           originator_wallet_id: walletLoginId,
           source_wallet_id: senderId,
           destination_wallet_id: receiverId,

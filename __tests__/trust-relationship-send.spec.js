@@ -10,7 +10,7 @@ chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
 
-describe.only('Trust relationship: send', () => {
+describe('Trust relationship: send', () => {
   let bearerToken;
   let bearerTokenB;
 

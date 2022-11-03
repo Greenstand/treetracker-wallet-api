@@ -255,7 +255,7 @@ class Transfer {
       (hasControlOverSender && hasControlOverReceiver) ||
       (!isDeduct && hasTrust)
     ) {
-      const transfer = await this.create({
+      const transfer = await this._transferRepository.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
         destination_wallet_id: receiver.id,
