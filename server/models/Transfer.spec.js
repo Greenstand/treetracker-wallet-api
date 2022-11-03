@@ -1,1627 +1,1736 @@
-// const sinon = require('sinon');
-// const chai = require('chai');
-// const sinonChai = require('sinon-chai');
-// const uuid = require('uuid');
-// const Token = require('./Token');
-// const TokenRepository = require('../repositories/TokenRepository');
-
-// chai.use(sinonChai);
-// const { expect } = chai;
-// const TransactionRepository = require('../repositories/TransactionRepository');
-// const Wallet = require('./Wallet');
-// const Session = require('../infra/database/Session');
-
-// describe('Token', () => {
-//   const session = new Session();
-
-//   const tokenId = uuid.v4();
-//   const transferId = uuid.v4();
-//   const walletId = uuid.v4();
-//   const wallet2Id = uuid.v4();
-
-//   afterEach(() => {
-//     sinon.restore();
-//   });
-
-//   it('constructor by object', () => {
-//     const token = new Token(
-//       {
-//         id: tokenId,
-//       },
-//       session,
-//     );
-//     expect(token).instanceOf(Token);
-//     expect(token.getId()).eq(tokenId);
-//   });
-
-//   describe('pendingTransfer', () => {
-//     it('pendingTransfer successfully', async () => {
-//       const token = new Token(tokenId, session);
-//       const transfer = { id: transferId };
-//       const fn1 = sinon.stub(TokenRepository.prototype, 'update');
-//       await token.pendingTransfer(transfer);
-//       expect(fn1).calledWith({
-//         id: tokenId,
-//         transfer_pending: true,
-//         transfer_pending_id: transferId,
-//       });
-//       fn1.restore();
-//     });
-//   });
-
-//   describe('completeTransfer', () => {
-//     it('completeTransfer successfully', async () => {
-//       const token = new Token(tokenId, session);
-//       const transfer = {
-//         id: transferId,
-//         source_wallet_id: walletId,
-//         destination_wallet_id: wallet2Id,
-//         claim: false,
-//       };
-//       const fn1 = sinon.stub(TokenRepository.prototype, 'update');
-//       const fn2 = sinon.stub(TransactionRepository.prototype, 'create');
-//       await token.completeTransfer(transfer);
-//       expect(fn1).calledWith({
-//         id: tokenId,
-//         wallet_id: wallet2Id,
-//         transfer_pending: false,
-//         transfer_pending_id: null,
-//         claim: false,
-//       });
-//       expect(fn2).calledWith({
-//         token_id: tokenId,
-//         transfer_id: transferId,
-//         source_wallet_id: walletId,
-//         destination_wallet_id: wallet2Id,
-//         claim: false,
-//       });
-//     });
-//   });
-
-//   describe('cancelTransfer', () => {
-//     it('cancelTransfer successfully', async () => {
-//       const token = new Token(tokenId, session);
-//       const transfer = {
-//         id: transferId,
-//         source_wallet_id: walletId,
-//         destination_wallet_id: wallet2Id,
-//       };
-//       const fn1 = sinon.stub(TokenRepository.prototype, 'update');
-//       const fn2 = sinon.stub(TransactionRepository.prototype, 'create');
-//       await token.cancelTransfer(transfer);
-//       expect(fn1).calledWith({
-//         id: tokenId,
-//         transfer_pending: false,
-//         transfer_pending_id: null,
-//       });
-//       expect(fn2).not.calledWith();
-//     });
-//   });
-
-//   describe('belongsTo', () => {
-//     it('belongsTo', async () => {
-//       const token = new Token(tokenId, session);
-//       const wallet = new Wallet(walletId, session);
-//       const fn1 = sinon.stub(TokenRepository.prototype, 'getById').resolves({
-//         id: tokenId,
-//         wallet_id: walletId,
-//       });
-//       expect(await token.belongsTo(wallet)).eq(true);
-//       expect(fn1).calledWith();
-//     });
-
-//     it('not belongsTo', async () => {
-//       const token = new Token(tokenId, session);
-//       const wallet = new Wallet(walletId, session);
-//       const fn1 = sinon.stub(TokenRepository.prototype, 'getById').resolves({
-//         id: tokenId,
-//         wallet_id: wallet2Id,
-//       });
-//       expect(await token.belongsTo(wallet)).eq(false);
-//       expect(fn1).calledWith();
-//     });
-//   });
-
-//   describe('Transactions', () => {
-//     it('getTransactions', async () => {
-//       const token = new Token(tokenId);
-//       sinon.stub(TransactionRepository.prototype, 'getByFilter').resolves([{}]);
-//       const transactions = await token.getTransactions();
-//       expect(transactions).lengthOf(1);
-//     });
-//   });
-// });
-
-// describe('Wallet', () => {
-//   let walletService;
-//   let wallet;
-//   const session = new Session();
-
-//   const walletObject = {
-//     id: uuid.v4(),
-//     salt: 'salet',
-//     password: 'testPasswordHash',
-//   };
-
-//   beforeEach(() => {
-//     wallet = new Wallet(uuid.v4(), session);
-//     walletService = new WalletService(session);
-//   });
-
-//   afterEach(() => {
-//     sinon.restore();
-//   });
-
-//   it('authorize() with empty parameters should get 400 error', async () => {
-//     sinon
-//       .stub(WalletRepository.prototype, 'getByName')
-//       .resolves({ id: uuid.v4() });
-//     const wallet = await walletService.getByName('test');
-//     expect(wallet).instanceOf(Wallet);
-//     await jestExpect(async () => {
-//       await wallet.authorize(undefined);
-//     }).rejects.toThrow(/no password/i);
-//     WalletRepository.prototype.getByName.restore();
-//   });
-
-//   it("authorize() with wallet which doesn't exists, should throw 401", async () => {
-//     sinon
-//       .stub(WalletRepository.prototype, 'getByName')
-//       .rejects(new HttpError(404, 'not found'));
-//     await jestExpect(async () => {
-//       const wallet = await walletService.getByName('test');
-//       await wallet.authorize(undefined);
-//     }).rejects.toThrow(/not found/);
-//     WalletRepository.prototype.getByName.restore();
-//   });
-
-//   it('authorize() with correct wallet, password, should return a wallet object', async () => {
-//     sinon.stub(WalletRepository.prototype, 'getById').resolves(walletObject);
-//     sinon.stub(Wallet, 'sha512').returns('testPasswordHash');
-//     const walletObjectResult = await wallet.authorize('testPassword');
-//     expect(walletObjectResult).property('id').eq(walletObject.id);
-//     WalletRepository.prototype.getById.restore();
-//     Wallet.sha512.restore();
-//   });
-
-//   it('getTrustRelationshipsRequested', async () => {
-//     const fn = sinon.stub(Wallet.prototype, 'getTrustRelationships').resolves([
-//       {
-//         id: uuid.v4(),
-//         originator_wallet_id: wallet.getId(),
-//       },
-//     ]);
-//     const trust_relationships = await wallet.getTrustRelationshipsRequested();
-//     expect(trust_relationships).lengthOf(1);
-//     fn.restore();
-//   });
-
-//   describe('Request trust', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const wallet2 = new Wallet(uuid.v4());
-//     const wallet3 = new Wallet(uuid.v4());
-
-//     it('request with a wrong type would throw error', async () => {
-//       await jestExpect(async () => {
-//         await wallet.requestTrustFromAWallet('wrongType', 'test');
-//       }).rejects.toThrow('must be one of');
-//     });
-
-//     it('request successfully', async () => {
-//       const fn2 = sinon.stub(TrustRepository.prototype, 'get').resolves([]);
-//       const fn3 = sinon.stub(TrustRepository.prototype, 'create');
-//       sinon.stub(Wallet.prototype, 'checkDuplicateRequest');
-//       await wallet.requestTrustFromAWallet(
-//         TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//         wallet,
-//         wallet2,
-//       );
-//       expect(fn3).to.have.been.calledWith(
-//         sinon.match({
-//           actor_wallet_id: wallet.getId(),
-//           originator_wallet_id: wallet.getId(),
-//           request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//           type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         }),
-//       );
-//       fn2.restore();
-//       fn3.restore();
-//     });
-
-//     describe('Request trust for sub wallet', () => {
-//       it("To request sub wallet to which I don't have permission, throw 403", async () => {
-//         sinon.stub(Wallet.prototype, 'hasControlOver').resolves(false);
-//         await jestExpect(async () => {
-//           await wallet.requestTrustFromAWallet('send', wallet2, wallet3);
-//         }).rejects.toThrow(/permission.*actor/i);
-//       });
-
-//       it('Successful', async () => {
-//         sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//         sinon.stub(TrustRepository.prototype, 'create').resolves({});
-//         sinon.stub(Wallet.prototype, 'checkDuplicateRequest');
-//         await wallet.requestTrustFromAWallet('send', wallet2, wallet3);
-//       });
-//     });
-//   });
-
-//   describe('Accept trust', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const trustId = uuid.v4();
-//     const trustRelationship = {
-//       id: trustId,
-//       target_wallet_id: wallet.getId(),
-//     };
-
-//     it('accept but the requested trust whose target id is not me, throw 403', async () => {
-//       const fn1 = sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsRequestedToMe')
-//         .returns([trustRelationship]);
-//       const fn2 = sinon.stub(TrustRepository.prototype, 'update');
-//       sinon.stub(Wallet.prototype, 'checkManageCircle');
-//       await jestExpect(async () => {
-//         await wallet.acceptTrustRequestSentToMe(2);
-//       }).rejects.toThrow(/no permission/i);
-//       fn1.restore();
-//       fn2.restore();
-//     });
-
-//     it('accept successfully', async () => {
-//       const fn1 = sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsRequestedToMe')
-//         .returns([trustRelationship]);
-//       const fn2 = sinon.stub(TrustRepository.prototype, 'update');
-//       sinon.stub(Wallet.prototype, 'checkManageCircle');
-//       await wallet.acceptTrustRequestSentToMe(trustRelationship.id);
-//       fn1.restore();
-//       fn2.restore();
-//     });
-//   });
-
-//   describe('Decline trust', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const trustId = uuid.v4();
-//     const trustRelationship = {
-//       id: trustId,
-//       target_wallet_id: wallet.getId(),
-//     };
-
-//     it('decline but the requested trust whose target id is not me, throw 403', async () => {
-//       const fn1 = sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsRequestedToMe')
-//         .returns([trustRelationship]);
-//       const fn2 = sinon.stub(TrustRepository.prototype, 'update');
-//       await jestExpect(async () => {
-//         await wallet.declineTrustRequestSentToMe(2);
-//       }).rejects.toThrow(/no permission/i);
-//       fn1.restore();
-//       fn2.restore();
-//     });
-
-//     it('decline successfully', async () => {
-//       const fn1 = sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsRequestedToMe')
-//         .returns([trustRelationship]);
-//       const fn2 = sinon.stub(TrustRepository.prototype, 'update');
-//       await wallet.declineTrustRequestSentToMe(trustRelationship.id);
-//       fn1.restore();
-//       fn2.restore();
-//     });
-//   });
-
-//   describe('Cancel trust request', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const trustId = uuid.v4();
-
-//     it('Try to cancel but the requested trust whose originator id is not me, throw 403', async () => {
-//       const trustRelationship = {
-//         id: trustId,
-//         target_wallet_id: wallet.getId(),
-//       };
-//       const fn1 = sinon
-//         .stub(TrustRepository.prototype, 'getById')
-//         .returns(trustRelationship);
-//       const fn2 = sinon.stub(TrustRepository.prototype, 'update');
-//       await jestExpect(async () => {
-//         await wallet.cancelTrustRequest(trustId);
-//       }).rejects.toThrow(/no permission/i);
-//       fn1.restore();
-//       fn2.restore();
-//     });
-
-//     it('cancel successfully', async () => {
-//       const trustRelationship = {
-//         id: trustId,
-//         originator_wallet_id: wallet.getId(),
-//       };
-//       const fn1 = sinon
-//         .stub(TrustRepository.prototype, 'getById')
-//         .returns(trustRelationship);
-//       const fn2 = sinon.stub(TrustRepository.prototype, 'update');
-//       await wallet.cancelTrustRequest(trustId);
-//       fn1.restore();
-//       fn2.restore();
-//     });
-
-//     it.skip('TODO try to cancel but the state is inpropricate, should throw 403', () => {});
-//   });
-
-//   describe('hasTrust()', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const wallet2 = new Wallet(uuid.v4());
-
-//     it('has no trust', async () => {
-//       const fn1 = sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsTrusted')
-//         .resolves([]); // no relationship
-//       const result = await wallet.hasTrust(
-//         TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//         wallet,
-//         wallet2,
-//       );
-//       expect(result).eq(false);
-//       fn1.restore();
-//     });
-
-//     it('has trust', async () => {
-//       const fn1 = sinon
-//         .stub(Wallet.prototype, 'getTrustRelationships')
-//         .resolves([
-//           {
-//             request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//             type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//             actor_wallet_id: wallet.getId(),
-//             target_wallet_id: wallet2.getId(),
-//             state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-//           },
-//         ]);
-//       const result = await wallet.hasTrust(
-//         TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         wallet,
-//         wallet2,
-//       );
-//       expect(result).eq(true);
-//       fn1.restore();
-//     });
-
-//     it('has trust with receive case', async () => {
-//       const fn1 = sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsTrusted')
-//         .resolves([
-//           {
-//             request_type:
-//               TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.receive,
-//             type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//             actor_wallet_id: wallet2.getId(),
-//             target_wallet_id: wallet.getId(),
-//           },
-//         ]);
-//       const result = await wallet.hasTrust(
-//         TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         wallet,
-//         wallet2,
-//       );
-//       expect(result).eq(true);
-//       fn1.restore();
-//     });
-//   });
-
-//   describe('Transfer', () => {
-//     const sender = new Wallet(uuid.v4());
-//     const receiver = new Wallet(uuid.v4());
-//     const token = new Token(
-//       {
-//         id: uuid.v4(),
-//       },
-//       session,
-//     );
-
-//     it('Given token uuid do not belongs to sender wallet, should throw 403', async () => {
-//       const fn1 = sinon.stub(Token.prototype, 'belongsTo').resolves(false);
-//       await jestExpect(async () => {
-//         await wallet.transfer(sender, receiver, [token]);
-//       }).rejects.toThrow(/belongs/);
-//       fn1.restore();
-//     });
-
-//     // it("Claim set to true, should success", async () => {
-//     //   const fn0 = sinon.stub(Token.prototype, "belongsTo").resolves(true);
-//     //   // const fn1 = sinon.stub(TransferRepository.prototype, "create").resolves({
-//     //   //   id: 1,
-//     //   //   state: Transfer.STATE.completed,
-
-//     //   // });
-//     //   const fn1 = sinon.stub(wallet, "hasTrust").resolves(true);
-//     //   const sender = new Wallet(1, session);
-//     //   const receiver = new Wallet(2, session);
-//     //   const token = new Token({
-//     //     id: 1,
-//     //     uuid: "uu",
-//     //     transfer_pending: false,
-//     //   }, session);
-//     //   const transfer = await wallet.transfer(sender, receiver, [token], true);
-//     //   expect(transfer).property("state").eq(Transfer.STATE.completed);
-//     //   fn0.restore();
-//     //   fn1.restore();
-//     // });
-
-//     it("don't have trust, sender under control, should return transfer with pending state", async () => {
-//       sinon.stub(Wallet.prototype, 'isDeduct').resolves(false);
-//       const fn3 = sinon.stub(Wallet.prototype, 'hasControlOver');
-//       fn3.onFirstCall().resolves(true);
-//       fn3.onSecondCall().resolves(false);
-//       const fn0 = sinon.stub(Token.prototype, 'belongsTo').resolves(true);
-//       sinon.stub(Token.prototype, 'beAbleToTransfer').resolves(true);
-//       sinon.stub(TokenService.prototype, 'pendingTransfer');
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'create').resolves({
-//         id: 1,
-//         state: Transfer.STATE.pending,
-//       });
-
-//       const fn2 = sinon.stub(sender, 'hasTrust').resolves(false);
-//       const transfer = await sender.transfer(sender, receiver, [token], false);
-//       expect(transfer).property('state').eq(Transfer.STATE.pending);
-//       expect(fn1).to.have.been.calledWith({
-//         originator_wallet_id: sender.getId(),
-//         source_wallet_id: sender.getId(),
-//         destination_wallet_id: receiver.getId(),
-//         state: Transfer.STATE.pending,
-//         parameters: {
-//           tokens: [token.getId()],
-//         },
-//         claim: false,
-//       });
-//       fn0.restore();
-//       fn1.restore();
-//       fn2.restore();
-//     });
-
-//     // This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
-//     it.skip("don't have trust, receiver under control, should created a transfer request record", async () => {
-//       const fn0 = sinon.stub(Token.prototype, 'belongsTo').resolves(true);
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'create').resolves({
-//         id: 1,
-//         state: Transfer.STATE.requested,
-//       });
-
-//       const fn2 = sinon.stub(wallet, 'checkTrust').rejects(new HttpError(403));
-//       const transfer = await wallet.transfer(sender, receiver, [token], false);
-//       expect(transfer).property('state').eq(Transfer.STATE.requested);
-
-//       expect(fn1).to.have.been.calledWith({
-//         originator_wallet_id: sender.getId(),
-//         source_wallet_id: receiver.getId(),
-//         destination_wallet_id: sender.getId(),
-//         state: Transfer.STATE.requested,
-//         parameters: {
-//           tokens: [token.id],
-//         },
-//         claim: false,
-//       });
-//       fn0.restore();
-//       fn1.restore();
-//       fn2.restore();
-//     });
-
-//     // This shouldn't be able to pass anymore, because this is a deduct case, this case do not support yet, check the test for "deduct"
-//     it.skip('have trust, should finish successfully', async () => {
-//       const fn0 = sinon.stub(Token.prototype, 'belongsTo').resolves(true);
-//       const fn1 = sinon.stub(wallet, 'checkTrust');
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'create');
-//       const fn3 = sinon.stub(Token.prototype, 'completeTransfer');
-//       await wallet.transfer(sender, receiver, [token]);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.completed,
-//         }),
-//       );
-//       expect(fn3).calledWith();
-//       fn0.restore();
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//     });
-//   });
-
-//   describe('Bundle transfer', () => {
-//     const sender = new Wallet(uuid.v4());
-//     const receiver = new Wallet(uuid.v4());
-//     const transferId = uuid.v4();
-
-//     it("Sender doesn't have enough tokens to send, should throw 403", async () => {
-//       const fn0 = sinon
-//         .stub(TokenService.prototype, 'countTokenByWallet')
-//         .resolves(1);
-//       await jestExpect(async () => {
-//         await wallet.transferBundle(sender, receiver, 2);
-//       }).rejects.toThrow(/enough/);
-//       fn0.restore();
-//     });
-
-//     it("don't have trust, sender under control, should created a transfer pending record", async () => {
-//       const fn0 = sinon
-//         .stub(TokenService.prototype, 'countTokenByWallet')
-//         .resolves(1);
-//       const fn4 = sinon
-//         .stub(TokenService.prototype, 'countNotClaimedTokenByWallet')
-//         .resolves(1);
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'create').resolves({
-//         id: transferId,
-//         state: Transfer.STATE.pending,
-//       });
-//       sinon.stub(Wallet.prototype, 'isDeduct').resolves(false);
-//       const fn3 = sinon.stub(Wallet.prototype, 'hasControlOver');
-//       fn3.onFirstCall().resolves(true);
-//       fn3.onSecondCall().resolves(false);
-
-//       const fn2 = sinon.stub(sender, 'hasTrust').resolves(false);
-//       const transfer = await sender.transferBundle(sender, receiver, 1, false);
-//       expect(transfer).property('state').eq(Transfer.STATE.pending);
-//       expect(fn1).to.have.been.calledWith({
-//         originator_wallet_id: sender.getId(),
-//         source_wallet_id: sender.getId(),
-//         destination_wallet_id: receiver.getId(),
-//         state: Transfer.STATE.pending,
-//         parameters: {
-//           bundle: {
-//             bundleSize: 1,
-//           },
-//         },
-//         claim: false,
-//       });
-//       expect(fn0).calledWith(sender);
-//       fn1.restore();
-//       fn2.restore();
-//       fn4.restore();
-//     });
-
-//     it("don't have trust, receiver under control, should create a transfer request record", async () => {
-//       const fn0 = sinon
-//         .stub(TokenService.prototype, 'countTokenByWallet')
-//         .resolves(1);
-//       const fn4 = sinon
-//         .stub(TokenService.prototype, 'countNotClaimedTokenByWallet')
-//         .resolves(1);
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'create').resolves({
-//         id: transferId,
-//         state: Transfer.STATE.requested,
-//       });
-//       sinon.stub(Wallet.prototype, 'isDeduct').resolves(false);
-//       const fn3 = sinon.stub(Wallet.prototype, 'hasControlOver');
-//       fn3.onFirstCall().resolves(false);
-//       fn3.onSecondCall().resolves(true);
-
-//       const fn2 = sinon.stub(receiver, 'hasTrust').resolves(false);
-//       const transfer = await receiver.transferBundle(
-//         sender,
-//         receiver,
-//         1,
-//         false,
-//       );
-//       expect(transfer).property('state').eq(Transfer.STATE.requested);
-//       expect(fn1).to.have.been.calledWith({
-//         claim: false,
-//         originator_wallet_id: receiver.getId(),
-//         source_wallet_id: sender.getId(),
-//         destination_wallet_id: receiver.getId(),
-//         state: Transfer.STATE.requested,
-//         parameters: {
-//           bundle: {
-//             bundleSize: 1,
-//           },
-//         },
-//       });
-//       fn0.restore();
-//       fn1.restore();
-//       fn2.restore();
-//       fn4.restore();
-//     });
-
-//     it('have trust, not deduct, should finish successfully', async () => {
-//       const fn0 = sinon
-//         .stub(TokenService.prototype, 'countTokenByWallet')
-//         .resolves(1);
-//       const fn5 = sinon
-//         .stub(TokenService.prototype, 'countNotClaimedTokenByWallet')
-//         .resolves(1);
-//       const fn1 = sinon.stub(Wallet.prototype, 'hasTrust').resolves(true);
-//       sinon.stub(Wallet.prototype, 'isDeduct').resolves(false);
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'create');
-//       const fn3 = sinon.stub(TokenService.prototype, 'completeTransfer');
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       const fn4 = sinon
-//         .stub(TokenService.prototype, 'getTokensByBundle')
-//         .resolves([new Token(uuid.v4(), session)]);
-//       await wallet.transferBundle(sender, receiver, 1, false);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.completed,
-//         }),
-//       );
-
-//       expect(fn3).calledWith();
-//       fn0.restore();
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//       fn4.restore();
-//       fn5.restore();
-//     });
-
-//     it('have trust, is deduct, should pending', async () => {
-//       const fn0 = sinon
-//         .stub(TokenService.prototype, 'countTokenByWallet')
-//         .resolves(1);
-//       const _fn6 = sinon
-//         .stub(TokenService.prototype, 'countNotClaimedTokenByWallet')
-//         .resolves(1);
-//       const fn1 = sinon.stub(Wallet.prototype, 'hasTrust').resolves(true);
-//       sinon.stub(Wallet.prototype, 'isDeduct').resolves(true);
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'create');
-//       const fn3 = sinon.stub(Token.prototype, 'completeTransfer');
-//       const fn4 = sinon
-//         .stub(TokenService.prototype, 'getTokensByBundle')
-//         .resolves([new Token(uuid.v4(), session)]);
-//       const fn5 = sinon.stub(Wallet.prototype, 'hasControlOver');
-//       fn5.onCall(0).resolves(false);
-//       fn5.onCall(1).resolves(true);
-//       await wallet.transferBundle(sender, receiver, 1, false);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.requested,
-//         }),
-//       );
-
-//       fn0.restore();
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//       fn4.restore();
-//     });
-//   });
-
-//   describe('getPendingTransfers', () => {
-//     it('getPendingTransfers', async () => {
-//       const fn1 = sinon
-//         .stub(TransferRepository.prototype, 'getPendingTransfers')
-//         .resolves([{ id: uuid.v4() }]);
-//       const result = await wallet.getPendingTransfers();
-//       expect(result).lengthOf(1);
-//       fn1.restore();
-//     });
-//   });
-
-//   describe('acceptTransfer', () => {
-//     const receiver = new Wallet(uuid.v4());
-//     const token = new Token(
-//       {
-//         id: uuid.v4(),
-//       },
-//       session,
-//     );
-//     const transferId = uuid.v4();
-
-//     it("can not accept transfer who's state isn't pending", async () => {
-//       sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         state: Transfer.STATE.requested,
-//       });
-//       sinon.stub(TransferRepository.prototype, 'update');
-//       sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([token]);
-//       sinon.stub(Token.prototype, 'completeTransfer');
-//       sinon.stub(WalletService.prototype, 'getById');
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await jestExpect(async () => {
-//         await wallet.acceptTransfer(transferId);
-//       }).rejects.toThrow(/pending/);
-//     });
-
-//     it('acceptTransfer', async () => {
-//       const walletId1 = uuid.v4();
-//       const walletId2 = uuid.v4();
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         state: Transfer.STATE.pending,
-//         source_wallet_id: walletId1,
-//         destination_wallet_id: walletId2,
-//       });
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'update');
-//       const fn3 = sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([token]);
-//       const fn4 = sinon.stub(TokenService.prototype, 'completeTransfer');
-//       const fn5 = sinon.stub(WalletService.prototype, 'getById');
-//       const fn6 = sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await wallet.acceptTransfer(transferId);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.completed,
-//         }),
-//       );
-//       expect(fn4).calledWith();
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//       fn4.restore();
-//       fn5.restore();
-//       fn6.restore();
-//     });
-
-//     it('acceptTransfer with bundle', async () => {
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         source_wallet_id: receiver.getId(),
-//         state: Transfer.STATE.pending,
-//         parameters: {
-//           bundle: {
-//             bundleSize: 1,
-//           },
-//         },
-//       });
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'update');
-//       const fn4 = sinon.stub(TokenService.prototype, 'completeTransfer');
-//       const fn5 = sinon
-//         .stub(TokenService.prototype, 'getTokensByBundle')
-//         .resolves([token]);
-//       const fn6 = sinon.stub(WalletService.prototype, 'getById');
-//       const fn7 = sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await receiver.acceptTransfer(transferId);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.completed,
-//         }),
-//       );
-//       expect(fn5).calledWith(sinon.match.any, 1);
-//       expect(fn4).calledWith();
-//       fn1.restore();
-//       fn2.restore();
-//       fn4.restore();
-//       fn5.restore();
-//       fn6.restore();
-//       fn7.restore();
-//     });
-//   });
-
-//   describe('declineTransfer', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const sender = new Wallet(uuid.v4());
-//     const receiver = new Wallet(uuid.v4());
-//     const token = new Token(
-//       {
-//         id: uuid.v4(),
-//       },
-//       session,
-//     );
-//     const transferId = uuid.v4();
-
-//     it('fail to decline if transfer state is neither the pending nor requested', async () => {
-//       sinon
-//         .stub(TransferRepository.prototype, 'getById')
-//         .resolves({ id: transferId });
-//       sinon.stub(TransferRepository.prototype, 'update');
-//       sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([token.id]);
-//       sinon.stub(Token.prototype, 'cancelTransfer');
-//       sinon.stub(WalletService.prototype, 'getById');
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await jestExpect(async () => {
-//         await wallet.declineTransfer(transferId);
-//       }).rejects.toThrow(/state/);
-//     });
-
-//     it("Can decline a 'pending' transfer for a managed wallet", async () => {
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         state: Transfer.STATE.pending,
-//         source_wallet_id: sender.getId(),
-//         destination_wallet_id: receiver.getId(),
-//       });
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'update');
-//       const fn3 = sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([token]);
-//       const fn4 = sinon.stub(TokenService.prototype, 'cancelTransfer');
-//       const fn5 = sinon.stub(WalletService.prototype, 'getById');
-//       fn5.onCall(0).resolves(sender);
-//       fn5.onCall(1).resolves(receiver);
-//       const fn6 = sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await wallet.declineTransfer(transferId);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.cancelled,
-//         }),
-//       );
-//       expect(fn4).calledWith();
-//       expect(fn6).calledWith(receiver);
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//       fn4.restore();
-//       fn5.restore();
-//       fn6.restore();
-//     });
-
-//     it("Can decline a 'requested' transfer for a managed wallet", async () => {
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         state: Transfer.STATE.requested,
-//         source_wallet_id: sender.getId(),
-//         destination_wallet_id: receiver.getId(),
-//       });
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'update');
-//       const fn3 = sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([token]);
-//       const fn4 = sinon.stub(TokenService.prototype, 'cancelTransfer');
-//       const fn5 = sinon.stub(WalletService.prototype, 'getById');
-//       fn5.onCall(0).resolves(sender);
-//       fn5.onCall(1).resolves(receiver);
-//       const fn6 = sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await wallet.declineTransfer(transferId);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.cancelled,
-//         }),
-//       );
-//       expect(fn4).calledWith();
-//       expect(fn6).calledWith(sender);
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//       fn4.restore();
-//       fn5.restore();
-//       fn6.restore();
-//     });
-//   });
-
-//   describe('cancelTransfer', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const wallet2 = new Wallet(uuid.v4());
-//     const wallet3 = new Wallet(uuid.v4());
-//     const transferId = uuid.v4();
-
-//     it("Can cancel a 'pending' transfer", async () => {
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         state: Transfer.STATE.pending,
-//         source_wallet_id: wallet2.getId(),
-//         destination_wallet_id: wallet3.getId(),
-//       });
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'update');
-//       const fn3 = sinon.stub(WalletService.prototype, 'getById');
-//       fn3.onCall(0).resolves(wallet2);
-//       fn3.onCall(1).resolves(wallet3);
-//       const fn4 = sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([]);
-//       sinon.stub(TokenService.prototype, 'cancelTransfer');
-//       await wallet.cancelTransfer(transferId);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.cancelled,
-//         }),
-//       );
-//       expect(fn4).calledWith(wallet2);
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//       fn4.restore();
-//     });
-
-//     it("Can cancel a 'requested' transfer", async () => {
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         state: Transfer.STATE.requested,
-//         source_wallet_id: wallet2.getId(),
-//         destination_wallet_id: wallet3.getId(),
-//       });
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'update');
-//       const fn3 = sinon.stub(WalletService.prototype, 'getById');
-//       fn3.onCall(0).resolves(wallet2);
-//       fn3.onCall(1).resolves(wallet3);
-//       const fn4 = sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([]);
-//       sinon.stub(TokenService.prototype, 'cancelTransfer');
-//       await wallet.cancelTransfer(1);
-//       expect(fn2).calledWith(
-//         sinon.match({
-//           state: Transfer.STATE.cancelled,
-//         }),
-//       );
-//       expect(fn4).calledWith(wallet3);
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//       fn4.restore();
-//     });
-//   });
-
-//   describe('fulfillTransfer', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const wallet2 = new Wallet(uuid.v4());
-//     const transferId = uuid.v4();
-
-//     it('fulfillTransfer successfully', async () => {
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         source_wallet_id: wallet.getId(),
-//         state: Transfer.STATE.requested,
-//       });
-//       const fn2 = sinon.stub(TransferRepository.prototype, 'update');
-//       const fn3 = sinon.stub(WalletService.prototype, 'getById');
-//       const fn4 = sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       sinon.stub(TokenService.prototype, 'completeTransfer');
-//       sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([]);
-//       await wallet.fulfillTransfer(transferId);
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//       fn4.restore();
-//     });
-
-//     it("have no control over the transfer's sender , should throw 403 no permission", async () => {
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves([
-//         {
-//           id: transferId,
-//           source_wallet_id: wallet2.getId(),
-//         },
-//       ]);
-//       const fn2 = sinon.stub(WalletService.prototype, 'getById');
-//       const fn3 = sinon
-//         .stub(Wallet.prototype, 'hasControlOver')
-//         .resolves(false);
-//       await jestExpect(async () => {
-//         await wallet.fulfillTransfer(transferId);
-//       }).rejects.toThrow(/permission/);
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//     });
-
-//     it("the transfer's state is not requested, should throw 403 forbidden", async () => {
-//       const fn1 = sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         source_wallet_id: wallet.getId(),
-//       });
-//       const fn2 = sinon.stub(WalletService.prototype, 'getById');
-//       const fn3 = sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await jestExpect(async () => {
-//         await wallet.fulfillTransfer(transferId);
-//       }).rejects.toThrow(/forbidden/);
-//       fn1.restore();
-//       fn2.restore();
-//       fn3.restore();
-//     });
-//   });
-
-//   describe('fulfillTransferWithTokens', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const token = new Token(
-//       {
-//         id: uuid.v4(),
-//       },
-//       session,
-//     );
-//     const token2 = new Token(
-//       {
-//         id: uuid.v4(),
-//       },
-//       session,
-//     );
-//     const transferId = uuid.v4();
-
-//     it('fulfillTransfer successfully', async () => {
-//       sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: 1,
-//         source_wallet_id: wallet.getId(),
-//         state: Transfer.STATE.requested,
-//         parameters: {
-//           bundle: {
-//             bundleSize: 1,
-//           },
-//         },
-//       });
-//       sinon.stub(TransferRepository.prototype, 'update');
-//       sinon.stub(WalletService.prototype, 'getById');
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       sinon.stub(Token.prototype, 'toJSON').resolves({ uuid: 'xxx' });
-//       sinon.stub(Token.prototype, 'belongsTo').resolves(true);
-//       sinon.stub(TokenService.prototype, 'completeTransfer');
-//       await wallet.fulfillTransferWithTokens(1, [token]);
-//     });
-
-//     it('Should not set tokens for non-bundle case', async () => {
-//       sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: 1,
-//         source_wallet_id: wallet.getId(),
-//         state: Transfer.STATE.requested,
-//         parameters: {},
-//       });
-//       sinon.stub(TransferRepository.prototype, 'update');
-//       sinon.stub(WalletService.prototype, 'getById');
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await jestExpect(async () => {
-//         await wallet.fulfillTransferWithTokens(1, [token]);
-//       }).rejects.toThrow(/no need/i);
-//     });
-
-//     it('Too many tokens', async () => {
-//       sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: 1,
-//         source_wallet_id: wallet.getId(),
-//         state: Transfer.STATE.requested,
-//         parameters: {
-//           bundle: {
-//             bundleSize: 1,
-//           },
-//         },
-//       });
-//       sinon.stub(TransferRepository.prototype, 'update');
-//       sinon.stub(WalletService.prototype, 'getById');
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       sinon.stub(Token.prototype, 'toJSON').resolves({ uuid: 'xxx' });
-//       sinon.stub(Token.prototype, 'belongsTo').resolves(true);
-//       sinon.stub(Token.prototype, 'completeTransfer');
-//       await jestExpect(async () => {
-//         await wallet.fulfillTransferWithTokens(1, [token, token2]);
-//       }).rejects.toThrow(/too many/i);
-//     });
-
-//     it('Too few tokens', async () => {
-//       sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: 1,
-//         source_wallet_id: wallet.getId(),
-//         state: Transfer.STATE.requested,
-//         parameters: {
-//           bundle: {
-//             bundleSize: 1,
-//           },
-//         },
-//       });
-//       sinon.stub(TransferRepository.prototype, 'update');
-//       sinon.stub(WalletService.prototype, 'getById');
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       await jestExpect(async () => {
-//         await wallet.fulfillTransferWithTokens(1, []);
-//       }).rejects.toThrow(/too few/i);
-//     });
-
-//     it('Specified token do not belongs to the wallet', async () => {
-//       sinon.stub(TransferRepository.prototype, 'getById').resolves({
-//         id: transferId,
-//         source_wallet_id: wallet.getId(),
-//         state: Transfer.STATE.requested,
-//         parameters: {
-//           bundle: {
-//             bundleSize: 1,
-//           },
-//         },
-//       });
-//       sinon.stub(TransferRepository.prototype, 'update');
-//       sinon.stub(WalletService.prototype, 'getById');
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       sinon.stub(Token.prototype, 'toJSON').resolves({ uuid: 'xxx' });
-//       sinon.stub(Token.prototype, 'belongsTo').resolves(false);
-//       await jestExpect(async () => {
-//         await wallet.fulfillTransferWithTokens(transferId, [token]);
-//       }).rejects.toThrow(/belongs to/i);
-//     });
-//   });
-
-//   describe('getTransfers', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const wallet2 = new Wallet(uuid.v4());
-//     const transferId = uuid.v4();
-
-//     it('getTransfers', async () => {
-//       const fn1 = sinon
-//         .stub(TransferRepository.prototype, 'getByFilter')
-//         .resolves([{ id: transferId }]);
-//       const result = await wallet.getTransfers(
-//         Transfer.STATE.requested,
-//         wallet2,
-//       );
-//       expect(result).lengthOf(1);
-//       expect(fn1).calledWith({
-//         and: [
-//           {
-//             or: [
-//               {
-//                 source_wallet_id: wallet.getId(),
-//               },
-//               {
-//                 destination_wallet_id: wallet.getId(),
-//               },
-//               {
-//                 originator_wallet_id: wallet.getId(),
-//               },
-//             ],
-//           },
-//           {
-//             state: Transfer.STATE.requested,
-//           },
-//           {
-//             or: [
-//               {
-//                 source_wallet_id: wallet2.getId(),
-//               },
-//               {
-//                 destination_wallet_id: wallet2.getId(),
-//               },
-//               {
-//                 originator_wallet_id: wallet2.getId(),
-//               },
-//             ],
-//           },
-//         ],
-//       });
-//       fn1.restore();
-//     });
-//   });
-
-//   describe('hasControlOver', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const wallet2 = new Wallet(uuid.v4());
-
-//     it('hasControlOver should pass if it is the same wallet', async () => {
-//       const result = await wallet.hasControlOver(wallet);
-//       expect(result).eq(true);
-//     });
-
-//     it('hasControlOver should pass if manage/yield trust exists', async () => {
-//       const fn = sinon
-//         .stub(TrustRepository.prototype, 'getByFilter')
-//         .resolves([{}]);
-//       const result = await wallet.hasControlOver(wallet2);
-//       expect(result).eq(true);
-//       expect(fn).calledWith({
-//         or: [
-//           {
-//             and: [
-//               {
-//                 actor_wallet_id: wallet.getId(),
-//               },
-//               {
-//                 request_type:
-//                   TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-//               },
-//               {
-//                 target_wallet_id: wallet2.getId(),
-//               },
-//               {
-//                 state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-//               },
-//             ],
-//           },
-//           {
-//             and: [
-//               {
-//                 actor_wallet_id: wallet2.getId(),
-//               },
-//               {
-//                 request_type:
-//                   TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-//               },
-//               {
-//                 target_wallet_id: wallet.getId(),
-//               },
-//               {
-//                 state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-//               },
-//             ],
-//           },
-//         ],
-//       });
-//     });
-//   });
-
-//   describe('getTrustRelationships', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const trustId = uuid.v4();
-
-//     it('successfully', async () => {
-//       const fn = sinon
-//         .stub(TrustRepository.prototype, 'getByFilter')
-//         .resolves([{ id: trustId }]);
-//       const result = await wallet.getTrustRelationships(
-//         TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-//         TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//       );
-//       expect(result).lengthOf(1);
-//       expect(fn).calledWith({
-//         and: [
-//           {
-//             state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-//           },
-//           {
-//             type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//           },
-//           {
-//             request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//           },
-//           {
-//             or: [
-//               {
-//                 actor_wallet_id: wallet.getId(),
-//               },
-//               {
-//                 target_wallet_id: wallet.getId(),
-//               },
-//               {
-//                 originator_wallet_id: wallet.getId(),
-//               },
-//             ],
-//           },
-//         ],
-//       });
-//       fn.restore();
-//     });
-
-//     it('without filters', async () => {
-//       const fn = sinon
-//         .stub(TrustRepository.prototype, 'getByFilter')
-//         .resolves([{ id: trustId }]);
-//       const result = await wallet.getTrustRelationships();
-//       expect(result).lengthOf(1);
-//       expect(fn).calledWith({
-//         and: [
-//           {
-//             or: [
-//               {
-//                 actor_wallet_id: wallet.getId(),
-//               },
-//               {
-//                 target_wallet_id: wallet.getId(),
-//               },
-//               {
-//                 originator_wallet_id: wallet.getId(),
-//               },
-//             ],
-//           },
-//         ],
-//       });
-//       fn.restore();
-//     });
-//   });
-
-//   describe('Deduct', () => {
-//     const wallet = new Wallet({ id: uuid.v4() }); // TODO: should create class MockWallet that does not use repository
-//     const sender = new Wallet(uuid.v4());
-//     const receiver = new Wallet(uuid.v4());
-
-//     it('the sender is me, should return false', async () => {
-//       const result = await wallet.isDeduct(wallet, receiver);
-//       expect(result).eq(false);
-//     });
-
-//     it('The sender is my sub wallet, should return false', async () => {
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(true);
-//       const result = await wallet.isDeduct(sender, receiver);
-//       expect(result).eq(false);
-//     });
-
-//     // TODO: deduction is not supported yet
-//     it.skip("The sender isn't my sub wallet, should throw 403", async () => {
-//       sinon.stub(Wallet.prototype, 'hasControlOver').resolves(false);
-//       const result = await wallet.isDeduct(sender, receiver);
-//       expect(result).eq(true);
-//     });
-//   });
-
-//   describe('getSubWallet', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const subWallet = new Wallet(uuid.v4());
-
-//     it('get sub wallet successfully', async () => {
-//       sinon.stub(Wallet.prototype, 'getTrustRelationships').resolves([
-//         {
-//           actor_wallet_id: wallet.getId(),
-//           target_wallet_id: subWallet.getId(),
-//           request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-//           state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-//         },
-//       ]);
-//       sinon.stub(WalletService.prototype, 'getById').resolves(subWallet);
-//       const wallets = await wallet.getSubWallets();
-//       expect(wallets).lengthOf(1);
-//     });
-
-//     it('get sub wallet which is state of yield', async () => {
-//       sinon.stub(Wallet.prototype, 'getTrustRelationships').resolves([
-//         {
-//           actor_wallet_id: subWallet.getId(),
-//           target_wallet_id: wallet.getId(),
-//           request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-//           state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-//         },
-//       ]);
-//       sinon.stub(WalletService.prototype, 'getById').resolves(subWallet);
-//       const wallets = await wallet.getSubWallets();
-//       expect(wallets).lengthOf(1);
-//     });
-//   });
-
-//   describe('getTrustRelationshipsRequestedToMe', () => {
-//     const wallet = new Wallet(uuid.v4());
-//     const subWallet = new Wallet(uuid.v4());
-//     const wallet2 = new Wallet(uuid.v4());
-
-//     it('get one', async () => {
-//       sinon.stub(Wallet.prototype, 'getSubWallets').resolves([]);
-//       sinon.stub(Wallet.prototype, 'getTrustRelationships').resolves([
-//         {
-//           actor_wallet_id: wallet2.getId(),
-//           target_wallet_id: wallet.getId(),
-//           request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//         },
-//       ]);
-//       const list = await wallet.getTrustRelationshipsRequestedToMe();
-//       expect(list).lengthOf(1);
-//     });
-
-//     it('get one requested to my sub wallet', async () => {
-//       sinon.stub(Wallet.prototype, 'getSubWallets').resolves([subWallet]);
-//       const fn = sinon.stub(Wallet.prototype, 'getTrustRelationships');
-//       fn.onCall(0).resolves([
-//         {
-//           actor_wallet_id: wallet2.getId(),
-//           target_wallet_id: wallet.getId(),
-//           request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//         },
-//       ]);
-//       fn.onCall(1).resolves([
-//         {
-//           actor_wallet_id: wallet2.getId(),
-//           target_wallet_id: subWallet.getId(),
-//           request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//         },
-//       ]);
-//       const list = await wallet.getTrustRelationshipsRequestedToMe();
-//       expect(list).lengthOf(2);
-//     });
-//   });
-
-//   describe('checkManageRecycle', () => {
-//     const walletA = new Wallet(uuid.v4());
-//     const walletB = new Wallet(uuid.v4());
-//     const trustIdA = uuid.v4();
-//     const trustIdB = uuid.v4();
-
-//     it('A manage B, now B request to manage A, should throw error', async () => {
-//       const trustRelationshipTrusted = {
-//         id: trustIdA,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//       };
-//       const trustRelationshipRequested = {
-//         id: trustIdB,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-//         actor_wallet_id: walletB.getId(),
-//         target_wallet_id: walletA.getId(),
-//       };
-//       sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsTrusted')
-//         .resolves([trustRelationshipTrusted]);
-//       await jestExpect(async () => {
-//         await walletA.checkManageCircle(trustRelationshipRequested);
-//       }).rejects.toThrow(/circle/);
-//     });
-
-//     it('A manage B, now A request to yield B, should throw error', async () => {
-//       const trustRelationshipTrusted = {
-//         id: trustIdA,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//       };
-//       const trustRelationshipRequested = {
-//         id: trustIdB,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//       };
-//       sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsTrusted')
-//         .resolves([trustRelationshipTrusted]);
-//       await jestExpect(async () => {
-//         await walletA.checkManageCircle(trustRelationshipRequested);
-//       }).rejects.toThrow(/circle/);
-//     });
-
-//     it('A yield B, now B request to yield A, should throw error', async () => {
-//       const trustRelationshipTrusted = {
-//         id: trustIdA,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//       };
-//       const trustRelationshipRequested = {
-//         id: trustIdB,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-//         actor_wallet_id: walletB.getId(),
-//         target_wallet_id: walletA.getId(),
-//       };
-//       sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsTrusted')
-//         .resolves([trustRelationshipTrusted]);
-//       await jestExpect(async () => {
-//         await walletA.checkManageCircle(trustRelationshipRequested);
-//       }).rejects.toThrow(/circle/);
-//     });
-
-//     it('A yield B, now A request to manage B, should throw error', async () => {
-//       const trustRelationshipTrusted = {
-//         id: trustIdA,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//       };
-//       const trustRelationshipRequested = {
-//         id: trustIdB,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//       };
-//       sinon
-//         .stub(Wallet.prototype, 'getTrustRelationshipsTrusted')
-//         .resolves([trustRelationshipTrusted]);
-//       await jestExpect(async () => {
-//         await walletA.checkManageCircle(trustRelationshipRequested);
-//       }).rejects.toThrow(/circle/);
-//     });
-//   });
-
-//   describe('checkDuplicateRequest', () => {
-//     const walletA = new Wallet(uuid.v4());
-//     const walletB = new Wallet(uuid.v4());
-//     const trustIdA = uuid.v4();
-//     const trustIdB = uuid.v4();
-
-//     it('A send B trust has been requested, now request again, should throw error', async () => {
-//       const trustRelationshipRequested = {
-//         id: trustIdA,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//         state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
-//       };
-//       const trustRelationshipRequesting = {
-//         id: trustIdB,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//         state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
-//       };
-//       sinon
-//         .stub(Wallet.prototype, 'getTrustRelationships')
-//         .resolves([trustRelationshipRequested]);
-//       await jestExpect(async () => {
-//         await wallet.checkDuplicateRequest(trustRelationshipRequesting);
-//       }).rejects.toThrow(/has been/);
-//     });
-
-//     it('A send B trust has been trusted, now request B receive A, should throw error', async () => {
-//       const trustRelationshipRequested = {
-//         id: trustIdA,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//         state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-//       };
-//       const trustRelationshipRequesting = {
-//         id: trustIdB,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.receive,
-//         actor_wallet_id: walletB.getId(),
-//         target_wallet_id: walletA.getId(),
-//         state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
-//       };
-//       sinon
-//         .stub(Wallet.prototype, 'getTrustRelationships')
-//         .resolves([trustRelationshipRequested]);
-//       await jestExpect(async () => {
-//         await wallet.checkDuplicateRequest(trustRelationshipRequesting);
-//       }).rejects.toThrow(/has been/);
-//     });
-
-//     it('A manage B trust has been requested, now request B yield A, should throw error', async () => {
-//       const trustRelationshipRequested = {
-//         id: trustIdA,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-//         actor_wallet_id: walletA.getId(),
-//         target_wallet_id: walletB.getId(),
-//         state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
-//       };
-//       const trustRelationshipRequesting = {
-//         id: trustIdB,
-//         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-//         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-//         actor_wallet_id: walletB.getId(),
-//         target_wallet_id: walletA.getId(),
-//         state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
-//       };
-//       sinon
-//         .stub(Wallet.prototype, 'getTrustRelationships')
-//         .resolves([trustRelationshipRequested]);
-//       await jestExpect(async () => {
-//         await wallet.checkDuplicateRequest(trustRelationshipRequesting);
-//       }).rejects.toThrow(/has been/);
-//     });
-//   });
-
-//   describe('getTransferById', () => {
-//     const transferId = uuid.v4();
-
-//     it('Successfully', async () => {
-//       sinon.stub(Wallet.prototype, 'getTransfers').resolves([
-//         {
-//           id: transferId,
-//         },
-//       ]);
-//       const transfer = await wallet.getTransferById(transferId);
-//       expect(transfer).property('id').eq(transferId);
-//     });
-
-//     it('Not fond', async () => {
-//       sinon.stub(Wallet.prototype, 'getTransfers').resolves([]);
-//       await jestExpect(async () => {
-//         await wallet.getTransferById(1);
-//       }).rejects.toThrow(/not find/);
-//     });
-//   });
-
-//   describe('getTokensByTransferId', () => {
-//     const token = new Token(uuid.v4());
-//     const transferId = uuid.v4();
-
-//     it('Completed transfer', async () => {
-//       const transfer = {
-//         id: transferId,
-//         state: Transfer.STATE.completed,
-//       };
-//       sinon.stub(Wallet.prototype, 'getTransferById').resolves(transfer);
-//       const fn = sinon
-//         .stub(TokenService.prototype, 'getTokensByTransferId')
-//         .resolves([token]);
-//       const tokens = await wallet.getTokensByTransferId(transferId);
-//       expect(tokens).lengthOf(1);
-//       expect(fn).calledWith(transferId);
-//     });
-
-//     it('Pending/requested transfer', async () => {
-//       const transfer = {
-//         id: transferId,
-//         state: Transfer.STATE.pending,
-//       };
-//       sinon.stub(Wallet.prototype, 'getTransferById').resolves(transfer);
-//       const fn = sinon
-//         .stub(TokenService.prototype, 'getTokensByPendingTransferId')
-//         .resolves([token]);
-//       const tokens = await wallet.getTokensByTransferId(transferId);
-//       expect(tokens).lengthOf(1);
-//       expect(fn).calledWith(transferId);
-//     });
-//   });
-// });
+const sinon = require('sinon');
+const chai = require('chai');
+const sinonChai = require('sinon-chai');
+const { v4: uuid } = require('uuid');
+const Wallet = require('./Wallet');
+const Trust = require('./Trust');
+const Transfer = require('./Transfer');
+
+chai.use(sinonChai);
+const { expect } = chai;
+const TransferRepository = require('../repositories/TransferRepository');
+const Session = require('../infra/database/Session');
+const TrustRelationshipEnums = require('../utils/trust-enums');
+const Token = require('./Token');
+const TransferEnums = require('../utils/transfer-enum');
+
+describe('Transfer Model', () => {
+  let transferModel;
+  let transferRepositoryStub;
+
+  beforeEach(() => {
+    const session = new Session();
+    transferModel = new Transfer(session);
+    transferRepositoryStub = sinon.stub(TransferRepository.prototype);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('removeWalletIds', () => {
+    const transferId = uuid();
+    const transferObject = {
+      id: transferId,
+      originator_wallet_id: uuid(),
+      source_wallet_id: uuid(),
+      destination_wallet_id: uuid(),
+    };
+    const newObject = Transfer.removeWalletIds(transferObject);
+    expect(newObject).eql({ id: transferId });
+  });
+
+  it('getByFilter', async () => {
+    const transferId = uuid();
+    transferRepositoryStub.getByFilter.resolves([{ id: transferId }]);
+
+    const result = await transferModel.getByFilter('filter', 'limitOptions');
+    expect(result).eql([{ id: transferId }]);
+    expect(transferRepositoryStub.getByFilter).calledOnceWithExactly(
+      'filter',
+      'limitOptions',
+    );
+  });
+
+  it('getById', async () => {
+    const transferId = uuid();
+    const walletLoginId = uuid();
+    const getTransfersStub = sinon
+      .stub(Transfer.prototype, 'getTransfers')
+      .resolves([{ id: transferId, walletLoginId }]);
+
+    const result = await transferModel.getById({ transferId, walletLoginId });
+
+    expect(result).eql({ id: transferId, walletLoginId });
+    expect(getTransfersStub).calledOnceWithExactly({
+      transferId,
+      walletLoginId,
+    });
+  });
+
+  it('update', async () => {
+    const transferId = uuid();
+    transferRepositoryStub.update.resolves({
+      id: transferId,
+      originator_wallet_id: uuid(),
+    });
+
+    const result = await transferModel.update({ transferId, update: 'yes' });
+
+    expect(result).eql({ id: transferId });
+    expect(transferRepositoryStub.update).calledOnceWithExactly({
+      transferId,
+      update: 'yes',
+    });
+  });
+
+  it('create', async () => {
+    const transferId = uuid();
+    transferRepositoryStub.create.resolves({
+      id: transferId,
+      originator_wallet_id: uuid(),
+      source_wallet_id: uuid(),
+    });
+
+    const result = await transferModel.create({ transferId, create: 'yes' });
+
+    expect(result).eql({ id: transferId });
+    expect(transferRepositoryStub.create).calledOnceWithExactly({
+      transferId,
+      create: 'yes',
+    });
+  });
+
+  it('create', async () => {
+    const transferId = uuid();
+    transferRepositoryStub.create.resolves({
+      id: transferId,
+      originator_wallet_id: uuid(),
+      source_wallet_id: uuid(),
+    });
+
+    const result = await transferModel.create({ transferId, create: 'yes' });
+
+    expect(result).eql({ id: transferId });
+    expect(transferRepositoryStub.create).calledOnceWithExactly({
+      transferId,
+      create: 'yes',
+    });
+  });
+
+  it('getTransfers', async () => {
+    const transferId = uuid();
+    const walletLoginId = uuid();
+    const state = uuid();
+    const walletId = uuid();
+
+    const getByFilterStub = sinon
+      .stub(Transfer.prototype, 'getByFilter')
+      .resolves([{ id: transferId }]);
+
+    const result = await transferModel.getTransfers({
+      transferId,
+      walletLoginId,
+      limit: 10,
+      state,
+      walletId,
+    });
+
+    expect(result).eql([{ id: transferId }]);
+    expect(getByFilterStub).calledOnceWithExactly(
+      {
+        and: [
+          {
+            or: [
+              { source_wallet_id: walletLoginId },
+              { destination_wallet_id: walletLoginId },
+              { originator_wallet_id: walletLoginId },
+            ],
+          },
+          { state },
+          {
+            or: [
+              { source_wallet_id: walletId },
+              { destination_wallet_id: walletId },
+              { originator_wallet_id: walletId },
+            ],
+          },
+          { 'transfer.id': transferId },
+        ],
+      },
+      { limit: 10, offset: 0 },
+    );
+  });
+
+  describe('isDeduct', () => {
+    let hasControlOverStub;
+
+    beforeEach(() => {
+      hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+    });
+
+    it('should return false -- parent = sender.id', async () => {
+      const parentId = uuid();
+      const result = await transferModel.isDeduct(parentId, { id: parentId });
+
+      expect(result).eql(false);
+      expect(hasControlOverStub).not.called;
+    });
+
+    it('should return false -- hasControlOver returns true', async () => {
+      const parentId = uuid();
+      const id = uuid();
+      hasControlOverStub.resolves(true);
+      const result = await transferModel.isDeduct(parentId, { id });
+
+      expect(result).eql(false);
+      expect(hasControlOverStub).calledOnceWithExactly(parentId, id);
+    });
+
+    it('should return true', async () => {
+      const parentId = uuid();
+      const id = uuid();
+      hasControlOverStub.resolves(false);
+      const result = await transferModel.isDeduct(parentId, { id });
+
+      expect(result).eql(true);
+      expect(hasControlOverStub).calledOnceWithExactly(parentId, id);
+    });
+  });
+
+  describe('transfer', () => {
+    let isDeductStub;
+    let hasTrustStub;
+    let hasControlOverStub;
+    let transferCreateStub;
+    let completeTransferStub;
+    let pendingTransferStub;
+
+    beforeEach(() => {
+      isDeductStub = sinon.stub(Transfer.prototype, 'isDeduct');
+      hasTrustStub = sinon.stub(Trust.prototype, 'hasTrust');
+      hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+      transferCreateStub = sinon.stub(Transfer.prototype, 'create');
+      completeTransferStub = sinon.stub(Token.prototype, 'completeTransfer');
+      pendingTransferStub = sinon.stub(Token.prototype, 'pendingTransfer');
+    });
+
+    it('should error out -- all tokens do not belong to sender wallet', async () => {
+      const tokenId1 = uuid();
+      const tokenId2 = uuid();
+      const senderId = uuid();
+      const tokens = [
+        { id: tokenId1, wallet_id: senderId, transfer_pending: false },
+        { id: tokenId2, wallet_id: uuid(), transfer_pending: false },
+      ];
+      let error;
+      try {
+        await transferModel.transfer(
+          'walletLoginId',
+          { id: senderId },
+          'receiver',
+          tokens,
+          true,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        `The token ${tokenId2} does not belong to the sender wallet`,
+      );
+      expect(isDeductStub).not.called;
+      expect(hasTrustStub).not.called;
+      expect(hasControlOverStub).not.called;
+      expect(transferCreateStub).not.called;
+      expect(completeTransferStub).not.called;
+      expect(pendingTransferStub).not.called;
+    });
+
+    it('should error out -- all tokens cannot be transferred', async () => {
+      const tokenId1 = uuid();
+      const tokenId2 = uuid();
+      const senderId = uuid();
+      const tokens = [
+        { id: tokenId1, wallet_id: senderId, transfer_pending: false },
+        { id: tokenId2, wallet_id: senderId, transfer_pending: true },
+      ];
+      let error;
+      try {
+        await transferModel.transfer(
+          'walletLoginId',
+          { id: senderId },
+          'receiver',
+          tokens,
+          true,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        `The token ${tokenId2} cannot be transferred for some reason--for example, it is part of another pending transfer`,
+      );
+      expect(isDeductStub).not.called;
+      expect(hasTrustStub).not.called;
+      expect(hasControlOverStub).not.called;
+      expect(transferCreateStub).not.called;
+      expect(completeTransferStub).not.called;
+      expect(pendingTransferStub).not.called;
+    });
+
+    it('should error out -- all are not claimed', async () => {
+      const tokenId1 = uuid();
+      const tokenId2 = uuid();
+      const senderId = uuid();
+      const tokens = [
+        {
+          id: tokenId1,
+          wallet_id: senderId,
+          transfer_pending: false,
+          claim: false,
+        },
+        {
+          id: tokenId2,
+          wallet_id: senderId,
+          transfer_pending: true,
+          claim: true,
+        },
+      ];
+      let error;
+      try {
+        await transferModel.transfer(
+          'walletLoginId',
+          { id: senderId },
+          'receiver',
+          tokens,
+          true,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        `The token ${tokenId2} cannot be transferred for some reason--for example, it is part of another pending transfer`,
+      );
+      expect(isDeductStub).not.called;
+      expect(hasTrustStub).not.called;
+      expect(hasControlOverStub).not.called;
+      expect(transferCreateStub).not.called;
+      expect(completeTransferStub).not.called;
+      expect(pendingTransferStub).not.called;
+    });
+
+    describe('walletloginid has control over sender and receiver or isDeduct is false and hasTrust is true', () => {
+      it('should complete transfer', async () => {
+        const tokenId1 = uuid();
+        const tokenId2 = uuid();
+        const senderId = uuid();
+        const receiverId = uuid();
+        const walletLoginId = uuid();
+        const transferId = uuid();
+
+        const tokens = [
+          {
+            id: tokenId1,
+            wallet_id: senderId,
+            transfer_pending: false,
+            claim: false,
+          },
+          {
+            id: tokenId2,
+            wallet_id: senderId,
+            transfer_pending: false,
+            claim: false,
+          },
+        ];
+        hasControlOverStub.onCall(0).resolves(true);
+        hasControlOverStub.onCall(1).resolves(true);
+        isDeductStub.resolves(true);
+        hasTrustStub.resolves(true);
+        const transferResult = {
+          id: transferId,
+          originator_wallet_id: walletLoginId,
+          source_wallet_id: senderId,
+        };
+        transferCreateStub.resolves(transferResult);
+
+        const result = await transferModel.transfer(
+          walletLoginId,
+          { id: senderId },
+          { id: receiverId },
+          tokens,
+          true,
+        );
+
+        expect(result).eql({ id: transferId });
+        expect(isDeductStub).calledOnceWithExactly(walletLoginId, {
+          id: senderId,
+        });
+        expect(hasTrustStub).calledOnceWithExactly(
+          walletLoginId,
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
+          { id: senderId },
+          { id: receiverId },
+        );
+        expect(hasControlOverStub.getCall(0).args).eql([
+          walletLoginId,
+          senderId,
+        ]);
+        expect(hasControlOverStub.getCall(1).args).eql([
+          walletLoginId,
+          receiverId,
+        ]);
+        expect(transferCreateStub).calledOnceWithExactly({
+          originator_wallet_id: walletLoginId,
+          source_wallet_id: senderId,
+          destination_wallet_id: receiverId,
+          state: TransferEnums.STATE.completed,
+          parameters: {
+            tokens: [tokenId1, tokenId2],
+          },
+          claim: true,
+        });
+        expect(completeTransferStub).calledOnceWithExactly(
+          tokens,
+          transferResult,
+          true,
+        );
+        expect(pendingTransferStub).not.called;
+      });
+    });
+
+    it('should create transfer -- hasControlOverSender', async () => {
+      const tokenId1 = uuid();
+      const tokenId2 = uuid();
+      const senderId = uuid();
+      const receiverId = uuid();
+      const walletLoginId = uuid();
+      const transferId = uuid();
+
+      const tokens = [
+        {
+          id: tokenId1,
+          wallet_id: senderId,
+          transfer_pending: false,
+          claim: false,
+        },
+        {
+          id: tokenId2,
+          wallet_id: senderId,
+          transfer_pending: false,
+          claim: false,
+        },
+      ];
+      hasControlOverStub.onCall(0).resolves(true);
+      hasControlOverStub.onCall(1).resolves(false);
+      isDeductStub.resolves(true);
+      hasTrustStub.resolves(true);
+      const transferResult = {
+        id: transferId,
+        originator_wallet_id: walletLoginId,
+        source_wallet_id: senderId,
+      };
+      transferCreateStub.resolves(transferResult);
+
+      const result = await transferModel.transfer(
+        walletLoginId,
+        { id: senderId },
+        { id: receiverId },
+        tokens,
+        true,
+      );
+
+      expect(result).eql({ id: transferId });
+      expect(isDeductStub).calledOnceWithExactly(walletLoginId, {
+        id: senderId,
+      });
+      expect(hasTrustStub).calledOnceWithExactly(
+        walletLoginId,
+        TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
+        { id: senderId },
+        { id: receiverId },
+      );
+      expect(hasControlOverStub.getCall(0).args).eql([walletLoginId, senderId]);
+      expect(hasControlOverStub.getCall(1).args).eql([
+        walletLoginId,
+        receiverId,
+      ]);
+      expect(transferCreateStub).calledOnceWithExactly({
+        originator_wallet_id: walletLoginId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: TransferEnums.STATE.pending,
+        parameters: {
+          tokens: [tokenId1, tokenId2],
+        },
+        claim: true,
+      });
+      expect(completeTransferStub).not.called;
+      expect(pendingTransferStub).calledOnceWithExactly(tokens, transferResult);
+    });
+
+    it('should create transfer -- hasControlOverReceiver', async () => {
+      const tokenId1 = uuid();
+      const tokenId2 = uuid();
+      const senderId = uuid();
+      const receiverId = uuid();
+      const walletLoginId = uuid();
+      const transferId = uuid();
+
+      const tokens = [
+        {
+          id: tokenId1,
+          wallet_id: senderId,
+          transfer_pending: false,
+          claim: false,
+        },
+        {
+          id: tokenId2,
+          wallet_id: senderId,
+          transfer_pending: false,
+          claim: false,
+        },
+      ];
+      hasControlOverStub.onCall(0).resolves(false);
+      hasControlOverStub.onCall(1).resolves(true);
+      isDeductStub.resolves(true);
+      hasTrustStub.resolves(true);
+      const transferResult = {
+        id: transferId,
+        originator_wallet_id: walletLoginId,
+        source_wallet_id: senderId,
+      };
+      transferCreateStub.resolves(transferResult);
+
+      const result = await transferModel.transfer(
+        walletLoginId,
+        { id: senderId },
+        { id: receiverId },
+        tokens,
+        true,
+      );
+
+      expect(result).eql({ id: transferId });
+      expect(isDeductStub).calledOnceWithExactly(walletLoginId, {
+        id: senderId,
+      });
+      expect(hasTrustStub).calledOnceWithExactly(
+        walletLoginId,
+        TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
+        { id: senderId },
+        { id: receiverId },
+      );
+      expect(hasControlOverStub.getCall(0).args).eql([walletLoginId, senderId]);
+      expect(hasControlOverStub.getCall(1).args).eql([
+        walletLoginId,
+        receiverId,
+      ]);
+      expect(transferCreateStub).calledOnceWithExactly({
+        originator_wallet_id: walletLoginId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: TransferEnums.STATE.requested,
+        parameters: {
+          tokens: [tokenId1, tokenId2],
+        },
+        claim: true,
+      });
+      expect(completeTransferStub).not.called;
+      expect(pendingTransferStub).calledOnceWithExactly(tokens, transferResult);
+    });
+  });
+
+  describe('transferBundle', () => {
+    let isDeductStub;
+    let hasTrustStub;
+    let hasControlOverStub;
+    let transferCreateStub;
+    let completeTransferStub;
+    let getTokensByBundleStub;
+    let countNotClaimedTokenByWalletStub;
+
+    beforeEach(() => {
+      isDeductStub = sinon.stub(Transfer.prototype, 'isDeduct');
+      hasTrustStub = sinon.stub(Trust.prototype, 'hasTrust');
+      hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+      transferCreateStub = sinon.stub(Transfer.prototype, 'create');
+      completeTransferStub = sinon.stub(Token.prototype, 'completeTransfer');
+      getTokensByBundleStub = sinon.stub(Token.prototype, 'getTokensByBundle');
+      countNotClaimedTokenByWalletStub = sinon.stub(
+        Token.prototype,
+        'countNotClaimedTokenByWallet',
+      );
+    });
+
+    it('should error out -- does not have enough tokens to send', async () => {
+      const bundleSize = 3;
+      const senderId = uuid();
+      let error;
+      countNotClaimedTokenByWalletStub.resolves(2);
+      try {
+        await transferModel.transferBundle(
+          'walletLoginId',
+          { id: senderId },
+          'receiver',
+          bundleSize,
+          true,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(`Do not have enough tokens to send`);
+      expect(isDeductStub).not.called;
+      expect(hasTrustStub).not.called;
+      expect(hasControlOverStub).not.called;
+      expect(transferCreateStub).not.called;
+      expect(completeTransferStub).not.called;
+      expect(getTokensByBundleStub).not.called;
+      expect(countNotClaimedTokenByWalletStub).calledOnceWithExactly(senderId);
+    });
+
+    describe('walletloginid has control over sender and receiver or isDeduct is false and hasTrust is true', () => {
+      it('should complete transfer', async () => {
+        const bundleSize = 3;
+        const senderId = uuid();
+        const receiverId = uuid();
+        const walletLoginId = uuid();
+        const transferId = uuid();
+
+        hasControlOverStub.onCall(0).resolves(true);
+        hasControlOverStub.onCall(1).resolves(true);
+        isDeductStub.resolves(true);
+        hasTrustStub.resolves(true);
+        const transferResult = {
+          id: transferId,
+          originator_wallet_id: walletLoginId,
+          source_wallet_id: senderId,
+        };
+        transferCreateStub.resolves(transferResult);
+        const tokens = [{ id: uuid() }, { id: uuid() }];
+        getTokensByBundleStub.resolves(tokens);
+
+        const result = await transferModel.transferBundle(
+          walletLoginId,
+          { id: senderId },
+          { id: receiverId },
+          bundleSize,
+          true,
+        );
+
+        expect(countNotClaimedTokenByWalletStub).calledOnceWithExactly(
+          senderId,
+        );
+        expect(result).eql({ id: transferId });
+        expect(isDeductStub).calledOnceWithExactly(walletLoginId, {
+          id: senderId,
+        });
+        expect(hasTrustStub).calledOnceWithExactly(
+          walletLoginId,
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
+          { id: senderId },
+          { id: receiverId },
+        );
+        expect(hasControlOverStub.getCall(0).args).eql([
+          walletLoginId,
+          senderId,
+        ]);
+        expect(hasControlOverStub.getCall(1).args).eql([
+          walletLoginId,
+          receiverId,
+        ]);
+        expect(transferCreateStub).calledOnceWithExactly({
+          originator_wallet_id: walletLoginId,
+          source_wallet_id: senderId,
+          destination_wallet_id: receiverId,
+          state: TransferEnums.STATE.completed,
+          parameters: {
+            bundle: {
+              bundleSize,
+            },
+          },
+          claim: true,
+        });
+        expect(getTokensByBundleStub).calledOnceWithExactly(
+          senderId,
+          bundleSize,
+          true,
+        );
+        expect(completeTransferStub).calledOnceWithExactly(
+          tokens,
+          transferResult,
+          true,
+        );
+      });
+    });
+
+    it('should create transfer -- hasControlOverSender', async () => {
+      const bundleSize = 3;
+      const senderId = uuid();
+      const receiverId = uuid();
+      const walletLoginId = uuid();
+      const transferId = uuid();
+
+      hasControlOverStub.onCall(0).resolves(true);
+      hasControlOverStub.onCall(1).resolves(false);
+      isDeductStub.resolves(true);
+      hasTrustStub.resolves(true);
+      const transferResult = {
+        id: transferId,
+        originator_wallet_id: walletLoginId,
+        source_wallet_id: senderId,
+      };
+      transferCreateStub.resolves(transferResult);
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+      getTokensByBundleStub.resolves(tokens);
+
+      const result = await transferModel.transferBundle(
+        walletLoginId,
+        { id: senderId },
+        { id: receiverId },
+        bundleSize,
+        true,
+      );
+
+      expect(countNotClaimedTokenByWalletStub).calledOnceWithExactly(senderId);
+      expect(result).eql({ id: transferId });
+      expect(isDeductStub).calledOnceWithExactly(walletLoginId, {
+        id: senderId,
+      });
+      expect(hasTrustStub).calledOnceWithExactly(
+        walletLoginId,
+        TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
+        { id: senderId },
+        { id: receiverId },
+      );
+      expect(hasControlOverStub.getCall(0).args).eql([walletLoginId, senderId]);
+      expect(hasControlOverStub.getCall(1).args).eql([
+        walletLoginId,
+        receiverId,
+      ]);
+      expect(transferCreateStub).calledOnceWithExactly({
+        originator_wallet_id: walletLoginId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: TransferEnums.STATE.pending,
+        parameters: {
+          bundle: {
+            bundleSize,
+          },
+        },
+        claim: true,
+      });
+      expect(getTokensByBundleStub).not.called;
+      expect(completeTransferStub).not.called;
+    });
+
+    it('should create transfer -- hasControlOverReceiver', async () => {
+      const bundleSize = 3;
+      const senderId = uuid();
+      const receiverId = uuid();
+      const walletLoginId = uuid();
+      const transferId = uuid();
+
+      hasControlOverStub.onCall(0).resolves(false);
+      hasControlOverStub.onCall(1).resolves(true);
+      isDeductStub.resolves(true);
+      hasTrustStub.resolves(true);
+      const transferResult = {
+        id: transferId,
+        originator_wallet_id: walletLoginId,
+        source_wallet_id: senderId,
+      };
+      transferCreateStub.resolves(transferResult);
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+      getTokensByBundleStub.resolves(tokens);
+
+      const result = await transferModel.transferBundle(
+        walletLoginId,
+        { id: senderId },
+        { id: receiverId },
+        bundleSize,
+        true,
+      );
+
+      expect(countNotClaimedTokenByWalletStub).calledOnceWithExactly(senderId);
+      expect(result).eql({ id: transferId });
+      expect(isDeductStub).calledOnceWithExactly(walletLoginId, {
+        id: senderId,
+      });
+      expect(hasTrustStub).calledOnceWithExactly(
+        walletLoginId,
+        TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
+        { id: senderId },
+        { id: receiverId },
+      );
+      expect(hasControlOverStub.getCall(0).args).eql([walletLoginId, senderId]);
+      expect(hasControlOverStub.getCall(1).args).eql([
+        walletLoginId,
+        receiverId,
+      ]);
+      expect(transferCreateStub).calledOnceWithExactly({
+        originator_wallet_id: walletLoginId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: TransferEnums.STATE.requested,
+        parameters: {
+          bundle: {
+            bundleSize,
+          },
+        },
+        claim: true,
+      });
+      expect(getTokensByBundleStub).not.called;
+      expect(completeTransferStub).not.called;
+    });
+  });
+
+  describe('acceptTransfer', () => {
+    let hasControlOverStub;
+    let updateStub;
+    let getTokensByBundleStub;
+    let completeTransferStub;
+    let getTokensByPendingTransferIdStub;
+
+    beforeEach(() => {
+      hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+      updateStub = sinon.stub(Transfer.prototype, 'update');
+      getTokensByBundleStub = sinon.stub(Token.prototype, 'getTokensByBundle');
+      completeTransferStub = sinon.stub(Token.prototype, 'completeTransfer');
+      getTokensByPendingTransferIdStub = sinon.stub(
+        Token.prototype,
+        'getTokensByPendingTransferId',
+      );
+    });
+
+    it('should throw error -- transfer state is not pending', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+
+      transferRepositoryStub.getById.resolves({
+        id: transferId,
+        destination_wallet_id: uuid(),
+        state: 'not pending',
+      });
+
+      let error;
+      try {
+        await transferModel.acceptTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql('The transfer state is not pending');
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).not.called;
+      expect(updateStub).not.called;
+      expect(getTokensByBundleStub).not.called;
+      expect(completeTransferStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+    });
+
+    it('should throw error -- user does not have control', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const receiverId = uuid();
+
+      transferRepositoryStub.getById.resolves({
+        id: transferId,
+        destination_wallet_id: receiverId,
+        state: 'pending',
+      });
+      hasControlOverStub.resolves(false);
+
+      let error;
+      try {
+        await transferModel.acceptTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Current account has no permission to accept this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(
+        walletLoginId,
+        receiverId,
+      );
+      expect(updateStub).not.called;
+      expect(getTokensByBundleStub).not.called;
+      expect(completeTransferStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+    });
+
+    it('should throw error -- bundle size - not enough tokens', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const receiverId = uuid();
+      const senderId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        destination_wallet_id: receiverId,
+        source_wallet_id: senderId,
+        state: 'pending',
+        parameters: {
+          bundle: {
+            bundleSize: 2,
+          },
+        },
+      };
+
+      const tokens = [{ id: uuid() }];
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(true);
+      updateStub.resolves({ id: transferId });
+      getTokensByBundleStub.resolves(tokens);
+
+      let error;
+      try {
+        await transferModel.acceptTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql('Do not have enough tokens');
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(
+        walletLoginId,
+        receiverId,
+      );
+      expect(updateStub).calledOnceWithExactly({
+        ...transferObject,
+        state: TransferEnums.STATE.completed,
+      });
+      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(completeTransferStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+    });
+
+    it('should accept transfer - bundle size', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const receiverId = uuid();
+      const senderId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        destination_wallet_id: receiverId,
+        source_wallet_id: senderId,
+        state: 'pending',
+        parameters: {
+          bundle: {
+            bundleSize: 2,
+          },
+        },
+      };
+
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(true);
+      updateStub.resolves({ id: transferId });
+      getTokensByBundleStub.resolves(tokens);
+
+      const result = await transferModel.acceptTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      expect(result).eql({ id: transferId });
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(
+        walletLoginId,
+        receiverId,
+      );
+      expect(updateStub).calledOnceWithExactly({
+        ...transferObject,
+        state: TransferEnums.STATE.completed,
+      });
+      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(completeTransferStub).calledOnceWithExactly(
+        tokens,
+        transferObject,
+      );
+      expect(getTokensByPendingTransferIdStub).not.called;
+    });
+
+    it('should accept transfer - tokens', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const receiverId = uuid();
+      const senderId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        destination_wallet_id: receiverId,
+        source_wallet_id: senderId,
+        state: 'pending',
+      };
+
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(true);
+      updateStub.resolves({ id: transferId });
+      getTokensByPendingTransferIdStub.resolves(tokens);
+
+      const result = await transferModel.acceptTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      expect(result).eql({ id: transferId });
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(
+        walletLoginId,
+        receiverId,
+      );
+      expect(updateStub).calledOnceWithExactly({
+        ...transferObject,
+        state: TransferEnums.STATE.completed,
+      });
+      expect(getTokensByBundleStub).not.called;
+      expect(completeTransferStub).calledOnceWithExactly(
+        tokens,
+        transferObject,
+      );
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
+    });
+  });
+
+  describe('declineTransfer', () => {
+    let hasControlOverStub;
+    let updateStub;
+    let getTokensByPendingTransferIdStub;
+    let cancelTransferStub;
+
+    beforeEach(() => {
+      hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+      updateStub = sinon.stub(Transfer.prototype, 'update');
+      getTokensByPendingTransferIdStub = sinon.stub(
+        Token.prototype,
+        'getTokensByPendingTransferId',
+      );
+      cancelTransferStub = sinon.stub(Token.prototype, 'cancelTransfer');
+    });
+
+    it('should error out -- transfer state is not pending or requested', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        source_wallet_id: uuid(),
+        destination_wallet_id: uuid(),
+        state: 'completed',
+      };
+      transferRepositoryStub.getById.resolves(transferObject);
+      let error;
+      try {
+        await transferModel.declineTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'The transfer state is neither pending nor requested',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).not.called;
+      expect(updateStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(cancelTransferStub).not.called;
+    });
+
+    it('should error out -- transfer state is pending and no control', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const receiverId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: 'pending',
+      };
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(false);
+      let error;
+      try {
+        await transferModel.declineTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Current account has no permission to decline this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(
+        walletLoginId,
+        receiverId,
+      );
+      expect(updateStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(cancelTransferStub).not.called;
+    });
+
+    it('should error out -- transfer state is requested and no control', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const receiverId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: 'requested',
+      };
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(false);
+      let error;
+      try {
+        await transferModel.declineTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Current account has no permission to decline this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(cancelTransferStub).not.called;
+    });
+
+    it('should decline transfer', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const receiverId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: 'requested',
+      };
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(true);
+      updateStub.resolves({ id: transferId });
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+      getTokensByPendingTransferIdStub.resolves(tokens);
+
+      const result = await transferModel.declineTransfer(
+        transferId,
+        walletLoginId,
+      );
+      expect(result).eql({ id: transferId });
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).calledOnceWithExactly(transferObject);
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
+      expect(cancelTransferStub).calledOnceWithExactly(tokens);
+    });
+  });
+
+  describe('cancelTransfer', () => {
+    let hasControlOverStub;
+    let updateStub;
+    let getTokensByPendingTransferIdStub;
+    let cancelTransferStub;
+
+    beforeEach(() => {
+      hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+      updateStub = sinon.stub(Transfer.prototype, 'update');
+      getTokensByPendingTransferIdStub = sinon.stub(
+        Token.prototype,
+        'getTokensByPendingTransferId',
+      );
+      cancelTransferStub = sinon.stub(Token.prototype, 'cancelTransfer');
+    });
+
+    it('should error out -- transfer state is not pending or requested', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        source_wallet_id: uuid(),
+        destination_wallet_id: uuid(),
+        state: 'completed',
+      };
+      transferRepositoryStub.getById.resolves(transferObject);
+      let error;
+      try {
+        await transferModel.cancelTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'The transfer state is neither pending nor requested',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).not.called;
+      expect(updateStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(cancelTransferStub).not.called;
+    });
+
+    it('should error out -- transfer state is pending and no control', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const receiverId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: 'pending',
+      };
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(false);
+      let error;
+      try {
+        await transferModel.cancelTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Current account has no permission to cancel this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(cancelTransferStub).not.called;
+    });
+
+    it('should error out -- transfer state is requested and no control', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const receiverId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: 'requested',
+      };
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(false);
+      let error;
+      try {
+        await transferModel.cancelTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Current account has no permission to cancel this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(
+        walletLoginId,
+        receiverId,
+      );
+      expect(updateStub).not.called;
+      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(cancelTransferStub).not.called;
+    });
+
+    it('should cancel transfer', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const receiverId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        source_wallet_id: senderId,
+        destination_wallet_id: receiverId,
+        state: 'requested',
+      };
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(true);
+      updateStub.resolves({ id: transferId });
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+      getTokensByPendingTransferIdStub.resolves(tokens);
+
+      const result = await transferModel.cancelTransfer(
+        transferId,
+        walletLoginId,
+      );
+      expect(result).eql({ id: transferId });
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlOverStub).calledOnceWithExactly(
+        walletLoginId,
+        receiverId,
+      );
+      expect(updateStub).calledOnceWithExactly(transferObject);
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
+      expect(cancelTransferStub).calledOnceWithExactly(tokens);
+    });
+  });
+
+  describe('fulfillTransfer', () => {
+    let hasControlStub;
+    let updateStub;
+    let getTokensByBundleStub;
+    let completeTransferStub;
+    let getTokenByPendingTransferIdStub;
+
+    beforeEach(() => {
+      hasControlStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+      updateStub = sinon.stub(Transfer.prototype, 'update');
+      getTokensByBundleStub = sinon.stub(Token.prototype, 'getTokensByBundle');
+      completeTransferStub = sinon.stub(Token.prototype, 'completeTransfer');
+      getTokenByPendingTransferIdStub = sinon.stub(
+        Token.prototype,
+        'getTokensByPendingTransferId',
+      );
+    });
+
+    it('should error out -- does not have control', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+
+      transferRepositoryStub.getById.resolves({
+        id: transferId,
+        source_wallet_id: senderId,
+      });
+      hasControlStub.resolves(false);
+      let error;
+      try {
+        await transferModel.fulfillTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Current account has no permission to fulfill this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).not.called;
+      expect(getTokensByBundleStub).not.called;
+      expect(completeTransferStub).not.called;
+      expect(getTokenByPendingTransferIdStub).not.called;
+    });
+
+    it('should error out -- transfer state is not requested', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+
+      transferRepositoryStub.getById.resolves({
+        id: transferId,
+        source_wallet_id: senderId,
+        state: 'sent',
+      });
+      hasControlStub.resolves(true);
+      let error;
+      try {
+        await transferModel.fulfillTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Operation forbidden, the transfer state is wrong',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).not.called;
+      expect(getTokensByBundleStub).not.called;
+      expect(completeTransferStub).not.called;
+      expect(getTokenByPendingTransferIdStub).not.called;
+    });
+
+    it('should fulfill transfer -- bundle size is valid', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+
+      const transferResult = {
+        id: transferId,
+        source_wallet_id: senderId,
+        state: TransferEnums.STATE.requested,
+        parameters: {
+          bundle: {
+            bundleSize: 4,
+          },
+        },
+      };
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+      transferRepositoryStub.getById.resolves(transferResult);
+      hasControlStub.resolves(true);
+      updateStub.resolves({ id: transferId, state: 'fulfilled' });
+      getTokensByBundleStub.resolves(tokens);
+
+      const result = await transferModel.fulfillTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      expect(result).eql({ id: transferId, state: 'fulfilled' });
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).calledOnceWithExactly(transferResult);
+      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 4);
+      expect(completeTransferStub).calledOnceWithExactly(
+        tokens,
+        transferResult,
+      );
+      expect(getTokenByPendingTransferIdStub).not.called;
+    });
+
+    it('should fulfill transfer -- tokens', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+
+      const transferResult = {
+        id: transferId,
+        source_wallet_id: senderId,
+        state: TransferEnums.STATE.requested,
+      };
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+      transferRepositoryStub.getById.resolves(transferResult);
+      hasControlStub.resolves(true);
+      updateStub.resolves({ id: transferId, state: 'fulfilled' });
+      getTokenByPendingTransferIdStub.resolves(tokens);
+
+      const result = await transferModel.fulfillTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      expect(result).eql({ id: transferId, state: 'fulfilled' });
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).calledOnceWithExactly(transferResult);
+      expect(getTokensByBundleStub).not.called;
+      expect(completeTransferStub).calledOnceWithExactly(
+        tokens,
+        transferResult,
+      );
+      expect(getTokenByPendingTransferIdStub).calledOnceWithExactly(transferId);
+    });
+  });
+
+  describe('fulfillTransferWithTokens', () => {
+    let hasControlStub;
+    let updateStub;
+    let completeTransferStub;
+
+    beforeEach(() => {
+      hasControlStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+      updateStub = sinon.stub(Transfer.prototype, 'update');
+      completeTransferStub = sinon.stub(Token.prototype, 'completeTransfer');
+    });
+
+    it('should error out -- does not have control', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      transferRepositoryStub.getById.resolves({
+        id: transferId,
+        source_wallet_id: senderId,
+      });
+      hasControlStub.resolves(false);
+      let error;
+      try {
+        await transferModel.fulfillTransferWithTokens(
+          transferId,
+          tokens,
+          walletLoginId,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Current account has no permission to fulfill this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).not.called;
+      expect(completeTransferStub).not.called;
+    });
+
+    it('should error out -- does not have control', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      transferRepositoryStub.getById.resolves({
+        id: transferId,
+        source_wallet_id: senderId,
+        state: 'sent',
+      });
+      hasControlStub.resolves(true);
+      let error;
+      try {
+        await transferModel.fulfillTransferWithTokens(
+          transferId,
+          tokens,
+          walletLoginId,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Operation forbidden, the transfer state is wrong',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).not.called;
+      expect(completeTransferStub).not.called;
+    });
+
+    it('should error out -- bundle size is not valid', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      const transferResult = {
+        id: transferId,
+        source_wallet_id: senderId,
+        state: TransferEnums.STATE.requested,
+      };
+      transferRepositoryStub.getById.resolves(transferResult);
+      hasControlStub.resolves(true);
+      updateStub.resolves({ id: transferId, state: 'fulfilled' });
+      let error;
+      try {
+        await transferModel.fulfillTransferWithTokens(
+          transferId,
+          tokens,
+          walletLoginId,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql('No need to specify tokens');
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).calledOnceWithExactly(transferResult);
+      expect(completeTransferStub).not.called;
+    });
+
+    it('should error out -- token size is greater than bundleSize', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      const transferResult = {
+        id: transferId,
+        source_wallet_id: senderId,
+        state: TransferEnums.STATE.requested,
+        parameters: {
+          bundle: {
+            bundleSize: 1,
+          },
+        },
+      };
+      transferRepositoryStub.getById.resolves(transferResult);
+      hasControlStub.resolves(true);
+      updateStub.resolves({ id: transferId, state: 'fulfilled' });
+      let error;
+      try {
+        await transferModel.fulfillTransferWithTokens(
+          transferId,
+          tokens,
+          walletLoginId,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Too many tokens to transfer, please provider 1 tokens for this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).calledOnceWithExactly(transferResult);
+      expect(completeTransferStub).not.called;
+    });
+
+    it('should error out -- token size is less than bundleSize', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      const transferResult = {
+        id: transferId,
+        source_wallet_id: senderId,
+        state: TransferEnums.STATE.requested,
+        parameters: {
+          bundle: {
+            bundleSize: 3,
+          },
+        },
+      };
+      transferRepositoryStub.getById.resolves(transferResult);
+      hasControlStub.resolves(true);
+      updateStub.resolves({ id: transferId, state: 'fulfilled' });
+      let error;
+      try {
+        await transferModel.fulfillTransferWithTokens(
+          transferId,
+          tokens,
+          walletLoginId,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        'Too few tokens to transfer, please provider 3 tokens for this transfer',
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).calledOnceWithExactly(transferResult);
+      expect(completeTransferStub).not.called;
+    });
+
+    it('should error out -- token does not belong to sender wallet', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+      const randomUuid = uuid();
+
+      const walletId1 = uuid();
+      const walletId2 = uuid();
+
+      const tokens = [
+        { id: walletId1, wallet_id: senderId },
+        { id: walletId2, wallet_id: randomUuid },
+      ];
+
+      const transferResult = {
+        id: transferId,
+        source_wallet_id: senderId,
+        state: TransferEnums.STATE.requested,
+        parameters: {
+          bundle: {
+            bundleSize: 2,
+          },
+        },
+      };
+      transferRepositoryStub.getById.resolves(transferResult);
+      hasControlStub.resolves(true);
+      updateStub.resolves({ id: transferId, state: 'fulfilled' });
+      let error;
+      try {
+        await transferModel.fulfillTransferWithTokens(
+          transferId,
+          tokens,
+          walletLoginId,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(403);
+      expect(error.message).eql(
+        `the token:${walletId2} does not belong to the sender wallet`,
+      );
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).calledOnceWithExactly(transferResult);
+      expect(completeTransferStub).not.called;
+    });
+
+    it('should fulfill transfer with tokens', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const senderId = uuid();
+
+      const walletId1 = uuid();
+      const walletId2 = uuid();
+
+      const tokens = [
+        { id: walletId1, wallet_id: senderId },
+        { id: walletId2, wallet_id: senderId },
+      ];
+
+      const transferResult = {
+        id: transferId,
+        source_wallet_id: senderId,
+        state: TransferEnums.STATE.requested,
+        parameters: {
+          bundle: {
+            bundleSize: 2,
+          },
+        },
+      };
+      transferRepositoryStub.getById.resolves(transferResult);
+      hasControlStub.resolves(true);
+      updateStub.resolves({ id: transferId, state: 'fulfilled' });
+
+      const result = await transferModel.fulfillTransferWithTokens(
+        transferId,
+        tokens,
+        walletLoginId,
+      );
+
+      expect(result).eql({ id: transferId, state: 'fulfilled' });
+      expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
+      expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
+      expect(updateStub).calledOnceWithExactly(transferResult);
+      expect(completeTransferStub).calledOnceWithExactly(
+        tokens,
+        transferResult,
+      );
+    });
+  });
+});

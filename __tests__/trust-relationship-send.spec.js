@@ -10,7 +10,7 @@ chai.use(require('chai-uuid'));
 
 const { apiKey } = seed;
 
-describe('Trust relationship: send', () => {
+describe.only('Trust relationship: send', () => {
   let bearerToken;
   let bearerTokenB;
 
@@ -127,7 +127,7 @@ describe('Trust relationship: send', () => {
       .lengthOf(0);
   });
 
-  it('Try to send bundle token to walletB again, should success, 201', async () => {
+  it.only('Try to send bundle token to walletB again, should success, 201', async () => {
     const res = await request(server)
       .post('/transfers')
       .set('treetracker-api-key', apiKey)
@@ -140,6 +140,7 @@ describe('Trust relationship: send', () => {
         receiver_wallet: seed.walletB.name,
         claim: false,
       });
+    // console.log(res.body);
     expect(res).property('statusCode').to.eq(201);
   });
 });

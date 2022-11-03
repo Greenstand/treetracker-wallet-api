@@ -65,15 +65,9 @@ class Transfer {
     };
     filter.and.push({
       or: [
-        {
-          source_wallet_id: walletLoginId,
-        },
-        {
-          destination_wallet_id: walletLoginId,
-        },
-        {
-          originator_wallet_id: walletLoginId,
-        },
+        { source_wallet_id: walletLoginId },
+        { destination_wallet_id: walletLoginId },
+        { originator_wallet_id: walletLoginId },
       ],
     });
     if (state) {
@@ -82,15 +76,9 @@ class Transfer {
     if (walletId) {
       filter.and.push({
         or: [
-          {
-            source_wallet_id: walletId,
-          },
-          {
-            destination_wallet_id: walletId,
-          },
-          {
-            originator_wallet_id: walletId,
-          },
+          { source_wallet_id: walletId },
+          { destination_wallet_id: walletId },
+          { originator_wallet_id: walletId },
         ],
       });
     }
@@ -101,7 +89,7 @@ class Transfer {
   }
 
   /*
-   * Check if it is deduct, if ture, throw 403, cuz we do not support it yet
+   * Check if it is deduct, if true, throw 403, cause we do not support it yet
    */
   async isDeduct(parentId, sender) {
     if (parentId === sender.id) {
@@ -119,22 +107,34 @@ class Transfer {
    */
   async transfer(walletLoginId, sender, receiver, tokens, claimBoolean) {
     //    await this.checkDeduct(sender, receiver);
-    // check tokens belong to sender
+
+    // check tokens
+    const tokensId = [];
     tokens.forEach((token) => {
       const tokenBelongsToSender = Token.belongsTo(token, sender.id);
       const tokenAbleToTransfer = Token.beAbleToTransfer(token);
+
       if (!tokenBelongsToSender) {
         throw new HttpError(
           403,
           `The token ${token.id} does not belong to the sender wallet`,
         );
       }
+
       if (!tokenAbleToTransfer) {
         throw new HttpError(
           403,
           `The token ${token.id} cannot be transferred for some reason--for example, it is part of another pending transfer`,
         );
       }
+      if (token.claim) {
+        throw new HttpError(
+          403,
+          `The token ${token.id} is claimed, cannot be transfered`,
+        );
+      }
+
+      tokensId.push(token.id);
     });
 
     const isDeduct = await this.isDeduct(walletLoginId, sender);
@@ -157,19 +157,7 @@ class Transfer {
       (hasControlOverSender && hasControlOverReceiver) ||
       (!isDeduct && hasTrust)
     ) {
-      const tokensId = [];
-      tokens.forEach((token) => {
-        // check if the tokens you want to transfer is claimed, i.e. not transferrable
-        if (token.claim) {
-          log.warn('token is claimed, cannot be transfered');
-          throw new HttpError(
-            403,
-            `The token ${token.id} is claimed, cannot be transfered`,
-          );
-        }
-        tokensId.push(token.id);
-      });
-      const transfer = await this._transferRepository.create({
+      const transfer = await this.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
         destination_wallet_id: receiver.id,
@@ -189,11 +177,8 @@ class Transfer {
 
     if (hasControlOverSender) {
       log.debug('OK, no permission, source under control, now pending it');
-      const tokensId = [];
-      tokens.forEach((token) => {
-        tokensId.push(token.id);
-      });
-      const transfer = await this._transferRepository.create({
+
+      const transfer = await this.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
         destination_wallet_id: receiver.id,
@@ -204,25 +189,12 @@ class Transfer {
         claim: claimBoolean,
       });
       await this._token.pendingTransfer(tokens, transfer);
-      // check if the tokens you want to transfer is claimed, i.e. not trasfferable
-      tokens.forEach((token) => {
-        if (token.claim === true) {
-          log.warn('token is claimed, cannot be transfered');
-          throw new HttpError(
-            403,
-            `The token ${token.id} is claimed, cannot be transfered`,
-          );
-        }
-      });
-      return transfer;
+      return this.constructor.removeWalletIds(transfer);
     }
 
     if (hasControlOverReceiver) {
       log.debug('OK, no permission, receiver under control, now request it');
-      const tokensId = [];
-      tokens.forEach((token) => {
-        tokensId.push(token.id);
-      });
+
       const transfer = await this.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
@@ -234,17 +206,7 @@ class Transfer {
         claim: claimBoolean,
       });
       await this._token.pendingTransfer(tokens, transfer);
-      // check if the tokens you want to transfer is claimed, i.e. not trasfferable
-      tokens.forEach((token) => {
-        if (token.claim === true) {
-          log.warn('token is claimed, cannot be transfered');
-          throw new HttpError(
-            403,
-            `The token ${token.id} is claimed, cannot be transfered`,
-          );
-        }
-      });
-      return transfer;
+      return this.constructor.removeWalletIds(transfer);
     }
     // TODO
     return expect.fail();
@@ -293,7 +255,7 @@ class Transfer {
       (hasControlOverSender && hasControlOverReceiver) ||
       (!isDeduct && hasTrust)
     ) {
-      const transfer = await this._transferRepository.create({
+      const transfer = await this.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
         destination_wallet_id: receiver.id,
@@ -318,7 +280,7 @@ class Transfer {
     }
     if (hasControlOverSender) {
       log.debug('OK, no permission, source under control, now pending it');
-      const transfer = await this._transferRepository.create({
+      const transfer = await this.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
         destination_wallet_id: receiver.id,
@@ -331,11 +293,12 @@ class Transfer {
         // TODO: boolean for claim
         claim: claimBoolean,
       });
+      // set token transfer_pending to true ??
       return this.constructor.removeWalletIds(transfer);
     }
     if (hasControlOverReceiver) {
       log.debug('OK, no permission, receiver under control, now request it');
-      const transfer = await this._transferRepository.create({
+      const transfer = await this.create({
         originator_wallet_id: walletLoginId,
         source_wallet_id: sender.id,
         destination_wallet_id: receiver.id,
@@ -347,6 +310,7 @@ class Transfer {
         },
         claim: claimBoolean,
       });
+      // set token transfer_pending to true ??
       return this.constructor.removeWalletIds(transfer);
     }
     // TODO
@@ -362,11 +326,11 @@ class Transfer {
     if (transfer.state !== TransferEnums.STATE.pending) {
       throw new HttpError(403, 'The transfer state is not pending');
     }
-    const doseCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
+    const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
       walletLoginId,
       receiverId,
     );
-    if (!doseCurrentAccountHasControlOverReceiver) {
+    if (!doesCurrentAccountHasControlOverReceiver) {
       throw new HttpError(
         403,
         'Current account has no permission to accept this transfer',
@@ -413,26 +377,26 @@ class Transfer {
     ) {
       throw new HttpError(
         403,
-        'The transfer state is not pending and requested',
+        'The transfer state is neither pending nor requested',
       );
     }
     if (transfer.state === TransferEnums.STATE.pending) {
-      const doseCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
+      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
         walletLoginId,
         destWalletId,
       );
-      if (!doseCurrentAccountHasControlOverReceiver) {
+      if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
           'Current account has no permission to decline this transfer',
         );
       }
     } else {
-      const doseCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
+      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
         walletLoginId,
         sourceWalletId,
       );
-      if (!doseCurrentAccountHasControlOverReceiver) {
+      if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
           'Current account has no permission to decline this transfer',
@@ -458,26 +422,26 @@ class Transfer {
     ) {
       throw new HttpError(
         403,
-        'The transfer state is not pending and requested',
+        'The transfer state is neither pending nor requested',
       );
     }
     if (transfer.state === TransferEnums.STATE.pending) {
-      const doseCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
+      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
         walletLoginId,
         sourceWalletId,
       );
-      if (!doseCurrentAccountHasControlOverReceiver) {
+      if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
           'Current account has no permission to cancel this transfer',
         );
       }
     } else {
-      const doseCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
+      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
         walletLoginId,
         destWalletId,
       );
-      if (!doseCurrentAccountHasControlOverReceiver) {
+      if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
           'Current account has no permission to cancel this transfer',
@@ -501,11 +465,11 @@ class Transfer {
 
     const transfer = await this._transferRepository.getById(transferId);
     const senderId = transfer.source_wallet_id;
-    const doseCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
+    const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
       walletLoginId,
       senderId,
     );
-    if (!doseCurrentAccountHasControlOverReceiver) {
+    if (!doesCurrentAccountHasControlOverReceiver) {
       throw new HttpError(
         403,
         'Current account has no permission to fulfill this transfer',
@@ -545,11 +509,11 @@ class Transfer {
 
     const transfer = await this._transferRepository.getById(transferId);
     const senderId = transfer.source_wallet_id;
-    const doseCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
+    const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
       walletLoginId,
       senderId,
     );
-    if (!doseCurrentAccountHasControlOverReceiver) {
+    if (!doesCurrentAccountHasControlOverReceiver) {
       throw new HttpError(
         403,
         'Current account has no permission to fulfill this transfer',

@@ -894,7 +894,6 @@ describe('Trust Model', () => {
       } catch (e) {
         error = e;
       }
-      console.log(error);
 
       expect(error.toString()).eql(
         `Error: [assert failed] expect 'trust type' --to-->  one of ["send","receive","manage","yield","deduct","release"]`,
