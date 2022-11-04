@@ -42,12 +42,13 @@ const walletPost = async (req, res) => {
   await walletPostSchema.validateAsync(req.body, { abortEarly: false });
 
   const walletService = new WalletService();
-  const wallet = await walletService.createWallet(
+  const { wallet, id } = await walletService.createWallet(
     req.wallet_id,
     req.body.wallet,
   );
 
   res.status(200).json({
+    id,
     wallet,
   });
 };
