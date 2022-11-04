@@ -157,13 +157,14 @@ describe('WalletService', () => {
     it('should create wallet', async () => {
       const loggedInWalletId = uuid.v4();
       const wallet = 'wallet';
-      createWalletStub.resolves({ name: wallet });
+      const walletId = uuid.v4();
+      createWalletStub.resolves({ name: wallet, id: walletId });
       expect(walletService).instanceOf(WalletService);
       const createdWallet = await walletService.createWallet(
         loggedInWalletId,
         wallet,
       );
-      expect(createdWallet).eql('wallet');
+      expect(createdWallet).eql({ wallet, id: walletId });
       expect(
         createWalletStub.calledOnceWithExactly(loggedInWalletId, wallet),
       ).eql(true);

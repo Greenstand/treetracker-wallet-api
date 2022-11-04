@@ -119,21 +119,23 @@ describe('walletRouter', () => {
   });
 
   describe('post /wallets', () => {
-    const mockWallet = { id: uuid.v4(), name: 'test-wallet-2' };
+    const walletId = uuid.v4();
+    const mockWallet = { id: walletId, wallet: 'test-wallet-2' };
 
     it('successfully creates managed wallet', async () => {
       const createWalletStub = sinon
         .stub(WalletService.prototype, 'createWallet')
         .resolves(mockWallet);
       const res = await request(app).post('/wallets').send({
-        wallet: mockWallet.name,
+        wallet: mockWallet.wallet,
       });
       expect(res).property('statusCode').eq(200);
-      expect(res.body.wallet.name).eq(mockWallet.name);
+      expect(res.body.wallet).eq(mockWallet.wallet);
+      expect(res.body.id).eq(mockWallet.id);
       expect(
         createWalletStub.calledOnceWithExactly(
           authenticatedWalletId,
-          mockWallet.name,
+          mockWallet.wallet,
         ),
       ).eql(true);
     });
