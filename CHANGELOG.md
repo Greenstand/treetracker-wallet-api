@@ -1,3 +1,10 @@
+## [1.19.12](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.11...v1.19.12) (2022-11-04)
+
+
+### Bug Fixes
+
+* return uuid on wallet creation ([1d2305a](https://github.com/Greenstand/treetracker-wallet-api/commit/1d2305ac550f7efe46fe9f5ed4a0bdb1fd480c3b))
+
 ## [1.19.11](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.10...v1.19.11) (2022-11-03)
 
 
