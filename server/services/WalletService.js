@@ -42,7 +42,7 @@ class WalletService {
 
       await this._session.commitTransaction();
 
-      return addedWallet.name;
+      return { wallet: addedWallet.name, id: addedWallet.id };
     } catch (e) {
       if (this._session.isTransactionInProgress()) {
         await this._session.rollbackTransaction();
