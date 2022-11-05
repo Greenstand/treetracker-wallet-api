@@ -11,6 +11,7 @@ const TrustRepository = require('../repositories/TrustRepository');
 const HttpError = require('../utils/HttpError');
 const Session = require('../infra/database/Session');
 const TrustRelationshipEnums = require('../utils/trust-enums');
+const TokenRepository = require('../repositories/TokenRepository');
 
 describe('Wallet Model', () => {
   let walletModel;
@@ -97,6 +98,23 @@ describe('Wallet Model', () => {
 
     expect(result).eql({ id: walletId, wallet: 'wallet' });
     expect(walletRepositoryStub.getById).calledOnceWithExactly(walletId);
+  });
+
+  it('getWallet function', async () => {
+    const walletId = uuid();
+    walletRepositoryStub.getById.resolves({ id: walletId, name: 'wallet' });
+    const tokenRepositoryStub = sinon
+      .stub(TokenRepository.prototype, 'countByFilter')
+      .resolves(20);
+    const result = await walletModel.getWallet(walletId);
+
+    expect(result).eql({
+      id: walletId,
+      wallet: 'wallet',
+      tokens_in_wallet: 20,
+    });
+    expect(walletRepositoryStub.getById).calledOnceWithExactly(walletId);
+    expect(tokenRepositoryStub).calledOnceWithExactly({ wallet_id: walletId });
   });
 
   it('getByName function', async () => {

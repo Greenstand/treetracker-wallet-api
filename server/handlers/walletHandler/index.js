@@ -21,6 +21,14 @@ const walletGet = async (req, res) => {
   res.status(200).json({ wallets });
 };
 
+const walletSingleGet = async (req, res) => {
+  await walletIdParamSchema.validateAsync(req.params, { abortEarly: false });
+  const walletService = new WalletService();
+
+  const wallet = await walletService.getWallet(req.params.wallet_id);
+  res.status(200).send(wallet);
+};
+
 const walletGetTrustRelationships = async (req, res) => {
   await walletIdParamSchema.validateAsync(req.params, { abortEarly: false });
   await walletGetTrustRelationshipsSchema.validateAsync(req.query, {
@@ -53,4 +61,9 @@ const walletPost = async (req, res) => {
   });
 };
 
-module.exports = { walletPost, walletGetTrustRelationships, walletGet };
+module.exports = {
+  walletPost,
+  walletGetTrustRelationships,
+  walletGet,
+  walletSingleGet,
+};

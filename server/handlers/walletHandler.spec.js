@@ -118,6 +118,25 @@ describe('walletRouter', () => {
     });
   });
 
+  describe('get /wallets/:wallet_id', () => {
+    it('walletId should be guid', async () => {
+      const res = await request(app).get(`/wallets/walletId`);
+      expect(res).property('statusCode').eq(422);
+      expect(res.body.message).match(/wallet_id.*GUID/);
+    });
+
+    it('successfully', async () => {
+      const walletId = uuid.v4();
+      const getWalletStub = sinon
+        .stub(WalletService.prototype, 'getWallet')
+        .resolves({ id: walletId });
+      const res = await request(app).get(`/wallets/${walletId}`);
+      expect(res).property('statusCode').eq(200);
+      expect(res.body).eql({ id: walletId });
+      expect(getWalletStub.calledOnceWithExactly(walletId)).eql(true);
+    });
+  });
+
   describe('post /wallets', () => {
     const walletId = uuid.v4();
     const mockWallet = { id: walletId, wallet: 'test-wallet-2' };

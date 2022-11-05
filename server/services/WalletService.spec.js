@@ -29,6 +29,18 @@ describe('WalletService', () => {
     Wallet.prototype.getById.restore();
   });
 
+  it('getWallet', async () => {
+    const walletId1 = uuid.v4();
+    sinon
+      .stub(Wallet.prototype, 'getWallet')
+      .resolves({ id: walletId1, name: 'walletId1' });
+    expect(walletService).instanceOf(WalletService);
+    const wallet = await walletService.getWallet(walletId1);
+    expect(wallet.id).eql(walletId1);
+    expect(wallet.name).eql('walletId1');
+    Wallet.prototype.getWallet.restore();
+  });
+
   it('getByName', async () => {
     const walletId1 = uuid.v4();
     sinon

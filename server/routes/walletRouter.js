@@ -11,9 +11,11 @@ const {
   walletGet,
   walletGetTrustRelationships,
   walletPost,
+  walletSingleGet,
 } = require('../handlers/walletHandler');
 
 router.get('/', handlerWrapper(walletGet));
+router.get('/:wallet_id', handlerWrapper(walletSingleGet));
 
 // TO DO: Add below route to yaml
 router.get(
