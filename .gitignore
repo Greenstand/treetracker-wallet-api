@@ -6,8 +6,9 @@ jwtRS256.key
 jwtRS256.key.pub
 keygen.sh
 database.json
-.env.*
+.env
 .env.test
+.env.development
 .vscode
 .nyc_output
 
