@@ -157,6 +157,31 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
       deprecated: false
+  '/wallets/{wallet_uuid}':
+    get:
+      tags:
+        - Managed wallets
+      summary: Get details for one wallet, including number of tokens
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: wallet_uuid
+          description: ''
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/walletItem'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+      deprecated: false
   /transfers:
     post:
       tags:
@@ -760,17 +785,17 @@ components:
             capture:
               type: string
       example:
-        id: "ca1a99c3-9797-465d-8ee3-8dbd26a08faa"
-        capture_id: "8df635f6-2df8-496f-93da-3060fc1e3180"
-        wallet_id: "c63da6b3-d7a3-444a-9ff0-10644036eccd"
+        id: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
+        capture_id: '8df635f6-2df8-496f-93da-3060fc1e3180'
+        wallet_id: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
         transfer_pending: false
         transfer_pending_id: null
-        created_at: "2021-07-02T18:31:07.208Z"
-        updated_at: "2021-07-02T18:31:07.208Z"
+        created_at: '2021-07-02T18:31:07.208Z'
+        updated_at: '2021-07-02T18:31:07.208Z'
         links:
           type: object
           properties:
-            capture: "/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180"
+            capture: '/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180'
     accountrequest:
       title: accountrequest
       required:
@@ -791,6 +816,9 @@ components:
     walletItem:
       title: Wallet Details
       properties:
+        id:
+          type: string
+          format: uuid
         wallet:
           type: string
         email:
@@ -810,12 +838,12 @@ components:
               description: 'Explicitly transfer tokens'
             sender_wallet:
               oneOf:
-              - type: string
-              - type: number
+                - type: string
+                - type: number
             receiver_wallet:
               oneOf:
-              - type: string
-              - type: number
+                - type: string
+                - type: number
           required:
             - tokens
             - sender_wallet
@@ -830,12 +858,12 @@ components:
                   description: required number of trees to transfer
             sender_wallet:
               oneOf:
-              - type: string
-              - type: number
+                - type: string
+                - type: number
             receiver_wallet:
               oneOf:
-              - type: string
-              - type: number
+                - type: string
+                - type: number
           required:
             - bundle
             - sender_wallet

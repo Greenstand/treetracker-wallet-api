@@ -3,12 +3,14 @@ const WalletRepository = require('../repositories/WalletRepository');
 const TrustRepository = require('../repositories/TrustRepository');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 const HttpError = require('../utils/HttpError');
+const TokenRepository = require('../repositories/TokenRepository');
 
 class Wallet {
   constructor(session) {
     this._session = session;
     this._walletRepository = new WalletRepository(session);
     this._trustRepository = new TrustRepository(session);
+    this._tokenRepository = new TokenRepository(session);
   }
 
   async createWallet(loggedInWalletId, wallet) {
@@ -46,6 +48,19 @@ class Wallet {
 
   async getById(id) {
     return this._walletRepository.getById(id);
+  }
+
+  async getWallet(walletId) {
+    const wallet = await this._walletRepository.getById(walletId);
+    const tokenCount = await this._tokenRepository.countByFilter({
+      wallet_id: walletId,
+    });
+    const walletName = wallet.name;
+    delete wallet.password;
+    delete wallet.salt;
+    delete wallet.created_at;
+    delete wallet.name;
+    return { ...wallet, wallet: walletName, tokens_in_wallet: tokenCount };
   }
 
   async getByName(name) {

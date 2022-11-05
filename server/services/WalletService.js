@@ -21,6 +21,10 @@ class WalletService {
     return this._wallet.getByName(name);
   }
 
+  async getWallet(walletId) {
+    return this._wallet.getWallet(walletId);
+  }
+
   async getByIdOrName(idOrName) {
     let wallet;
     if (uuidValidate(idOrName)) {
