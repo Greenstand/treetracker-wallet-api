@@ -46,7 +46,7 @@
     "express-validator": "^6.4.0",
     "joi": "^17.2.1",
     "jsonwebtoken": "8.1.0",
-    "knex": "^0.21.5",
+    "knex": "^2.4.0",
     "loglevel": "^1.6.8",
     "morgan": "^1.9.1",
     "nodemon": "^2.0.4",
