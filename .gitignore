@@ -1,5 +1,5 @@
-node_modules/
 config/
+node_modules/
 private.key
 public.key
 jwtRS256.key
