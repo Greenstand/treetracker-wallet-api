@@ -60,6 +60,7 @@ tokenRouter.get('/',
         SELECT *
         FROM token
         WHERE wallet_id = '${walletId}'
+        ORDER BY created_at asc
         LIMIT ${_limit}
         OFFSET ${_offset};
       `)
