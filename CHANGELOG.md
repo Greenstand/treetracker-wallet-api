@@ -1,3 +1,14 @@
+## [1.10.11](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.10...v1.10.11) (2023-03-01)
+
+
+### Bug Fixes
+
+* add order to token get request ([73cee6a](https://github.com/Greenstand/treetracker-wallet-api/commit/73cee6a47de98212dc38f0d391e06a1cd5c871ab))
+* cluster roles ([7f71c5e](https://github.com/Greenstand/treetracker-wallet-api/commit/7f71c5e3f14bf308355b0853362e401b1d4618e3))
+* cors policy ([d63d4d3](https://github.com/Greenstand/treetracker-wallet-api/commit/d63d4d380ff896994187e55ce3cddc19d7b637ad))
+* semantic release dependency ([7320c5c](https://github.com/Greenstand/treetracker-wallet-api/commit/7320c5cf5061c6662b84d7f2e36284db93f62cad))
+* trigger deployment ([7a67763](https://github.com/Greenstand/treetracker-wallet-api/commit/7a67763c1ee6b30462b272e88bbad54130c3d301))
+
 ## [1.10.10](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.9...v1.10.10) (2022-09-14)
 
 
