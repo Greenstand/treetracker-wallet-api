@@ -1,3 +1,10 @@
+## [1.10.13](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.12...v1.10.13) (2023-03-02)
+
+
+### Bug Fixes
+
+* remove cors from deployment ([ce26861](https://github.com/Greenstand/treetracker-wallet-api/commit/ce26861c351c60ccad1d12dede8b8bc47ecad2ed))
+
 ## [1.10.12](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.11...v1.10.12) (2023-03-01)
 
 
