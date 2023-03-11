@@ -1,34 +1,47 @@
 const express = require('express');
 const helper = require('./utils');
-const WalletService = require("../services/WalletService");
-const TokenService = require("../services/TokenService");
-const TrustService = require("../services/TrustService");
-const Joi = require("joi");
-const Session = require("../models/Session");
+const WalletService = require('../services/WalletService');
+const TrustService = require('../services/TrustService');
+const Joi = require('joi');
+const multer = require('multer');
+const Session = require('../models/Session');
+const HttpError = require('../utils/HttpError');
+
+const upload = multer({
+  fileFilter(req, file, cb) {
+    if (file.mimetype !== 'text/csv') {
+      return cb(new HttpError(422, 'Only csv files are supported'));
+    }
+
+    cb(undefined, true);
+  },
+  dest: 'tmp/csv/',
+});
 
 const walletRouter = express.Router();
 
-walletRouter.get('/', 
+walletRouter.get(
+  '/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
-    console.warn("get wallet...");
+    console.warn('get wallet...');
     Joi.assert(
       req.query,
       Joi.object({
         limit: Joi.number().required(),
         start: Joi.number().min(1).max(10000).integer(),
-      })
+      }),
     );
-    const {limit, start} = req.query;
+    const { limit, start } = req.query;
     const loggedInWalletId = res.locals.wallet_id;
 
-    function convertStartToOffset(_start){
+    function convertStartToOffset(_start) {
       return _start ? _start - 1 : 0;
     }
-    async function getWallets(walletId, _limit, _offset){
-      console.warn("getWallet with SQL", walletId, _limit, _offset);
-      const knex = require("../database/knex");
+    async function getWallets(walletId, _limit, _offset) {
+      console.warn('getWallet with SQL', walletId, _limit, _offset);
+      const knex = require('../database/knex');
       const SQL = `
         with wallet_ids as (
         (select '${walletId}' as sub_wallet_id) 
@@ -57,52 +70,29 @@ walletRouter.get('/',
         where w.id in (select sub_wallet_id from wallet_ids)
         group by w.id, w.name, w.logo_url 
         limit ${_limit} offset ${_offset};
-      `
-      console.warn("SQL", SQL);
-      const result = await knex.raw(SQL)
-      console.warn("get result with rows:", result.rows.length);
+      `;
+      console.warn('SQL', SQL);
+      const result = await knex.raw(SQL);
+      console.warn('get result with rows:', result.rows.length);
       return result.rows;
     }
-    const wallets = await getWallets(loggedInWalletId, limit, convertStartToOffset(start));
+    const wallets = await getWallets(
+      loggedInWalletId,
+      limit,
+      convertStartToOffset(start),
+    );
     res.status(200).json({
       // tokens: tokensJson,
       wallets,
     });
     return;
-
-    const session = new Session();
-    const walletService = new WalletService(session);
-    const loggedInWallet = await walletService.getById(res.locals.wallet_id);
-    const subWallets = await loggedInWallet.getSubWallets();
-    // at logged in wallets to list of wallets
-    subWallets.push(loggedInWallet);
-    console.warn("sub...", subWallets);
-    
-    let walletsJson = [];
-
-    const tokenService = new TokenService(session);
-    for (const wallet of subWallets) {
-      const json = await wallet.toJSON();
-      json.tokens_in_wallet = await tokenService.countTokenByWallet(wallet); 
-      walletsJson.push(json);
-    }
-
-    let numStart = parseInt(start);
-    let numLimit = parseInt(limit);
-    let numBegin = numStart?numStart-1:0;
-    let numEnd=numBegin+numLimit;
-    walletsJson = walletsJson.slice(numBegin, numEnd);
-
-    console.warn("get wallet:", walletsJson);
-    res.status(200).json({
-      wallets: walletsJson
-    });
-  })
+  }),
 );
 
-// TO DO: Add below route to yaml 
+// TO DO: Add below route to yaml
 
-walletRouter.get('/:wallet_id/trust_relationships', 
+walletRouter.get(
+  '/:wallet_id/trust_relationships',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
@@ -116,17 +106,18 @@ walletRouter.get('/:wallet_id/trust_relationships',
       req.query.request_type,
     );
     const trust_relationships_json = [];
-    for(let t of trust_relationships){
+    for (let t of trust_relationships) {
       const j = await trustService.convertToResponse(t);
       trust_relationships_json.push(j);
     }
     res.status(200).json({
       trust_relationships: trust_relationships_json,
     });
-  })
-); 
+  }),
+);
 
-walletRouter.post('/', 
+walletRouter.post(
+  '/',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
@@ -134,7 +125,7 @@ walletRouter.post('/',
       req.body,
       Joi.object({
         wallet: Joi.string().required(),
-      })
+      }),
     );
     const session = new Session();
     const walletService = new WalletService(session);
@@ -142,10 +133,53 @@ walletRouter.post('/',
     const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);
 
     res.status(200).json({
-      wallet: addedWallet.name
+      wallet: addedWallet.name,
     });
-  })
-)
+  }),
+);
 
+walletRouter.post(
+  '/batch-create-wallet',
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  upload.single('csv'),
+  helper.handlerWrapper(async (req, res, next) => {
+    const bodySchema = Joi.object({
+      sender_wallet: Joi.string(),
+      token_transfer_amount_default: Joi.number().integer(),
+    }).with('token_transfer_amount_default', 'sender_wallet');
+
+    const body = req.body;
+    const file = req.file;
+
+    await bodySchema.validateAsync(body, { abortEarly: false });
+
+    const csvValidationSchema = Joi.array()
+      .items(
+        Joi.object({
+          wallet_name: Joi.string().trim().required(),
+          token_transfer_amount_overwrite: [
+            Joi.number().integer(),
+            Joi.string().valid(''),
+          ],
+        }),
+      )
+      .unique('wallet_name')
+      .min(1)
+      .max(2500);
+
+    const session = new Session();
+    const walletService = new WalletService(session);
+    const loggedInWallet = await walletService.getById(res.locals.wallet_id);
+    const result = await walletService.processBatchWallets({
+      body,
+      file,
+      loggedInWallet,
+      csvValidationSchema,
+    });
+
+    res.status(200).send(result);
+  }),
+);
 
 module.exports = walletRouter;
