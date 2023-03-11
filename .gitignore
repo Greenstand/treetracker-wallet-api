@@ -8,3 +8,5 @@ keygen.sh
 database.json
 .env
 .env.test
+tmp/
+.nyc_output
