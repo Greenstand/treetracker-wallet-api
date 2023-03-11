@@ -60,12 +60,12 @@ class WalletService {
     try {
       await this._session.beginTransaction();
 
-      const senderWalletName = body?.sender_wallet;
+      const senderWalletName = body.sender_wallet;
       let senderWallet;
       if (senderWalletName) {
         senderWallet = await this.getByName(senderWalletName);
       }
-      const defaultTokenAmount = body?.token_transfer_amount_default;
+      const defaultTokenAmount = body.token_transfer_amount_default;
 
       const walletPromises = [];
       let totalAmountToTransfer = 0;
