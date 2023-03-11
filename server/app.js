@@ -26,7 +26,10 @@ Sentry.init({ dsn: config.sentry_dsn });
 app.use(
   helper.handlerWrapper(async (req, _res, next) => {
     if (req.path === '/wallets/batch-create-wallet' && req.method === 'POST') {
-      if (!req.headers['content-type']?.includes('multipart/form-data')) {
+      if (
+        !req.headers['content-type'] ||
+        !req.headers['content-type'].includes('multipart/form-data')
+      ) {
         throw new HttpError(
           415,
           'Invalid content type. Endpoint only supports multipart/form-data',
