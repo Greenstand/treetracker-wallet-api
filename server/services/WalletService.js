@@ -53,6 +53,7 @@ class WalletService {
         abortEarly: false,
       });
     } catch (e) {
+      await fs.unlink(file.path);
       throw e;
     }
 
