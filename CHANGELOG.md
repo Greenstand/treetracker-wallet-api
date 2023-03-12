@@ -1,3 +1,12 @@
+## [1.10.13](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.12...v1.10.13) (2023-03-12)
+
+
+### Bug Fixes
+
+* add create batch wallet endpoint ([1bb3142](https://github.com/Greenstand/treetracker-wallet-api/commit/1bb3142c5edc31532330f8b16b8b91cbd3fbaa21))
+* optional chaining ([23c20ef](https://github.com/Greenstand/treetracker-wallet-api/commit/23c20ef9646c0440148e9070c098bdd02c329143))
+* remove cors from deployment ([ce26861](https://github.com/Greenstand/treetracker-wallet-api/commit/ce26861c351c60ccad1d12dede8b8bc47ecad2ed))
+
 ## [1.10.13](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.12...v1.10.13) (2023-03-02)
 
 
