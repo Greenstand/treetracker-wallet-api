@@ -1,3 +1,10 @@
+## [1.10.14](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.13...v1.10.14) (2023-03-14)
+
+
+### Bug Fixes
+
+* protect batch create endpoint ([d6979e3](https://github.com/Greenstand/treetracker-wallet-api/commit/d6979e3b5e6d2174027ff87adc31b5f65b886040))
+
 ## [1.10.13](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.12...v1.10.13) (2023-03-12)
 
 
