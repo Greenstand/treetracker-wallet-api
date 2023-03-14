@@ -1,3 +1,10 @@
+## [1.10.15](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.14...v1.10.15) (2023-03-14)
+
+
+### Bug Fixes
+
+* add db migration job ([571ca6f](https://github.com/Greenstand/treetracker-wallet-api/commit/571ca6fcfc09c7afc8b4a6fdccec4f244dffb2a8))
+
 ## [1.10.14](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.13...v1.10.14) (2023-03-14)
 
 
