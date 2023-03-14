@@ -55,7 +55,7 @@ exports.errorHandler = (err, req, res, next) => {
 exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
   const session = new Session();
   const apiKey = new ApiKeyService(session);
-  await apiKey.check(req.headers['treetracker-api-key']);
+  await apiKey.check(req.headers['treetracker-api-key'], req.originalUrl);
   log.debug('Valid Access');
   next();
 });
