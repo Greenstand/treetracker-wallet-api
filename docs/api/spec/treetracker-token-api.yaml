@@ -145,6 +145,38 @@ paths:
             type: integer
             format: int32
             example: 10
+        - name: order_by
+          in: query
+          description: 'column to order by, only created_at currently supported'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: timestamp
+        - name: order
+          in: query
+          description: 'either asc or desc'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: created_at_start_date
+          in: query
+          description: 'date to start checking from'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: timestamp
+        - name: created_at_end_date
+          in: query
+          description: 'date to stop checking at'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: timestamp
       responses:
         '200':
           description: ''
