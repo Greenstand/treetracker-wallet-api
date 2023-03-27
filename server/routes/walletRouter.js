@@ -31,9 +31,20 @@ walletRouter.get(
       Joi.object({
         limit: Joi.number().required(),
         start: Joi.number().min(1).max(10000).integer(),
+        order_by: Joi.string().valid('created_at'),
+        order: Joi.string().valid('asc', 'desc'),
+        created_at_start_date: Joi.date().iso(),
+        created_at_end_date: Joi.date().iso(),
       }),
     );
-    const { limit, start } = req.query;
+    const {
+      limit,
+      start,
+      order_by = 'created_at',
+      order = 'desc',
+      created_at_start_date,
+      created_at_end_date,
+    } = req.query;
     const loggedInWalletId = res.locals.wallet_id;
 
     function convertStartToOffset(_start) {
@@ -63,12 +74,23 @@ walletRouter.get(
           wt.state = 'trusted'
         )
         )
-        select w.id, name, logo_url, count(t.id) tokens_in_wallet 
+        select w.id, name, logo_url, count(t.id) tokens_in_wallet
         from wallet w 
         left join token t
         on w.id = t.wallet_id
         where w.id in (select sub_wallet_id from wallet_ids)
+        ${
+          created_at_start_date
+            ? `and w.created_at >= '${created_at_start_date}'::date`
+            : ''
+        }
+        ${
+          created_at_end_date
+            ? `and w.created_at <= '${created_at_end_date}'::date`
+            : ''
+        }
         group by w.id, w.name, w.logo_url 
+        order by w.${order_by} ${order}
         limit ${_limit} offset ${_offset};
       `;
       console.warn('SQL', SQL);
@@ -162,6 +184,9 @@ walletRouter.post(
             Joi.number().integer(),
             Joi.string().valid(''),
           ],
+          extra_wallet_data_about: Joi.string().allow(''),
+          extra_wallet_data_logo_url: Joi.string().uri().allow(''),
+          extra_wallet_data_cover_url: Joi.string().uri().allow(''),
         }),
       )
       .unique('wallet_name')
