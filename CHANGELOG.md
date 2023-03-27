@@ -1,3 +1,11 @@
+## [1.10.18](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.17...v1.10.18) (2023-03-27)
+
+
+### Bug Fixes
+
+* add order by and map config integration ([1735ef8](https://github.com/Greenstand/treetracker-wallet-api/commit/1735ef8949449b4e66b9e9a052e9d52a06a010ee))
+* created_at wallet migration ([9973edf](https://github.com/Greenstand/treetracker-wallet-api/commit/9973edf9aa3c2c06432eb9f2c1eb487ccd5cb4c1))
+
 ## [1.10.17](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.16...v1.10.17) (2023-03-14)
 
 
