@@ -84,8 +84,6 @@ describe('Request and fulfill an explicit transfer', () => {
     expect(res.body.transfers[0]).property("state").eq("requested");
     expect(res.body.transfers[0]).property("id").to.be.a.uuid('v4');
     requestedTransferId = res.body.transfers[0].id;
-    console.log('JJ')
-    console.log(requestedTransferId)
 
   })
 

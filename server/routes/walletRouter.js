@@ -207,4 +207,48 @@ walletRouter.post(
   }),
 );
 
+walletRouter.post(
+  '/batch-transfer',
+  helper.apiKeyHandler,
+  helper.verifyJWTHandler,
+  upload.single('csv'),
+  helper.handlerWrapper(async (req, res, next) => {
+    const bodySchema = Joi.object({
+      sender_wallet: Joi.string().required(),
+      token_transfer_amount_default: Joi.number().integer(),
+    }).with('token_transfer_amount_default', 'sender_wallet');
+
+    const body = req.body;
+    const file = req.file;
+
+    await bodySchema.validateAsync(body, { abortEarly: false });
+
+    const csvValidationSchema = Joi.array()
+      .items(
+        Joi.object({
+          wallet_name: Joi.string().trim().required(),
+          token_transfer_amount_overwrite: [
+            Joi.number().integer(),
+            Joi.string().valid(''),
+          ],
+        }),
+      )
+      .unique('wallet_name')
+      .min(1)
+      .max(2500);
+
+    const session = new Session();
+    const walletService = new WalletService(session);
+    const loggedInWallet = await walletService.getById(res.locals.wallet_id);
+    const result = await walletService.processBatchWalletTransfer({
+      body,
+      file,
+      loggedInWallet,
+      csvValidationSchema,
+    });
+
+    res.status(200).send(result);
+  }),
+);
+
 module.exports = walletRouter;

@@ -26,7 +26,7 @@ class WalletRepository extends BaseRepository {
     expect(wallet, () => new HttpError(400, `invalid wallet name:${wallet}`))
       .match(/^\S+$/);
     const list = await this._session.getDB().select().table(this._tableName).where('name', wallet);
-    expect(list, () => new HttpError(404, `Could not find entity by wallet name: ${wallet}`)).defined().lengthOf(1);
+    expect(list, () => new HttpError(404, `Could not find wallet by name: ${wallet}`)).defined().lengthOf(1);
     return list[0];
   }
 
