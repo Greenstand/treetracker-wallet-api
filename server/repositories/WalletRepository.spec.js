@@ -42,7 +42,7 @@ describe("WalletRepository", () => {
     });
     await jestExpect(async () => {
       await walletRepository.getByName("Dadior");
-    }).rejects.toThrow(/Could not find entity/);
+    }).rejects.toThrow(/Could not find wallet/);
   });
 });
 

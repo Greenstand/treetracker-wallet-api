@@ -25,7 +25,11 @@ Sentry.init({ dsn: config.sentry_dsn });
  */
 app.use(
   helper.handlerWrapper(async (req, _res, next) => {
-    if (req.path === '/wallets/batch-create-wallet' && req.method === 'POST') {
+    if (
+      (req.path === '/wallets/batch-create-wallet' ||
+        req.path === '/wallets/batch-transfer') &&
+      req.method === 'POST'
+    ) {
       if (
         !req.headers['content-type'] ||
         !req.headers['content-type'].includes('multipart/form-data')

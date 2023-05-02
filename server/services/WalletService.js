@@ -74,10 +74,10 @@ class WalletService {
         wallet_name,
         token_transfer_amount_overwrite,
       } of jsonResult) {
-        if (token_transfer_amount_overwrite && !senderWalletName) {
+        const amount = token_transfer_amount_overwrite || defaultTokenAmount;
+        if (amount && !senderWalletName) {
           throw new HttpError(422, 'sender_wallet is required for transfer');
         }
-        const amount = token_transfer_amount_overwrite || defaultTokenAmount;
         if (amount) {
           totalAmountToTransfer += +amount;
         }
@@ -228,6 +228,79 @@ class WalletService {
       },
     });
     return response.body;
+  }
+
+  async processBatchWalletTransfer({
+    body,
+    file,
+    loggedInWallet,
+    csvValidationSchema,
+  }) {
+    let jsonResult;
+    // validations
+    try {
+      jsonResult = await csvtojson().fromFile(file.path);
+
+      await csvValidationSchema.validateAsync(jsonResult, {
+        abortEarly: false,
+      });
+    } catch (e) {
+      throw e;
+    }
+
+    try {
+      await this._session.beginTransaction();
+
+      const senderWalletName = body.sender_wallet;
+      const senderWallet = await this.getByName(senderWalletName);
+      const defaultTokenAmount = body.token_transfer_amount_default;
+
+      const recipientWallets = [];
+      let totalAmountToTransfer = 0;
+
+      for (const {
+        wallet_name,
+        token_transfer_amount_overwrite,
+      } of jsonResult) {
+        const amount = token_transfer_amount_overwrite || defaultTokenAmount;
+        if (amount && !senderWalletName) {
+          throw new HttpError(422, 'sender_wallet is required for transfer');
+        }
+        if (amount) {
+          totalAmountToTransfer += +amount;
+        }
+        const walletDetails = await this.getByName(wallet_name);
+        recipientWallets.push({ amount, walletDetails });
+      }
+
+      const tokenService = new TokenService(this._session);
+      const tokenCount = await tokenService.countTokenByWallet(senderWallet);
+
+      if (totalAmountToTransfer > tokenCount)
+        throw new HttpError(422, 'sender does not have enough tokens');
+
+      for (const { walletDetails, amount } of recipientWallets) {
+        if (amount) {
+          await loggedInWallet.transferBundle(
+            senderWallet,
+            walletDetails,
+            amount,
+          );
+        }
+      }
+
+      await this._session.commitTransaction();
+
+      await fs.unlink(file.path);
+
+      return {
+        message: 'batch transfer successfull',
+      };
+    } catch (e) {
+      await this._session.rollbackTransaction();
+      await fs.unlink(file.path);
+      throw e;
+    }
   }
 }
 
