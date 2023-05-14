@@ -17,7 +17,7 @@ describe('Authentication', () => {
     sinon.restore();
   });
 
-  // Authorization path
+  // Auth path
   it(`[POST /auth] login with ${seed.wallet.name}`, (done) => {
     request(server)
       .post('/auth')
