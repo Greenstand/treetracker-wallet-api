@@ -11,6 +11,7 @@ database.json
 .env.development
 .vscode
 .nyc_output
+tmp/
 
 # Logs and databases #
 ######################
