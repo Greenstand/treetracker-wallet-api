@@ -1,3 +1,10 @@
+## [1.19.17](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.16...v1.19.17) (2023-05-17)
+
+
+### Bug Fixes
+
+* cors for dev ([50039b0](https://github.com/Greenstand/treetracker-wallet-api/commit/50039b0f3dbc0491a78f6116186975d7b1244b57))
+
 ## [1.19.16](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.15...v1.19.16) (2023-05-16)
 
 
