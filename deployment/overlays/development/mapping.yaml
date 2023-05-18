@@ -7,6 +7,6 @@ spec:
     origins: '*'
     methods: GET, POST, PATCH, OPTIONS
     headers:
-      - Content-Type
-      - Authorization
+      - content-type
+      - authorization
       - treetracker-api-key
