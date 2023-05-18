@@ -5,3 +5,8 @@ metadata:
 spec:
   cors:
     origins: '*'
+    methods: GET, POST, PATCH, OPTIONS
+    headers:
+      - Content-Type
+      - Authorization
+      - treetracker-api-key
