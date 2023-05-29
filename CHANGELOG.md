@@ -1,3 +1,12 @@
+## [1.10.19](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.18...v1.10.19) (2023-05-29)
+
+
+### Bug Fixes
+
+* add batch transfer endpoint ([72b21bb](https://github.com/Greenstand/treetracker-wallet-api/commit/72b21bbb10c69b58646c7eece083e01634cbd0db))
+* batch transfer ([0c7f48a](https://github.com/Greenstand/treetracker-wallet-api/commit/0c7f48ae4aa394a119c64e5cca6bde890ce5b167))
+* ref id/uuid ([b4a806f](https://github.com/Greenstand/treetracker-wallet-api/commit/b4a806f87270e3f0faea57146b4f4b727afbb472))
+
 ## [1.10.19](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.18...v1.10.19) (2023-05-01)
 
 
