@@ -57,6 +57,14 @@ app.use(
   }),
 );
 
+app.use(function(req, res, next) {
+  if(req.url.slice(0,2)==="//"){
+    res.redirect(308,req.url.slice(1));
+    res.send();
+  }//if
+  else{next();}
+});
+
 app.use(bodyParser.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(bodyParser.json()); // parse application/json
 
