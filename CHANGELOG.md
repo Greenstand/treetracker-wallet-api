@@ -1,3 +1,11 @@
+## [1.10.22](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.21...v1.10.22) (2023-06-22)
+
+
+### Bug Fixes
+
+* add about to wallet ([d8fff17](https://github.com/Greenstand/treetracker-wallet-api/commit/d8fff1784c2e3811f9ea99aa47657aee5be8925c))
+* double slash ([481842f](https://github.com/Greenstand/treetracker-wallet-api/commit/481842f8d7b988ad2aa12192a78137eef379c49b))
+
 ## [1.10.21](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.20...v1.10.21) (2023-05-29)
 
 
