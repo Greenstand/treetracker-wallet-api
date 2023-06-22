@@ -51,7 +51,6 @@ walletRouter.get(
       return _start ? _start - 1 : 0;
     }
     async function getWallets(walletId, _limit, _offset) {
-      console.warn('getWallet with SQL', walletId, _limit, _offset);
       const knex = require('../database/knex');
       const SQL = `
         with wallet_ids as (
@@ -74,7 +73,7 @@ walletRouter.get(
           wt.state = 'trusted'
         )
         )
-        select w.id, name, logo_url, count(t.id) tokens_in_wallet
+        select w.id, name, about, logo_url, count(t.id) tokens_in_wallet
         from wallet w 
         left join token t
         on w.id = t.wallet_id
@@ -93,9 +92,7 @@ walletRouter.get(
         order by w.${order_by} ${order}
         limit ${_limit} offset ${_offset};
       `;
-      console.warn('SQL', SQL);
       const result = await knex.raw(SQL);
-      console.warn('get result with rows:', result.rows.length);
       return result.rows;
     }
     const wallets = await getWallets(
@@ -147,12 +144,16 @@ walletRouter.post(
       req.body,
       Joi.object({
         wallet: Joi.string().required(),
+        about: Joi.string(),
       }),
     );
     const session = new Session();
     const walletService = new WalletService(session);
     const loggedInWallet = await walletService.getById(res.locals.wallet_id);
-    const addedWallet = await loggedInWallet.addManagedWallet(req.body.wallet);
+    const addedWallet = await loggedInWallet.addManagedWallet(
+      req.body.wallet,
+      req.body.about,
+    );
 
     res.status(200).json({
       wallet: addedWallet.name,

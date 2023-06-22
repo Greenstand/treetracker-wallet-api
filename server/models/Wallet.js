@@ -53,7 +53,7 @@ class Wallet{
     }
   }
 
-  async addManagedWallet(wallet){
+  async addManagedWallet(wallet, about){
     if(!wallet){
       throw new HttpError(400, 'No wallet supplied');
     }
@@ -61,7 +61,7 @@ class Wallet{
     //check name
     try{
       await this.walletRepository.getByName(wallet);
-      throw new HttpError(403, `The wallet '${wallet}' has been existed`);
+      throw new HttpError(403, `The wallet '${wallet}' already exists`);
     }catch(e){
       if(e instanceof HttpError && e.code === 404){
         //fine
@@ -76,7 +76,8 @@ class Wallet{
     // TO DO: Need to check account permissions -> manage accounts
     // need to create a wallet object
     const newWallet = await this.walletRepository.create({
-      name: wallet
+      name: wallet,
+      about
     });
 
     // Is this how to check if db action was successful?

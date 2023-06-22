@@ -73,6 +73,7 @@ class WalletService {
       for (const {
         wallet_name,
         token_transfer_amount_overwrite,
+        extra_wallet_data_about,
       } of jsonResult) {
         const amount = token_transfer_amount_overwrite || defaultTokenAmount;
         if (amount && !senderWalletName) {
@@ -82,7 +83,9 @@ class WalletService {
           totalAmountToTransfer += +amount;
         }
 
-        walletPromises.push(loggedInWallet.addManagedWallet(wallet_name));
+        walletPromises.push(
+          loggedInWallet.addManagedWallet(wallet_name, extra_wallet_data_about),
+        );
       }
       const tokenService = new TokenService(this._session);
 
@@ -121,18 +124,12 @@ class WalletService {
           (w) => w.wallet_name === wallet.name,
         );
         const {
-          extra_wallet_data_about,
           extra_wallet_data_logo_url,
           extra_wallet_data_cover_url,
         } = walletDetails;
-        if (
-          extra_wallet_data_about ||
-          extra_wallet_data_logo_url ||
-          extra_wallet_data_cover_url
-        ) {
+        if (extra_wallet_data_logo_url || extra_wallet_data_cover_url) {
           extraWalletInformation.push({
             walletId: wallet.id,
-            walletAbout: extra_wallet_data_about,
             walletLogoUrl: extra_wallet_data_logo_url,
             walletCoverUrl: extra_wallet_data_cover_url,
           });
@@ -157,14 +154,12 @@ class WalletService {
       if (extraWalletInformation.length) {
         for (const {
           walletId,
-          walletAbout,
           walletLogoUrl,
           walletCoverUrl,
         } of extraWalletInformation) {
           walletConfigPromises.push(
             this.addWalletToMapConfig({
               walletId,
-              walletAbout,
               walletCoverUrl,
               walletLogoUrl,
             }),
@@ -201,12 +196,7 @@ class WalletService {
     }
   }
 
-  async addWalletToMapConfig({
-    walletId,
-    walletAbout,
-    walletLogoUrl,
-    walletCoverUrl,
-  }) {
+  async addWalletToMapConfig({ walletId, walletLogoUrl, walletCoverUrl }) {
     const MAP_CONFIG_API_URL =
       process.env.MAP_CONFIG_API_URL ||
       'http://treetracker-map-config-api.webmap-config';
@@ -216,9 +206,6 @@ class WalletService {
       ref_uuid: walletId,
       ref_id: walletId,
       data: {
-        ...(walletAbout && {
-          about: walletAbout,
-        }),
         ...(walletLogoUrl && {
           logo_url: walletLogoUrl,
         }),
