@@ -98,7 +98,7 @@ transferRouter.post('/:transfer_id/accept',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.string().guid().required(),
+        transfer_id: Joi.string().uuid().required(),
       })
     );
     const session = new Session();
@@ -133,7 +133,7 @@ transferRouter.post('/:transfer_id/decline',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.string().guid().required(),
+        transfer_id: Joi.string().uuid().required(),
       })
     );
     const session = new Session();
@@ -168,7 +168,7 @@ transferRouter.delete('/:transfer_id',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.string().guid().required(),
+        transfer_id: Joi.string().uuid().required(),
       })
     );
     const session = new Session();
@@ -203,7 +203,7 @@ transferRouter.post('/:transfer_id/fulfill',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.string().guid().required(),
+        transfer_id: Joi.string().uuid().required(),
       })
     );
     Joi.assert(
@@ -214,10 +214,10 @@ transferRouter.post('/:transfer_id/fulfill',
         tokens: Joi.any().required(),
       }).unknown(),{
         then: Joi.object({
-          tokens: Joi.array().items(Joi.string()).required().unique(),
+          tokens: Joi.array().items(Joi.string().uuid()).min(1).required().unique(),
         }),
         otherwise: Joi.object({
-          implicit: Joi.boolean().truthy().required(),
+          implicit: Joi.boolean().truthy().required().messages({'any.required': 'A message body is required, either the implicit property or an array of token IDs'}),
         }),
       })
     );
@@ -309,7 +309,7 @@ transferRouter.get('/:transfer_id',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.string().guid().required(),
+        transfer_id: Joi.string().uuid().required(),
       })
     );
     const session = new Session();
@@ -329,7 +329,7 @@ transferRouter.get('/:transfer_id/tokens',
     Joi.assert(
       req.params,
       Joi.object({
-        transfer_id: Joi.string().guid().required(),
+        transfer_id: Joi.string().uuid().required(),
       })
     );
 

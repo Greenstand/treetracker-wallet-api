@@ -14,7 +14,7 @@ class BaseRepository{
   async getById(id){
     const object = await this._session.getDB().select().table(this._tableName).where('id', id).first();
     if(!object){
-      throw new HttpError(404, `Can not found ${this._tableName} by id:${id}`);
+      throw new HttpError(404, `Cannot find ${this._tableName} by id:${id}`);
     }
     return object;
   }

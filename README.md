@@ -257,7 +257,7 @@ By wrapping all the code in a try/catch block, if everything goes well, when the
 
 
 ```
-throw new HttpError(403, `the token:${json.uuid} do not belongs to sender walleter`, true);
+throw new HttpError(403, `the token:${json.uuid} does not belong to the sender wallet`, true);
 ```
 
 The third parameter `true` means please rollback. (This is the default case for HttpError); 

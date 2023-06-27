@@ -71,7 +71,7 @@ class Token{
 
     Joi.assert(
       transfer.id,
-      Joi.string().guid()
+      Joi.string().uuid()
     )
 
     await this.tokenRepository.update({
@@ -94,7 +94,7 @@ class Token{
 
     Joi.assert(
       wallet.getId(),
-      Joi.string().guid()
+      Joi.string().uuid()
     )
 
     const json = await this.toJSON();

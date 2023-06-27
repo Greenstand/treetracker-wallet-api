@@ -124,7 +124,7 @@ class TokenService{
   async pendingTransfer(tokens, transfer){
     Joi.assert(
       transfer.id,
-      Joi.string().guid()
+      Joi.string().uuid()
     )
 
     await this.tokenRepository.updateByIds({

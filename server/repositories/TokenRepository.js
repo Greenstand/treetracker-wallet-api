@@ -15,7 +15,7 @@ class TokenRepository extends BaseRepository{
   async getById(id){
     const result = await this._session.getDB()(this._tableName).where("id", id)
       .first();
-    expect(result,() => new HttpError(404, `can not found token by id:${id}`)).match({
+    expect(result,() => new HttpError(404, `cannot find token by id:${id}`)).match({
       id: expect.any(String),
     });
     return result;

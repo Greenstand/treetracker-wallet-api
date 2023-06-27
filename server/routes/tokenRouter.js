@@ -75,7 +75,7 @@ tokenRouter.get('/',
       const walletInstance = await walletService.getByName(wallet);
       const isSub = await walletLogin.hasControlOver(walletInstance);
       if(!isSub){
-        throw new HttpError(403, "Wallet do not belongs to wallet logged in");
+        throw new HttpError(403, "Wallet does not belong to the logged-in wallet");
       }
       tokens = await getTokens(walletInstance.getId(), limit, convertStartToOffset(start));
     }else{
@@ -106,7 +106,7 @@ tokenRouter.get('/:id/transactions',
       Joi.object({
         limit: Joi.number().required(),
         start: Joi.number().min(1).max(10000).integer(),
-        id: Joi.string().guid(), 
+        id: Joi.string().uuid(), 
         transactions: Joi.string(),
       })
     );

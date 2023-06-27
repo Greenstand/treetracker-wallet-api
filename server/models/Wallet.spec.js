@@ -292,11 +292,11 @@ describe("Wallet", () => {
       id: uuid.v4(),
     }, session);
 
-    it("Given token uuid do not belongs to sender wallet, should throw 403", async () => {
+    it("Given token uuid does not belong to the sender wallet, should throw 403", async () => {
       const fn1 = sinon.stub(Token.prototype, "belongsTo").resolves(false);
             await jestExpect(async () => {
         await wallet.transfer(sender, receiver, [token]);
-      }).rejects.toThrow(/belongs/);
+      }).rejects.toThrow(/belong/);
       fn1.restore();
     });
 
@@ -879,7 +879,7 @@ describe("Wallet", () => {
       }).rejects.toThrow(/too few/i);
     });
 
-    it("Specified token do not belongs to the wallet", async () => {
+    it("Specified token does not belong to the wallet", async () => {
       sinon.stub(TransferRepository.prototype, "getById").resolves({
         id:transferId,
         source_wallet_id: wallet.getId(),
@@ -897,7 +897,7 @@ describe("Wallet", () => {
       sinon.stub(Token.prototype, "belongsTo").resolves(false);
       await jestExpect(async () => {
         await wallet.fulfillTransferWithTokens(transferId, [token]);
-      }).rejects.toThrow(/belongs to/i);
+      }).rejects.toThrow(/belong to/i);
     });
 
   });
