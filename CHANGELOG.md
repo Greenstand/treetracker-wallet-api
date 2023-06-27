@@ -1,3 +1,10 @@
+## [1.10.23](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.22...v1.10.23) (2023-06-27)
+
+
+### Bug Fixes
+
+* error messages ([cdd7212](https://github.com/Greenstand/treetracker-wallet-api/commit/cdd72121f25019dae60ab52fbf5fec5485028873))
+
 ## [1.10.22](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.21...v1.10.22) (2023-06-22)
 
 
