@@ -1,8 +1,11 @@
 require('dotenv').config()
-const expect = require('expect-runtime');
-const connection = require('../../config/config').connectionString;
-expect(connection).to.match(/^postgresql:\//);
 const log = require("loglevel");
+const connection = require('../../config/config').connectionString;
+const postgresPattern = /^postgresql:\//;
+
+if (!postgresPattern.test(connection)) {
+  throw new Error('invalid databases connection url received');
+}
 
 let knexConfig = {
   client: 'pg',
