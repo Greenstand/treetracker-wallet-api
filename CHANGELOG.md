@@ -1,3 +1,11 @@
+## [1.10.24](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.23...v1.10.24) (2023-07-03)
+
+
+### Bug Fixes
+
+* minor fix ([1f18eb8](https://github.com/Greenstand/treetracker-wallet-api/commit/1f18eb8025c6806a4cc31c66261f3ef3ebc56d00))
+* remove expect from knex file ([44de3c0](https://github.com/Greenstand/treetracker-wallet-api/commit/44de3c0f9cdf7191eefec955789e7e78f8b90039))
+
 ## [1.10.23](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.22...v1.10.23) (2023-06-27)
 
 
