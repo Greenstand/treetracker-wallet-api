@@ -269,7 +269,7 @@ class Wallet{
         throw new HttpError(403, "The trust relationship has been requested or trusted");
       }
     }else{
-      throw HttpError(500, "Not supported type");
+      throw new HttpError(500, "Not supported type");
     }
     log.debug("Has no duplicated trust");
   }
