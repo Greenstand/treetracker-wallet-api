@@ -1,22 +1,18 @@
 (async () => {
-  require('dotenv').config();
   const Knex = require('knex');
   const { v4: uuidv4 } = require('uuid');
 
   // eslint-disable-next-line import/no-unresolved
-  // const Config = require('./config/config');
-  console.log(process.env.DATABASE_URL);
+  const Config = require('./config/config');
   const knex = Knex({
     client: 'pg',
-    connection: process.env.DATABASE_URL,
+    connection: Config.connectionString[process.env.NODE_ENV],
   });
 
   const trx = await knex.transaction();
 
   try {
-    const wallet = await trx('wallet.wallet')
-      .first('*')
-      .where({ name: 'testuser' });
+    const wallet = await trx('wallet.wallet').first('*').where({ name: 'FCC' });
     console.log(wallet);
 
     let remaining = true;
@@ -25,7 +21,8 @@
       const rows = await trx('trees')
         .select('*')
         .whereRaw(
-          'active = true AND approved = true AND token_id IS NULL limit 1000',
+          'planter_id IN (select id from planter where organization_id IN ( select entity_id from getEntityRelationshipChildren(?) ) ) AND active = true AND approved = true AND token_id IS NULL limit 3000',
+          [178],
         );
 
       if (rows.length < 3000) {
@@ -47,12 +44,6 @@
         await trx('trees')
           .where({ id: capture.id })
           .update({ token_id: tokenId });
-
-        const resultt = await trx('treetracker.capture')
-          .where({ id: capture.uuid })
-          .update({ token_id: tokenId, token_issued: true });
-
-        console.log(resultt);
       }
     }
 
