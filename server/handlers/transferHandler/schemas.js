@@ -54,7 +54,9 @@ const transferLimitOffsetQuerySchema = Joi.object({
 const transferGetQuerySchema = Joi.object({
   state: Joi.string().valid(...Object.values(TransferEnums.STATE)),
   wallet: Joi.alternatives().try(Joi.string(), Joi.number().min(4).max(32)),
-  limit: Joi.number().min(1).max(1000).required(),
+  before: Joi.date().iso(),
+  after: Joi.date().iso(),
+  limit: Joi.number().min(1).max(1000),
   offset: Joi.number().min(0).integer().default(0),
 });
 

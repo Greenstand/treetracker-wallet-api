@@ -13,7 +13,7 @@ class TransferService {
   }
 
   async getByFilter(query, walletLoginId) {
-    const { state, wallet, limit, offset } = query;
+    const { state, wallet, limit = 500, offset, before, after } = query;
 
     let walletId;
 
@@ -28,6 +28,8 @@ class TransferService {
       offset,
       limit,
       walletLoginId,
+      before,
+      after,
     });
 
     return results;

@@ -28,30 +28,45 @@ class BaseRepository {
       expect(Object.keys(object)).lengthOf(1);
       expect(object.and).a(expect.any(Array));
       object.and.forEach((one) => {
-        if (one.or) {
-          result = result.andWhere((subBuilder) =>
-            this.whereBuilder(one, subBuilder),
-          );
-        } else {
+        if (!one.or) {
           expect(Object.keys(one)).lengthOf(1);
-          result = result.andWhere(Object.keys(one)[0], Object.values(one)[0]);
         }
+        result = result.andWhere((subBuilder) =>
+          this.whereBuilder(one, subBuilder),
+        );
       });
     } else if (object.or) {
       expect(Object.keys(object)).lengthOf(1);
       expect(object.or).a(expect.any(Array));
       object.or.forEach((one) => {
-        if (one.and) {
-          result = result.orWhere((subBuilder) =>
-            this.whereBuilder(one, subBuilder),
-          );
-        } else {
+        if (!one.and) {
           expect(Object.keys(one)).lengthOf(1);
-          result = result.orWhere(Object.keys(one)[0], Object.values(one)[0]);
         }
+        result = result.orWhere((subBuilder) =>
+          this.whereBuilder(one, subBuilder),
+        );
       });
     } else {
-      result.where(object);
+      const filterObjectCopy = { ...object };
+      const beforeFilter = object.before;
+      if (object.before) {
+        result.where(
+          Object.keys(beforeFilter)[0],
+          '<=',
+          Object.values(beforeFilter)[0],
+        );
+        delete filterObjectCopy.before;
+      }
+      const afterFilter = object.after;
+      if (object.after) {
+        result.where(
+          Object.keys(afterFilter)[0],
+          '>=',
+          Object.values(afterFilter)[0],
+        );
+        delete filterObjectCopy.after;
+      }
+      result.where(filterObjectCopy);
     }
     return result;
   }

@@ -35,13 +35,6 @@ describe('transferRouter', () => {
     sinon.restore();
   });
 
-  // test for limit
-  it('limit parameters missed', async () => {
-    const res = await request(app).get('/transfers');
-    expect(res).property('statusCode').eq(422);
-    expect(res.body.message).match(/limit.*required/);
-  });
-
   it('get /transfers successfully', async () => {
     const token0Id = uuid.v4();
 
