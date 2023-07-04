@@ -1,3 +1,12 @@
+## [1.19.21](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.20...v1.19.21) (2023-07-04)
+
+
+### Bug Fixes
+
+* add before and after transfer filter ([167897d](https://github.com/Greenstand/treetracker-wallet-api/commit/167897dcb7789253f48ff3afdef56e5c0f8de87b))
+* tests ([5d60586](https://github.com/Greenstand/treetracker-wallet-api/commit/5d6058656de99971be2f83961f68392a7b2f9151))
+* tests ([36d6d7b](https://github.com/Greenstand/treetracker-wallet-api/commit/36d6d7bce9ae00c64fa793eb433cc89ab3f0c079))
+
 ## [1.19.20](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.19...v1.19.20) (2023-05-18)
 
 
