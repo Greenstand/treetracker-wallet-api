@@ -161,14 +161,25 @@ describe('TransferService', () => {
           offset: 1,
           walletLoginId: 'walletLoginId',
           walletId: undefined,
+          before: undefined,
+          after: undefined,
         }),
       ).eql(true);
       expect(walletGetByIdOrNameStub.notCalled).eql(true);
     });
 
     it('getByFilter', async () => {
+      const before = new Date().toISOString();
+      const after = new Date().toISOString();
       const transfers = await transferService.getByFilter(
-        { state: 'state', limit: 1, offset: 1, wallet: 'wallet' },
+        {
+          state: 'state',
+          limit: 1,
+          offset: 1,
+          wallet: 'wallet',
+          before,
+          after,
+        },
         'walletLoginId',
       );
       expect(transfers).eql(['transfers']);
@@ -179,6 +190,8 @@ describe('TransferService', () => {
           offset: 1,
           walletLoginId: 'walletLoginId',
           walletId: 'id',
+          before,
+          after,
         }),
       ).eql(true);
       expect(walletGetByIdOrNameStub.calledOnceWithExactly('wallet')).eql(true);
