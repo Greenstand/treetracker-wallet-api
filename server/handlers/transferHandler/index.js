@@ -73,7 +73,10 @@ const transferGet = async (req, res) => {
   await transferGetQuerySchema.validateAsync(req.query, { abortEarly: false });
 
   const transferService = new TransferService();
-  const transfers = await transferService.getByFilter(req.query, req.wallet_id);
+  const transfers = await transferService.getByFilter(
+    req.query,
+    '2e1e74a6-d4ca-4990-a2b5-e6f8cc193406',
+  );
 
   res.status(200).json({ transfers });
 };

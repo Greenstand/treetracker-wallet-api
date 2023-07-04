@@ -59,6 +59,8 @@ class Transfer {
     limit,
     walletLoginId,
     transferId,
+    before,
+    after,
   }) {
     const filter = {
       and: [],
@@ -84,6 +86,12 @@ class Transfer {
     }
     if (transferId) {
       filter.and.push({ 'transfer.id': transferId });
+    }
+    if (before) {
+      filter.and.push({ before: { 'transfer.created_at': before } });
+    }
+    if (after) {
+      filter.and.push({ after: { 'transfer.created_at': after } });
     }
     return this.getByFilter(filter, { offset, limit });
   }
