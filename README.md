@@ -23,7 +23,7 @@ npm install
 
 ```
 
-While running the server locally, navigate to the config folder and generate your own public and private JWT keys here using the keygen script below:
+While in the terminal, navigate to the config folder directory and run the keygen script below to generate your own public and private JWT keys:
 
 ```
 ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
@@ -57,22 +57,34 @@ You can use docker-compose, to start a database. To do that:
 }
 ```
 
-3. Copy .env.example to .env, and update the DATABASE_URL environment variable
+3. Create an .env.development file in the root "/" directory and copy the contents of .env.example. Then update the DATABASE_URL environment variable
 
 ```
-DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user?ssl=no-verify
+DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user
 ```
 
-Note here the non-standard ssl=no-verify which is equivalent to sslmode=require
+4. run `docker-compose up` in the terminal to set up the postgres database (or `docker-compose up -d` to run detached)
 
-3. run `docker-compose up ` to run the database (or `docker-compose up -d` to run detached)
-4. then run migrations
+5. while running docker in the background, navigate to the root "/" directory and connect to postgres by running the following command in the terminal:
 
 ```
-./node_modules/db-migrate/bin/db-migrate --env dev up
+docker exec -it treetracker-wallet-api-db-1 psql -U wallet_user -d wallet_user
 ```
 
-5. that's it, your db should be running
+6. proceed to create a "wallet" schema in the database:
+
+```
+CREATE SCHEMA wallet;
+GRANT ALL PRIVILEGES ON SCHEMA wallet TO wallet_user;
+```
+
+7. Quit the database connection by typing "\q" or in a separate terminal, navigate to /database and run migrations using the following:
+
+```
+../node_modules/db-migrate/bin/db-migrate --env dev up
+```
+
+8. that's it, your db should be running and set up
 
 Don't forget to set PUBLIC_KEY and PRIVATE_KEY as described below.
 
@@ -153,7 +165,7 @@ See here to learn more about db-migrate: https://db-migrate.readthedocs.io/en/la
 
 ### Setting up env variables
 
-in your .env file you have (you can look at env.example)
+in your .env.development file you have (you can look at env.example)
 
 ```
 ...
@@ -162,7 +174,7 @@ PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RS
 ...
 ```
 
-Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files. \*\*Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here.
+Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files. \*\*Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here. To find out more, read the dotenv documentation on Multiline Values https://www.npmjs.com/package/dotenv
 
 ### We are using linter to keep the project in shape
 
@@ -475,21 +487,50 @@ NOTE: There is another command: `test-watch-debug`, it is the same with `test-wa
 
 Can also use Postman to test the API in a more real environment. Import the API spec from [here](https://github.com/Greenstand/treetracker-wallet-api/blob/master/docs/api/spec/treetracker-wallet-api-v1-10.yaml).
 
-To run a local server with some seed data, run command:
+1. To set up a local server with some seed data, temporarily copy the following (from serverTest.js) and paste into server/server.js:
 
 ```
-npm run server-test
+const seed = require('../__tests__/seed');
+
+//....
+
+await seed.clear();
+await seed.seed();
+
 ```
 
-This command would run a API server locally, and seed some basic data into DB (the same with the data we used in the integration test).
+2. navigate to the root directory "/" and run the following command:
+
+```
+npm run server
+```
+
+3. The changes in the server.js can be reverted. This command would seed the db with some basic data (the same with the data we used in the integration test) for running API tests in your local environment.
 
 ### Set up Postman to operate wallet API
 
-We can use Postman to operate the wallet API, to create wallet, to trade tokens between wallet... all those business, just like an app for wallet, but some steps are needed to set Postman up, we created some scripts for this, to minimize the setting steps, mainly, you just need to import some files into Postman, then you can star to work.
+We can use Postman to operate the wallet API, to create wallet, to trade tokens between wallet... all those business, just like an app for wallet, but some steps are needed to set Postman up, we created some scripts for this, to minimize the setting steps, mainly, you just need to import some files into Postman, then you can start to work.
 
 Please check this tutorial video:
 
 [tutorial to set up Postman](https://www.loom.com/share/a9428383796140568f4c6fb965259588)
+
+# Potential errors:
+
+1. Remember to replace the TREETRACKER-API-KEY value with "FORTESTFORTESTFORTESTFORTESTFORTEST" to avoid 400 error while testing the API endpoints.
+
+2. If you run into internal errors code 500 related to JWT/PEM while testing the API, navigate to the server/services/JWTService.js file and replace the following:
+
+```
+const privateKEY = process.env.PRIVATE_KEY;
+const publicKEY = process.env.PUBLIC_KEY;
+
+//to
+
+const privateKEY = process.env.PRIVATE_KEY.replace(/\\n/g, '\n');
+const publicKEY = process.env.PUBLIC_KEY.replace(/\\n/g, '\n');
+
+```
 
 # Troubleshooting
 
