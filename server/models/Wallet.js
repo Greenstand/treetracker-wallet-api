@@ -140,8 +140,15 @@ class Wallet {
   }
 
   // get wallet itself along with all subwallets
-  async getAllWallets(id, limitOptions) {
-    return this._walletRepository.getAllWallets(id, limitOptions);
+  async getAllWallets(id, limitOptions, name = '') {
+    return this._walletRepository.getAllWallets(id, limitOptions, name);
+  }
+
+  // get count of wallet and all subwallets
+  async getAllWalletsCount(id, name = '') {
+    const result = await this._walletRepository.getAllWalletsCount(id, name);
+
+    return result.count;
   }
 }
 
