@@ -80,4 +80,17 @@ describe('WalletRepository', () => {
     const entity = await walletRepository.getAllWallets(uuid.v4());
     expect(entity).to.be.a('array');
   });
+
+  it('getAllWalletsCount', async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', (query) => {
+      expect(query.sql).match(
+        /select.*wallet.*where.*actor_wallet_id.*request_type.*/,
+      );
+      query.response([{ id: 1 }]);
+    });
+    const entity = await walletRepository.getAllWallets(uuid.v4());
+    expect(entity).to.be.a('array');
+  });
 });

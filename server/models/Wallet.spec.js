@@ -137,10 +137,14 @@ describe('Wallet Model', () => {
     });
 
     expect(result).eql([{ id: walletId, wallet }]);
-    expect(walletRepositoryStub.getAllWallets).calledOnceWithExactly(walletId, {
-      limit: 1,
-      offset: 1,
-    });
+    expect(walletRepositoryStub.getAllWallets).calledOnceWithExactly(
+      walletId,
+      {
+        limit: 1,
+        offset: 1,
+      },
+      '',
+    );
   });
 
   describe('hasControlOver function', async () => {
