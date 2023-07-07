@@ -216,8 +216,10 @@ describe('WalletService', () => {
       const allWallets = await walletService.getAllWallets(
         id,
         limitOptions,
+        '',
         false,
       );
+
       expect(getAllWalletsStub.calledOnceWithExactly(id, limitOptions)).eql(
         true,
       );
@@ -232,10 +234,14 @@ describe('WalletService', () => {
       );
       countTokenByWalletStub.onFirstCall().resolves(2);
       countTokenByWalletStub.onSecondCall().resolves(4);
-      const allWallets = await walletService.getAllWallets(id, {
-        limit: 10,
-        offet: 0,
-      });
+      const allWallets = await walletService.getAllWallets(
+        id,
+        {
+          limit: 10,
+          offet: 0,
+        },
+        '',
+      );
       expect(countTokenByWalletStub.calledTwice).eql(true);
       expect(
         countTokenByWalletStub.getCall(0).calledWithExactly(walletId1),
@@ -255,6 +261,53 @@ describe('WalletService', () => {
           tokens_in_wallet: 4,
         },
       ]);
+    });
+  });
+
+  describe('getAllWalletsCount', () => {
+    const walletId1 = uuid.v4();
+    const walletId2 = uuid.v4();
+    let getAllWalletsCountStub;
+
+    const result = [
+      {
+        id: walletId1,
+        name: 'walletName',
+      },
+      {
+        id: walletId2,
+        name: 'walletName2',
+      },
+    ];
+
+    beforeEach(() => {
+      getAllWalletsCountStub = sinon
+        .stub(WalletService.prototype, 'getAllWalletsCount')
+        .resolves(result);
+    });
+
+    it('sending an id as a parameter', async () => {
+      expect(walletService).instanceOf(WalletService);
+
+      const allWallets = await walletService.getAllWalletsCount(walletId1);
+
+      expect(getAllWalletsCountStub.calledOnceWithExactly(walletId1)).eql(true);
+      expect(allWallets).eql(result);
+    });
+
+    it('sending an id and name as parameters', async () => {
+      const filterName = 'walletName';
+      expect(walletService).instanceOf(WalletService);
+
+      const allWallets = await walletService.getAllWalletsCount(
+        walletId1,
+        filterName,
+      );
+
+      expect(
+        getAllWalletsCountStub.calledOnceWithExactly(walletId1, filterName),
+      ).eql(true);
+      expect(allWallets).eql(result);
     });
   });
 });
