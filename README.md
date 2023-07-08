@@ -60,7 +60,9 @@ You can use docker-compose, to start a database. To do that:
 3. Create an .env.development file in the root "/" directory and copy the contents of .env.example. Then update the DATABASE_URL environment variable
 
 ```
-DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user
+DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user?ssl=false
+
+//Use ssl=no-verify instead for local development if the database is not locally hosted
 ```
 
 4. run `docker-compose up` in the terminal to set up the postgres database (or `docker-compose up -d` to run detached)
@@ -487,25 +489,13 @@ NOTE: There is another command: `test-watch-debug`, it is the same with `test-wa
 
 Can also use Postman to test the API in a more real environment. Import the API spec from [here](https://github.com/Greenstand/treetracker-wallet-api/blob/master/docs/api/spec/treetracker-wallet-api-v1-10.yaml).
 
-1. To set up a local server with some seed data, temporarily copy the following (from serverTest.js) and paste into server/server.js:
+To run a local server with some seed data, run command:
 
 ```
-const seed = require('../__tests__/seed');
-
-//....
-
-await seed.clear();
-await seed.seed();
-
+npm run server-test
 ```
 
-2. navigate to the root directory "/" and run the following command:
-
-```
-npm run server
-```
-
-3. The changes in the server.js can be reverted. This command would seed the db with some basic data (the same with the data we used in the integration test) for running API tests in your local environment.
+This command would run a API server locally, and seed some basic data into DB (the same with the data we used in the integration test).
 
 ### Set up Postman to operate wallet API
 
@@ -518,19 +508,6 @@ Please check this tutorial video:
 # Potential errors:
 
 1. Remember to replace the TREETRACKER-API-KEY value with "FORTESTFORTESTFORTESTFORTESTFORTEST" to avoid 400 error while testing the API endpoints.
-
-2. If you run into internal errors code 500 related to JWT/PEM while testing the API, navigate to the server/services/JWTService.js file and replace the following:
-
-```
-const privateKEY = process.env.PRIVATE_KEY;
-const publicKEY = process.env.PUBLIC_KEY;
-
-//to
-
-const privateKEY = process.env.PRIVATE_KEY.replace(/\\n/g, '\n');
-const publicKEY = process.env.PUBLIC_KEY.replace(/\\n/g, '\n');
-
-```
 
 # Troubleshooting
 
