@@ -60,7 +60,7 @@ You can use docker-compose, to start a database. To do that:
 3. Create an .env.development file in the root "/" directory and copy the contents of .env.example. Then update the DATABASE_URL environment variable
 
 ```
-DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user?ssl=false
+DATABASE_URL=postgresql://wallet_user:secret@localhost:5432/wallet_user?false
 
 //Use ssl=no-verify instead for local development if the database is not locally hosted
 ```
