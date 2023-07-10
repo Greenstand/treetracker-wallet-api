@@ -7,8 +7,8 @@ const log = require('loglevel');
 const HttpError = require('../utils/HttpError');
 
 // PRIVATE and PUBLIC key
-const privateKEY = process.env.PRIVATE_KEY; // FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
-const publicKEY = process.env.PUBLIC_KEY; // FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
+const privateKEY = process.env.PRIVATE_KEY.replace(/\\n/g, '\n'); // FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key'), 'utf8');
+const publicKEY = process.env.PUBLIC_KEY.replace(/\\n/g, '\n'); // FS.readFileSync(path.resolve(__dirname, '../../config/jwtRS256.key.pub'), 'utf8');
 
 const signingOptions = {
   issuer: 'greenstand',
