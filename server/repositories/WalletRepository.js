@@ -47,18 +47,13 @@ class WalletRepository extends BaseRepository {
   }
 
   // Get a wallet itself including its sub wallets
-  async getAllWallets(id, limitOptions, name = '') {
+  async getAllWallets(id, limitOptions, name) {
     let promise = this._session
       .getDB()
       .select('id', 'name', 'logo_url', 'created_at')
       .table('wallet')
       .where('id', id)
-      // 'name' can contain '%' or '_' which are wildcards in SQL
-      .where(
-        'name',
-        'like',
-        `%${name.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`,
-      )
+      .where('name', 'ilike', `%${name}%`)
       .union(
         this._session
           .getDB()
@@ -77,11 +72,7 @@ class WalletRepository extends BaseRepository {
             'wallet_trust.state':
               TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
           })
-          .where(
-            'name',
-            'like',
-            `%${name.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`,
-          ),
+          .where('name', 'ilike', `%${name}%`),
         this._session
           .getDB()
           .select(
@@ -99,11 +90,7 @@ class WalletRepository extends BaseRepository {
             'wallet_trust.state':
               TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
           })
-          .where(
-            'name',
-            'like',
-            `%${name.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`,
-          ),
+          .where('name', 'ilike', `%${name}%`),
       );
 
     if (limitOptions && limitOptions.limit) {
@@ -117,63 +104,55 @@ class WalletRepository extends BaseRepository {
     return promise;
   }
 
-  async getAllWalletsCount(id, name = '') {
+  async getAllWalletsCount(id, name) {
+    let count = 0;
     const knex = this._session.getDB();
 
-    const promise = knex('wallet')
-      .select(knex.raw('SUM(total_count) as count'))
-      .from(function () {
-        this.union(function () {
-          this.select(knex.raw('COUNT(*) as total_count'))
-            .from('wallet')
-            .where(`${'wallet'}.id`, id)
-            // 'name' can contain '%' or '_' which are wildcards in SQL
-            .where(
-              'name',
-              'like',
-              `%${name.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`,
-            );
-        })
-          .union(function () {
-            this.select(knex.raw('COUNT(*) as total_count'))
-              .from('wallet_trust')
-              .join('wallet', 'wallet_trust.target_wallet_id', '=', 'wallet.id')
-              .where({
-                'wallet_trust.actor_wallet_id': id,
-                'wallet_trust.request_type':
-                  TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-                'wallet_trust.state':
-                  TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-              })
-              .where(
-                'name',
-                'like',
-                `%${name.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`,
-              );
-          })
-          .union(function () {
-            this.select(knex.raw('COUNT(*) as total_count'))
-              .from('wallet_trust')
-              .join('wallet', 'wallet_trust.actor_wallet_id', '=', 'wallet.id')
-              .where({
-                'wallet_trust.target_wallet_id': id,
-                'wallet_trust.request_type':
-                  TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-                'wallet_trust.state':
-                  TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-              })
-              .where(
-                'name',
-                'like',
-                `%${name.replaceAll('%', '\\%').replaceAll('_', '\\_')}%`,
-              );
-          })
-          .as('unioned_wallets');
+    if (name) {
+      const union1 = knex
+        .count()
+        .table('wallet')
+        .where(`${'wallet'}.id`, id)
+        .where('name', 'ilike', `%${name}%`)
+        .first();
+
+      count += +(await union1).count;
+    } else {
+      count += 1;
+    }
+
+    const union2 = knex
+      .count()
+      .table('wallet_trust')
+      .join('wallet', 'wallet_trust.target_wallet_id', '=', 'wallet.id')
+      .where({
+        'wallet_trust.actor_wallet_id': id,
+        'wallet_trust.request_type':
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
+        'wallet_trust.state':
+          TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
       })
-      .as('counts')
+      .where('name', 'ilike', `%${name}%`)
       .first();
 
-    return promise;
+    const union3 = knex
+      .count()
+      .table('wallet_trust')
+      .join('wallet', 'wallet_trust.actor_wallet_id', '=', 'wallet.id')
+      .where({
+        'wallet_trust.target_wallet_id': id,
+        'wallet_trust.request_type':
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
+        'wallet_trust.state':
+          TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+      })
+      .where('name', 'ilike', `%${name}%`)
+      .first();
+
+    count += +(await union2).count;
+    count += +(await union3).count;
+
+    return count;
   }
 }
 

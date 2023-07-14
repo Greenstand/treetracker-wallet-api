@@ -131,10 +131,14 @@ describe('Wallet Model', () => {
     const walletId = uuid();
     const wallet = 'wallet';
     walletRepositoryStub.getAllWallets.resolves([{ id: walletId, wallet }]);
-    const result = await walletModel.getAllWallets(walletId, {
-      limit: 1,
-      offset: 1,
-    });
+    const result = await walletModel.getAllWallets(
+      walletId,
+      {
+        limit: 1,
+        offset: 1,
+      },
+      wallet,
+    );
 
     expect(result).eql([{ id: walletId, wallet }]);
     expect(walletRepositoryStub.getAllWallets).calledOnceWithExactly(

@@ -12,7 +12,7 @@ const walletGet = async (req, res) => {
   await walletGetQuerySchema.validateAsync(req.query, { abortEarly: false });
   const walletService = new WalletService();
 
-  const { name, limit, offset } = req.query;
+  const { name = '', limit, offset } = req.query;
   const wallets = await walletService.getAllWallets(
     req.wallet_id,
     {
@@ -21,11 +21,14 @@ const walletGet = async (req, res) => {
     },
     name,
   );
-  const walletCount = await walletService.getAllWalletsCount(req.wallet_id, name);
+  const walletCount = await walletService.getAllWalletsCount(
+    req.wallet_id,
+    name,
+  );
 
   res.status(200).json({
     total: walletCount,
-    wallets,
+    walllets: wallets,
   });
 };
 

@@ -55,7 +55,7 @@ class WalletService {
     }
   }
 
-  async getAllWallets(id, limitOptions, name = '', getTokenCount = true) {
+  async getAllWallets(id, limitOptions, name, getTokenCount = true) {
     if (getTokenCount) {
       const token = new Token(this._session);
       const wallets = await this._wallet.getAllWallets(id, limitOptions, name);
@@ -67,10 +67,10 @@ class WalletService {
         }),
       );
     }
-    return this._wallet.getAllWallets(id, limitOptions);
+    return this._wallet.getAllWallets(id, limitOptions, name);
   }
 
-  async getAllWalletsCount(id, name = '') {
+  async getAllWalletsCount(id, name) {
     return this._wallet.getAllWalletsCount(id, name);
   }
 

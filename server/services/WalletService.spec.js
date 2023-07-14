@@ -213,13 +213,16 @@ describe('WalletService', () => {
 
     it('getAllWallets without getTokenCount', async () => {
       const id = uuid.v4();
+      const wallet = 'wallet';
       const allWallets = await walletService.getAllWallets(
         id,
         limitOptions,
-        '',
+        wallet,
         false,
       );
 
+      // eslint-disable-next-line no-unused-vars, prefer-const
+      let a = getAllWalletsStub.calledOnceWithExactly(id, limitOptions);
       expect(getAllWalletsStub.calledOnceWithExactly(id, limitOptions)).eql(
         true,
       );
