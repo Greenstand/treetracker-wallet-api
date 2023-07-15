@@ -108,6 +108,7 @@ class WalletRepository extends BaseRepository {
     let count = 0;
     const knex = this._session.getDB();
 
+    // If name is provided, applying filter can return zero or one row. Otherwise, it will always return one row.
     if (name) {
       const union1 = knex
         .count()

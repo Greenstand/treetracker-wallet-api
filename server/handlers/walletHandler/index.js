@@ -28,7 +28,7 @@ const walletGet = async (req, res) => {
 
   res.status(200).json({
     total: walletCount,
-    walllets: wallets,
+    wallets,
   });
 };
 

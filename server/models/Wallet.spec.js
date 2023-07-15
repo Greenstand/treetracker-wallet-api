@@ -147,7 +147,7 @@ describe('Wallet Model', () => {
         limit: 1,
         offset: 1,
       },
-      '',
+      wallet,
     );
   });
 

@@ -197,10 +197,12 @@ describe('WalletService', () => {
       {
         id: walletId1,
         name: 'walletName',
+        tokens_in_wallet: 0,
       },
       {
         id: walletId2,
         name: 'walletName2',
+        tokens_in_wallet: 0,
       },
     ];
     let getAllWalletsStub;
@@ -213,19 +215,15 @@ describe('WalletService', () => {
 
     it('getAllWallets without getTokenCount', async () => {
       const id = uuid.v4();
-      const wallet = 'wallet';
       const allWallets = await walletService.getAllWallets(
         id,
         limitOptions,
-        wallet,
         false,
       );
 
-      // eslint-disable-next-line no-unused-vars, prefer-const
-      let a = getAllWalletsStub.calledOnceWithExactly(id, limitOptions);
-      expect(getAllWalletsStub.calledOnceWithExactly(id, limitOptions)).eql(
-        true,
-      );
+      expect(
+        getAllWalletsStub.calledOnceWithExactly(id, limitOptions, false),
+      ).eql(true);
       expect(allWallets).eql(result);
     });
 
@@ -239,10 +237,7 @@ describe('WalletService', () => {
       countTokenByWalletStub.onSecondCall().resolves(4);
       const allWallets = await walletService.getAllWallets(
         id,
-        {
-          limit: 10,
-          offet: 0,
-        },
+        limitOptions,
         '',
       );
       expect(countTokenByWalletStub.calledTwice).eql(true);
