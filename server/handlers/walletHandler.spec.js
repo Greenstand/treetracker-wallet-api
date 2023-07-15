@@ -53,7 +53,6 @@ describe('walletRouter', () => {
       expect(res.body.wallets).lengthOf(1);
       expect(res.body.wallets[0]).property('id').eq(walletId);
       expect(res.body.total).eq(1);
-
       expect(
         getAllWalletsStub.calledOnceWithExactly(
           authenticatedWalletId,
