@@ -23,7 +23,7 @@ const walletGetTrustRelationshipsSchema = Joi.object({
 });
 
 const walletPostSchema = Joi.object({
-  wallet: Joi.string().required(),
+  wallet: Joi.string().required().max(50).min(3).alphanum().trim(true),
 });
 
 module.exports = {
