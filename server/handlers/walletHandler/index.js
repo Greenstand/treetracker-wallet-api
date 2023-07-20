@@ -13,7 +13,7 @@ const walletGet = async (req, res) => {
   const walletService = new WalletService();
 
   const { name = '', limit, offset } = req.query;
-  const wallets = await walletService.getAllWallets(
+  const { wallets, count } = await walletService.getAllWallets(
     req.wallet_id,
     {
       limit,
@@ -21,13 +21,9 @@ const walletGet = async (req, res) => {
     },
     name,
   );
-  const walletCount = await walletService.getAllWalletsCount(
-    req.wallet_id,
-    name,
-  );
 
   res.status(200).json({
-    total: walletCount,
+    total: count,
     wallets,
   });
 };

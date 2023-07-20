@@ -31,7 +31,7 @@ class TrustService {
   // except if done manually or coming up with a single query
   async getAllTrustRelationships({ walletId, state, type, request_type }) {
     const walletModel = new Wallet(this._session);
-    const wallets = await walletModel.getAllWallets(walletId);
+    const { wallets } = await walletModel.getAllWallets(walletId);
 
     const alltrustRelationships = [];
 

@@ -46,7 +46,7 @@ describe('walletRouter', () => {
       const walletId = uuid.v4();
       const getAllWalletsStub = sinon
         .stub(WalletService.prototype, 'getAllWallets')
-        .resolves([{ id: walletId }]);
+        .resolves({ wallets: [{ id: walletId }], count: 1 });
 
       const res = await request(app).get('/wallets?limit=2');
       expect(res).property('statusCode').eq(200);

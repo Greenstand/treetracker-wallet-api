@@ -38,9 +38,11 @@ class TokenService {
     const token = await this._token.getById(id);
 
     if (!withoutPermissionCheck) {
-      const allWallets = await this._walletService.getAllWallets(
+      const { wallets: allWallets } = await this._walletService.getAllWallets(
         walletLoginId,
         undefined,
+        undefined,
+        false,
         false,
       );
 

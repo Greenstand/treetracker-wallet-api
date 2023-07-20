@@ -533,7 +533,9 @@ describe('Trust Model', () => {
     const walletId3 = uuid();
     const getAllWalletStub = sinon
       .stub(Wallet.prototype, 'getAllWallets')
-      .resolves([{ id: walletId1 }, { id: walletId2 }, { id: walletId3 }]);
+      .resolves({
+        wallets: [{ id: walletId1 }, { id: walletId2 }, { id: walletId3 }],
+      });
     const getTrustRelationshipsStub = sinon.stub(
       Trust.prototype,
       'getTrustRelationships',

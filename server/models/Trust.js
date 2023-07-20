@@ -244,7 +244,7 @@ class Trust {
    */
   async getTrustRelationshipsRequestedToMe(walletId) {
     const walletModel = new Wallet(this._session);
-    const allWallets = await walletModel.getAllWallets(walletId);
+    const { wallets: allWallets } = await walletModel.getAllWallets(walletId);
     const allTrustRelationships = [];
     await Promise.all(
       allWallets.map(async (wallet) => {

@@ -101,7 +101,7 @@ describe('TrustService', () => {
   it('getAllTrustRelationships', async () => {
     const getAllWalletsStub = sinon
       .stub(Wallet.prototype, 'getAllWallets')
-      .resolves([{ id: 'id1' }, { id: 'id2' }]);
+      .resolves({ wallets: [{ id: 'id1' }, { id: 'id2' }] });
     const getTrustRelationshipsStub = sinon.stub(
       TrustService.prototype,
       'getTrustRelationships',
