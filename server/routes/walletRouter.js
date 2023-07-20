@@ -26,6 +26,5 @@ router.get(
 
 router.post('/', handlerWrapper(walletPost));
 
-
 routerWrapper.use('/wallets', apiKeyHandler, verifyJWTHandler, router);
 module.exports = routerWrapper;
