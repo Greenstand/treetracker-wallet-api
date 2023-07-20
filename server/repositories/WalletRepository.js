@@ -47,58 +47,72 @@ class WalletRepository extends BaseRepository {
   }
 
   // Get a wallet itself including its sub wallets
-  async getAllWallets(id, limitOptions) {
-    let promise = this._session
+  async getAllWallets(id, limitOptions, name, getCount) {
+    let query = this._session
       .getDB()
       .select('id', 'name', 'logo_url', 'created_at')
       .table('wallet')
-      .where('id', id)
-      .union(
-        this._session
-          .getDB()
-          .select(
-            'wallet.id',
-            'wallet.name',
-            'wallet.logo_url',
-            'wallet.created_at',
-          )
-          .table('wallet_trust')
-          .join('wallet', 'wallet_trust.target_wallet_id', '=', 'wallet.id')
-          .where({
-            'wallet_trust.actor_wallet_id': id,
-            'wallet_trust.request_type':
-              TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
-            'wallet_trust.state':
-              TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-          }),
-        this._session
-          .getDB()
-          .select(
-            'wallet.id',
-            'wallet.name',
-            'wallet.logo_url',
-            'wallet.created_at',
-          )
-          .table('wallet_trust')
-          .join('wallet', 'wallet_trust.actor_wallet_id', '=', 'wallet.id')
-          .where({
-            'wallet_trust.target_wallet_id': id,
-            'wallet_trust.request_type':
-              TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
-            'wallet_trust.state':
-              TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-          }),
-      );
+      .where('id', id);
+
+    let union1 = this._session
+      .getDB()
+      .select(
+        'wallet.id',
+        'wallet.name',
+        'wallet.logo_url',
+        'wallet.created_at',
+      )
+      .table('wallet_trust')
+      .join('wallet', 'wallet_trust.target_wallet_id', '=', 'wallet.id')
+      .where({
+        'wallet_trust.actor_wallet_id': id,
+        'wallet_trust.request_type':
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
+        'wallet_trust.state':
+          TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+      });
+
+    let union2 = this._session
+      .getDB()
+      .select(
+        'wallet.id',
+        'wallet.name',
+        'wallet.logo_url',
+        'wallet.created_at',
+      )
+      .table('wallet_trust')
+      .join('wallet', 'wallet_trust.actor_wallet_id', '=', 'wallet.id')
+      .where({
+        'wallet_trust.target_wallet_id': id,
+        'wallet_trust.request_type':
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
+        'wallet_trust.state':
+          TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+      });
+
+    if (name) {
+      union1 = union1.where('name', 'ilike', `%${name}%`);
+      union2 = union2.where('name', 'ilike', `%${name}%`);
+    }
+
+    query = query.union(union1, union2);
 
     if (limitOptions && limitOptions.limit) {
-      promise = promise.limit(limitOptions.limit);
+      query = query.limit(limitOptions.limit);
     }
 
     if (limitOptions && limitOptions.offset) {
-      promise = promise.offset(limitOptions.offset);
+      query = query.offset(limitOptions.offset);
     }
 
-    return promise;
+    const wallets = await query;
+    if (getCount) {
+      const count = await this._session.getDB().from(query.as('p')).count('*');
+
+      return { wallets, count: +count[0].count };
+    }
+
+    return { wallets };
   }
 }
 

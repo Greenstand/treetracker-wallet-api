@@ -46,17 +46,22 @@ describe('walletRouter', () => {
       const walletId = uuid.v4();
       const getAllWalletsStub = sinon
         .stub(WalletService.prototype, 'getAllWallets')
-        .resolves([{ id: walletId }]);
+        .resolves({ wallets: [{ id: walletId }], count: 1 });
 
       const res = await request(app).get('/wallets?limit=2');
       expect(res).property('statusCode').eq(200);
       expect(res.body.wallets).lengthOf(1);
       expect(res.body.wallets[0]).property('id').eq(walletId);
+      expect(res.body.total).eq(1);
       expect(
-        getAllWalletsStub.calledOnceWithExactly(authenticatedWalletId, {
-          limit: '2',
-          offset: undefined,
-        }),
+        getAllWalletsStub.calledOnceWithExactly(
+          authenticatedWalletId,
+          {
+            limit: '2',
+            offset: undefined,
+          },
+          '',
+        ),
       );
     });
   });

@@ -197,18 +197,21 @@ describe('WalletService', () => {
       {
         id: walletId1,
         name: 'walletName',
+        tokens_in_wallet: 0,
       },
       {
         id: walletId2,
         name: 'walletName2',
+        tokens_in_wallet: 0,
       },
     ];
+    const count = 2;
     let getAllWalletsStub;
 
     beforeEach(() => {
       getAllWalletsStub = sinon
         .stub(Wallet.prototype, 'getAllWallets')
-        .resolves(result);
+        .resolves({ wallets: result, count });
     });
 
     it('getAllWallets without getTokenCount', async () => {
@@ -216,12 +219,13 @@ describe('WalletService', () => {
       const allWallets = await walletService.getAllWallets(
         id,
         limitOptions,
-        false,
+        'name',
       );
-      expect(getAllWalletsStub.calledOnceWithExactly(id, limitOptions)).eql(
-        true,
-      );
-      expect(allWallets).eql(result);
+
+      expect(
+        getAllWalletsStub.calledOnceWithExactly(id, limitOptions, 'name', true),
+      ).eql(true);
+      expect(allWallets).eql({ wallets: result, count });
     });
 
     it('getAllWallets with getTokenCount', async () => {
@@ -232,10 +236,11 @@ describe('WalletService', () => {
       );
       countTokenByWalletStub.onFirstCall().resolves(2);
       countTokenByWalletStub.onSecondCall().resolves(4);
-      const allWallets = await walletService.getAllWallets(id, {
-        limit: 10,
-        offet: 0,
-      });
+      const allWallets = await walletService.getAllWallets(
+        id,
+        limitOptions,
+        '',
+      );
       expect(countTokenByWalletStub.calledTwice).eql(true);
       expect(
         countTokenByWalletStub.getCall(0).calledWithExactly(walletId1),
@@ -243,18 +248,21 @@ describe('WalletService', () => {
       expect(
         countTokenByWalletStub.getCall(1).calledWithExactly(walletId2),
       ).eql(true);
-      expect(allWallets).eql([
-        {
-          id: walletId1,
-          name: 'walletName',
-          tokens_in_wallet: 2,
-        },
-        {
-          id: walletId2,
-          name: 'walletName2',
-          tokens_in_wallet: 4,
-        },
-      ]);
+      expect(allWallets).eql({
+        wallets: [
+          {
+            id: walletId1,
+            name: 'walletName',
+            tokens_in_wallet: 2,
+          },
+          {
+            id: walletId2,
+            name: 'walletName2',
+            tokens_in_wallet: 4,
+          },
+        ],
+        count: 2,
+      });
     });
   });
 });

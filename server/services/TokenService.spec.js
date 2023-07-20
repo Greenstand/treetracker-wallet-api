@@ -187,7 +187,7 @@ describe('Token', () => {
 
     it('getById with permission check -- without required permission', async () => {
       let error;
-      getAllWalletsStub.resolves([]);
+      getAllWalletsStub.resolves({ wallets: [] });
       try {
         await tokenService.getById({
           id: 'tokenId',
@@ -203,13 +203,15 @@ describe('Token', () => {
         getAllWalletsStub.calledOnceWithExactly(
           'walletLoginId',
           undefined,
+          undefined,
+          false,
           false,
         ),
       ).eql(true);
     });
 
     it('getById with permission check -- with required permission', async () => {
-      getAllWalletsStub.resolves([{ id: 'wallet_id' }]);
+      getAllWalletsStub.resolves({ wallets: [{ id: 'wallet_id' }] });
       const token = await tokenService.getById({
         id: 'tokenId',
         walletLoginId: 'walletLoginId',
@@ -220,6 +222,8 @@ describe('Token', () => {
         getAllWalletsStub.calledOnceWithExactly(
           'walletLoginId',
           undefined,
+          undefined,
+          false,
           false,
         ),
       ).eql(true);

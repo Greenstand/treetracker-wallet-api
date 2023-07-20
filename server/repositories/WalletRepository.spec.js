@@ -68,7 +68,7 @@ describe('WalletRepository', () => {
     }).rejects.toThrow(/Could not find wallet/);
   });
 
-  it('getAllWallets', async () => {
+  it('getAllWallets -- without count', async () => {
     tracker.uninstall();
     tracker.install();
     tracker.on('query', (query) => {
@@ -78,6 +78,31 @@ describe('WalletRepository', () => {
       query.response([{ id: 1 }]);
     });
     const entity = await walletRepository.getAllWallets(uuid.v4());
-    expect(entity).to.be.a('array');
+    expect(entity).to.eql({ wallets: [{ id: 1 }] });
+  });
+
+  it('getAllWallets -- with count', async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', (query, step) => {
+      if (step === 1) {
+        expect(query.sql).match(
+          /select.*wallet.*where.*actor_wallet_id.*request_type.*/,
+        );
+        query.response([{ id: 1 }]);
+      } else if (step === 2) {
+        expect(query.sql).match(
+          /select.*wallet.*where.*actor_wallet_id.*request_type.*name.*limit.*/,
+        );
+        query.response([{ count: 1 }]);
+      }
+    });
+    const entity = await walletRepository.getAllWallets(
+      uuid.v4(),
+      { limit: 1 },
+      'wallet',
+      true,
+    );
+    expect(entity).to.eql({ wallets: [{ id: 1 }], count: 1 });
   });
 });
