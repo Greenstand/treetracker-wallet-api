@@ -1,3 +1,14 @@
+## [1.19.22](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.21...v1.19.22) (2023-07-20)
+
+
+### Bug Fixes
+
+* '@', '-', '.' allowed for wallet name ([9f24e6d](https://github.com/Greenstand/treetracker-wallet-api/commit/9f24e6d736938fe03e509855c779994df079add5))
+* bug fix ([ad132ca](https://github.com/Greenstand/treetracker-wallet-api/commit/ad132ca7d4d4c276c1960093321cb5d73ee09410))
+* change error message ([7d84ca1](https://github.com/Greenstand/treetracker-wallet-api/commit/7d84ca1d11d4a4538c5534f71ee8d64aa391ccd5))
+* limit wallet name in schemas.js ([dd98051](https://github.com/Greenstand/treetracker-wallet-api/commit/dd98051d6fa8beaf6c43bf96c89df8636ad3f29f))
+* use Joi to limit subwallet creation ([b8b8f51](https://github.com/Greenstand/treetracker-wallet-api/commit/b8b8f51d9de5053ded7358df491064d7f874a6f7))
+
 ## [1.19.21](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.20...v1.19.21) (2023-07-04)
 
 
