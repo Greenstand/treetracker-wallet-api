@@ -2,6 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const routerWrapper = express.Router();
+
 const {
   handlerWrapper,
   verifyJWTHandler,
@@ -22,6 +23,7 @@ router.get(
   '/:wallet_id/trust_relationships',
   handlerWrapper(walletGetTrustRelationships),
 );
+
 router.post('/', handlerWrapper(walletPost));
 
 routerWrapper.use('/wallets', apiKeyHandler, verifyJWTHandler, router);
