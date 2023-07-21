@@ -39,7 +39,6 @@ describe('walletRouter', () => {
     it('no limit parameter(1000 as default)', async () => {
       const res = await request(app).get('/wallets');
       expect(res).property('statusCode').eq(200);
-      expect(res.body.message).match(/limit.*required/);
     });
 
     it('successfully', async () => {
