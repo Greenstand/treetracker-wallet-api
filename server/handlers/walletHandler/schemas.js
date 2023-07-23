@@ -2,8 +2,14 @@ const Joi = require('joi');
 const TrustRelationshipEnums = require('../../utils/trust-enums');
 
 const walletGetQuerySchema = Joi.object({
-  limit: Joi.number().required(),
-  offset: Joi.number().integer(),
+  limit: Joi.number()
+      .integer().message('limit can only be non-negative integer')
+      .min(0).message('limit can only be non-negative integer')
+      .max(Number.MAX_SAFE_INTEGER).message('limit value overflow'),
+  offset: Joi.number()
+      .integer().message('offset can only be non-negative integer')
+      .min(0).message('offset can only be non-negative integer')
+      .max(Number.MAX_SAFE_INTEGER).message('offset value overflow'),
   name: Joi.string(),
 });
 
