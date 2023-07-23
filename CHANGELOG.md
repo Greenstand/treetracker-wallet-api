@@ -1,3 +1,14 @@
+## [1.20.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.20.0...v1.20.1) (2023-07-23)
+
+
+### Bug Fixes
+
+* define default value, and enhance the validation of limit and offset ([298c9ae](https://github.com/Greenstand/treetracker-wallet-api/commit/298c9ae1d171405b359c3508911fd92df8258a06))
+* define default value, and enhance the validation of limit and offset ([6d719d0](https://github.com/Greenstand/treetracker-wallet-api/commit/6d719d0f6469dc85918845be4d8a9e16d43a5eeb))
+* enhance test code for new version of get wallet request ([24d9af3](https://github.com/Greenstand/treetracker-wallet-api/commit/24d9af3eb12cf67e79942d1a09a35b49d97465e9))
+* enhance test code for new version of get wallet request ([042a267](https://github.com/Greenstand/treetracker-wallet-api/commit/042a267ee0d7d886f2ce5f5d2f39389dd77af621))
+* test bug fix ([1561659](https://github.com/Greenstand/treetracker-wallet-api/commit/15616595189b4628192658dbed41f52b92a05f04))
+
 # [1.20.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.19.22...v1.20.0) (2023-07-20)
 
 
