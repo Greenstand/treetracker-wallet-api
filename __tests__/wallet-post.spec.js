@@ -12,7 +12,6 @@ const {apiKey} = seed;
 
 describe('Wallet: create(POST) wallets of an account', () => {
     let bearerTokenA;
-    let bearerTokenB;
 
     before(async () => {
         await seed.clear();
@@ -31,20 +30,6 @@ describe('Wallet: create(POST) wallets of an account', () => {
             expect(res).to.have.property('statusCode', 200);
             bearerTokenA = res.body.token;
             expect(bearerTokenA).to.match(/\S+/);
-        }
-
-        {
-            // Authorizes before each of the follow tests
-            const res = await request(server)
-                .post('/auth')
-                .set('treetracker-api-key', apiKey)
-                .send({
-                    wallet: seed.walletB.name,
-                    password: seed.walletB.password,
-                });
-            expect(res).to.have.property('statusCode', 200);
-            bearerTokenB = res.body.token;
-            expect(bearerTokenB).to.match(/\S+/);
         }
     });
 
@@ -77,7 +62,7 @@ describe('Wallet: create(POST) wallets of an account', () => {
             .set('content-type', 'application/json')
             .set('Authorization', `Bearer ${bearerTokenA}`);
 
-        expect(res.body.code).to.eq(422);
+        expect(res).property('statusCode').to.eq(422);
 
         const resB = await request(server)
             .post('/wallets')
@@ -86,7 +71,7 @@ describe('Wallet: create(POST) wallets of an account', () => {
             .set('content-type', 'application/json')
             .set('Authorization', `Bearer ${bearerTokenA}`);
 
-        expect(resB.body.code).to.eq(422);
+        expect(resB).property('statusCode').to.eq(422);
     })
 
     it('create wallet with invalid characters', async () => {
@@ -100,7 +85,7 @@ describe('Wallet: create(POST) wallets of an account', () => {
                 .set('treetracker-api-key', apiKey)
                 .set('content-type', 'application/json')
                 .set('Authorization', `Bearer ${bearerTokenA}`);
-            expect(res.body.code).to.eq(422);
+            expect(res).property('statusCode').to.eq(422);
         }
     })
 })
