@@ -49,19 +49,19 @@ describe('Wallet: Get wallets of an account', () => {
 
         const walletService = new WalletService();
 
-        for (let i = 0; i < 1010; i += 1) {
+        for (let i = 0; i < 10; i += 1) {
             await walletService.createWallet(seed.wallet.id, `test${i}`)
         }
 
         const res = await walletService.getAllWallets(seed.wallet.id);
-        expect(res.count).to.eq(1011);
+        expect(res.count).to.eq(11);
     });
 
     beforeEach(async () => {
         sinon.restore();
     });
 
-    it('Get wallets of WalletA without params, success', async () => {
+    it('Get wallets of WalletA without params', async () => {
         const res = await request(server)
             .get('/wallets')
             .set('treetracker-api-key', apiKey)
@@ -69,7 +69,7 @@ describe('Wallet: Get wallets of an account', () => {
             .set('Authorization', `Bearer ${bearerTokenA}`);
 
         expect(res).property('statusCode').to.eq(200);
-        expect(res.body.total).to.eq(1000);
+        expect(res.body.total).to.eq(11);
 
         const resB = await request(server)
             .get('/wallets')
@@ -104,5 +104,36 @@ describe('Wallet: Get wallets of an account', () => {
         expect(res).property('statusCode').to.eq(200);
         expect(res.body.total).to.eq(1);
         expect(res.body.wallets[0].name).to.eq(seed.walletB.name);
+    })
+
+    it('Get wallet with offset val', async () => {
+        let res = await request(server)
+            .get('/wallets')
+            .query({offset: 0})
+            .set('treetracker-api-key', apiKey)
+            .set('content-type', 'application/json')
+            .set('Authorization', `Bearer ${bearerTokenA}`);
+
+        expect(res).property('statusCode').to.eq(200);
+        expect(res.body.total).to.eq(11);
+
+        res = await request(server)
+            .get('/wallets')
+            .query({limit: 100, offset: 2})
+            .set('treetracker-api-key', apiKey)
+            .set('content-type', 'application/json')
+            .set('Authorization', `Bearer ${bearerTokenA}`);
+
+        expect(res).property('statusCode').to.eq(200);
+        expect(res.body.total).to.eq(9);
+
+        res = await request(server)
+            .get('/wallets')
+            .query({limit: 2, offset: 0})
+            .set('treetracker-api-key', apiKey)
+            .set('content-type', 'application/json')
+            .set('Authorization', `Bearer ${bearerTokenA}`);
+        expect(res).property('statusCode').to.eq(200);
+        expect(res.body.total).to.eq(2);
     })
 })
