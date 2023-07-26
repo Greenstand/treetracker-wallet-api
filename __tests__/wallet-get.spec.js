@@ -107,7 +107,7 @@ describe('Wallet: Get wallets of an account', () => {
     })
 
     it('Get wallet with offset val', async () => {
-        let res = await request(server)
+        const res = await request(server)
             .get('/wallets')
             .query({offset: 0})
             .set('treetracker-api-key', apiKey)
@@ -117,23 +117,43 @@ describe('Wallet: Get wallets of an account', () => {
         expect(res).property('statusCode').to.eq(200);
         expect(res.body.total).to.eq(11);
 
-        res = await request(server)
+        const resB = await request(server)
             .get('/wallets')
             .query({limit: 100, offset: 2})
             .set('treetracker-api-key', apiKey)
             .set('content-type', 'application/json')
             .set('Authorization', `Bearer ${bearerTokenA}`);
 
-        expect(res).property('statusCode').to.eq(200);
-        expect(res.body.total).to.eq(9);
+        expect(resB).property('statusCode').to.eq(200);
+        expect(resB.body.total).to.eq(9);
 
-        res = await request(server)
+        const resC = await request(server)
             .get('/wallets')
             .query({limit: 2, offset: 0})
             .set('treetracker-api-key', apiKey)
             .set('content-type', 'application/json')
             .set('Authorization', `Bearer ${bearerTokenA}`);
+        expect(resC).property('statusCode').to.eq(200);
+        expect(resC.body.total).to.eq(2);
+    })
+
+    it('Get wallet by valid uuid', async () => {
+        const res = await  request(server)
+            .get(`/wallets/${seed.walletC.id}`)
+            .set('treetracker-api-key', apiKey)
+            .set('content-type', 'application/json')
+            .set('Authorization', `Bearer ${bearerTokenA}`);
+
         expect(res).property('statusCode').to.eq(200);
-        expect(res.body.total).to.eq(2);
+    })
+
+    it('Get wallet by valid uuid which does not exist', async () => {
+        const res = await  request(server)
+            .get(`/wallets/00a6fa25-df29-4701-9077-557932591766`)
+            .set('treetracker-api-key', apiKey)
+            .set('content-type', 'application/json')
+            .set('Authorization', `Bearer ${bearerTokenA}`);
+
+        expect(res).property('statusCode').to.eq(404);
     })
 })
