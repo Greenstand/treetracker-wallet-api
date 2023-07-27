@@ -4,90 +4,69 @@ const {expect} = require('chai');
 const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../../server/app');
-const seed = require('../seed');
 chai.use(require('chai-uuid'));
-const WalletService = require('../../server/services/WalletService');
+const {registerAndLogin, clear, feedSubWallets} = require('../utils/testUtils');
+const walletAInfo = require('../mock-data/wallet/walletA.json');
+const walletBInfo = require('../mock-data/wallet/walletB.json');
+const wallets = require('../mock-data/wallet/wallets.json');
 
-const {apiKey} = seed;
 
 describe('Wallet: Get wallets of an account', () => {
-    let bearerTokenA;
-    let bearerTokenB;
+    let walletA;
+    let walletB;
 
     before(async () => {
-        await seed.clear();
-        await seed.seed();
-
-        {
-            // Authorizes before each of the follow tests
-            const res = await request(server)
-                .post('/auth')
-                .set('treetracker-api-key', apiKey)
-                .send({
-                    wallet: seed.wallet.name,
-                    password: seed.wallet.password,
-                });
-
-            expect(res).to.have.property('statusCode', 200);
-            bearerTokenA = res.body.token;
-            expect(bearerTokenA).to.match(/\S+/);
-        }
-
-        {
-            // Authorizes before each of the follow tests
-            const res = await request(server)
-                .post('/auth')
-                .set('treetracker-api-key', apiKey)
-                .send({
-                    wallet: seed.walletB.name,
-                    password: seed.walletB.password,
-                });
-            expect(res).to.have.property('statusCode', 200);
-            bearerTokenB = res.body.token;
-            expect(bearerTokenB).to.match(/\S+/);
-        }
-
-        const walletService = new WalletService();
-
-        for (let i = 0; i < 10; i += 1) {
-            await walletService.createWallet(seed.wallet.id, `test${i}`)
-        }
-
-        const res = await walletService.getAllWallets(seed.wallet.id);
-        expect(res.count).to.eq(11);
-    });
+        await clear();
+    })
 
     beforeEach(async () => {
-        sinon.restore();
+        walletA = await registerAndLogin(walletAInfo);
+        // what registerAndLogin returned?
+        // walletA = {
+        //                  name: <string>,
+        //                  password: <string>,
+        //                  salt: <string>,
+        //                  logo_url: null,
+        //                  created_at: <time>,
+        //                  apiKey: <string>,
+        //                  token: <string> (the bearer token)
+        //                 }
+        walletB = await registerAndLogin(walletBInfo);
+        await feedSubWallets(walletA.id, wallets);
     });
+
+    afterEach(async () => {
+        sinon.restore();
+        await clear();
+    })
 
     it('Get wallets of WalletA without params', async () => {
         const res = await request(server)
             .get('/wallets')
-            .set('treetracker-api-key', apiKey)
+            .set('treetracker-api-key', walletA.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenA}`);
+            .set('Authorization', `Bearer ${walletA.token}`);
 
         expect(res).property('statusCode').to.eq(200);
         expect(res.body.total).to.eq(11);
 
         const resB = await request(server)
             .get('/wallets')
-            .set('treetracker-api-key', apiKey)
+            .set('treetracker-api-key', walletB.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenB}`);
+            .set('Authorization', `Bearer ${walletB.token}`);
 
         expect(resB).property('statusCode').to.eq(200);
-        expect(resB.body.total).to.eq(2);
+        expect(resB.body.total).to.eq(1);
     });
 
     it('Get wallet by wallet name, success', async () => {
         const res = await request(server)
             .get('/wallets')
             .query({name: 'walletB'})
-            .set('treetracker-api-key', apiKey)
+            .set('treetracker-api-key', walletA.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenB}`);
+            .set('Authorization', `Bearer ${walletA.token}`);
 
         expect(res).property('statusCode').to.eq(200);
         expect(res.body.total).to.eq(1);
@@ -96,23 +75,23 @@ describe('Wallet: Get wallets of an account', () => {
     it('Get wallet which is managed by other account', async () => {
         const res = await request(server)
             .get(`/wallets`)
-            .query({name: 'test0'})
-            .set('treetracker-api-key', apiKey)
+            .query({name: wallets[0].name})
+            .set('treetracker-api-key', walletB.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenB}`);
+            .set('Authorization', `Bearer ${walletB.token}`);
 
         expect(res).property('statusCode').to.eq(200);
         expect(res.body.total).to.eq(1);
-        expect(res.body.wallets[0].name).to.eq(seed.walletB.name);
+        expect(res.body.wallets[0].name).to.eq(walletB.name);
     })
 
     it('Get wallet with offset val', async () => {
         const res = await request(server)
             .get('/wallets')
             .query({offset: 0})
-            .set('treetracker-api-key', apiKey)
+            .set('treetracker-api-key', walletA.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenA}`);
+            .set('Authorization', `Bearer ${walletA.token}`);
 
         expect(res).property('statusCode').to.eq(200);
         expect(res.body.total).to.eq(11);
@@ -120,9 +99,9 @@ describe('Wallet: Get wallets of an account', () => {
         const resB = await request(server)
             .get('/wallets')
             .query({limit: 100, offset: 2})
-            .set('treetracker-api-key', apiKey)
+            .set('treetracker-api-key', walletA.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenA}`);
+            .set('Authorization', `Bearer ${walletA.token}`);
 
         expect(resB).property('statusCode').to.eq(200);
         expect(resB.body.total).to.eq(9);
@@ -130,19 +109,19 @@ describe('Wallet: Get wallets of an account', () => {
         const resC = await request(server)
             .get('/wallets')
             .query({limit: 2, offset: 0})
-            .set('treetracker-api-key', apiKey)
+            .set('treetracker-api-key', walletA.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenA}`);
+            .set('Authorization', `Bearer ${walletA.token}`);
         expect(resC).property('statusCode').to.eq(200);
         expect(resC.body.total).to.eq(2);
     })
 
     it('Get wallet by valid uuid', async () => {
         const res = await  request(server)
-            .get(`/wallets/${seed.walletC.id}`)
-            .set('treetracker-api-key', apiKey)
+            .get(`/wallets/${walletA.id}`)
+            .set('treetracker-api-key',  walletA.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenA}`);
+            .set('Authorization', `Bearer ${walletA.token}`);
 
         expect(res).property('statusCode').to.eq(200);
     })
@@ -150,9 +129,9 @@ describe('Wallet: Get wallets of an account', () => {
     it('Get wallet by valid uuid which does not exist', async () => {
         const res = await  request(server)
             .get(`/wallets/00a6fa25-df29-4701-9077-557932591766`)
-            .set('treetracker-api-key', apiKey)
+            .set('treetracker-api-key', walletA.apiKey)
             .set('content-type', 'application/json')
-            .set('Authorization', `Bearer ${bearerTokenA}`);
+            .set('Authorization', `Bearer ${walletA.token}`);
 
         expect(res).property('statusCode').to.eq(404);
     })
