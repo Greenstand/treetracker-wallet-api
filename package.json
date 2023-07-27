@@ -19,6 +19,8 @@
     "test-seed": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --timeout 10000  './__tests__/seed.spec.js'",
     "test-seed-ci": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.ci mocha -r dotenv/config --timeout 10000  './__tests__/seed.spec.js'",
     "test-integration": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config  --exit --timeout 20000  './__tests__/*.spec.js' './__tests__/integration/*.spec.js'",
+    "try": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config  --exit --timeout 20000  './__tests__/try.js'",
+
     "test-integration-ci": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.ci mocha -r dotenv/config --exit --timeout 20000  --parallel=false './__tests__/*.spec.js' './__tests__/integration/*.spec.js'",
     "test-watch": "NODE_ENV=test NODE_LOG_LEVEL=info mocha -r dotenv/config dotenv_config_path=.env.test --timeout 10000  -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/supertest.js'",
     "test-watch-debug": "NODE_ENV=test NODE_LOG_LEVEL=debug DOTENV_CONFIG_PATH=.env.test mocha -r dotenv/config --timeout 10000  -w -b --ignore './server/repositories/**/*.spec.js'  './server/setup.js' './server/**/*.spec.js' './__tests__/seed.spec.js' './__tests__/**/*.spec.js'",

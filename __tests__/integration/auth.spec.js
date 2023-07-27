@@ -4,8 +4,8 @@ const { expect } = require('chai');
 const chai = require('chai');
 const server = require('../../server/app');
 chai.use(require('chai-uuid'));
-const Zaven = require('../mock-data/Zaven.json');
-const testUtils = require('./testUtils');
+const Zaven = require('../mock-data/wallet/Zaven.json');
+const testUtils = require('../utils/testUtils');
 
 describe('Authentication', () => {
   let registeredUser;

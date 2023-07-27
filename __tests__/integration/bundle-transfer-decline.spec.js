@@ -4,10 +4,10 @@ const { expect } = require('chai');
 const chai = require('chai');
 const server = require('../../server/app');
 chai.use(require('chai-uuid'));
-const Zaven = require('../mock-data/Zaven.json');
-const Meisze = require('../mock-data/Meisze.json');
-const testUtils = require('./testUtils');
-const TokenA = require('../mock-data/TokenA');
+const Zaven = require('../mock-data/wallet/Zaven.json');
+const Meisze = require('../mock-data/wallet/Meisze.json');
+const testUtils = require('../utils/testUtils');
+const TokenA = require('../mock-data/token/TokenA.json');
 const TransferEnums = require('../../server/utils/transfer-enum');
 
 describe('Zaven request to send 1 token to Meisze', () => {
