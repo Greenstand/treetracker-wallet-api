@@ -1,4 +1,5 @@
 const log = require('loglevel');
+const log = require('loglevel');
 const Session = require('../infra/database/Session');
 const Transfer = require('../models/Transfer');
 const HttpError = require('../utils/HttpError');
