@@ -1,4 +1,5 @@
 const expect = require('expect-runtime');
+const Joi = require('joi');
 const log = require('loglevel');
 const TrustRepository = require('../repositories/TrustRepository');
 const HttpError = require('../utils/HttpError');
@@ -358,9 +359,15 @@ class Trust {
    * target wallet
    */
   async hasTrust(walletLoginId, trustType, senderWallet, receiveWallet) {
-    expect(trustType).oneOf(
-      Object.keys(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
-    );
+    // expect(trustType).oneOf(
+    //   Object.keys(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
+    // );
+    
+  
+    Joi.assert(trustType,
+         Joi.string()
+          .valid(...Object.values(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE)));
+
     const trustRelationships = await this.getTrustRelationshipsTrusted(
       walletLoginId,
     );
