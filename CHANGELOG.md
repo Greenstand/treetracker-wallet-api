@@ -1,3 +1,10 @@
+## [1.21.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.1...v1.21.2) (2023-07-31)
+
+
+### Bug Fixes
+
+* test deployment fix ([69b4ab4](https://github.com/Greenstand/treetracker-wallet-api/commit/69b4ab46436d4a36008c369777acddd5e4fc0698))
+
 ## [1.21.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.0...v1.21.1) (2023-07-31)
 
 
