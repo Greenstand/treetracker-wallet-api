@@ -9,22 +9,35 @@ class TokenRepository extends BaseRepository {
     this._session = session;
   }
 
+  // async getById(id) {
+  //   const result = await this._session
+  //     .getDB()(this._tableName)
+  //     .where('id', id)
+  //     .first();
+  //   expect(
+  //     result,
+  //     () => new HttpError(404, `can not found token by id:${id}`),
+  //   ).match({
+  //     id: expect.any(String),
+  //   });
+  //   return result;
+  // }
+
   async getById(id) {
-    
     Joi.assert(id, Joi.string().uuid());
 
     const result = await this._session
-        .getDB()(this._tableName)
-        .where('id', id)
-        .first();
+      .getDB()(this._tableName)
+      .where('id', id)
+      .first();
 
     try {
-      Joi.assert(result, 
-        Joi.object({ id: Joi.string().required() })
-          .unknown()
-          .required());
+      Joi.assert(
+        result,
+        Joi.object({ id: Joi.string().required() }).unknown().required(),
+      );
     } catch (error) {
-        throw new HttpError(404, `can not found token by id:${id}`);
+      throw new HttpError(404, `can not found token by id:${id}`);
     }
 
     return result;
@@ -34,12 +47,14 @@ class TokenRepository extends BaseRepository {
    * select transaction table by transfer id, return matched tokens
    */
   async getByTransferId(transferId, limit, offset = 0) {
-    return this._session.getDB().select('*')
-        .from('token')
-        .join('transaction', 'token.id', 'transaction.token_id')
-        .where('transaction.transfer_id', transferId)
-        .limit(limit)
-        .offset(offset);
+    return this._session
+      .getDB()
+      .select('*')
+      .from('token')
+      .join('transaction', 'token.id', 'transaction.token_id')
+      .where('transaction.transfer_id', transferId)
+      .limit(limit)
+      .offset(offset);
   }
 }
 

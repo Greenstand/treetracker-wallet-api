@@ -124,7 +124,7 @@ class TransferRepository extends BaseRepository {
         'destination_wallet.id',
       )
       .where((builder) => this.whereBuilder(filter, builder));
-    
+
     let order = 'desc';
     let column = 'transfer.created_at';
 

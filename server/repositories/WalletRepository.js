@@ -14,9 +14,14 @@ class WalletRepository extends BaseRepository {
   }
 
   async getByName(wallet) {
-      Joi.assert(wallet, Joi.string().pattern(/^\S+$/).messages({
-        'string.pattern.base': `Invalid wallet name: "${wallet}"`
-      }) );
+    Joi.assert(
+      wallet,
+      Joi.string()
+        .pattern(/^\S+$/)
+        .messages({
+          'string.pattern.base': `Invalid wallet name: "${wallet}"`,
+        }),
+    );
 
     const list = await this._session
       .getDB()
@@ -27,7 +32,10 @@ class WalletRepository extends BaseRepository {
     try {
       Joi.assert(list, Joi.array().required().length(1));
     } catch (error) {
-      throw new HttpError(404, `Could not find entity by wallet name: ${wallet}`);
+      throw new HttpError(
+        404,
+        `Could not find entity by wallet name: ${wallet}`,
+      );
     }
     return list[0];
   }

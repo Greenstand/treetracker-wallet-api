@@ -51,7 +51,9 @@ class BaseRepository {
       const filterObjectCopy = { ...object };
       const beforeFilter = object.before;
       if (object.before) {
-        result.whereRaw(`cast(${Object.keys(beforeFilter)[0]} as date) <= ?`, [Object.values(beforeFilter)[0]])
+        result.whereRaw(`cast(${Object.keys(beforeFilter)[0]} as date) <= ?`, [
+          Object.values(beforeFilter)[0],
+        ]);
         delete filterObjectCopy.before;
       }
       const afterFilter = object.after;
@@ -97,13 +99,16 @@ class BaseRepository {
       .count()
       .table(this._tableName)
       .where(filter);
-      
-    Joi.assert(result, Joi.array().items(
-      Joi.object({
-        count: Joi.string().required()
-      })
-    ));
-    
+
+    Joi.assert(
+      result,
+      Joi.array().items(
+        Joi.object({
+          count: Joi.string().required(),
+        }),
+      ),
+    );
+
     return parseInt(result[0].count);
   }
 
@@ -151,9 +156,7 @@ class BaseRepository {
       .getDB()
       .batchInsert(this._tableName, objects)
       .returning('id');
-    Joi.assert(result, Joi.array().items(
-        Joi.string()
-    ));
+    Joi.assert(result, Joi.array().items(Joi.string()));
     return result;
   }
 }
