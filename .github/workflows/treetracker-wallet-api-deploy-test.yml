@@ -33,7 +33,7 @@ jobs:
       - name: Install doctl for kubernetes
         uses: digitalocean/action-doctl@v2
         with:
-          token: ${{ secrets.DIGITALOCEAN_PASSWORD }}
+          token: ${{ secrets.TEST_DIGITALOCEAN_TOKEN }}
       - name: Save DigitalOcean kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ secrets.TEST_CLUSTER_NAME }}
       - name: Delete completed migration jobs prior to deployment
