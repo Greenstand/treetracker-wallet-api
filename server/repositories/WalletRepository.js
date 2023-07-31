@@ -1,7 +1,8 @@
 /*
  * The model for: entity, wallet, entity table and so on
  */
-const expect = require('expect-runtime');
+// const expect = require('expect-runtime');
+const Joi = require('joi');
 const HttpError = require('../utils/HttpError');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 const BaseRepository = require('./BaseRepository');
@@ -14,22 +15,35 @@ class WalletRepository extends BaseRepository {
   }
 
   async getByName(wallet) {
-    expect(
-      wallet,
-      () => new HttpError(400, `invalid wallet name:${wallet}`),
-    ).match(/^\S+$/);
+    // expect(
+    //   wallet,
+    //   () => new HttpError(400, `invalid wallet name:${wallet}`),
+    // ).match(/^\S+$/);
+
+    try {
+      Joi.assert(wallet, Joi.string().pattern(/^\S+$/));
+    } catch (error) {
+      throw new HttpError(400, `invalid wallet name:${wallet}`);
+    }
+
     const list = await this._session
       .getDB()
       .select()
       .table(this._tableName)
       .where('name', wallet);
-    expect(
-      list,
-      () =>
-        new HttpError(404, `Could not find entity by wallet name: ${wallet}`),
-    )
-      .defined()
-      .lengthOf(1);
+    // expect(
+    //   list,
+    //   () =>
+    //     new HttpError(404, `Could not find entity by wallet name: ${wallet}`),
+    // )
+    //   .defined()
+    //   .lengthOf(1);
+
+    try {
+      Joi.assert(list, Joi.array().required().length(1));
+    } catch (error) {
+      throw new HttpError(404, `Could not find entity by wallet name: ${wallet}`);
+    }
     return list[0];
   }
 

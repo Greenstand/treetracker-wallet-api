@@ -1,11 +1,12 @@
 require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
-const expect = require('expect-runtime');
+const Joi = require('joi');
+// const expect = require('expect-runtime');
 const log = require('loglevel');
 const knex = require('knex');
 const connection = require('../../../config/config').connectionString;
 
-expect(connection).to.match(/^postgresql:\//);
-
+// expect(connection).to.match(/^postgresql:\//);
+Joi.assert(connection, Joi.string().pattern(/^postgresql:\//));
 const knexConfig = {
   client: 'pg',
   debug: process.env.NODE_LOG_LEVEL === 'debug',
