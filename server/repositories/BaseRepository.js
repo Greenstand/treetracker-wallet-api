@@ -99,6 +99,11 @@ class BaseRepository {
       .count()
       .table(this._tableName)
       .where(filter);
+    // expect(result).match([
+    //   {
+    //     count: expect.any(String),
+    //   },
+    // ]);
 
     Joi.assert(
       result,
@@ -156,6 +161,7 @@ class BaseRepository {
       .getDB()
       .batchInsert(this._tableName, objects)
       .returning('id');
+    // expect(result).match([expect.any(String)]);
     Joi.assert(result, Joi.array().items(Joi.string()));
     return result;
   }

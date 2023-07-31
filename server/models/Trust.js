@@ -369,6 +369,10 @@ class Trust {
    * target wallet
    */
   async hasTrust(walletLoginId, trustType, senderWallet, receiveWallet) {
+    // expect(trustType).oneOf(
+    //   Object.keys(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
+    // );
+
     Joi.assert(
       trustType,
       Joi.string().valid(

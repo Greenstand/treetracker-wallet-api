@@ -9,20 +9,6 @@ class TokenRepository extends BaseRepository {
     this._session = session;
   }
 
-  // async getById(id) {
-  //   const result = await this._session
-  //     .getDB()(this._tableName)
-  //     .where('id', id)
-  //     .first();
-  //   expect(
-  //     result,
-  //     () => new HttpError(404, `can not found token by id:${id}`),
-  //   ).match({
-  //     id: expect.any(String),
-  //   });
-  //   return result;
-  // }
-
   async getById(id) {
     Joi.assert(id, Joi.string().uuid());
 
@@ -31,12 +17,7 @@ class TokenRepository extends BaseRepository {
       .where('id', id)
       .first();
 
-    try {
-      Joi.assert(
-        result,
-        Joi.object({ id: Joi.string().required() }).unknown().required(),
-      );
-    } catch (error) {
+    if (!result) {
       throw new HttpError(404, `can not found token by id:${id}`);
     }
 

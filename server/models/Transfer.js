@@ -375,6 +375,10 @@ class Transfer {
     } else {
       log.debug('transfer tokens');
       const tokens = await this._token.getTokensByPendingTransferId(transferId);
+      // expect(transfer).match({
+      //   source_wallet_id: expect.any(String),
+      // });
+
       Joi.assert(
         transfer,
         Joi.object({

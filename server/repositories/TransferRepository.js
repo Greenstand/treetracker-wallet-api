@@ -45,6 +45,10 @@ class TransferRepository extends BaseRepository {
         'destination_wallet.id',
       );
 
+    // expect(result[0]).match({
+    //   id: expect.anything(),
+    // });
+
     Joi.assert(
       result[0],
       Joi.object({
