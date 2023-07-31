@@ -1,4 +1,3 @@
-// const expect = require('expect-runtime');
 const Joi = require('joi');
 const BaseRepository = require('./BaseRepository');
 const TransferEnum = require('../utils/transfer-enum');
@@ -46,9 +45,6 @@ class TransferRepository extends BaseRepository {
         'destination_wallet.id',
       );
 
-    // expect(result[0]).match({
-    //   id: expect.anything(),
-    // });
 
     Joi.assert(result[0], Joi.object({
       id: Joi.exist()
@@ -134,7 +130,6 @@ class TransferRepository extends BaseRepository {
       promise = promise.limit(limitOptions.limit);
     }
     const result = await promise;
-    // expect(result).a(expect.any(Array));
     Joi.assert(result, Joi.array().required());
     return result;
   }
