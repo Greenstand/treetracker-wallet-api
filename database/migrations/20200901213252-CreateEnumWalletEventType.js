@@ -14,7 +14,7 @@ exports.setup = function (options, seedLink) {
 
 exports.up = function (db) {
   return db.runSql(
-    "CREATE TYPE wallet_event_type AS ENUM ('trust_request', 'trust_request_granted', 'trust_request_cancelled_by_originator', 'trust_request_cancelled_by_actor', 'trust_request_cancelled_by_target', 'transfer_requested', 'transfer_request_cancelled_by_source', 'transfer_request_cancelled_by_destination', 'transfer_request_cancelled_by_originator', 'transfer_pending_cancelled_by_source', 'transfer_pending_cancelled_by_destination', 'transfer_pending_cancelled_by_requestor', 'transfer_completed', 'transfer_failed','login','wallet_created)",
+    "CREATE TYPE wallet_event_type AS ENUM ('trust_request', 'trust_request_granted', 'trust_request_cancelled_by_originator', 'trust_request_cancelled_by_actor', 'trust_request_cancelled_by_target', 'transfer_requested', 'transfer_request_cancelled_by_source', 'transfer_request_cancelled_by_destination', 'transfer_request_cancelled_by_originator', 'transfer_pending_cancelled_by_source', 'transfer_pending_cancelled_by_destination', 'transfer_pending_cancelled_by_requestor', 'transfer_completed', 'transfer_failed','login','wallet_created')",
   );
 };
 
