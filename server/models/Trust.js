@@ -11,6 +11,10 @@ class Trust {
     this._trustRepository = new TrustRepository(session);
   }
 
+  async getTrustRelationshipsById(id) {
+    return this._trustRepository.getById(id);
+  }
+
   /*
    * Get trust relationships by filters, setting filter to undefined to allow all data
    */

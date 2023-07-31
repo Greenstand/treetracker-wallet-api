@@ -8,6 +8,7 @@ const {
 } = require('./schemas');
 
 const transferPost = async (req, res) => {
+  // need to add to the events table
   await transferPostSchema.validateAsync(req.body, { abortEarly: false });
   const transferService = new TransferService();
 
@@ -20,6 +21,7 @@ const transferPost = async (req, res) => {
 };
 
 const transferIdAcceptPost = async (req, res) => {
+  // need to add to the events table
   await transferIdParamSchema.validateAsync(req.params, { abortEarly: false });
 
   const transferService = new TransferService();
@@ -32,6 +34,7 @@ const transferIdAcceptPost = async (req, res) => {
 };
 
 const transferIdDeclinePost = async (req, res) => {
+  // need to add to the events table
   await transferIdParamSchema.validateAsync(req.params, { abortEarly: false });
 
   const transferService = new TransferService();
@@ -44,6 +47,7 @@ const transferIdDeclinePost = async (req, res) => {
 };
 
 const transferIdDelete = async (req, res) => {
+  // need to add to the events table
   await transferIdParamSchema.validateAsync(req.params, { abortEarly: false });
 
   const transferService = new TransferService();

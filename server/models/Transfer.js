@@ -36,6 +36,8 @@ class Transfer {
 
   async getById({ transferId, walletLoginId }) {
     const transfers = await this.getTransfers({ walletLoginId, transferId });
+
+    log.info(transferId, walletLoginId, transfers);
     return transfers[0];
   }
 
@@ -176,6 +178,9 @@ class Transfer {
         // TODO: add boolean for claim in transferRepository
         claim: claimBoolean,
       });
+
+      log.info(transfer);
+      log.info('here');
       log.debug('now, deal with tokens');
       await this._token.completeTransfer(tokens, transfer, claimBoolean);
       return this.constructor.removeWalletIds(transfer);

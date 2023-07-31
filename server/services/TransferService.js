@@ -1,15 +1,18 @@
+const log = require('loglevel');
 const Session = require('../infra/database/Session');
 const Transfer = require('../models/Transfer');
 const HttpError = require('../utils/HttpError');
 const WalletService = require('./WalletService');
 const TokenService = require('./TokenService');
 const TransferEnums = require('../utils/transfer-enum');
+const Event = require('../models/Event');
 
 class TransferService {
   constructor() {
     this._session = new Session();
     this._transfer = new Transfer(this._session);
     this._walletService = new WalletService();
+    this._event = new Event(this._session);
   }
 
   async getByFilter(query, walletLoginId) {
@@ -49,10 +52,9 @@ class TransferService {
       const { claim, bundle, tokens } = transferBody;
 
       let result;
-
+      const gottentokens = [];
       // TODO: put the claim boolean into each tokens
       if (tokens) {
-        const gottentokens = [];
         const tokenService = new TokenService();
         await Promise.all(
           tokens.map(async (id) => {
@@ -61,6 +63,8 @@ class TransferService {
           }),
         );
         // Case 1: with trust, token transfer
+
+        // log.info(walletLoginId, walletSender, walletReceiver, gottentokens);
         result = await this._transfer.transfer(
           walletLoginId,
           walletSender,
@@ -80,13 +84,91 @@ class TransferService {
         );
       }
 
+      const tokenArr = gottentokens.map((token) => token.id);
+
       let status;
       if (result.state === TransferEnums.STATE.completed) {
+        // the log should show up on both sender and receiver
+        await this._event.logEvent({
+          loggedInWalletId: walletSender.id,
+          type: 'transfer_completed',
+          payload: tokens
+            ? {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                tokenTransferred: tokenArr,
+                claim,
+              }
+            : {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                bundle: bundle.bundle_size,
+                claim,
+              },
+        });
+
+        // the log should show up on both sender and receiver
+        await this._event.logEvent({
+          loggedInWalletId: walletReceiver.id,
+          type: 'transfer_completed',
+          payload: tokens
+            ? {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                tokenTransferred: tokenArr,
+                claim,
+              }
+            : {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                bundle: bundle.bundle_size,
+                claim,
+              },
+        });
+
         status = 201;
       } else if (
         result.state === TransferEnums.STATE.pending ||
         result.state === TransferEnums.STATE.requested
       ) {
+        // the log should show up on both sender and receiver
+        await this._event.logEvent({
+          loggedInWalletId: walletSender.id,
+          type: 'transfer_requested',
+          payload: tokens
+            ? {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                tokenTransferred: tokenArr,
+                claim,
+              }
+            : {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                bundle: bundle.bundle_size,
+                claim,
+              },
+        });
+
+        // the log should show up on both sender and receiver
+        await this._event.logEvent({
+          loggedInWalletId: walletReceiver.id,
+          type: 'transfer_requested',
+          payload: tokens
+            ? {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                tokenTransferred: tokenArr,
+                claim,
+              }
+            : {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                bundle: bundle.bundle_size,
+                claim,
+              },
+        });
+
         status = 202;
       } else {
         throw new Error(`Unexpected state ${result.state}`);
@@ -105,6 +187,20 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
+      const transfer = await this._transfer.getById({
+        transferId,
+        walletLoginId,
+      });
+
+      const originator_wallet_id = await this._walletService.getByName(
+        transfer.originating_wallet,
+      );
+      const destination_wallet_id = await this._walletService.getByName(
+        transfer.destination_wallet,
+      );
+
+      log.info(originator_wallet_id, destination_wallet_id);
+
       // TODO: claim
       const result = await this._transfer.acceptTransfer(
         transferId,
@@ -112,6 +208,22 @@ class TransferService {
       );
 
       await this._session.commitTransaction();
+
+      // transfer completed
+      // the log should show up on both sender and receiver
+      await this._event.logEvent({
+        loggedInWalletId: originator_wallet_id.id,
+        type: 'transfer_completed',
+        payload: { transferId },
+      });
+
+      // transfer completed
+      // the log should show up on both sender and receiver
+      await this._event.logEvent({
+        loggedInWalletId: destination_wallet_id.id,
+        type: 'transfer_completed',
+        payload: { transferId },
+      });
 
       return result;
     } catch (e) {
@@ -126,12 +238,54 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
+      const transfer = await this._transfer.getById({
+        transferId,
+        walletLoginId,
+      });
+
+      const originator_wallet_id = await this._walletService.getByName(
+        transfer.originating_wallet,
+      );
+
+      const destination_wallet_id = await this._walletService.getByName(
+        transfer.destination_wallet,
+      );
+
       const result = await this._transfer.declineTransfer(
         transferId,
         walletLoginId,
       );
 
       await this._session.commitTransaction();
+
+      // transfer request cancelled by destination
+      // the log should show up on both sender and receiver
+      await this._event.logEvent({
+        loggedInWalletId: originator_wallet_id.id,
+        type: 'transfer_request_cancelled_by_destination',
+        payload: { transferId },
+      });
+
+      await this._event.logEvent({
+        loggedInWalletId: originator_wallet_id.id,
+        type: 'transfer_failed',
+        payload: { transferId },
+      });
+
+      // transfer request cancelled by destination
+      // the log should show up on both sender and receiver
+      await this._event.logEvent({
+        loggedInWalletId: destination_wallet_id.id,
+        type: 'transfer_request_cancelled_by_destination',
+        payload: { transferId },
+      });
+
+      await this._event.logEvent({
+        loggedInWalletId: destination_wallet_id.id,
+        type: 'transfer_failed',
+        payload: { transferId },
+      });
+
       return result;
     } catch (e) {
       if (this._session.isTransactionInProgress()) {
@@ -145,12 +299,54 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
+      const transfer = await this._transfer.getById({
+        transferId,
+        walletLoginId,
+      });
+
+      const originator_wallet_id = await this._walletService.getByName(
+        transfer.originating_wallet,
+      );
+
+      const destination_wallet_id = await this._walletService.getByName(
+        transfer.destination_wallet,
+      );
+
       const result = await this._transfer.cancelTransfer(
         transferId,
         walletLoginId,
       );
 
       await this._session.commitTransaction();
+
+      // transfer pending cancelled by requestor
+      // the log should show up on both sender and receiver
+      await this._event.logEvent({
+        loggedInWalletId: originator_wallet_id.id,
+        type: 'transfer_pending_cancelled_by_requestor',
+        payload: { transferId },
+      });
+
+      await this._event.logEvent({
+        loggedInWalletId: originator_wallet_id.id,
+        type: 'transfer_failed',
+        payload: { transferId },
+      });
+
+      // transfer pending cancelled by requestor
+      // the log should show up on both sender and receiver
+      await this._event.logEvent({
+        loggedInWalletId: destination_wallet_id.id,
+        type: 'transfer_pending_cancelled_by_requestor',
+        payload: { transferId },
+      });
+
+      await this._event.logEvent({
+        loggedInWalletId: destination_wallet_id.id,
+        type: 'transfer_failed',
+        payload: { transferId },
+      });
+
       return result;
     } catch (e) {
       if (this._session.isTransactionInProgress()) {
@@ -163,6 +359,19 @@ class TransferService {
   async fulfillTransfer(walletLoginId, transferId, requestBody) {
     try {
       await this._session.beginTransaction();
+
+      const transfer = await this._transfer.getById({
+        transferId,
+        walletLoginId,
+      });
+
+      const originator_wallet_id = await this._walletService.getByName(
+        transfer.originating_wallet,
+      );
+
+      const destination_wallet_id = await this._walletService.getByName(
+        transfer.destination_wallet,
+      );
 
       let result;
       if (requestBody.implicit) {
@@ -187,6 +396,23 @@ class TransferService {
         );
       }
       await this._session.commitTransaction();
+
+      // transfer completed
+      // the log should show up on both sender and receiver
+      await this._event.logEvent({
+        loggedInWalletId: originator_wallet_id.id,
+        type: 'transfer_completed',
+        payload: { transferId },
+      });
+
+      // transfer completed
+      // the log should show up on both sender and receiver
+      await this._event.logEvent({
+        loggedInWalletId: destination_wallet_id.id,
+        type: 'transfer_completed',
+        payload: { transferId },
+      });
+
       return result;
     } catch (e) {
       if (this._session.isTransactionInProgress()) {

@@ -32,6 +32,7 @@ const trustGet = async (req, res) => {
 };
 
 const trustPost = async (req, res) => {
+  // need to add to the events table
   await trustPostSchema.validateAsync(req.body, { abortEarly: false });
 
   const trustService = new TrustService();
@@ -46,6 +47,7 @@ const trustPost = async (req, res) => {
 };
 
 const trustRelationshipAccept = async (req, res) => {
+  // need to add to the events table
   await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
@@ -60,6 +62,7 @@ const trustRelationshipAccept = async (req, res) => {
 };
 
 const trustRelationshipDecline = async (req, res) => {
+  // need to add to the events table
   await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
@@ -74,6 +77,7 @@ const trustRelationshipDecline = async (req, res) => {
 };
 
 const trustRelationshipDelete = async (req, res) => {
+  // need to add to the events table
   await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });

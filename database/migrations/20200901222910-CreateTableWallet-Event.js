@@ -1,20 +1,18 @@
-
-
 let dbm;
 let type;
 let seed;
 
 /**
-  * We receive the dbmigrate dependency from dbmigrate initially.
-  * This enables us to not have to rely on NODE_PATH.
-  */
-exports.setup = function(options, seedLink) {
+ * We receive the dbmigrate dependency from dbmigrate initially.
+ * This enables us to not have to rely on NODE_PATH.
+ */
+exports.setup = function (options, seedLink) {
   dbm = options.dbmigrate;
   type = dbm.dataType;
   seed = seedLink;
 };
 
-exports.up = function(db) {
+exports.up = function (db) {
   return db.createTable('wallet_event', {
     id: { type: 'uuid', primaryKey: true, notNull: true },
     wallet_id: { type: 'uuid', notNull: true },
@@ -24,13 +22,14 @@ exports.up = function(db) {
       notNull: true,
       defaultValue: new String('now()'),
     },
+    payload: { type: 'json', notNull: true },
   });
 };
 
-exports.down = function(db) {
+exports.down = function (db) {
   return db.dropTable('wallet_event');
 };
 
 exports._meta = {
-  "version": 1
+  version: 1,
 };

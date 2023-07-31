@@ -2,11 +2,13 @@ const { validate: uuidValidate } = require('uuid');
 const Wallet = require('../models/Wallet');
 const Session = require('../infra/database/Session');
 const Token = require('../models/Token');
+const Event = require('../models/Event');
 
 class WalletService {
   constructor() {
     this._session = new Session();
     this._wallet = new Wallet(this._session);
+    this._event = new Event(this._session);
   }
 
   async getSubWallets(id) {
@@ -45,6 +47,12 @@ class WalletService {
       );
 
       await this._session.commitTransaction();
+
+      await this._event.logEvent({
+        loggedInWalletId: addedWallet.id,
+        type: 'wallet_created',
+        payload: { wallet: addedWallet.name },
+      });
 
       return { wallet: addedWallet.name, id: addedWallet.id };
     } catch (e) {
