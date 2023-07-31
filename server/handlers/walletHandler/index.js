@@ -24,6 +24,7 @@ const walletGet = async (req, res) => {
 
   res.status(200).json({
     total: count,
+    query: { ...req.query, limit, offset },
     wallets,
   });
 };
