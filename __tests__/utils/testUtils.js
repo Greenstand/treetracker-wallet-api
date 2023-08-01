@@ -141,11 +141,31 @@ async function sendAndPend(walletSender, walletReceiver, bundleSize) {
     return result[0];
 }
 
+async function sendAndCancel(walletSender, walletReceiver, bundleSize){
+    const result = await knex('transfer')
+        .insert({
+            id: uuid.v4(),
+            originator_wallet_id: walletSender.id,
+            source_wallet_id: walletSender.id,
+            destination_wallet_id: walletReceiver.id,
+            type: TransferEnum.TYPE.send,
+            parameters: {
+                bundleSize,
+            },
+            state: TransferEnum.STATE.cancelled,
+            active: true,
+        })
+        .returning('*');
+    expect(result[0]).property('id').a('string');
+    return result[0];
+}
+
 module.exports = {
     register,
     registerAndLogin,
     clear,
     sendAndPend,
+    sendAndCancel,
     addToken,
     feedSubWallets
 };
