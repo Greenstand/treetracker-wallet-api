@@ -1,3 +1,11 @@
+## [1.21.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.3...v1.21.4) (2023-08-01)
+
+
+### Bug Fixes
+
+* bug fix and removed commented blocks ([08afc78](https://github.com/Greenstand/treetracker-wallet-api/commit/08afc78ff2803d3480e74b11331264ae1e7cfe0c))
+* replaced expect-runtime calls with Joi validation ([8d01c4a](https://github.com/Greenstand/treetracker-wallet-api/commit/8d01c4ac665d9d2774aa57298c9e7b1f03ac6016))
+
 ## [1.21.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.2...v1.21.3) (2023-08-01)
 
 
