@@ -1,2 +1,4 @@
-bases:
+patchesStrategicMerge:
+  - mapping.yaml
+resources:
   - ../../base
