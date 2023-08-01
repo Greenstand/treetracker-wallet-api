@@ -1,4 +1,4 @@
-const expect = require('expect-runtime');
+const Joi = require('joi');
 const HttpError = require('../utils/HttpError');
 const BaseRepository = require('./BaseRepository');
 
@@ -10,16 +10,23 @@ class TokenRepository extends BaseRepository {
   }
 
   async getById(id) {
+    
+    Joi.assert(id, Joi.string().uuid());
+
     const result = await this._session
-      .getDB()(this._tableName)
-      .where('id', id)
-      .first();
-    expect(
-      result,
-      () => new HttpError(404, `can not found token by id:${id}`),
-    ).match({
-      id: expect.any(String),
-    });
+        .getDB()(this._tableName)
+        .where('id', id)
+        .first();
+
+    try {
+      Joi.assert(result, 
+        Joi.object({ id: Joi.string().required() })
+          .unknown()
+          .required());
+    } catch (error) {
+        throw new HttpError(404, `can not found token by id:${id}`);
+    }
+
     return result;
   }
 

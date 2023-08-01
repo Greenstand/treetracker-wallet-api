@@ -897,8 +897,11 @@ describe('Trust Model', () => {
         error = e;
       }
 
+      // expect(error.toString()).eql(
+      //   `Error: [assert failed] expect 'trust type' --to-->  one of ["send","receive","manage","yield","deduct","release"]`,
+      // );
       expect(error.toString()).eql(
-        `Error: [assert failed] expect 'trust type' --to-->  one of ["send","receive","manage","yield","deduct","release"]`,
+        `ValidationError: "value" must be one of [send, receive, manage, yield, deduct, release]`,
       );
       expect(getTrustRelationshipsTrustedStub).not.called;
     });
