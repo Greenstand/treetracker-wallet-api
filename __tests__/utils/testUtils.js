@@ -162,6 +162,57 @@ async function sendAndCancel(walletSender, walletReceiver, bundleSize){
     return result[0];
 }
 
+async function getTransfer(transfer) {
+    const result = await knex('transfer')
+        .where({id: transfer.id})
+
+    return result[0];
+}
+
+async function getToken(wallet) {
+    const result = await knex('token')
+        .where({wallet_id: wallet.id})
+        .select('*')
+    return result;
+}
+
+async function pendingCanceled(transfer) {
+    const result = await knex('transfer')
+        .where({id: transfer.id, state: TransferEnum.STATE.pending})
+        .update({
+            id: transfer.id,
+            state: TransferEnum.STATE.cancelled
+        }).returning('*');
+
+    expect(result[0].id).to.eq(transfer.id);
+    expect(result[0].state).to.eq(TransferEnum.STATE.cancelled);
+
+    return result[0];
+}
+
+async function pendingCompleted(transfer){
+    const result = await knex('transfer')
+        .where({id: transfer.id, state: TransferEnum.STATE.pending})
+        .update({
+            id: transfer.id,
+            state: TransferEnum.STATE.completed
+        }).returning('*');
+
+    expect(result[0].id).to.eq(transfer.id);
+    expect(result[0].state).to.eq(TransferEnum.STATE.completed);
+    return result[0];
+}
+
+async function deleteToken(token){
+    const result = await knex('token').where({id: token.id}).delete();
+    expect(result).to.gte(0);
+}
+
+
+function getRandomToken() {
+    return {id: uuid.v4(), capture_id: uuid.v4()}
+}
+
 module.exports = {
     register,
     registerAndLogin,
@@ -169,5 +220,11 @@ module.exports = {
     sendAndPend,
     sendAndCancel,
     addToken,
-    feedSubWallets
+    feedSubWallets,
+    getRandomToken,
+    pendingCanceled,
+    pendingCompleted,
+    getTransfer,
+    getToken,
+    deleteToken
 };
