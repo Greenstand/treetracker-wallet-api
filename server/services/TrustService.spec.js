@@ -4,6 +4,7 @@ const TrustService = require('./TrustService');
 const WalletService = require('./WalletService');
 const Wallet = require('../models/Wallet');
 const Trust = require('../models/Trust');
+const Event = require('../models/Event');
 
 const { expect } = chai;
 
@@ -48,11 +49,22 @@ describe('TrustService', () => {
     const acceptTrustRelationshipStub = sinon
       .stub(Trust.prototype, 'acceptTrustRequestSentToMe')
       .resolves('trustRelationship');
+    const logEventStub = sinon.stub(Event.prototype, 'logEvent');
 
     const trustRelationship = await trustService.acceptTrustRequestSentToMe({
       trustRelationshipId: 'trustRelationshipId',
       walletLoginId: 'walletLoginId',
     });
+
+    expect(logEventStub.calledTwice).to.be.true;
+    expect(
+      logEventStub.firstCall.calledWithExactly({
+        loggedInWalletId: 'walletLoginId',
+        type: 'trust_request_granted',
+        payload: sinon.match.object,
+      }),
+    ).to.be.true;
+
     expect(trustRelationship).eql('trustRelationship');
     expect(
       acceptTrustRelationshipStub.calledOnceWithExactly({
