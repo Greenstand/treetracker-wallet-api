@@ -2,7 +2,7 @@ const uuid = require('uuid');
 const log = require('loglevel');
 const Crypto = require('crypto');
 const generator = require('generate-password');
-const { expect } = require('chai');
+const {expect} = require('chai');
 const JWTService = require('../../server/services/JWTService');
 const TransferEnum = require('../../server/utils/transfer-enum');
 const knex = require('../../server/infra/database/knex');
@@ -131,7 +131,9 @@ async function sendAndPend(walletSender, walletReceiver, bundleSize) {
             destination_wallet_id: walletReceiver.id,
             type: TransferEnum.TYPE.send,
             parameters: {
-                bundleSize,
+                bundle: {
+                    bundleSize
+                }
             },
             state: TransferEnum.STATE.pending,
             active: true,
