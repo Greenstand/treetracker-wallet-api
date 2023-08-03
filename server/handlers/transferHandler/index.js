@@ -75,7 +75,13 @@ const transferGet = async (req, res) => {
   const transferService = new TransferService();
   const transfers = await transferService.getByFilter(req.query, req.wallet_id);
 
-  res.status(200).json({ transfers });
+  const modifiedTransfers = transfers.map((t) => ({
+    ...t,
+    token_count:
+      +t.parameters?.bundle?.bundleSize || +t.parameters?.tokens?.length,
+  }));
+
+  res.status(200).json({ transfers: modifiedTransfers });
 };
 
 const transferIdGet = async (req, res) => {
