@@ -1,3 +1,10 @@
+## [1.21.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.4...v1.21.5) (2023-08-03)
+
+
+### Bug Fixes
+
+* add token_count to GET /transfer result ([0762d79](https://github.com/Greenstand/treetracker-wallet-api/commit/0762d7959a4ba76601b1060f1596095002afffac))
+
 ## [1.21.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.3...v1.21.4) (2023-08-01)
 
 
