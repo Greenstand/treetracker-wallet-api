@@ -3,10 +3,10 @@ const {expect} = require('chai');
 const chai = require('chai');
 const TransferEnums = require('../../server/utils/transfer-enum');
 chai.use(require('chai-uuid'));
-const {registerAndLogin, clear, sendBundleAndPend, sendAndCancel} = require('../utils/testUtils');
+const {registerAndLogin, clear, sendBundleAndPend, sendAndCancel, getTransfer} = require('../utils/testUtils');
 const walletAInfo = require('../mock-data/wallet/walletA.json');
 const walletBInfo = require('../mock-data/wallet/walletB.json');
-const {get, del} = require('../utils/sendReq');
+const {del} = require('../utils/sendReq');
 
 describe('Cancel pending transfer', () => {
     let walletA;
@@ -30,11 +30,8 @@ describe('Cancel pending transfer', () => {
 
         const res = await del(`/transfers/${transfer.id}`, walletA);
         expect(res).to.have.property('statusCode', 200);
-
-        const resB = await get( `/transfers/${transfer.id}`, walletA)
-        expect(resB).to.have.property('statusCode', 200);
-        expect(resB.body.id).to.eq(transfer.id);
-        expect(resB.body.state).to.eq(TransferEnums.STATE.cancelled)
+        const updatedTransfer = await getTransfer(transfer);
+        expect(updatedTransfer.state).to.eq(TransferEnums.STATE.cancelled);
     });
 
     it('Cancel the pending transfer by receiver', async () => {
@@ -43,10 +40,8 @@ describe('Cancel pending transfer', () => {
         const res = await del(`/transfers/${transfer.id}`, walletB);
         expect(res).to.have.property('statusCode', 403);
 
-        const resB = await get( `/transfers/${transfer.id}`, walletB)
-        expect(resB).to.have.property('statusCode', 200);
-        expect(resB.body.id).to.eq(transfer.id);
-        expect(resB.body.state).to.eq(TransferEnums.STATE.pending);
+        const updatedTransfer = await getTransfer(transfer);
+        expect(updatedTransfer.state).to.eq(TransferEnums.STATE.pending);
     });
 
     it('Cancel the pending transfer which already canceled', async () => {

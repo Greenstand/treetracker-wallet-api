@@ -199,6 +199,9 @@ async function getTransfer(transfer) {
     const result = await knex('transfer')
         .where({id: transfer.id})
 
+    expect(result[0]).property('id').a('string');
+    expect(result[0]).property('parameters').a('object');
+    expect(result[0]).property('state').a('string');
     return result[0];
 }
 
