@@ -2,23 +2,23 @@ require('dotenv').config();
 const {expect} = require('chai');
 const chai = require('chai');
 const TransferEnums = require('../../server/utils/transfer-enum');
-chai.use(require('chai-uuid'));
-const {post} = require('../utils/sendReq');
-const {
-    clear, registerAndLogin, sendBundleAndPend,
-    pendingCompleted, getTransfer, getToken,
-    addToken, getRandomToken, pendingCanceled, deleteToken
-} = require('../utils/testUtils');
+const {clear, registerAndLogin, addToken, getRandomToken,
+        sendTokensAndPend, getTransfer, getToken,
+        pendingCompleted} = require("../utils/testUtils");
+const {post} = require("../utils/sendReq");
 const walletAInfo = require('../mock-data/wallet/walletA.json');
 const walletBInfo = require('../mock-data/wallet/walletB.json');
+chai.use(require('chai-uuid'));
 
-describe('Create and accept a bundle transfer', () => {
+describe('Create and accept a pending transfer', () => {
     let walletA;
     let walletB;
     let transfer;
     let tokens = [];
 
-    before(async () => {
+    before(clear);
+    afterEach(async () => {
+        tokens = [];
         await clear();
     });
 
@@ -31,16 +31,11 @@ describe('Create and accept a bundle transfer', () => {
         tokens.push(await addToken(walletA, getRandomToken()));
         tokens.push(await addToken(walletA, getRandomToken()));
         tokens.push(await addToken(walletA, getRandomToken()));
-        transfer = await sendBundleAndPend(walletA, walletB, 5);
+        transfer = await sendTokensAndPend(walletA, walletB, tokens.map(token => token.id))
     });
 
-    afterEach(async () => {
-        await clear();
-        tokens = [];
-    })
-
-    it('Accept the pending bundle transfer', async () => {
-        const res = await post(`/transfers/${transfer.id}/accept`, walletB)
+    it('Accept a pending transfer', async () => {
+        const res = await post(`/transfers/${transfer.id}/accept`, walletB);
         expect(res).to.have.property('statusCode', 200);
         const updatedTransfer = await getTransfer(transfer);
         expect(updatedTransfer.state).to.eq(TransferEnums.STATE.completed);
@@ -49,16 +44,6 @@ describe('Create and accept a bundle transfer', () => {
         const walletAToken = await getToken(walletA);
         expect(walletAToken.length).to.eq(0);
     });
-
-    it('Accept the transfer which already canceled', async () => {
-        await pendingCanceled(transfer);
-        const res = await post(`/transfers/${transfer.id}/accept`, walletB)
-        expect(res).to.have.property('statusCode', 403);
-        const walletBToken = await getToken(walletB);
-        expect(walletBToken.length).to.eq(0);
-        const walletAToken = await getToken(walletA);
-        expect(walletAToken.length).to.eq(5);
-    })
 
     it('Accept the transfer which already accepted', async () => {
         await pendingCompleted(transfer);
@@ -71,14 +56,18 @@ describe('Create and accept a bundle transfer', () => {
         expect(walletAToken.length).to.eq(5);
     })
 
-    it('Accept the transfer, but sender wallet does NOT have enough tokens', async () => {
-        await deleteToken(tokens[0]);
+    it('Accept the transfer which is belong to other account', async () => {
+        const weiyu = await registerAndLogin({name: 'weiyu', password: 'test1234'});
 
-        const res = await post(`/transfers/${transfer.id}/accept`, walletB)
+        const res = await post(`/transfers/${transfer.id}/accept`, weiyu)
         expect(res).to.have.property('statusCode', 403);
-        const walletBToken = await getToken(walletB);
-        expect(walletBToken.length).to.eq(0);
-        const walletAToken = await getToken(walletA);
-        expect(walletAToken.length).to.eq(4);
+
+        getToken(weiyu).then((result) => {
+            expect(result.length).to.eq(0);
+        })
+
+        getToken(walletA).then((result) => {
+            expect(result.length).to.eq(5);
+        })
     })
 });

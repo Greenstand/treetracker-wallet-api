@@ -27,7 +27,6 @@ async function post(endpoint, wallet, param, body) {
 }
 
 async function del(endpoint, wallet, param, body) {
-
     const res = await request(server)
         .del(endpoint)
         .query(param)

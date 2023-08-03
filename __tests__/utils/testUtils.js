@@ -122,7 +122,7 @@ async function addToken(wallet, token) {
 /*
  * Directly pending a token send request
  */
-async function sendAndPend(walletSender, walletReceiver, bundleSize) {
+async function sendBundleAndPend(walletSender, walletReceiver, bundleSize) {
     const result = await knex('transfer')
         .insert({
             id: uuid.v4(),
@@ -143,7 +143,40 @@ async function sendAndPend(walletSender, walletReceiver, bundleSize) {
     return result[0];
 }
 
-async function sendAndCancel(walletSender, walletReceiver, bundleSize){
+async function sendTokensAndPend(walletSender, walletReceiver, tokens) {
+    const trx = await knex.transaction();
+    const transferId = uuid.v4();
+    try {
+        await trx('transfer').insert({
+            id: transferId,
+            originator_wallet_id: walletSender.id,
+            source_wallet_id: walletSender.id,
+            destination_wallet_id: walletReceiver.id,
+            type: TransferEnum.TYPE.send,
+            parameters: {
+                tokens
+            },
+            state: TransferEnum.STATE.pending,
+            active: true,
+        })
+
+        await trx('token').whereIn('id', tokens)
+            .update(
+                {
+                    transfer_pending: true,
+                    transfer_pending_id: transferId
+                }
+            )
+        trx.commit()
+    } catch (error) {
+        trx.rollback();
+        throw error;
+    }
+
+    return {id: transferId};
+}
+
+async function sendAndCancel(walletSender, walletReceiver, bundleSize) {
     const result = await knex('transfer')
         .insert({
             id: uuid.v4(),
@@ -190,7 +223,7 @@ async function pendingCanceled(transfer) {
     return result[0];
 }
 
-async function pendingCompleted(transfer){
+async function pendingCompleted(transfer) {
     const result = await knex('transfer')
         .where({id: transfer.id, state: TransferEnum.STATE.pending})
         .update({
@@ -217,7 +250,8 @@ module.exports = {
     register,
     registerAndLogin,
     clear,
-    sendAndPend,
+    sendBundleAndPend,
+    sendTokensAndPend,
     sendAndCancel,
     addToken,
     feedSubWallets,

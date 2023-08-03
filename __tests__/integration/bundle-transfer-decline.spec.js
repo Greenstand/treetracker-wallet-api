@@ -21,7 +21,7 @@ describe('Zaven request to send 1 token to Meisze', () => {
     await testUtils.addToken(registeredZaven, TokenA);
     expect(registeredZaven).property('id').a('string');
     registeredMeisze = await testUtils.registerAndLogin(Meisze);
-    transfer = await testUtils.sendAndPend(
+    transfer = await testUtils.sendBundleAndPend(
       registeredZaven,
       registeredMeisze,
       1,
