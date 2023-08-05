@@ -3,7 +3,7 @@ const {expect} = require('chai');
 const chai = require('chai');
 const TransferEnums = require('../../server/utils/transfer-enum');
 chai.use(require('chai-uuid'));
-const {registerAndLogin, clear, sendBundleAndPend, sendAndCancel, getTransfer} = require('../utils/testUtils');
+const {registerAndLogin, clear, sendBundleTransfer, getTransfer} = require('../utils/testUtils');
 const walletAInfo = require('../mock-data/wallet/walletA.json');
 const walletBInfo = require('../mock-data/wallet/walletB.json');
 const {del} = require('../utils/sendReq');
@@ -26,7 +26,7 @@ describe('Cancel pending transfer', () => {
     })
 
     it('Cancel the pending transfer by sender', async () => {
-        transfer = await sendBundleAndPend(walletA, walletB, 1);
+        transfer = await sendBundleTransfer(walletA, walletB, 1, TransferEnums.STATE.pending);
 
         const res = await del(`/transfers/${transfer.id}`, walletA);
         expect(res).to.have.property('statusCode', 200);
@@ -35,7 +35,7 @@ describe('Cancel pending transfer', () => {
     });
 
     it('Cancel the pending transfer by receiver', async () => {
-        transfer = await sendBundleAndPend(walletA, walletB, 1);
+        transfer = await sendBundleTransfer(walletA, walletB, 1, TransferEnums.STATE.pending);
 
         const res = await del(`/transfers/${transfer.id}`, walletB);
         expect(res).to.have.property('statusCode', 403);
@@ -45,14 +45,14 @@ describe('Cancel pending transfer', () => {
     });
 
     it('Cancel the pending transfer which already canceled', async () => {
-        transfer = await sendAndCancel(walletA, walletB, 1);
+        transfer = await sendBundleTransfer(walletA, walletB, 1, TransferEnums.STATE.cancelled);
 
         const res = await del(`/transfers/${transfer.id}`, walletA)
         expect(res).to.have.property('statusCode', 403);
     })
 
     it('Cancel the pending transfer which is belong to other wallet', async () => {
-        transfer = await  sendBundleAndPend(walletA, walletB, 1);
+        transfer = await  sendBundleTransfer(walletA, walletB, 1, TransferEnums.STATE.pending);
 
         const walletC = await registerAndLogin({name: 'walletCCC', password: 'test1234'});
         const res = await del(`/transfers/${transfer.id}`, walletC)

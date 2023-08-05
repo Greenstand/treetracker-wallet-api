@@ -5,9 +5,9 @@ const TransferEnums = require('../../server/utils/transfer-enum');
 chai.use(require('chai-uuid'));
 const {post} = require('../utils/sendReq');
 const {
-    clear, registerAndLogin, sendBundleAndPend,
-    pendingCompleted, getTransfer, getToken,
-    addToken, getRandomToken, pendingCanceled, deleteToken
+    clear, registerAndLogin, sendBundleTransfer,
+    pendingCompleted, getTransfer, getToken
+    , pendingCanceled, deleteToken, feedTokens
 } = require('../utils/testUtils');
 const walletAInfo = require('../mock-data/wallet/walletA.json');
 const walletBInfo = require('../mock-data/wallet/walletB.json');
@@ -26,12 +26,8 @@ describe('Create and accept a bundle transfer', () => {
         walletA = await registerAndLogin(walletAInfo);
         walletB = await registerAndLogin(walletBInfo);
 
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        transfer = await sendBundleAndPend(walletA, walletB, 5);
+        tokens = await feedTokens(walletA, 5);
+        transfer = await sendBundleTransfer(walletA, walletB, 5, TransferEnums.STATE.pending);
     });
 
     afterEach(async () => {

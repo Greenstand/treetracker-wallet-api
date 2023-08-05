@@ -70,6 +70,10 @@ async function registerAndLogin(user) {
     return userRegistered;
 }
 
+function getRandomToken() {
+    return {id: uuid.v4(), capture_id: uuid.v4()}
+}
+
 async function feedSubWallets(id, subWallets) {
     // todo: use transaction here
     // eslint-disable-next-line no-restricted-syntax
@@ -119,10 +123,28 @@ async function addToken(wallet, token) {
     return result[0];
 }
 
-/*
- * Directly pending a token send request
- */
-async function sendBundleAndPend(walletSender, walletReceiver, bundleSize) {
+async function feedTokens(wallet, tokenSize) {
+    const tokens = [];
+
+    if (tokenSize <= 0 || tokenSize > 20) {
+        throw new Error('Too many tokens for test environment, tokenSize has to <= 20 and > 0');
+    }
+
+    for (let i = 0; i < tokenSize; i += 1) {
+        const token = getRandomToken();
+        token.wallet_id = wallet.id
+        tokens.push(token)
+    }
+
+    const result = await knex('token')
+        .insert(tokens)
+        .returning('*');
+
+    expect(result.length).to.eq(tokenSize)
+    return result;
+}
+
+async function sendBundleTransfer(walletSender, walletReceiver, bundleSize, transferState) {
     const result = await knex('transfer')
         .insert({
             id: uuid.v4(),
@@ -135,7 +157,7 @@ async function sendBundleAndPend(walletSender, walletReceiver, bundleSize) {
                     bundleSize
                 }
             },
-            state: TransferEnum.STATE.pending,
+            state: transferState,
             active: true,
         })
         .returning('*');
@@ -143,7 +165,7 @@ async function sendBundleAndPend(walletSender, walletReceiver, bundleSize) {
     return result[0];
 }
 
-async function sendTokensAndPend(walletSender, walletReceiver, tokens) {
+async function sendTokensTransfer(walletSender, walletReceiver, tokens, transferState) {
     const trx = await knex.transaction();
     const transferId = uuid.v4();
     try {
@@ -156,7 +178,7 @@ async function sendTokensAndPend(walletSender, walletReceiver, tokens) {
             parameters: {
                 tokens
             },
-            state: TransferEnum.STATE.pending,
+            state: transferState,
             active: true,
         })
 
@@ -174,25 +196,6 @@ async function sendTokensAndPend(walletSender, walletReceiver, tokens) {
     }
 
     return {id: transferId};
-}
-
-async function sendAndCancel(walletSender, walletReceiver, bundleSize) {
-    const result = await knex('transfer')
-        .insert({
-            id: uuid.v4(),
-            originator_wallet_id: walletSender.id,
-            source_wallet_id: walletSender.id,
-            destination_wallet_id: walletReceiver.id,
-            type: TransferEnum.TYPE.send,
-            parameters: {
-                bundleSize,
-            },
-            state: TransferEnum.STATE.cancelled,
-            active: true,
-        })
-        .returning('*');
-    expect(result[0]).property('id').a('string');
-    return result[0];
 }
 
 async function getTransfer(transfer) {
@@ -239,25 +242,21 @@ async function pendingCompleted(transfer) {
     return result[0];
 }
 
-async function deleteToken(token){
+async function deleteToken(token) {
     const result = await knex('token').where({id: token.id}).delete();
     expect(result).to.gte(0);
-}
-
-
-function getRandomToken() {
-    return {id: uuid.v4(), capture_id: uuid.v4()}
+    return result;
 }
 
 module.exports = {
     register,
     registerAndLogin,
     clear,
-    sendBundleAndPend,
-    sendTokensAndPend,
-    sendAndCancel,
+    sendBundleTransfer,
+    sendTokensTransfer,
     addToken,
     feedSubWallets,
+    feedTokens,
     getRandomToken,
     pendingCanceled,
     pendingCompleted,

@@ -2,9 +2,10 @@ require('dotenv').config();
 const {expect} = require('chai');
 const chai = require('chai');
 const TransferEnums = require('../../server/utils/transfer-enum');
-const {clear, registerAndLogin, addToken, getRandomToken,
-        sendTokensAndPend, getTransfer, getToken,
-        pendingCompleted} = require("../utils/testUtils");
+const {clear, registerAndLogin,
+        sendTokensTransfer, getTransfer, getToken,
+        pendingCompleted, feedTokens
+} = require("../utils/testUtils");
 const {post} = require("../utils/sendReq");
 const walletAInfo = require('../mock-data/wallet/walletA.json');
 const walletBInfo = require('../mock-data/wallet/walletB.json');
@@ -26,12 +27,8 @@ describe('Create and accept a pending transfer', () => {
         walletA = await registerAndLogin(walletAInfo);
         walletB = await registerAndLogin(walletBInfo);
 
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        transfer = await sendTokensAndPend(walletA, walletB, tokens.map(token => token.id))
+        tokens = await feedTokens(walletA, 5);
+        transfer = await sendTokensTransfer(walletA, walletB, tokens.map(token => token.id), TransferEnums.STATE.pending);
     });
 
     it('Accept a pending transfer', async () => {

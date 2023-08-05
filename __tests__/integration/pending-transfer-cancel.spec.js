@@ -4,10 +4,7 @@ const chai = require('chai');
 const {
     clear,
     registerAndLogin,
-    sendTokensAndPend,
-    addToken,
-    getRandomToken,
-    getTransfer
+    getTransfer, sendTokensTransfer, feedTokens
 } = require('../utils/testUtils')
 const {del} = require('../utils/sendReq');
 const TransferEnums = require('../../server/utils/transfer-enum');
@@ -31,12 +28,8 @@ describe('Create and cancel a pending transfer', () => {
         walletA = await registerAndLogin(walletAInfo);
         walletB = await registerAndLogin(walletBInfo);
 
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        tokens.push(await addToken(walletA, getRandomToken()));
-        transfer = await sendTokensAndPend(walletA, walletB, tokens.map(token => token.id))
+        tokens = await feedTokens(walletA, 5);
+        transfer = await sendTokensTransfer(walletA, walletB, tokens.map(token => token.id), TransferEnums.STATE.pending);
     });
 
     it('Cancel a pending transfer', async () => {
