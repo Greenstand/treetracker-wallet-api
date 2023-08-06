@@ -1,3 +1,10 @@
+## [1.21.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.5...v1.21.6) (2023-08-06)
+
+
+### Bug Fixes
+
+* check if the sender wallet is the same as the receiver wallet ([6d2826b](https://github.com/Greenstand/treetracker-wallet-api/commit/6d2826b91957008952db9df6436d933c4e4aed09))
+
 ## [1.21.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.4...v1.21.5) (2023-08-03)
 
 
