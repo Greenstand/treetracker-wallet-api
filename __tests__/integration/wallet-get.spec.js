@@ -31,7 +31,7 @@ describe('Wallet: Get wallets of an account', () => {
         //                  token: <string> (the bearer token)
         //                 }
         walletB = await registerAndLogin(walletBInfo);
-        await feedSubWallets(walletA.id, wallets);
+        await feedSubWallets(walletA, wallets);
     });
 
     afterEach(async () => {

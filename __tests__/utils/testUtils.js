@@ -74,11 +74,11 @@ function getRandomToken() {
     return {id: uuid.v4(), capture_id: uuid.v4()}
 }
 
-async function feedSubWallets(id, subWallets) {
+async function feedSubWallets(wallet, subWallets) {
     // todo: use transaction here
     // eslint-disable-next-line no-restricted-syntax
     for (const subWallet of subWallets) {
-        const wallet = (await knex('wallet')
+        const result= (await knex('wallet')
             .insert({
                 id: uuid.v4(),
                 name: subWallet.name,
@@ -87,10 +87,10 @@ async function feedSubWallets(id, subWallets) {
         await knex('wallet_trust')
             .insert({
                 id: uuid.v4(),
-                actor_wallet_id: id,
-                target_wallet_id: wallet.id,
+                actor_wallet_id: wallet.id,
+                target_wallet_id: result.id,
                 type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
-                originator_wallet_id: id,
+                originator_wallet_id: wallet.id,
                 request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
                 state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
                 active: true
@@ -165,34 +165,51 @@ async function sendBundleTransfer(walletSender, walletReceiver, transferState, b
     return result[0];
 }
 
-async function sendTokensTransfer(walletSender, walletReceiver, transferState, tokens) {
-    // todo: should better to use transaction here, but using knex transaction leads to a bug
-    const transferId = uuid.v4();
-    const result = await knex('transfer')
-        .insert({
-            id: transferId,
-            originator_wallet_id: walletSender.id,
-            source_wallet_id: walletSender.id,
-            destination_wallet_id: walletReceiver.id,
-            type: TransferEnum.TYPE.send,
-            parameters: {
-                tokens
-            },
-            state: transferState,
-            active: true,
-        }).returning('*');
-
-    if (tokens && (transferState === TransferEnum.STATE.pending || transferState === TransferEnum.STATE.requested)) {
-        await knex('token').whereIn('id', tokens)
-            .update(
-                {
-                    transfer_pending: true,
-                    transfer_pending_id: transferId
-                }
-            )
-    }
+async function getTrustRelationship(relation) {
+    const result = await knex('wallet_trust')
+        .where({id: relation.id || null})
+        .orWhere({originator_wallet_id: relation.originatorId || null})
+        .orWhere({actor_wallet_id: relation.requesterId || null})
+        .orWhere({target_wallet_id: relation.requesteeId || null})
+        .returning('*');
 
     return result[0];
+}
+
+async function sendTokensTransfer(walletSender, walletReceiver, transferState, tokens) {
+    const transferId = uuid.v4();
+    const trx = await knex.transaction();
+    try {
+        const result = await trx('transfer')
+            .insert({
+                id: transferId,
+                originator_wallet_id: walletSender.id,
+                source_wallet_id: walletSender.id,
+                destination_wallet_id: walletReceiver.id,
+                type: TransferEnum.TYPE.send,
+                parameters: {
+                    tokens
+                },
+                state: transferState,
+                active: true,
+            }).returning('*')
+
+        if (tokens && (transferState === TransferEnum.STATE.pending || transferState === TransferEnum.STATE.requested)) {
+            await trx('token').whereIn('id', tokens)
+                .update(
+                    {
+                        transfer_pending: true,
+                        transfer_pending_id: transferId
+                    }
+                )
+        }
+
+        await trx.commit()
+        return result[0];
+    } catch (error) {
+        await  trx.rollback();
+        throw error;
+    }
 }
 
 async function getTransfer(transfer) {
@@ -259,5 +276,6 @@ module.exports = {
     completePending,
     getTransfer,
     getToken,
-    deleteToken
+    deleteToken,
+    getTrustRelationship
 };
