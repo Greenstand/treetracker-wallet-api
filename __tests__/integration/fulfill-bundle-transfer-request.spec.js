@@ -28,7 +28,7 @@ describe('Request and fulfill a bundle transfer', () => {
         walletB = await registerAndLogin({name: 'walletB', password: 'abc12'});
 
         tokens = await feedTokens(walletA, 5);
-        transfer = await sendBundleTransfer(walletA, walletB, 5, TransferEnums.STATE.requested)
+        transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.requested, 5);
     });
 
     it('Fulfill a requested transfer', async () => {

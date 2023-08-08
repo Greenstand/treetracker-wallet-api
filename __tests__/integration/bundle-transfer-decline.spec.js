@@ -24,8 +24,8 @@ describe('Zaven request to send 1 token to Meisze', () => {
         transfer = await testUtils.sendBundleTransfer(
             registeredZaven,
             registeredMeisze,
-            1,
-            TransferEnums.STATE.pending
+            TransferEnums.STATE.pending,
+            1
         );
     });
 

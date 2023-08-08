@@ -22,7 +22,7 @@ describe('Request and fulfill an explicit transfer', () => {
         walletB = await registerAndLogin({name: 'walletB', password: 'abc12'});
 
         tokens = await feedTokens(walletA, 5);
-        transfer = await sendTokensTransfer(walletA, walletB, tokens.map(token => token.id), TransferEnums.STATE.requested) // I request 5 tokens before test
+        transfer = await sendTokensTransfer(walletA, walletB, TransferEnums.STATE.requested, tokens.map(token => token.id)) // I request 5 tokens before test
     });
 
     afterEach(async () => {
@@ -41,6 +41,8 @@ describe('Request and fulfill an explicit transfer', () => {
         expect(walletATokens.length).to.eq(0);
     })
 
+    // todo: fix this bug
+    // considering there is a bug here, normally expect to get 403, not 200
     it('Fulfill a requested transfer, but sender wallet dont have enough tokens', async () => {
         // delete one token from walletA, so that walletA do not have enough tokens to fulfill
         const result = await deleteToken(tokens[0]); // delete one token form db

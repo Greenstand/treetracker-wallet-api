@@ -2,8 +2,9 @@ require('dotenv').config();
 const {expect} = require('chai');
 const chai = require('chai');
 const TransferEnums = require('../../server/utils/transfer-enum');
-const {clear, registerAndLogin, getTransfer, pendingCanceled,
-    sendTokensTransfer, feedTokens
+const {
+    clear, registerAndLogin, getTransfer,
+    sendTokensTransfer, feedTokens, cancelPending
 } = require("../utils/testUtils");
 const {post} = require('../utils/sendReq');
 const walletAInfo = require("../mock-data/wallet/walletA.json");
@@ -16,21 +17,23 @@ describe('Create and decline a pending transfer', () => {
     let transfer;
     let tokens = [];
 
-    before(clear);
+    before(async () => {
+        await clear();
+    });
     afterEach(async () => {
         tokens = [];
         await clear();
     });
 
     beforeEach(async () => {
+        await clear();
         walletA = await registerAndLogin(walletAInfo);
         walletB = await registerAndLogin(walletBInfo);
 
         tokens = await feedTokens(walletA, 5);
-        transfer = await sendTokensTransfer(walletA, walletB, tokens.map(token => token.id), TransferEnums.STATE.pending);
+        transfer = await sendTokensTransfer(walletA, walletB, TransferEnums.STATE.pending, tokens.map(token => token.id));
     });
 
-    // /transfers/${pendingTransfer.id}/decline
     it('Decline a pending transfer', async () => {
         const res = await post(`/transfers/${transfer.id}/decline`, walletB);
         expect(res).to.have.property('statusCode', 200);
@@ -40,7 +43,7 @@ describe('Create and decline a pending transfer', () => {
     });
 
     it('Decline a pending transfer which already declined/canceled', async () => {
-        await pendingCanceled(transfer);
+        await cancelPending(transfer);
 
         const res = await post(`/transfers/${transfer.id}/decline`, walletB);
         expect(res).to.have.property('statusCode', 403);

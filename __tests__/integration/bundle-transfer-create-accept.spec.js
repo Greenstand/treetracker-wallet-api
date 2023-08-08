@@ -6,8 +6,8 @@ chai.use(require('chai-uuid'));
 const {post} = require('../utils/sendReq');
 const {
     clear, registerAndLogin, sendBundleTransfer,
-    pendingCompleted, getTransfer, getToken
-    , pendingCanceled, deleteToken, feedTokens
+    completePending, getTransfer, getToken
+    , cancelPending, deleteToken, feedTokens
 } = require('../utils/testUtils');
 const walletAInfo = require('../mock-data/wallet/walletA.json');
 const walletBInfo = require('../mock-data/wallet/walletB.json');
@@ -27,7 +27,7 @@ describe('Create and accept a bundle transfer', () => {
         walletB = await registerAndLogin(walletBInfo);
 
         tokens = await feedTokens(walletA, 5);
-        transfer = await sendBundleTransfer(walletA, walletB, 5, TransferEnums.STATE.pending);
+        transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.pending, 5);
     });
 
     afterEach(async () => {
@@ -47,7 +47,7 @@ describe('Create and accept a bundle transfer', () => {
     });
 
     it('Accept the transfer which already canceled', async () => {
-        await pendingCanceled(transfer);
+        await cancelPending(transfer);
         const res = await post(`/transfers/${transfer.id}/accept`, walletB)
         expect(res).to.have.property('statusCode', 403);
         const walletBToken = await getToken(walletB);
@@ -57,7 +57,7 @@ describe('Create and accept a bundle transfer', () => {
     })
 
     it('Accept the transfer which already accepted', async () => {
-        await pendingCompleted(transfer);
+        await completePending(transfer);
 
         const res = await post(`/transfers/${transfer.id}/accept`, walletB)
         expect(res).to.have.property('statusCode', 403);

@@ -26,7 +26,7 @@ describe('Cancel pending transfer', () => {
     })
 
     it('Cancel the pending transfer by sender', async () => {
-        transfer = await sendBundleTransfer(walletA, walletB, 1, TransferEnums.STATE.pending);
+        transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.pending, 1);
 
         const res = await del(`/transfers/${transfer.id}`, walletA);
         expect(res).to.have.property('statusCode', 200);
@@ -35,7 +35,7 @@ describe('Cancel pending transfer', () => {
     });
 
     it('Cancel the pending transfer by receiver', async () => {
-        transfer = await sendBundleTransfer(walletA, walletB, 1, TransferEnums.STATE.pending);
+        transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.pending, 1);
 
         const res = await del(`/transfers/${transfer.id}`, walletB);
         expect(res).to.have.property('statusCode', 403);
@@ -45,14 +45,14 @@ describe('Cancel pending transfer', () => {
     });
 
     it('Cancel the pending transfer which already canceled', async () => {
-        transfer = await sendBundleTransfer(walletA, walletB, 1, TransferEnums.STATE.cancelled);
+        transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.cancelled, 1);
 
         const res = await del(`/transfers/${transfer.id}`, walletA)
         expect(res).to.have.property('statusCode', 403);
     })
 
     it('Cancel the pending transfer which is belong to other wallet', async () => {
-        transfer = await  sendBundleTransfer(walletA, walletB, 1, TransferEnums.STATE.pending);
+        transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.pending, 1);
 
         const walletC = await registerAndLogin({name: 'walletCCC', password: 'test1234'});
         const res = await del(`/transfers/${transfer.id}`, walletC)

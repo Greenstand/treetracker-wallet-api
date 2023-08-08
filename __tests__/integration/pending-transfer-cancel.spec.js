@@ -19,6 +19,7 @@ describe('Create and cancel a pending transfer', () => {
     let tokens = [];
 
     before(clear);
+
     afterEach(async () => {
         tokens = [];
         await clear();
@@ -29,7 +30,7 @@ describe('Create and cancel a pending transfer', () => {
         walletB = await registerAndLogin(walletBInfo);
 
         tokens = await feedTokens(walletA, 5);
-        transfer = await sendTokensTransfer(walletA, walletB, tokens.map(token => token.id), TransferEnums.STATE.pending);
+        transfer = await sendTokensTransfer(walletA, walletB, TransferEnums.STATE.pending, tokens.map(token => token.id));
     });
 
     it('Cancel a pending transfer', async () => {

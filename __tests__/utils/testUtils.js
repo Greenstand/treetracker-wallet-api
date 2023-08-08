@@ -144,7 +144,7 @@ async function feedTokens(wallet, tokenSize) {
     return result;
 }
 
-async function sendBundleTransfer(walletSender, walletReceiver, bundleSize, transferState) {
+async function sendBundleTransfer(walletSender, walletReceiver, transferState, bundleSize) {
     const result = await knex('transfer')
         .insert({
             id: uuid.v4(),
@@ -165,11 +165,11 @@ async function sendBundleTransfer(walletSender, walletReceiver, bundleSize, tran
     return result[0];
 }
 
-async function sendTokensTransfer(walletSender, walletReceiver, tokens, transferState) {
-    const trx = await knex.transaction();
+async function sendTokensTransfer(walletSender, walletReceiver, transferState, tokens) {
+    // todo: should better to use transaction here, but using knex transaction leads to a bug
     const transferId = uuid.v4();
-    try {
-        await trx('transfer').insert({
+    const result = await knex('transfer')
+        .insert({
             id: transferId,
             originator_wallet_id: walletSender.id,
             source_wallet_id: walletSender.id,
@@ -180,22 +180,19 @@ async function sendTokensTransfer(walletSender, walletReceiver, tokens, transfer
             },
             state: transferState,
             active: true,
-        })
+        }).returning('*');
 
-        await trx('token').whereIn('id', tokens)
+    if (tokens && (transferState === TransferEnum.STATE.pending || transferState === TransferEnum.STATE.requested)) {
+        await knex('token').whereIn('id', tokens)
             .update(
                 {
                     transfer_pending: true,
                     transfer_pending_id: transferId
                 }
             )
-        trx.commit()
-    } catch (error) {
-        trx.rollback();
-        throw error;
     }
 
-    return {id: transferId};
+    return result[0];
 }
 
 async function getTransfer(transfer) {
@@ -215,35 +212,35 @@ async function getToken(wallet) {
     return result;
 }
 
-async function pendingCanceled(transfer) {
+async function cancelPending(transfer) {
     const result = await knex('transfer')
-        .where({id: transfer.id, state: TransferEnum.STATE.pending})
+        .where('id', transfer.id)
+        .where('state', 'pending')
         .update({
             id: transfer.id,
             state: TransferEnum.STATE.cancelled
         }).returning('*');
-
     expect(result[0].id).to.eq(transfer.id);
     expect(result[0].state).to.eq(TransferEnum.STATE.cancelled);
 
     return result[0];
 }
 
-async function pendingCompleted(transfer) {
+async function completePending(transfer) {
     const result = await knex('transfer')
-        .where({id: transfer.id, state: TransferEnum.STATE.pending})
+        .where('id', transfer.id)
+        .where('state', TransferEnum.STATE.pending)
         .update({
             id: transfer.id,
             state: TransferEnum.STATE.completed
         }).returning('*');
-
     expect(result[0].id).to.eq(transfer.id);
     expect(result[0].state).to.eq(TransferEnum.STATE.completed);
     return result[0];
 }
 
 async function deleteToken(token) {
-    const result = await knex('token').where({id: token.id}).delete();
+    const result = await knex('token').where('id', token.id).delete();
     expect(result).to.gte(0);
     return result;
 }
@@ -258,8 +255,8 @@ module.exports = {
     feedSubWallets,
     feedTokens,
     getRandomToken,
-    pendingCanceled,
-    pendingCompleted,
+    cancelPending,
+    completePending,
     getTransfer,
     getToken,
     deleteToken

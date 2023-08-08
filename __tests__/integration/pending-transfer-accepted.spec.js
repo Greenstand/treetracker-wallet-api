@@ -4,7 +4,7 @@ const chai = require('chai');
 const TransferEnums = require('../../server/utils/transfer-enum');
 const {clear, registerAndLogin,
         sendTokensTransfer, getTransfer, getToken,
-        pendingCompleted, feedTokens
+        completePending, feedTokens
 } = require("../utils/testUtils");
 const {post} = require("../utils/sendReq");
 const walletAInfo = require('../mock-data/wallet/walletA.json');
@@ -17,7 +17,9 @@ describe('Create and accept a pending transfer', () => {
     let transfer;
     let tokens = [];
 
-    before(clear);
+    before(async () => {
+        await clear();
+    });
     afterEach(async () => {
         tokens = [];
         await clear();
@@ -28,7 +30,7 @@ describe('Create and accept a pending transfer', () => {
         walletB = await registerAndLogin(walletBInfo);
 
         tokens = await feedTokens(walletA, 5);
-        transfer = await sendTokensTransfer(walletA, walletB, tokens.map(token => token.id), TransferEnums.STATE.pending);
+        transfer = await sendTokensTransfer(walletA, walletB, TransferEnums.STATE.pending, tokens.map(token => token.id));
     });
 
     it('Accept a pending transfer', async () => {
@@ -43,7 +45,7 @@ describe('Create and accept a pending transfer', () => {
     });
 
     it('Accept the transfer which already accepted', async () => {
-        await pendingCompleted(transfer);
+        await completePending(transfer);
 
         const res = await post(`/transfers/${transfer.id}/accept`, walletB)
         expect(res).to.have.property('statusCode', 403);
