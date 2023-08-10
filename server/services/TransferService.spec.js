@@ -141,7 +141,7 @@ describe('TransferService', () => {
     beforeEach(() => {
       getTransfersStub = sinon
         .stub(Transfer.prototype, 'getTransfers')
-        .resolves(['transfers']);
+        .resolves({transfers: ['transfers'], count: 1});
 
       walletGetByIdOrNameStub = sinon
         .stub(WalletService.prototype, 'getByIdOrName')
@@ -153,7 +153,8 @@ describe('TransferService', () => {
         { state: 'state', limit: 1, offset: 1 },
         'walletLoginId',
       );
-      expect(transfers).eql(['transfers']);
+      console.log('trtr', transfers)
+      expect(transfers).eql({transfers: ['transfers'], count:1});
       expect(
         getTransfersStub.calledOnceWithExactly({
           state: 'state',
@@ -182,7 +183,7 @@ describe('TransferService', () => {
         },
         'walletLoginId',
       );
-      expect(transfers).eql(['transfers']);
+      expect(transfers).eql({transfers:['transfers'], count:1});
       expect(
         getTransfersStub.calledOnceWithExactly({
           state: 'state',

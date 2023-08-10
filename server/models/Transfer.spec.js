@@ -42,10 +42,11 @@ describe('Transfer Model', () => {
 
   it('getByFilter', async () => {
     const transferId = uuid();
-    transferRepositoryStub.getByFilter.resolves([{ id: transferId }]);
+    transferRepositoryStub.getByFilter.resolves({result:[{id: transferId}], count: 1});
 
     const result = await transferModel.getByFilter('filter', 'limitOptions');
-    expect(result).eql([{ id: transferId }]);
+    console.log('MMM', result)
+    expect(result).eql({transfers :[{id: transferId}], count: 1});
     expect(transferRepositoryStub.getByFilter).calledOnceWithExactly(
       'filter',
       'limitOptions',
@@ -57,7 +58,7 @@ describe('Transfer Model', () => {
     const walletLoginId = uuid();
     const getTransfersStub = sinon
       .stub(Transfer.prototype, 'getTransfers')
-      .resolves([{ id: transferId, walletLoginId }]);
+      .resolves({transfers: [{id: transferId, walletLoginId}]});
 
     const result = await transferModel.getById({ transferId, walletLoginId });
 
@@ -126,17 +127,18 @@ describe('Transfer Model', () => {
 
     const getByFilterStub = sinon
       .stub(Transfer.prototype, 'getByFilter')
-      .resolves([{ id: transferId }]);
+      .resolves({transfers:[{id: transferId}]});
 
     const result = await transferModel.getTransfers({
       transferId,
       walletLoginId,
       limit: 10,
+      offset: 0,
       state,
       walletId,
     });
 
-    expect(result).eql([{ id: transferId }]);
+    expect(result).eql({transfers:[{id: transferId}]});
     expect(getByFilterStub).calledOnceWithExactly(
       {
         and: [
