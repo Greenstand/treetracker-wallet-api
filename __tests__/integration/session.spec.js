@@ -4,8 +4,8 @@
 const jestExpect = require('expect');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
-const Session = require('../server/infra/database/Session');
-const seed = require('./seed');
+const Session = require('../../server/infra/database/Session');
+const seed = require('../utils/seed');
 
 chai.use(sinonChai);
 const { expect } = chai;

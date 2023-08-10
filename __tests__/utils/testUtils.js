@@ -42,7 +42,7 @@ async function register(user) {
     // wallet
     const result = await knex('wallet')
         .insert({
-            id: uuid.v4(),
+            id: user.id || uuid.v4(),
             name: user.name,
             password: passwordHash,
             salt,
@@ -262,13 +262,13 @@ async function deleteToken(token) {
     return result;
 }
 
-async function createTrustRelation(walletSender, walletReceiver, type, state) {
+async function createTrustRelation(originator, actor, target, type, state) {
     const result = await knex('wallet_trust').insert({
         id: uuid.v4(),
-        actor_wallet_id: walletSender.id,
-        target_wallet_id: walletReceiver.id,
+        actor_wallet_id: actor.id,
+        target_wallet_id: target.id,
         type: 'send',
-        originator_wallet_id: walletSender.id,
+        originator_wallet_id: originator.id,
         request_type: type,
         state,
         created_at: '2023-08-09 17:53:04.732101',

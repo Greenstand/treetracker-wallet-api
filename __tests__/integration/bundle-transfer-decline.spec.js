@@ -1,67 +1,60 @@
 require('dotenv').config();
-const request = require('supertest');
 const {expect} = require('chai');
 const chai = require('chai');
-const server = require('../../server/app');
-chai.use(require('chai-uuid'));
-const Zaven = require('../mock-data/wallet/Zaven.json');
-const Meisze = require('../mock-data/wallet/Meisze.json');
-const testUtils = require('../utils/testUtils');
-const TokenA = require('../mock-data/token/TokenA.json');
 const TransferEnums = require('../../server/utils/transfer-enum');
+const {
+    clear, registerAndLogin, getTransfer, feedTokens, cancelPending, sendBundleTransfer
+} = require("../utils/testUtils");
+const {post} = require('../utils/sendReq');
+const walletAInfo = require("../mock-data/wallet/walletA.json");
+const walletBInfo = require("../mock-data/wallet/walletB.json");
+chai.use(require('chai-uuid'));
 
-describe('Zaven request to send 1 token to Meisze', () => {
-    let registeredZaven;
-    let registeredMeisze;
+describe('Create and decline a pending transfer', () => {
+    let walletA;
+    let walletB;
     let transfer;
 
+    before(async () => {
+        await clear();
+    });
+    afterEach(async () => {
+        await clear();
+    });
+
     beforeEach(async () => {
-        await testUtils.clear();
-        registeredZaven = await testUtils.registerAndLogin(Zaven);
-        await testUtils.addToken(registeredZaven, TokenA);
-        expect(registeredZaven).property('id').a('string');
-        registeredMeisze = await testUtils.registerAndLogin(Meisze);
-        transfer = await testUtils.sendBundleTransfer(
-            registeredZaven,
-            registeredMeisze,
-            TransferEnums.STATE.pending,
-            1
-        );
+        await clear();
+        walletA = await registerAndLogin(walletAInfo);
+        walletB = await registerAndLogin(walletBInfo);
+
+        await feedTokens(walletA, 5);
+        transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.pending, 5);
     });
 
-    describe('Meisze decline the request', () => {
-        beforeEach(async () => {
-            await request(server)
-                .post(`/transfers/${transfer.id}/decline`)
-                .set('Content-Type', 'application/json')
-                .set('treetracker-api-key', registeredMeisze.apiKey)
-                .set('Authorization', `Bearer ${registeredMeisze.token}`)
-                .expect(200);
-        });
+    it('Decline a pending transfer', async () => {
+        const res = await post(`/transfers/${transfer.id}/decline`, walletB);
+        expect(res).to.have.property('statusCode', 200);
 
-        it('The transfer status should be cancelled', async () => {
-            await request(server)
-                .get(`/transfers?limit=1000`)
-                .set('treetracker-api-key', registeredMeisze.apiKey)
-                .set('Authorization', `Bearer ${registeredMeisze.token}`)
-                .expect(200)
-                .then((res) => {
-                    expect(res.body.transfers).lengthOf(1);
-                    expect(res.body.transfers[0])
-                        .property('state')
-                        .eq(TransferEnums.STATE.cancelled);
-                });
-        });
-
-        it('Zaven should still have 1 token', async () => {
-            await request(server)
-                .get(`/tokens?limit=10`)
-                .set('treetracker-api-key', registeredZaven.apiKey)
-                .set('Authorization', `Bearer ${registeredZaven.token}`)
-                .expect(200)
-                .then((res) => {
-                    expect(res.body.tokens).lengthOf(1);
-                });
-        });
+        const updatedTransfer = await getTransfer(transfer);
+        expect(updatedTransfer.state).to.eq(TransferEnums.STATE.cancelled);
     });
+
+    it('Decline a pending transfer which already declined/canceled', async () => {
+        await cancelPending(transfer);
+
+        const res = await post(`/transfers/${transfer.id}/decline`, walletB);
+        expect(res).to.have.property('statusCode', 403);
+
+        const updatedTransfer = await getTransfer(transfer);
+        expect(updatedTransfer.state).to.eq(TransferEnums.STATE.cancelled);
+    })
+
+    it('Decline a pending transfer which is belong to others', async () => {
+        const walletC = await registerAndLogin({name: 'fdgjsgfhsa', password: 'fhdjsgfhjds12'});
+        const res = await post(`/transfers/${transfer.id}/decline`, walletC);
+        expect(res).to.have.property('statusCode', 403);
+
+        const updatedTransfer = await getTransfer(transfer);
+        expect(updatedTransfer.state).to.eq(TransferEnums.STATE.pending);
+    })
 });

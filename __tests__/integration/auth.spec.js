@@ -1,49 +1,45 @@
 require('dotenv').config();
-const request = require('supertest');
-const { expect } = require('chai');
-const chai = require('chai');
-const server = require('../../server/app');
-chai.use(require('chai-uuid'));
-const Zaven = require('../mock-data/wallet/Zaven.json');
-const testUtils = require('../utils/testUtils');
+const {expect} = require('chai');
+const {post} = require('../utils/sendReq');
+const walletAInfo = require('../mock-data/wallet/walletA.json');
+const {clear, register} = require('../utils/testUtils');
 
 describe('Authentication', () => {
-  let registeredUser;
+    let walletA;
 
-  beforeEach(async () => {
-    await testUtils.clear();
-    registeredUser = await testUtils.register(Zaven);
-  });
+    before(clear)
 
-  // Authorization path
-  it(`[POST /auth] login with ${Zaven.name}`, (done) => {
-    request(server)
-      .post('/auth')
-      .set('treetracker-api-key', registeredUser.apiKey)
-      .send({
-        wallet: registeredUser.name,
-        password: registeredUser.password,
-      })
-      .expect('Content-Type', /application\/json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) done(err);
+    beforeEach(async () => {
+         walletA = await register(walletAInfo);
+    });
+
+    afterEach(clear)
+
+    it(`Login with valid username and password`, async () => {
+        const res = await post('/auth', walletA, null, {wallet: walletA.name, password: walletA.password});
         expect(res.body).to.have.property('token');
-        done();
-      });
-  });
+        expect(res).to.have.property('statusCode', 200);
+    });
 
-  it(`[POST /auth] login with using wallet id of  ${Zaven.name}`, (done) => {
-    request(server)
-      .post('/auth')
-      .set('treetracker-api-key', registeredUser.apiKey)
-      .send({ wallet: registeredUser.id, password: registeredUser.password })
-      .expect('Content-Type', /application\/json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) done(err);
+    it(`Login with valid wallet id and password`, async () => {
+        const res = await post('/auth', walletA, null, {wallet: walletA.id, password: walletA.password});
         expect(res.body).to.have.property('token');
-        done();
-      });
-  });
+        expect(res).to.have.property('statusCode', 200);
+    });
+
+    it(`Login with invalid password`, async () => {
+        const res = await post('/auth', walletA, null, {wallet: walletA.id, password: 'abcabc123'});
+        expect(res.body).to.not.have.property('token');
+        expect(res).to.have.property('statusCode', 401);
+    });
+
+    it(`Login with invalid wallet name/id`, async () => {
+        const res = await post('/auth', walletA, null, {wallet: 'walletB', password: walletA.password});
+        expect(res.body).to.not.have.property('token');
+        expect(res).to.have.property('statusCode', 404);
+
+        const resB = await post('/auth', walletA, null, {wallet: '553c9d69-dcdf-48db-86ac-ed13380c62dc', password: walletA.password});
+        expect(resB.body).to.not.have.property('token');
+        expect(resB).to.have.property('statusCode', 404);
+    });
 });

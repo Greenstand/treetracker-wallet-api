@@ -4,7 +4,7 @@ const chai = require('chai');
 const TransferEnums = require('../../server/utils/transfer-enum');
 const {clear, registerAndLogin,
         sendTokensTransfer, getTransfer, getToken,
-        completePending, feedTokens
+        completePending, feedTokens, deleteToken
 } = require("../utils/testUtils");
 const {post} = require("../utils/sendReq");
 const walletAInfo = require('../mock-data/wallet/walletA.json');
@@ -67,6 +67,22 @@ describe('Create and accept a pending transfer', () => {
 
         getToken(walletA).then((result) => {
             expect(result.length).to.eq(5);
+        })
+    })
+
+    it('Accept the transfer, the tokens are not enough', async () => {
+        await deleteToken(tokens[0]);
+        const res = await post(`/transfers/${transfer.id}/accept`, walletB)
+
+        expect(res).to.have.property('statusCode', 200);
+
+        getToken(walletB).then((result) => {
+            expect(result.length).to.eq(4); // the request token are 5, but get 4 now, before of some unknown deleting operation
+                                                  // we expect to get a 4XX response. and fail this transfer.
+        })
+
+        getToken(walletA).then((result) => {
+            expect(result.length).to.eq(0);
         })
     })
 });

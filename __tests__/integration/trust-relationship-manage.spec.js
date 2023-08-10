@@ -10,10 +10,10 @@ const {
 } = require('../utils/testUtils');
 const {post} = require("../utils/sendReq");
 
-describe('Send tokens to \'send\' trust relationship', () => {
-    let walletA; // walletA 'send' walletB
+describe('Send tokens to "manage" trust relationship wallet', () => {
+    let walletA; // walletA 'manage' walletB
     let walletB;
-    let walletC; // walletC 'receive' walletD
+    let walletC; // walletC 'yield' walletD
     let walletD;
 
     let relationshipA;
@@ -34,15 +34,15 @@ describe('Send tokens to \'send\' trust relationship', () => {
         await feedTokens(walletC, 1);
         await feedTokens(walletD, 1);
         // walletA 'send' walletB, and walletC 'receive' walletD
-        relationshipA = await createTrustRelation(walletA, walletA, walletB, 'send', 'trusted');
-        await createTrustRelation(walletC, walletC, walletD, 'receive', 'trusted');
+        relationshipA = await createTrustRelation(walletA, walletA, walletB, 'manage', 'trusted');
+        await createTrustRelation(walletC, walletC, walletD, 'yield', 'trusted');
     });
 
     afterEach(async () => {
         await clear();
     });
 
-    it('send tokens to "send" relationship wallet', async () => {
+    it('send token transfers to "manage" relationship wallet', async () => {
         let reqBody = {
             sender_wallet: walletA.name,
             receiver_wallet: walletB.name,
@@ -57,7 +57,7 @@ describe('Send tokens to \'send\' trust relationship', () => {
         expect((await getToken(walletA)).length).to.eq(0);
         expect((await getToken(walletB)).length).to.eq(2);
 
-        // walletC 'receive' walletD ====> walletD 'send' walletC
+        // walletC 'yield' walletD ====> walletD 'manage' walletC
         reqBody = {
             sender_wallet: walletD.name,
             receiver_wallet: walletC.name,
@@ -74,9 +74,9 @@ describe('Send tokens to \'send\' trust relationship', () => {
         expect((await getToken(walletC)).length).to.eq(2);
     })
 
-    it('walletA send tokens to walletE, but the walletE has not accept the "send" trust relationship', async () => {
+    it('walletA send tokens to walletE, but the walletE has not accept the "manage" trust relationship', async () => {
         const walletE = await registerAndLogin({name: 'walletE', password: 'abcabc1'});
-        await createTrustRelation(walletA, walletA, walletE, 'send', 'requested');
+        await createTrustRelation(walletA, walletA, walletE, 'manage', 'requested');
 
         const reqBody = {
             sender_wallet: walletA.name,
@@ -112,4 +112,4 @@ describe('Send tokens to \'send\' trust relationship', () => {
         expect((await getToken(walletA)).length).to.eq(1);
         expect((await getToken(walletB)).length).to.eq(1);
     })
-})
+});

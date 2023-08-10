@@ -21,7 +21,7 @@ describe('Accept trust relationship requests', () => {
     it('Accept trust relationship requests', async () => {
         // eslint-disable-next-line no-restricted-syntax
         for (const relation of relations) {
-            const request = await createTrustRelation(walletA, walletB, relation, 'requested');
+            const request = await createTrustRelation(walletA, walletA, walletB, relation, 'requested');
 
             // {baseUrl}}/trust_relationships/:trust_relationship_id/accept
             const res = await post(`/trust_relationships/${request.id}/accept`, walletB);
@@ -43,7 +43,7 @@ describe('Accept trust relationship requests', () => {
         const walletC = await registerAndLogin({name: 'walletC', password: 'test1243'});
         // eslint-disable-next-line no-restricted-syntax
         for (const relation of relations) {
-            const request = await createTrustRelation(walletA, walletB, relation, 'requested');
+            const request = await createTrustRelation(walletA,walletA, walletB, relation, 'requested');
             const res = await post(`/trust_relationships/${request.id}/accept`, walletC);
 
             expect(res).property('statusCode').to.eq(403);
@@ -62,7 +62,7 @@ describe('Accept trust relationship requests', () => {
     it('Accept trust relationship requests, but the request has been accepted', async () => {
         // eslint-disable-next-line no-restricted-syntax
         for (const relation of relations) {
-            const request = await createTrustRelation(walletA, walletB, relation, 'trusted');
+            const request = await createTrustRelation(walletA,walletA, walletB, relation, 'trusted');
             const res = await post(`/trust_relationships/${request.id}/accept`, walletB);
 
             expect(res).property('statusCode').to.eq(200);
