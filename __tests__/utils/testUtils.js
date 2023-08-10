@@ -78,7 +78,7 @@ async function feedSubWallets(wallet, subWallets) {
     // todo: use transaction here
     // eslint-disable-next-line no-restricted-syntax
     for (const subWallet of subWallets) {
-        const result= (await knex('wallet')
+        const result = (await knex('wallet')
             .insert({
                 id: uuid.v4(),
                 name: subWallet.name,
@@ -207,7 +207,7 @@ async function sendTokensTransfer(walletSender, walletReceiver, transferState, t
         await trx.commit()
         return result[0];
     } catch (error) {
-        await  trx.rollback();
+        await trx.rollback();
         throw error;
     }
 }
@@ -262,6 +262,39 @@ async function deleteToken(token) {
     return result;
 }
 
+async function createTrustRelation(walletSender, walletReceiver, type, state) {
+    const result = await knex('wallet_trust').insert({
+        id: uuid.v4(),
+        actor_wallet_id: walletSender.id,
+        target_wallet_id: walletReceiver.id,
+        type: 'send',
+        originator_wallet_id: walletSender.id,
+        request_type: type,
+        state,
+        created_at: '2023-08-09 17:53:04.732101',
+        updated_at: '2023-08-09 17:53:04.732101',
+        active: true
+    }).returning('*');
+
+    expect(result[0]).to.have.property('id');
+    expect(result[0]).to.have.property('actor_wallet_id');
+    expect(result[0]).to.have.property('target_wallet_id');
+    expect(result[0]).to.have.property('type');
+    expect(result[0]).to.have.property('originator_wallet_id');
+    expect(result[0]).to.have.property('request_type');
+    expect(result[0]).to.have.property('state');
+
+    return result[0];
+}
+
+async function updateTrustRelation(relationship, updated) {
+    const result = await knex('wallet_trust')
+        .where({id: relationship.id})
+        .update(updated).returning('*');
+
+    return result[0];
+}
+
 module.exports = {
     register,
     registerAndLogin,
@@ -277,5 +310,7 @@ module.exports = {
     getTransfer,
     getToken,
     deleteToken,
-    getTrustRelationship
+    getTrustRelationship,
+    createTrustRelation,
+    updateTrustRelation
 };
