@@ -153,7 +153,6 @@ describe('TransferService', () => {
         { state: 'state', limit: 1, offset: 1 },
         'walletLoginId',
       );
-      console.log('trtr', transfers)
       expect(transfers).eql({transfers: ['transfers'], count:1});
       expect(
         getTransfersStub.calledOnceWithExactly({

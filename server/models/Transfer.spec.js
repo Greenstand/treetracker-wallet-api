@@ -45,7 +45,6 @@ describe('Transfer Model', () => {
     transferRepositoryStub.getByFilter.resolves({result:[{id: transferId}], count: 1});
 
     const result = await transferModel.getByFilter('filter', 'limitOptions');
-    console.log('MMM', result)
     expect(result).eql({transfers :[{id: transferId}], count: 1});
     expect(transferRepositoryStub.getByFilter).calledOnceWithExactly(
       'filter',
