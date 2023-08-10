@@ -93,7 +93,7 @@ class TransferRepository extends BaseRepository {
     return transfer;
   }
 
-  async getByFilter(filter, limitOptions, getCount) {
+  async getByFilter(filter, limitOptions) {
     let promise = this._session
       .getDB()
       .select(
@@ -136,10 +136,7 @@ class TransferRepository extends BaseRepository {
     const result = await promise;
     Joi.assert(result, Joi.array().required());
 
-    if (getCount)
-      return { result, count: +count[0].count };
-
-    return result;
+    return { result, count: +count[0].count };
   }
 
   async getPendingTransfers(wallet_id) {

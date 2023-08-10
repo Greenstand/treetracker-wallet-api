@@ -95,7 +95,14 @@ const transferIdGet = async (req, res) => {
     req.params.transfer_id,
     req.wallet_id,
   );
-  res.json(result);
+
+  const modifiedTransfer = {
+    ...result,
+    token_count:
+        +result.parameters?.bundle?.bundleSize || +result.parameters?.tokens?.length,
+  }
+
+  res.json(modifiedTransfer);
 };
 
 const transferIdTokenGet = async (req, res) => {
