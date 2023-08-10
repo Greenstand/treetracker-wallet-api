@@ -67,18 +67,24 @@ describe('TransferRepository', () => {
   it('getByFilter', async () => {
     tracker.uninstall();
     tracker.install();
+
     tracker.on('query', function sendResult(query, step) {
       [
         function firstQuery() {
-          expect(query.sql).match(
-            /select.*transfer.*originating_wallet.*source_wallet.*destination_wallet/,
-          );
-          query.response([{ id: uuid.v4() }]);
+          expect(query.sql).match(/select.*count.*transfer.*originating_wallet.*source_wallet.*destination_wallet.*p/);
+          query.response([{count: '1'}]);
+        },
+        function secondQuery() {
+          expect(query.sql).match(/select.*transfer.*originating_wallet.*source_wallet.*destination_wallet/);
+          query.response([{id: uuid.v4()}])
         },
       ][step - 1]();
     });
+
     const result = await transferRepository.getByFilter({});
-    expect(result[0]).property('id').a('string');
+    expect(result).property('count').a('number')
+    expect(result).property('result').a('array')
+    expect(result.result[0]).property('id').a('string');
   });
 
   it('getPendingTransfers', async () => {
