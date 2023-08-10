@@ -26,13 +26,16 @@ class Transfer {
     return transferObjectCopy;
   }
 
-  async getByFilter(filter, limitOptions) {
-    const transfers = await this._transferRepository.getByFilter(
+  async getByFilter(filter, limitOptions, getCount) {
+    const {count, result} = await this._transferRepository.getByFilter(
       filter,
       limitOptions,
+      getCount
     );
 
-    return transfers.map((t) => this.constructor.removeWalletIds(t));
+    const transfers =  result.map((t) => this.constructor.removeWalletIds(t));
+
+    return { transfers, count }
   }
 
   async getById({ transferId, walletLoginId }) {
@@ -56,12 +59,13 @@ class Transfer {
   async getTransfers({
     state,
     walletId,
-    offset = 0,
+    offset,
     limit,
     walletLoginId,
     transferId,
     before,
     after,
+    getCount
   }) {
     const filter = {
       and: [],
@@ -94,7 +98,7 @@ class Transfer {
     if (after) {
       filter.and.push({ after: { 'transfer.created_at': after } });
     }
-    return this.getByFilter(filter, { offset, limit });
+    return this.getByFilter(filter, { offset, limit }, getCount);
   }
 
   /*

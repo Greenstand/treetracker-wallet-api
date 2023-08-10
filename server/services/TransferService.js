@@ -13,7 +13,7 @@ class TransferService {
   }
 
   async getByFilter(query, walletLoginId) {
-    const { state, wallet, limit = 500, offset, before, after } = query;
+    const { state, wallet, limit, offset, before, after, getCount = true } = query;
 
     let walletId;
 
@@ -22,7 +22,7 @@ class TransferService {
       walletId = walletDetails.id;
     }
 
-    const results = await this._transfer.getTransfers({
+    const {transfers, count}= await this._transfer.getTransfers({
       state,
       walletId,
       offset,
@@ -30,9 +30,11 @@ class TransferService {
       walletLoginId,
       before,
       after,
+      getCount
     });
 
-    return results;
+
+    return {transfers, count};
   }
 
   async initiateTransfer(transferBody, walletLoginId) {

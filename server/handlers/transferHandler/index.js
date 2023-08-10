@@ -73,7 +73,10 @@ const transferGet = async (req, res) => {
   await transferGetQuerySchema.validateAsync(req.query, { abortEarly: false });
 
   const transferService = new TransferService();
-  const transfers = await transferService.getByFilter(req.query, req.wallet_id);
+
+  const { limit = 200, offset = 0, ...params } = req.query;
+
+  const {transfers, count} = await transferService.getByFilter({...params, limit, offset}, req.wallet_id);
 
   const modifiedTransfers = transfers.map((t) => ({
     ...t,
@@ -81,7 +84,7 @@ const transferGet = async (req, res) => {
       +t.parameters?.bundle?.bundleSize || +t.parameters?.tokens?.length,
   }));
 
-  res.status(200).json({ transfers: modifiedTransfers });
+  res.status(200).json({ transfers: modifiedTransfers, limit, offset, total:count });
 };
 
 const transferIdGet = async (req, res) => {

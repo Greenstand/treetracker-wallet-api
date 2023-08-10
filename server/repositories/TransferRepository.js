@@ -93,9 +93,7 @@ class TransferRepository extends BaseRepository {
     return transfer;
   }
 
-  async getByFilter(filter, limitOptions) {
-    const offset =
-      limitOptions && limitOptions.offset ? limitOptions.offset : 0;
+  async getByFilter(filter, limitOptions, getCount) {
     let promise = this._session
       .getDB()
       .select(
@@ -123,14 +121,24 @@ class TransferRepository extends BaseRepository {
         '=',
         'destination_wallet.id',
       )
-      .offset(offset)
       .where((builder) => this.whereBuilder(filter, builder));
 
-    if (limitOptions && limitOptions.limit) {
+    // get the total count (before applying limit and offset options)
+    const count = await this._session.getDB().from(promise.as('p')).count('*');
+
+    // apply limit and offset options
+    if(limitOptions && limitOptions.offset)
+      promise = promise.offset(limitOptions.offset)
+
+    if (limitOptions && limitOptions.limit)
       promise = promise.limit(limitOptions.limit);
-    }
+
     const result = await promise;
     Joi.assert(result, Joi.array().required());
+
+    if (getCount)
+      return { result, count: +count[0].count };
+
     return result;
   }
 
