@@ -84,7 +84,7 @@ const transferGet = async (req, res) => {
       +t.parameters?.bundle?.bundleSize || +t.parameters?.tokens?.length,
   }));
 
-  res.status(200).json({ transfers: modifiedTransfers, limit, offset, total:count });
+  res.status(200).json({ transfers: modifiedTransfers, query: {...params, limit, offset}, total:count });
 };
 
 const transferIdGet = async (req, res) => {
