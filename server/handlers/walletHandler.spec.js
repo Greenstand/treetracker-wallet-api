@@ -48,6 +48,7 @@ describe('walletRouter', () => {
         .resolves({ wallets: [{ id: walletId }], count: 1 });
 
       const res = await request(app).get('/wallets?limit=2');
+
       expect(res).property('statusCode').eq(200);
       expect(res.body.wallets).lengthOf(1);
       expect(res.body.wallets[0]).property('id').eq(walletId);

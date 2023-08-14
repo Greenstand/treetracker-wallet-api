@@ -40,11 +40,12 @@ describe('transferRouter', () => {
 
     const getByFilterStub = sinon
       .stub(TransferService.prototype, 'getByFilter')
-      .resolves([{ id: token0Id, state: TransferEnums.STATE.completed }]);
+      .resolves({transfers:[{id: token0Id, state: TransferEnums.STATE.completed}]});
 
     const res = await request(app).get(
       '/transfers?limit=3&wallet=testWallet&offset=5',
     );
+
     expect(res.body.transfers).lengthOf(1);
     expect(res.body.transfers[0].id).eql(token0Id);
     expect(res.body.transfers[0].state).eql(TransferEnums.STATE.completed);

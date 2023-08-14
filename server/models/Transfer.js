@@ -27,16 +27,19 @@ class Transfer {
   }
 
   async getByFilter(filter, limitOptions) {
-    const transfers = await this._transferRepository.getByFilter(
+    const {result, count} = await this._transferRepository.getByFilter(
       filter,
       limitOptions,
     );
 
-    return transfers.map((t) => this.constructor.removeWalletIds(t));
+
+    const transfers =  result.map((t) => this.constructor.removeWalletIds(t));
+
+    return { transfers, count }
   }
 
   async getById({ transferId, walletLoginId }) {
-    const transfers = await this.getTransfers({ walletLoginId, transferId });
+    const {transfers} = await this.getTransfers({ walletLoginId, transferId });
     return transfers[0];
   }
 
@@ -56,7 +59,7 @@ class Transfer {
   async getTransfers({
     state,
     walletId,
-    offset = 0,
+    offset,
     limit,
     walletLoginId,
     transferId,
