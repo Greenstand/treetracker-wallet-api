@@ -1,3 +1,16 @@
+# [1.22.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.6...v1.22.0) (2023-08-14)
+
+
+### Features
+
+* add pagination fields to transfers ([2aa9127](https://github.com/Greenstand/treetracker-wallet-api/commit/2aa9127497b7a423b7ac3d60b569868481b367b9))
+* fix failing test ([3271bd6](https://github.com/Greenstand/treetracker-wallet-api/commit/3271bd6f209a4383919f2dd4c125314ac29ccaa5))
+* fix tests ([dfba65f](https://github.com/Greenstand/treetracker-wallet-api/commit/dfba65f9947863b3aa86ae53741120a4766dd827))
+* remove console logs ([1a58091](https://github.com/Greenstand/treetracker-wallet-api/commit/1a58091d280754052dffe99fc13d62bd35bd3bb5))
+* removed getcount param for transfers ([c459281](https://github.com/Greenstand/treetracker-wallet-api/commit/c4592816ac2c9938ca4bd104f7660379e123111c))
+* transfers returns query object as field ([f0cbe8c](https://github.com/Greenstand/treetracker-wallet-api/commit/f0cbe8c5cab4ed733df43e17b0c0dc1220888189))
+* updated api spec for transfers and wallets ([9803c2c](https://github.com/Greenstand/treetracker-wallet-api/commit/9803c2cf7f71464dd1701e26d49d02eea56a1077))
+
 ## [1.21.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.5...v1.21.6) (2023-08-06)
 
 
