@@ -1,3 +1,4 @@
+const log = require('loglevel');
 const WalletRepository = require('../repositories/WalletRepository');
 const Wallet = require('../models/Wallet');
 const HttpError = require('../utils/HttpError');
@@ -90,7 +91,7 @@ class WalletService {
       const tokenService = new TokenService(this._session);
 
       let walletsCreatedCount = 0;
-      let walletsAlreadyExistsFailureCount = 0;
+      let walletsAlreadyExistsFailureCount = [];
       let walletsOtherFailureCount = 0;
 
       const walletsCreated = [];
@@ -109,8 +110,10 @@ class WalletService {
           walletsCreated.push(value);
           walletsCreatedCount += 1;
         } else {
-          if (reason.toString().match(/.*has.*been.*existed/g)) {
-            walletsAlreadyExistsFailureCount += 1;
+          if (reason.toString().match(/.*already.*exists/g)) {
+            walletsAlreadyExistsFailureCount.push(
+              reason.toString().split('Error: ')[1],
+            );
           } else {
             walletsOtherFailureCount += 1;
           }
@@ -130,6 +133,7 @@ class WalletService {
         if (extra_wallet_data_logo_url || extra_wallet_data_cover_url) {
           extraWalletInformation.push({
             walletId: wallet.id,
+            name: wallet.name,
             walletLogoUrl: extra_wallet_data_logo_url,
             walletCoverUrl: extra_wallet_data_cover_url,
           });
@@ -156,12 +160,14 @@ class WalletService {
           walletId,
           walletLogoUrl,
           walletCoverUrl,
+          name,
         } of extraWalletInformation) {
           walletConfigPromises.push(
             this.addWalletToMapConfig({
               walletId,
               walletCoverUrl,
               walletLogoUrl,
+              name,
             }),
           );
         }
@@ -172,13 +178,13 @@ class WalletService {
       );
 
       let extraWalletInformationSaved = 0;
-      let extraWalletInformationNotSaved = 0;
+      let extraWalletInformationNotSaved = [];
 
       for (const { status, reason } of walletConfigResults) {
         if (status === 'fulfilled') {
           extraWalletInformationSaved += 1;
         } else {
-          extraWalletInformationNotSaved += 1;
+          extraWalletInformationNotSaved.push(reason);
         }
       }
 
@@ -196,25 +202,35 @@ class WalletService {
     }
   }
 
-  async addWalletToMapConfig({ walletId, walletLogoUrl, walletCoverUrl }) {
+  async addWalletToMapConfig({
+    walletId,
+    walletLogoUrl,
+    walletCoverUrl,
+    name,
+  }) {
     const MAP_CONFIG_API_URL =
       process.env.MAP_CONFIG_API_URL ||
       'http://treetracker-map-config-api.webmap-config';
 
-    const response = await axios.post(`${MAP_CONFIG_API_URL}/config`, {
-      name: 'extra-wallet',
-      ref_uuid: walletId,
-      ref_id: walletId,
-      data: {
-        ...(walletLogoUrl && {
-          logo_url: walletLogoUrl,
-        }),
-        ...(walletCoverUrl && {
-          cover_url: walletCoverUrl,
-        }),
-      },
-    });
-    return response.body;
+    try {
+      const response = await axios.post(`${MAP_CONFIG_API_URL}/config`, {
+        name: 'extra-wallet',
+        ref_uuid: walletId,
+        ref_id: walletId,
+        data: {
+          ...(walletLogoUrl && {
+            logo_url: walletLogoUrl,
+          }),
+          ...(walletCoverUrl && {
+            cover_url: walletCoverUrl,
+          }),
+        },
+      });
+      return response.body;
+    } catch (e) {
+      log.debug('map config API error' + e);
+      throw `${name} webmap config addition failed, ${e.toString()}`;
+    }
   }
 
   async processBatchWalletTransfer({
