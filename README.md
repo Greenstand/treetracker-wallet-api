@@ -1,7 +1,7 @@
 as
 #API Documentation
 
-To view the specs for the new API visit https://editor.swagger.io and load the YAML file from /docs/api/spec/treetracker-token-api.yaml
+To view the specs for the new API visit https://editor.swagger.io and load the YAML file from https://github.com/Greenstand/treetracker-wallet-api/docs/api/spec/treetracker-wallet-api-v1-10.yaml
 
 # Getting Started
 
