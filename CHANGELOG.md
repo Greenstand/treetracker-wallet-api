@@ -1,3 +1,10 @@
+## [1.10.25](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.24...v1.10.25) (2023-08-17)
+
+
+### Bug Fixes
+
+* add batch create log info ([fb4c9e5](https://github.com/Greenstand/treetracker-wallet-api/commit/fb4c9e55aa00748fa5876c555499f51fb8b9ce13))
+
 ## [1.10.24](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.10.23...v1.10.24) (2023-07-03)
 
 
