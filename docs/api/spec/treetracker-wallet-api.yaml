@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: treetracker token api
+  title: Treetracker Wallet API
   contact: {}
   version: '0.9'
 paths:
@@ -14,7 +14,7 @@ paths:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
       requestBody:
-        description: ''
+        description: 'Authentication request body'
         content:
           application/json:
             schema:
@@ -22,11 +22,13 @@ paths:
         required: true
       responses:
         '200':
-          description: ''
+          description: 'Successful authentication response'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/bearerToken'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
       deprecated: false
   /tokens:
     get:
@@ -56,7 +58,8 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 0
+            example: 1
+            default: 0
         - name: wallet
           description: Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet
           in: query
@@ -125,7 +128,8 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 0
+            example: 1
+            default: 0
       responses:
         '200':
           description: ''
@@ -270,10 +274,26 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 0
+            example: 1
+            default: 0
       responses:
         '200':
           description: Return array of matching transfers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transfers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/transferItem'
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  total:
+                    type: integer
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   '/tokens/{token_uuid}/transactions':
@@ -312,6 +332,7 @@ paths:
             type: integer
             format: int32
             example: 0
+            default: 0
       responses:
         '200':
           description: ''
@@ -337,6 +358,10 @@ paths:
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transferItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
     delete:
@@ -464,6 +489,7 @@ paths:
             type: integer
             format: int32
             example: 0
+            default: 0
       responses:
         '200':
           description: ''
@@ -543,6 +569,7 @@ paths:
             type: integer
             format: int32
             example: 0
+            default: 0
         - name: state
           in: query
           description: Filter by state of the trust relationship
@@ -813,20 +840,109 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/walletItem'
+        total:
+          type: integer
+          description: total count of wallets satisfying the query condition
+          example: 1
+          query:
+            type: object
+            properties:
+              offset:
+                type: integer
+                example: 0
+              limit:
+                type: integer
+                example: 5
     walletItem:
       title: Wallet Details
       properties:
         id:
           type: string
           format: uuid
-        wallet:
+          example: 482bf306-30c7-4cea-833a-1cdda3d96573
+        name:
           type: string
-        email:
+          example: test11
+        logo_url:
           type: string
-        phone:
+          format: url
+          example: https://www.placehold.co/192x192
+        created_at:
           type: string
+          format: date-time
+          example: 2023-08-08T06:28:39.766Z
         tokens_in_wallet:
           type: integer
+          example: 12
+    transferItem:
+      title: Transfer Details
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Transfer ID
+          example: cf0ce129-8c12-45cf-b914-a8f1cb6b7dc5
+        type:
+          type: string
+          enum:
+            - send
+            - deduct
+            - managed
+          description: Transfer type
+          example: send
+        parameters:
+          type: object
+          oneOf:
+            - properties:
+                bundle:
+                  type: object
+                  properties:
+                    bundleSize:
+                      type: integer
+                      description: Number of tokens associated with the transfer
+                      example: 2
+                  required:
+                    - bundleSize
+            - properties:
+                tokens:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/tokenItem'
+        state:
+          type: string
+          enum:
+            - pending
+            - completed
+            - requested
+            - cancelled
+            - failed
+          example: completed
+        created_at:
+          type: string
+          format: date-time
+          example: 2023-08-02T21:46:35.134Z
+        closed_at:
+          type: string
+          format: date-time
+          example: 2023-08-02T21:46:35.134Z
+        active:
+          type: boolean
+          example: true
+        claim:
+          type: boolean
+          example: false
+        originating_wallet:
+          type: string
+          example: testuser
+        source_wallet:
+          type: string
+          example: testuser
+        destination_wallet:
+          type: string
+          example: wallet22
+        token_count:
+          type: integer
+          example: 1
     transferrequest:
       title: transferrequest
       oneOf:
@@ -917,35 +1033,35 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           description: The unique ID for this transfer
         originating_wallet:
           type: string
+          example: johnwallet1
         source_wallet:
           type: string
+          example: planeter
         destination_wallet:
           type: string
+          example: just.a.guy
         type:
           type: string
           description: 'the type of transfer.  send, deduct, or managed. the value is computed by the server based on the submitted request'
+          example: send
         parameters:
           $ref: '#/components/schemas/requestBundleRequestParameters'
         state:
           type: string
           description: 'the state of the transfer.  requested, pending, completed, cancelled, or failed'
+          example: completed
         created_at:
           type: string
+          format: date-time
+          example: 2020-07-09T00:41:49+00:00
         closed_at:
           type: string
-      example:
-        originating_wallet: johnwallet1
-        source_wallet: planeter
-        destination_wallet: just.a.guy
-        type: send
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        state: completed
-        created_at: '2020-07-09T00:41:49+00:00'
-        closed_at: '2020-07-09T00:41:49+00:00'
+          format: date-time
+          example: 2020-07-09T00:41:49+00:00
     sendRequestPendingResponse:
       title: sendRequestPendingResponse
     sendBundleRequest:
@@ -1128,10 +1244,31 @@ components:
       format: uuid
       example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
   responses:
+    errorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
     UnauthorizedError:
       description: Access bearer token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
     ForbiddenError:
       description: Access denied for that resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+    NotFoundError:
+      description: Resource missing
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
   securitySchemes:
     httpBearer:
       type: http
