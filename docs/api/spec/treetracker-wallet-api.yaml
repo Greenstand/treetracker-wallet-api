@@ -815,7 +815,6 @@ paths:
               example:
                 code: 422
                 message: '"implicit" is required'
-
   '/trust_relationships':
     get:
       tags:
@@ -826,8 +825,8 @@ paths:
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: Number of items to return
-          required: true
+          description: 'Number of items to return'
+          required: false
           style: form
           explode: true
           schema:
@@ -847,83 +846,49 @@ paths:
             default: 0
         - name: state
           in: query
-          description: Filter by state of the trust relationship
+          description: 'Filter by state of the trust relationship'
           required: false
           style: form
           schema:
-            type: string
-          examples:
-            Trusted:
-              value: trusted
-              description: Active trust relationship
-            Requested:
-              value: requested
-              description: Trust relationship pending approval
-            CancelledByOriginator:
-              value: cancelled_by_originator
-              description: Trust relationship was cancelled by the originator
-            CancelledByActor:
-              value: cancelled_by_actor
-              description: Trust relationship was cancelled by the actor
-            CancelledByTarget:
-              value: cancelled_by_target
-              description: Trust relationship was cancelled by the target
+            $ref: '#/components/schemas/trustStateType'
         - name: type
           in: query
-          description: Type of trust relationship
+          description: 'Type of the trust relationship'
           required: false
           style: form
           schema:
-            type: string
-          examples:
-            Send:
-              value: send
-              description: Allow actor to send to target
-            Deduct:
-              value: deduct
-              description: Allow actor to deduct from wallet
-            Manage:
-              value: manage
-              description: Allow actor to move funds from target wallet to any other wallet they control
+            $ref: '#/components/schemas/trustType'
         - name: request_type
           in: query
-          description: Type of trust relationship
+          description: 'Type of the trust relationship request'
           required: false
           style: form
           schema:
-            type: string
-          examples:
-            Send:
-              value: send
-              description: Request to allow actor to send to target
-            Receive:
-              value: receive
-              description: Request a send priviledge to a wallet controlled by the originator on behalf of another sending wallet (opposite direction of send trust request)
-            Deduct:
-              value: deduct
-              description: Request to allow actor to deduct from wallet
-            Release:
-              value: release
-              description: Request a deduct priviledge from a wallet controlled by the originator on behalf of another deducting wallet  (opposite direction of deduct trust request)
-            Manage:
-              value: manage
-              description: Request to allow actor to move funds from target wallet to any other wallet they control
-            Yield:
-              value: manage
-              description: Request to give manage privilege on a wallet controlled by the originator to another wallet (opposite direction of manage trust request)
+            $ref: '#/components/schemas/trustRequestType'
       responses:
         '200':
-          description: ''
+          description: 'Returns list of trust relationships'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/trustRelationshipsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" must be a number'
     post:
       tags:
         - Trust relationships
-      summary: Request a new trust relationship from another wallet
+      summary: 'Request a new trust relationship from another wallet'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -933,18 +898,44 @@ paths:
             schema:
               $ref: '#/components/schemas/trustRequest'
       responses:
-        '202':
-          description: Accepted but waiting for approval
+        '200':
+          description: 'Accepted but waiting for approval'
+          content:
+            application/json:
+              # TODO schema ref trustRelationshipItem
+              # once actor,originator, target wallet ids are returned
+              example:
+                id: c04e3b02-971c-4268-a701-b6c01468ca62
+                actor_wallet: testuser
+                originator_wallet: testuser
+                target_wallet: testWallet11
+                type: send
+                request_type: send
+                state: requested
+                created_at: '2023-08-19T03:40:38.200Z'
+                updated_at: '2023-08-19T03:40:38.200Z'
+                active: true
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid or missing parameters in request body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trust_request_type" is required'
   '/trust_relationships/{trust_relationship_id}':
     delete:
       tags:
         - Trust relationships
-      summary: Remove a trust relationship linked to the autheticated wallet
-      description: Remove a trust relationship linked to the autheticated wallet.  This could be either the actor wallet or the target wallet
+      summary: 'Remove a trust relationship linked to the authenticated wallet'
+      description: 'Remove a trust relationship linked to the authenticated wallet. This could be either the actor wallet or the target wallet'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -957,53 +948,140 @@ paths:
             $ref: '#/components/schemas/uuid'
       responses:
         '200':
-          description: ''
+          description: 'Trust relationship state is changed to `cancelled_by_originator`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
+              example:
+                id: c04e3b02-971c-4268-a701-b6c01468ca62
+                actor_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                target_wallet_id: 8428ea73-51df-4266-a038-4577b9aef06f
+                type: send
+                originator_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                request_type: send
+                state: cancelled_by_originator
+                created_at: '2023-08-19T03:40:38.200Z'
+                updated_at: '2023-08-19T03:40:38.200Z'
+                active: true
+                originating_wallet: testuser
+                actor_wallet: testuser
+                target_wallet: testWallet11
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trustRelationshipId" must be a valid GUID'
   '/trust_relationships/{trust_relationship_id}/accept':
     post:
       tags:
         - Trust relationships
-      summary: Accept a trust relationship
+      summary: 'Accept a trust relationship'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: trust_relationship_id
           in: path
-          description: the id of the entity trust record on the server
+          description: 'The unique ID of the entity trust record on the server'
           required: true
           style: simple
           schema:
             $ref: '#/components/schemas/uuid'
       responses:
         '200':
-          description: ''
+          description: 'Trust relationship state is changed to `trusted`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
+              example:
+                id: c04e3b02-971c-4268-a701-b6c01468ca62
+                actor_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                target_wallet_id: 8428ea73-51df-4266-a038-4577b9aef06f
+                type: send
+                originator_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                request_type: send
+                state: trusted
+                created_at: '2023-08-19T03:40:38.200Z'
+                updated_at: '2023-08-19T03:40:38.200Z'
+                active: true
+                originating_wallet: testuser
+                actor_wallet: testuser
+                target_wallet: testWallet11
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trustRelationshipId" must be a valid GUID'
   '/trust_relationships/{trust_relationship_id}/decline':
     post:
       tags:
         - Trust relationships
-      summary: Decline a trust relationship
+      summary: 'Decline a trust relationship'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: trust_relationship_id
           in: path
-          description: the id of the entity trust record on the server
+          description: 'The unique ID of the entity trust record on the server'
           required: true
           style: simple
           schema:
             $ref: '#/components/schemas/uuid'
       responses:
         '200':
-          description: ''
+          description: 'Trust relationship state is changed to `cancelled_by_target`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
+              example:
+                id: c04e3b02-971c-4268-a701-b6c01468ca62
+                actor_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                target_wallet_id: 8428ea73-51df-4266-a038-4577b9aef06f
+                type: send
+                originator_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                request_type: send
+                state: cancelled_by_target
+                created_at: '2023-08-19T03:40:38.200Z'
+                updated_at: '2023-08-19T03:40:38.200Z'
+                active: true
+                originating_wallet: testuser
+                actor_wallet: testuser
+                target_wallet: testWallet11
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trustRelationshipId" must be a valid GUID'
 components:
   parameters:
     treetrackerApiKeyParam:
@@ -1229,6 +1307,8 @@ components:
                 - type: string
                 - type: string
                   format: uuid
+            claim:
+              type: boolean
           required:
             - tokens
             - sender_wallet
@@ -1258,6 +1338,8 @@ components:
                 - type: string
                 - type: string
                   format: uuid
+            claim:
+              type: boolean
           required:
             - bundle
             - sender_wallet
@@ -1268,145 +1350,8 @@ components:
             sender_wallet: zaven4
             receiver_wallet: dadiorchen
             claim: false
-    transferbundlerequest:
-      title: transferbundlerequest
-      required:
-        - parameters
-        - sender_wallet
-        - receiver_wallet
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        sender_wallet:
-          oneOf:
-            - type: string
-            - type: number
-        receiver_wallet:
-          oneOf:
-            - type: string
-            - type: number
-      example:
-        bundle_size: 500
-        sender_wallet: zaven
-        receiver_wallet: GreenEarthAppeal
-    sendrequest:
-      title: sendrequest
-      required:
-        - tokens
-        - receiver_wallet
-      type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: ''
-        receiver_wallet:
-          oneOf:
-            - type: string
-            - type: number
-      example:
-        tokens:
-          - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-          - e533653e-2dbf-48cd-940a-a87e5a393158
-        receiver_wallet: zaven
-    sendRequestProcessedResponse:
-      title: sendRequestProcessedResponse
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: The unique ID for this transfer
-          example: fd30e72b-4ad5-4bb7-9dac-50aca48e4fa5
-        type:
-          $ref: '#/components/schemas/transferType'
-        originating_wallet:
-          type: string
-          example: johnwallet1
-        source_wallet:
-          type: string
-          example: planeter
-        destination_wallet:
-          type: string
-          example: just.a.guy
-
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        state:
-          type: string
-          description: 'the state of the transfer.  requested, pending, completed, cancelled, or failed'
-          example: completed
-        created_at:
-          type: string
-          format: date-time
-          example: 2020-07-09T00:41:49+00:00
-        closed_at:
-          type: string
-          format: date-time
-          example: 2020-07-09T00:41:49+00:00
     sendRequestPendingResponse:
       title: sendRequestPendingResponse
-    sendBundleRequest:
-      title: sendBundleRequest
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        receiver_wallet:
-          type: string
-      required:
-        - bundle_size
-        - receiver_wallet
-    pendingTransfersResponse:
-      title: List of Pending Transfers
-      type: object
-      properties:
-        pending:
-          type: array
-          items:
-            $ref: '#/components/schemas/pendingTransferItem'
-    pendingTransferItem:
-      title: Pending Transfer Item
-      type: object
-      properties:
-        id:
-          type: integer
-        sender_wallet:
-          type: string
-        receiver_wallet:
-          type: string
-        created_at:
-          type: string
-    requestBundleRequest:
-      title: requestBundleRequest
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        sender_wallet:
-          type: string
-          description: Senders other than the wallet requesting the transfer are not allowed at this time
-        receiver_wallet:
-          type: string
-      required:
-        - params
-        - receiver_wallet
-    requestBundleRequestParameters:
-      title: Parameters for Transfer Request
-      type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: optional array of explicit tokens
-        bundle_size:
-          type: integer
-          description: required number of trees to transfer
-      required:
-        - bundle_size
     requestBundleFulfillBody:
       title: 'Transfer Request Fulfillment'
       type: object
@@ -1429,15 +1374,18 @@ components:
       type: object
       properties:
         trust_request_type:
-          type: string
-          example: send
+          $ref: '#/components/schemas/trustRequestType'
         requester_wallet:
           type: string
-          description: 'This is optional, if ignore it, then the default requester_wallet should be the current logged in wallet'
+          description: 'Optional. If not present, then the default requester_wallet will be the current logged in wallet'
           example: dadiorchen
         requestee_wallet:
           type: string
-          description: The wallet to who this request are targetting
+          description: 'The wallet to which this request is targeted.'
+          example: testwallet
+      required:
+        - trust_request_type
+        - requestee_wallet
     historyResponse:
       title: History Response
       type: object
@@ -1483,28 +1431,6 @@ components:
         receiver_wallet:
           type: string
           example: 'otherwallet'
-    eventStream:
-      title: Event Stream
-      type: object
-      properties:
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/eventItem'
-    eventItem:
-      title: Event Item
-      type: object
-      properties:
-        type:
-          type: string
-        wallet:
-          type: string
-        transfer_id:
-          type: integer
-        trust_relationship_id:
-          type: integer
-        created_at:
-          type: string
     trustRelationshipsResponse:
       title: Trust Relationship Responses
       type: object
@@ -1604,6 +1530,13 @@ components:
         - cancelled_by_target
         - trusted
       example: trusted
+      description: >
+        Trust state type:
+         * `requested` - The trust relationship is pending approval.
+         * `cancelled_by_originator` - The trust relationship was cancelled by the originator.
+         * `cancelled_by_actor` - The trust relationship was cancelled by the actor.
+         * `cancelled_by_target` - The trust relationship was cancelled by the target.
+         * `trusted` - The trust relationship is active.
     trustRequestType:
       type: string
       enum:
@@ -1614,6 +1547,15 @@ components:
         - deduct
         - release
       example: manage
+      description: >
+        Trust Request type:
+          * `send` - Request to allow actor to send to target.
+          * `receive` - Request a send privilege to a wallet controlled by the originator on behalf of another sending wallet (opposite direction of send trust request).
+          * `manage` - Request to allow actor to move funds from target wallet to any other wallet they control.
+          * `yield` - Request to give manage privilege on a wallet controlled by the originator to another wallet (opposite direction of manage trust request).
+          * `deduct` - Request to allow actor to deduct from wallet.
+          * `release` - Request a deduct privilege from a wallet controlled by the originator on behalf of another deducting wallet (opposite direction of deduct trust request).
+
     trustType:
       type: string
       enum:
@@ -1621,7 +1563,11 @@ components:
         - deduct
         - managed
       example: send
-
+      description: >
+        Trust Type:
+         * `send` - Allow actor to send to target.
+         * `deduct` - Allow actor to deduct from wallet.
+         * `manage` - Allow actor to move funds from target wallet to any other wallet they control.
 
   responses:
     UnauthorizedError:
@@ -1634,7 +1580,7 @@ components:
             code: 401
             message: 'Invalid access - no API key'
     ForbiddenError:
-      description: Access bearer token is missing or invalid, or some permission is missing
+      description: 'Access bearer token is missing or invalid, or some permission is missing, etc.'
       content:
         application/json:
           schema:
