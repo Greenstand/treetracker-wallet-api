@@ -18,7 +18,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/authrequest'
+              $ref: '#/components/schemas/authRequest'
         required: true
       responses:
         '200':
@@ -36,15 +36,6 @@ paths:
               example:
                 code: 401
                 message: 'Invalid Credentials'
-        '422':
-          description: 'Missing request parameters'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-              example:
-                code: 422
-                message: '\"wallet\" is not allowed to be empty'
         '404':
           description: 'No wallet found with provided wallet name or id'
           content:
@@ -54,6 +45,17 @@ paths:
               example:
                 code: 404
                 message: 'Could not find entity by wallet name: bad_wallet'
+        '415':
+            $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Missing request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '\"wallet\" is not allowed to be empty'
       deprecated: false
   /tokens:
     get:
@@ -92,18 +94,24 @@ paths:
             $ref: '#/components/schemas/walletNameOrId'
       responses:
         '200':
-          description: ''
+          description: 'Returns list of tokens matching the input parameters'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/tokens'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '422':
           description: 'Missing request parameters'
-          example:
-            code: 422
-            message: '\"limit\" is required'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" is required'
       deprecated: false
   '/tokens/{token_uuid}':
     get:
@@ -115,33 +123,54 @@ paths:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: token_uuid
-          description: ''
+          description: 'ID of specific token to retrieve'
           in: path
           required: true
           schema:
             type: string
+            format: uuid
             example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
       responses:
         '200':
-          description: ''
+          description: 'Returns token matching the input parameter'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/tokenItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No token found matching token_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'can not found token by id:a5fee1ec-31dd-4150-aae1-dfe423ee9fc7'
+        '422':
+          description: 'token_uuid is invalid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"value" must be a valid GUID'
       deprecated: false
   /wallets:
     get:
       tags:
         - Managed wallets
-      summary: Get all wallets managed by the logged in account.  This endpoint is also used to get the total number of tokens in a given wallet.  Each wallet also returns all trust relationships for that wallet that have not been deleted
+      summary: 'Get all wallets managed by the logged in account. This endpoint is also used to get the total number of tokens in a given wallet.'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: Number of items to return
+          description: 'Number of items to return'
           required: true
           style: form
           explode: true
@@ -149,6 +178,7 @@ paths:
             type: integer
             format: int32
             example: 100
+            default: 1000
         - name: offset
           in: query
           description: 'Where does the list offset, 0 means offset from the beginning of the list'
@@ -162,17 +192,21 @@ paths:
             default: 0
       responses:
         '200':
-          description: ''
+          description: 'Returns list of managed wallets'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/walletsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
       deprecated: false
     post:
       tags:
         - Managed wallets
-      summary: Create a new managed wallet
-      description: Create a new managed wallet.  Requires the manage_account role.
+      summary: 'Create a new managed wallet'
+      description: 'Create a new managed wallet. Requires the manage_account role.'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -181,15 +215,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/accountrequest'
-            example:
-              wallet: sprinter_van_2004
+              $ref: '#/components/schemas/accountRequest'
         required: true
       responses:
-        '201':
-          description: A new wallet was created
+        '200':
+          description: 'A new wallet was created'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: 784311ee-156e-41c7-a85f-b51572cbcf91
+                  wallet:
+                    type: string
+                    example: new_wallet
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Missing parameters in request body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet" is required'
       deprecated: false
   '/wallets/{wallet_uuid}':
     get:
@@ -780,7 +837,7 @@ components:
         type: string
         example: application/json
   schemas:
-    authrequest:
+    authRequest:
       title: Authentication Request
       required:
         - wallet
@@ -821,42 +878,41 @@ components:
         id:
           type: string
           format: uuid
+          example: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
         capture_id:
           type: string
           format: uuid
+          example: '8df635f6-2df8-496f-93da-3060fc1e3180'
         wallet_id:
           type: string
           format: uuid
+          example: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
         transfer_pending:
           type: boolean
+          example: false
         transfer_pending_id:
           type: string
           format: uuid
+          example: null
         created_at:
           type: string
-          format: date
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
         updated_at:
           type: string
-          format: date
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        claim:
+          type: boolean
+          example: false
         links:
           type: object
           properties:
             capture:
               type: string
-      example:
-        id: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
-        capture_id: '8df635f6-2df8-496f-93da-3060fc1e3180'
-        wallet_id: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
-        transfer_pending: false
-        transfer_pending_id: null
-        created_at: '2021-07-02T18:31:07.208Z'
-        updated_at: '2021-07-02T18:31:07.208Z'
-        links:
-          type: object
-          properties:
-            capture: '/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180'
-    accountrequest:
-      title: accountrequest
+              example: '/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180'
+    accountRequest:
+      title: 'Account Request'
       required:
         - wallet
       type: object
@@ -867,14 +923,11 @@ components:
         wallet: sprinter_van_2004
     walletsResponse:
       title: Wallets Response
+      type: object
       properties:
-        wallets:
-          type: array
-          items:
-            $ref: '#/components/schemas/walletItem'
         total:
           type: integer
-          description: total count of wallets satisfying the query condition
+          description: 'Total count of wallets satisfying the query condition'
           example: 1
         query:
           type: object
@@ -885,8 +938,12 @@ components:
             limit:
               type: integer
               example: 5
+        wallets:
+          type: array
+          items:
+            $ref: '#/components/schemas/walletItem'
     walletItem:
-      title: Wallet Details
+      title: 'Wallet Details'
       properties:
         id:
           type: string
@@ -1284,17 +1341,32 @@ components:
           type: string
   responses:
     UnauthorizedError:
+      description: API key is missing or invalid or missing
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 401
+            message: 'Invalid access - no API key'
+    ForbiddenError:
       description: Access bearer token is missing or invalid
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/errorResponse'
-    ForbiddenError:
-      description: Access denied for that resource
+          example:
+            code: 403
+            message: 'ERROR: Authentication, no token supplied for protected path'
+    UnsupportedMediaTypeError:
+      description: Invalid content type
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 415
+            message: 'Invalid content type. API only supports application/json'
     NotFoundError:
       description: Resource missing
       content:
