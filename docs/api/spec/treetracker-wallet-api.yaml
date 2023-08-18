@@ -239,7 +239,7 @@ paths:
         '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
         '422':
-          description: 'Missing parameters in request body'
+          description: 'Missing or invalid parameters in request body'
           content:
             application/json:
               schema:
@@ -257,7 +257,7 @@ paths:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: wallet_uuid
-          description: ''
+          description: 'ID of wallet'
           in: path
           required: true
           schema:
@@ -265,14 +265,89 @@ paths:
             example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
       responses:
         '200':
-          description: ''
+          description: 'Return wallet matching wallet_uuid'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/walletItem'
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: 'ef6a37ce-c459-4a2c-83c3-85e829e4a75e'
+                  logo_url:
+                    type: string
+                    format: url
+                    example: https://www.placehold.co/192x192
+                  about:
+                    type: string
+                    example: 'feugiat pretium nibh ipsum consequat nisl vel pretium lectus quam id leo in vitae turpis massa sed elementum tempus egestas'
+                  wallet:
+                    type: string
+                    example: testwallet
+                  tokens_in_wallet:
+                    type: integer
+                    example: 12
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No wallet found matching wallet_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Could not find wallet by id: ef6a37ce-c459-4a2c-83c3-85e829e4a753'
+        '422':
+          description: 'Missing or invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet_id" must be a valid GUID'
       deprecated: false
+  /wallets/{wallet_uuid}/trust_relationships:
+    get:
+      tags:
+        - Trust Relationships
+      summary: Get list of trust relationships for the specified wallet
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: wallet_uuid
+          description: 'ID of wallet'
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+      responses:
+        '200':
+          description: 'Return list of trust relationships for the wallet matching wallet_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Invalid query parameter'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet_id" must be a valid GUID'
+      deprecated: false
+
   /transfers:
     post:
       tags:
@@ -1305,21 +1380,67 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        actor_wallet:
           type: string
-        target_wallet:
+          format: uuid
+          example: 0b335cd4-db82-4784-89f5-c8800844c291
+        actor_wallet_id:
           type: string
-        trust_type:
+          format: uuid
+          example: 644f4d3b-a53c-457c-8677-42b5b812c23d
+        target_wallet_id:
           type: string
+          format: uuid
+          example: ef6a37ce-c459-4a2c-83c3-85e829e4a75e
+        type:
+          type: string
+          enum:
+            - send
+            - manage
+            - deduct
+          example: manage
+        originator_wallet_id:
+          type: string
+          format: uuid
+          example: 644f4d3b-a53c-457c-8677-42b5b812c23d
+        request_type:
+          type: string
+          enum:
+            - send
+            - receive
+            - manage
+            - yield
+            - deduct
+            - release
+          example: manage
         state:
           type: string
-        trust_request_type:
-          type: string
-        orginating_wallet:
-          type: string
+          enum:
+            - requested
+            - cancelled_by_originator
+            - cancelled_by_actor
+            - cancelled_by_target
+            - trusted
+          example: trusted
         created_at:
           type: string
+          format: date-time
+          example: 2023-08-15T23:29:12.261Z
+        updated_at:
+          type: string
+          format: date-time
+          example: 2023-08-15T23:29:12.261Z
+        active:
+          type: boolean
+          example: true
+        originating_wallet:
+          type: string
+          example: testuser
+        actor_wallet:
+          type: string
+          example: testuser
+        target_wallet:
+          type: string
+          example: otherwallet
     walletNameOrId:
       oneOf:
         - type: string
@@ -1367,17 +1488,6 @@ components:
           example:
             code: 415
             message: 'Invalid content type. API only supports application/json'
-    NotFoundError:
-      description: Resource missing
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/errorResponse'
-          example:
-            code: 404
-            message: ''
-    ValidationError:
-      description: Validation error - may be missing query parameters
   securitySchemes:
     httpBearer:
       type: http
