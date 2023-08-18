@@ -27,14 +27,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/bearerToken'
+        '401':
+          description: 'Incorrect password for wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 401
+                message: 'Invalid Credentials'
+        '422':
+          description: 'Missing request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '\"wallet\" is not allowed to be empty'
         '404':
-          $ref: '#/components/responses/NotFoundError'
+          description: 'No wallet found with provided wallet name or id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Could not find entity by wallet name: bad_wallet'
       deprecated: false
   /tokens:
     get:
       tags:
         - Token details
-      summary: Get a list of tokens in the current wallet  or managed wallets
+      summary: Get a list of tokens in the current wallet or managed wallets
       description: 'Get a list of for tokens in the current wallet or managed wallets, matching certain parameters'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
@@ -61,7 +86,7 @@ paths:
             example: 1
             default: 0
         - name: wallet
-          description: Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet
+          description: Wallet id or name can be specified if the authenticated wallet manages other wallets. The default is to return tokens matching the authenticated wallet
           in: query
           schema:
             $ref: '#/components/schemas/walletNameOrId'
@@ -74,6 +99,11 @@ paths:
                 $ref: '#/components/schemas/tokens'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: 'Missing request parameters'
+          example:
+            code: 422
+            message: '\"limit\" is required'
       deprecated: false
   '/tokens/{token_uuid}':
     get:
@@ -734,7 +764,7 @@ components:
     treetrackerApiKeyParam:
       name: TREETRACKER-API-KEY
       in: header
-      description: ''
+      description: 'API key for authenticating requests to the Treetracker Wallet API'
       required: true
       style: simple
       schema:
@@ -743,7 +773,7 @@ components:
     contentTypeJsonHeader:
       name: Content-Type
       in: header
-      description: ''
+      description: 'Specifies the media type of the request payload'
       required: true
       style: simple
       schema:
@@ -774,6 +804,8 @@ components:
       properties:
         bearer:
           type: string
+          example:
+            bearer: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
     tokens:
       title: Token query response
       type: object
@@ -844,15 +876,15 @@ components:
           type: integer
           description: total count of wallets satisfying the query condition
           example: 1
-          query:
-            type: object
-            properties:
-              offset:
-                type: integer
-                example: 0
-              limit:
-                type: integer
-                example: 5
+        query:
+          type: object
+          properties:
+            offset:
+              type: integer
+              example: 0
+            limit:
+              type: integer
+              example: 5
     walletItem:
       title: Wallet Details
       properties:
@@ -1243,7 +1275,6 @@ components:
       type: string
       format: uuid
       example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
-  responses:
     errorResponse:
       type: object
       properties:
@@ -1251,6 +1282,7 @@ components:
           type: integer
         message:
           type: string
+  responses:
     UnauthorizedError:
       description: Access bearer token is missing or invalid
       content:
@@ -1269,6 +1301,11 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 404
+            message: ''
+    ValidationError:
+      description: Validation error - may be missing query parameters
   securitySchemes:
     httpBearer:
       type: http
