@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Treetracker Wallet API
   contact: {}
-  version: '0.9'
+  version: '1.22.0'
 paths:
   '/auth':
     post:
@@ -372,7 +372,7 @@ paths:
   '/wallets/{wallet_uuid}/trust_relationships':
     get:
       tags:
-        - Trust Relationships
+        - Managed wallets
       summary: Get list of trust relationships for the specified wallet
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
@@ -424,7 +424,7 @@ paths:
         required: true
       responses:
         '201':
-          description: The transfer was completely processed
+          description: 'The transfer was completely processed'
           content:
             application/json:
               schema:
@@ -670,11 +670,20 @@ paths:
             default: 0
       responses:
         '200':
-          description: ''
+          description: 'Returns list of tokens associated with the transfer'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Can not find this transfer or it is not related to this wallet'
         '422':
           description: 'Invalid or missing query parameters'
           content:
@@ -729,7 +738,7 @@ paths:
     post:
       tags:
         - Transfers
-      summary: Decline a pending (untrusted) transfer
+      summary: 'Decline a pending (untrusted) transfer'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -1114,7 +1123,7 @@ components:
           oneOf:
             - type: string
               format: string
-              example: zaven
+              example: wallet1
             - type: string
               format: uuid
               example: 21af8154-b7f1-48d3-8520-2e376efae45e
@@ -1317,8 +1326,8 @@ components:
             tokens:
               - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
               - e533653e-2dbf-48cd-940a-a87e5a393158
-            sender_wallet: zaven4
-            receiver_wallet: dadiorchen
+            sender_wallet: wallet1
+            receiver_wallet: wallet2
             claim: false
         - properties:
             bundle:
@@ -1347,8 +1356,8 @@ components:
           example:
             bundle:
               bundle_size: 100
-            sender_wallet: zaven4
-            receiver_wallet: dadiorchen
+            sender_wallet: wallet1
+            receiver_wallet: wallet2
             claim: false
     sendRequestPendingResponse:
       title: sendRequestPendingResponse
@@ -1378,7 +1387,7 @@ components:
         requester_wallet:
           type: string
           description: 'Optional. If not present, then the default requester_wallet will be the current logged in wallet'
-          example: dadiorchen
+          example: wallet1
         requestee_wallet:
           type: string
           description: 'The wallet to which this request is targeted.'
@@ -1489,7 +1498,7 @@ components:
       oneOf:
         - type: string
           format: string
-          example: zaven
+          example: wallet1
         - type: string
           format: uuid
           example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
