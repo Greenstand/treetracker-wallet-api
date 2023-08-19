@@ -17,6 +17,11 @@ class TrustService {
     offset = 0,
     limit,
   }) {
+    // check of wallet exists first
+    // throws error if no wallet matching walletId exists
+    const walletService = new WalletService()
+    await walletService.getWallet(walletId)
+
     return this._trust.getTrustRelationships({
       walletId,
       state,
@@ -104,6 +109,11 @@ class TrustService {
   }
 
   async cancelTrustRequest({ walletLoginId, trustRelationshipId }) {
+    // check if trust relationship matching trustRelationshipId exists
+    // const trs = await this._session.getDB().select('*').from('wallet_trust').where('id', trustRelationshipId)
+    // console.log('TRUSTS', trs)
+
+
     return this._trust.cancelTrustRequest({
       walletId: walletLoginId,
       trustRelationshipId,
