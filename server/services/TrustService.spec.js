@@ -218,4 +218,23 @@ describe('TrustService', () => {
       ).eql(true);
     });
   });
+
+  describe('trustRelationshipGetById', async () => {
+      const trustRelationshipGetByIdStub = sinon
+          .stub(Trust.prototype, 'trustRelationshipGetById')
+          .resolves('trustRelationship');
+
+      const trustRelationship = await trustService.trustRelationshipGetById({
+          walletId: 'walletId',
+          trustRelationshipId: 'id'
+      });
+
+      expect(trustRelationship).eql('trustRelationship');
+      expect(
+          trustRelationshipGetByIdStub.calledOnceWithExactly({
+              walletId: 'walletId',
+              trustRelationshipId: 'id'
+          }),
+      ).eql(true);
+  })
 });
