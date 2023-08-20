@@ -13,6 +13,7 @@ const {
   trustRelationshipDelete,
   trustRelationshipDecline,
   trustRelationshipAccept,
+  trustRelationshipGetById,
   trustPost,
 } = require('../handlers/trustHandler');
 
@@ -27,6 +28,7 @@ router.post(
   handlerWrapper(trustRelationshipDecline),
 );
 router.delete('/:trustRelationshipId', handlerWrapper(trustRelationshipDelete));
+router.get('/:trustRelationshipId', handlerWrapper(trustRelationshipGetById))
 
 routerWrapper.use(
   '/trust_relationships',
