@@ -114,6 +114,11 @@ describe('transferRouter', () => {
         result: {
           id: tokenId,
           state: TransferEnums.STATE.completed,
+          parameters: {
+            bundle: {
+              bundleSize: 1,
+            },
+          },
         },
         status: 201,
       });
@@ -128,6 +133,12 @@ describe('transferRouter', () => {
     expect(res.body).eql({
       id: tokenId,
       state: TransferEnums.STATE.completed,
+      parameters: {
+        bundle: {
+          bundleSize: 1,
+        },
+      },
+      token_count: 1
     });
     expect(
       initiateTranferStub.calledOnceWithExactly(
@@ -151,6 +162,11 @@ describe('transferRouter', () => {
         result: {
           id: tokenId,
           state: TransferEnums.STATE.completed,
+          parameters: {
+            bundle: {
+              bundleSize: 1,
+            },
+          },
         },
         status: 202,
       });
@@ -168,6 +184,12 @@ describe('transferRouter', () => {
     expect(res.body).eql({
       id: tokenId,
       state: TransferEnums.STATE.completed,
+      parameters: {
+        bundle: {
+          bundleSize: 1,
+        },
+      },
+      token_count: 1
     });
     expect(
       initiateTranferStub.calledOnceWithExactly(
