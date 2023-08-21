@@ -219,8 +219,8 @@ class TransferService {
     return transfer;
   }
 
-  async getTokensByTransferId(transferId, limit, offset) {
-    const transfer = await this.getTransferById(transferId);
+  async getTokensByTransferId(transferId, walletLoginId, limit, offset) {
+    const transfer = await this.getTransferById(transferId, walletLoginId);
     const tokenService = new TokenService();
     let tokens;
     if (transfer.state === TransferEnums.STATE.completed) {

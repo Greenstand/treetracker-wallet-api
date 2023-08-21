@@ -115,7 +115,7 @@ const transferIdTokenGet = async (req, res) => {
 
   const transferService = new TransferService();
   const tokens = await transferService.getTokensByTransferId(
-    req.params.transfer_id,
+    req.params.transfer_id, req.wallet_id,
     limit,
     offset,
   );
