@@ -16,7 +16,13 @@ const transferPost = async (req, res) => {
     req.wallet_id,
   );
 
-  res.status(status).send(result);
+  const modifiedTransfer = {
+    ...result,
+    token_count:
+        +result.parameters?.bundle?.bundleSize || +result.parameters?.tokens?.length,
+  }
+
+  res.status(status).send(modifiedTransfer);
 };
 
 const transferIdAcceptPost = async (req, res) => {
