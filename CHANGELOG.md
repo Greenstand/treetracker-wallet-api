@@ -1,3 +1,11 @@
+# [1.23.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.22.1...v1.23.0) (2023-08-21)
+
+
+### Features
+
+* added token_count field to created transfer ([e713fdd](https://github.com/Greenstand/treetracker-wallet-api/commit/e713fdd93cf6d5c8023f5f741f3c57369532089f))
+* updated tests ([1e41d78](https://github.com/Greenstand/treetracker-wallet-api/commit/1e41d783ac4f9fb16a059cadfb06c824448d4471))
+
 ## [1.22.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.22.0...v1.22.1) (2023-08-21)
 
 
