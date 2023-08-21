@@ -1,3 +1,12 @@
+## [1.22.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.22.0...v1.22.1) (2023-08-21)
+
+
+### Bug Fixes
+
+* /transfers/:id/tokens works correctly ([70e00dd](https://github.com/Greenstand/treetracker-wallet-api/commit/70e00ddf5a255b5f509afda271d26007b2ab7b1d))
+* fixed broken tests ([f662599](https://github.com/Greenstand/treetracker-wallet-api/commit/f662599b05c9202e794113602ce0a53f368130b4))
+* remove unused query param validation ([4869b7f](https://github.com/Greenstand/treetracker-wallet-api/commit/4869b7f8be790d061161d3ea4beb2960ab0f98a9))
+
 # [1.22.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.6...v1.22.0) (2023-08-14)
 
 
