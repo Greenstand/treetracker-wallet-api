@@ -1,3 +1,11 @@
+# [1.24.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.23.0...v1.24.0) (2023-08-21)
+
+
+### Features
+
+* add new GET endpoint ([2d62c4c](https://github.com/Greenstand/treetracker-wallet-api/commit/2d62c4c4385bc51ff72739ca90135f15dba3eee2))
+* added some tests ([3a2c596](https://github.com/Greenstand/treetracker-wallet-api/commit/3a2c59630937132a74d6aae9b972140fb258ae07))
+
 # [1.23.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.22.1...v1.23.0) (2023-08-21)
 
 
