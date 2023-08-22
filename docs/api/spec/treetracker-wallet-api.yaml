@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Treetracker Wallet API
   contact: {}
-  version: '1.22.0'
+  version: '1.24.0'
 paths:
   '/auth':
     post:
@@ -671,6 +671,15 @@ paths:
       responses:
         '200':
           description: 'Returns list of tokens associated with the transfer'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokens:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/transferTokenItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -940,6 +949,50 @@ paths:
                 code: 422
                 message: '"trust_request_type" is required'
   '/trust_relationships/{trust_relationship_id}':
+    get:
+      tags:
+        - Trust relationships
+      summary: 'Get details for a single trust relationship'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: trust_relationship_id
+          description: 'ID of the trust relationship'
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+      responses:
+        '200':
+          description: 'Return the trust relationship matching trust_relationship_id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No trust relationship found matching trust_relationship_id or it is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'No such trust relationship exists or it is not associated with the current wallet.'
+        '422':
+          description: 'Missing or invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trustRelationshipId" must be a valid GUID'
+      deprecated: false
     delete:
       tags:
         - Trust relationships
@@ -1186,6 +1239,60 @@ components:
             capture:
               type: string
               example: '/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180'
+    transferTokenItem:
+      title: Token Item (Transfer)
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
+        capture_id:
+          type: string
+          format: uuid
+          example: '8df635f6-2df8-496f-93da-3060fc1e3180'
+        wallet_id:
+          type: string
+          format: uuid
+          example: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
+        transfer_pending:
+          type: boolean
+          example: false
+        transfer_pending_id:
+          type: string
+          format: uuid
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        claim:
+          type: boolean
+          example: false
+        token_id:
+          type: string
+          format: uuid
+          example: cf6dde25-2eb1-4b44-a70c-724c36591b9a
+        transfer_id:
+          type: string
+          format: uuid
+          example: fea4faa4-0f37-4330-a970-4f0160d9d591
+        source_wallet_id:
+          type: string
+          format: uuid
+          example: 644f4d3b-a53c-457c-8677-42b5b812c23
+        destination_wallet_id:
+          type: string
+          format: uuid
+          example: ef6a37ce-c459-4a2c-83c3-85e829e4a75e
+        processed_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
     accountRequest:
       title: 'Account Request'
       required:
@@ -1248,7 +1355,6 @@ components:
           example: cf0ce129-8c12-45cf-b914-a8f1cb6b7dc5
         type:
           $ref: '#/components/schemas/transferType'
-          description: 'The type of transfer. The value is computed by the server based on the submitted request'
         parameters:
           type: object
           oneOf:
