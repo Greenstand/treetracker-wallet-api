@@ -1,3 +1,15 @@
+# [1.26.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.25.0...v1.26.0) (2023-08-22)
+
+
+### Bug Fixes
+
+* fixed broken test ([db9101a](https://github.com/Greenstand/treetracker-wallet-api/commit/db9101a8a594b22aa872d04af1a99e3d0b03a562))
+
+
+### Features
+
+* added missing fields post /trust_relationships ([006cbd3](https://github.com/Greenstand/treetracker-wallet-api/commit/006cbd39b1e26e51f643fe07e0430d6dd0a78d8b))
+
 # [1.25.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.24.0...v1.25.0) (2023-08-22)
 
 
