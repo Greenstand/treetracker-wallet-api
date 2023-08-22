@@ -124,6 +124,9 @@ class Trust {
       created_at: result.created_at,
       updated_at: result.updated_at,
       active: result.active,
+      actor_wallet_id: actorWallet.id,
+      originator_wallet_id: originatorWallet.id,
+      target_wallet_id: targetWallet.id,
     };
   }
 

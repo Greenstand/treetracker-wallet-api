@@ -223,6 +223,9 @@ describe('Trust Model', () => {
         created_at: resultObject.created_at,
         updated_at: resultObject.updated_at,
         active: resultObject.active,
+        actor_wallet_id: requesterWallet.id,
+        originator_wallet_id: originatorWallet.id,
+        target_wallet_id: requesteeWallet.id,
       });
       expect(hasControlStub).calledOnceWithExactly(
         originatorWallet.id,
