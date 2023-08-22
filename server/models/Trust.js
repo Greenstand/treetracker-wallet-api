@@ -393,6 +393,31 @@ class Trust {
     return false;
   }
 
+  async getTrustRelationshipById({ walletId, trustRelationshipId}) {
+    const filter = {
+      and: [
+        {
+          or: [
+            { actor_wallet_id: walletId },
+            { target_wallet_id: walletId },
+            { originator_wallet_id: walletId },
+          ],
+        },
+        {
+          'wallet_trust.id': trustRelationshipId,
+        },
+      ],
+    };
+
+    const [trustRelationship] =  await this._trustRepository.getByFilter(filter)
+
+    if(!trustRelationship){
+      throw new HttpError(404, 'No such trust relationship exists or it is not associated with the current wallet.')
+    }
+
+    return trustRelationship
+  }
+
   // NOT YET IN USE
   //   /*
   //  * Get all the trust relationships I have requested

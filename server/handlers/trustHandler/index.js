@@ -45,6 +45,23 @@ const trustPost = async (req, res) => {
   res.status(200).json(trustRelationship);
 };
 
+const trustRelationshipGetById = async (req, res) => {
+  await trustRelationshipIdSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+
+  const { trustRelationshipId } = req.params
+  const trustService = new TrustService()
+
+  const trustRelationship = await trustService.trustRelationshipGetById({
+    walletLoginId: req.wallet_id,
+    trustRelationshipId
+  })
+
+  res.status(200).json(trustRelationship)
+}
+
+
 const trustRelationshipAccept = async (req, res) => {
   await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
@@ -56,7 +73,7 @@ const trustRelationshipAccept = async (req, res) => {
     trustRelationshipId,
     walletLoginId: req.wallet_id,
   });
-  res.json(json);
+  res.status(200).json(json);
 };
 
 const trustRelationshipDecline = async (req, res) => {
@@ -93,4 +110,5 @@ module.exports = {
   trustRelationshipAccept,
   trustRelationshipDecline,
   trustRelationshipDelete,
+  trustRelationshipGetById
 };
