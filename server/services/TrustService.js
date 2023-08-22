@@ -109,11 +109,6 @@ class TrustService {
   }
 
   async cancelTrustRequest({ walletLoginId, trustRelationshipId }) {
-    // check if trust relationship matching trustRelationshipId exists
-    // const trs = await this._session.getDB().select('*').from('wallet_trust').where('id', trustRelationshipId)
-    // console.log('TRUSTS', trs)
-
-
     return this._trust.cancelTrustRequest({
       walletId: walletLoginId,
       trustRelationshipId,

@@ -336,6 +336,14 @@ class Trust {
       'wallet_trust.id': trustRelationshipId,
     });
     const [trustRelationship] = trustRelationships;
+
+    if(!trustRelationship){
+      throw new HttpError(
+          404,
+          'No such trust relationship exists or it is not associated with the current wallet.'
+      )
+    }
+
     if (trustRelationship?.originator_wallet_id !== walletId) {
       throw new HttpError(
         403,
