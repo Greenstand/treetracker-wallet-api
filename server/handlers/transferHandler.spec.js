@@ -114,6 +114,11 @@ describe('transferRouter', () => {
         result: {
           id: tokenId,
           state: TransferEnums.STATE.completed,
+          parameters: {
+            bundle: {
+              bundleSize: 1,
+            },
+          },
         },
         status: 201,
       });
@@ -128,6 +133,12 @@ describe('transferRouter', () => {
     expect(res.body).eql({
       id: tokenId,
       state: TransferEnums.STATE.completed,
+      parameters: {
+        bundle: {
+          bundleSize: 1,
+        },
+      },
+      token_count: 1
     });
     expect(
       initiateTranferStub.calledOnceWithExactly(
@@ -151,6 +162,11 @@ describe('transferRouter', () => {
         result: {
           id: tokenId,
           state: TransferEnums.STATE.completed,
+          parameters: {
+            bundle: {
+              bundleSize: 1,
+            },
+          },
         },
         status: 202,
       });
@@ -168,6 +184,12 @@ describe('transferRouter', () => {
     expect(res.body).eql({
       id: tokenId,
       state: TransferEnums.STATE.completed,
+      parameters: {
+        bundle: {
+          bundleSize: 1,
+        },
+      },
+      token_count: 1
     });
     expect(
       initiateTranferStub.calledOnceWithExactly(
@@ -387,7 +409,7 @@ describe('transferRouter', () => {
     const token2Id = uuid.v4();
 
     it('transferId param should be a guid, should throw error', async () => {
-      const res = await request(app).get(`/transfers/transferId/tokens`);
+      const res = await request(app).get(`/transfers/transferId/tokens?limit=20`);
       expect(res).property('statusCode').eq(422);
       expect(res.body.message).match(/transfer_id.*guid/i);
     });
@@ -411,6 +433,7 @@ describe('transferRouter', () => {
       expect(
         getTokensByTransferIdStub.calledOnceWithExactly(
           transferId,
+          authenticatedWalletId,
           '1',
           undefined,
         ),

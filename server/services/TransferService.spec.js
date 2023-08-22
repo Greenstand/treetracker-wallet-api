@@ -106,6 +106,7 @@ describe('TransferService', () => {
 
       const tokens = await transferService.getTokensByTransferId(
         'transferId',
+        'walletLoginId',
         1,
         1,
       );
@@ -123,6 +124,7 @@ describe('TransferService', () => {
 
       const tokens = await transferService.getTokensByTransferId(
         'transferId',
+        'walletLoginId',
         1,
         1,
       );

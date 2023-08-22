@@ -34,13 +34,12 @@ class TokenRepository extends BaseRepository {
    * select transaction table by transfer id, return matched tokens
    */
   async getByTransferId(transferId, limit, offset = 0) {
-    return this._session.getDB().raw(`
-      SELECT "token".* FROM "token"
-      JOIN "transaction" 
-      ON "token".id = "transaction".token_id
-      WHERE "transaction".transfer_id = ${transferId}
-      LIMIT ${limit}
-      OFFSET ${offset}`);
+    return this._session.getDB().select('*')
+        .from('token')
+        .join('transaction', 'token.id', 'transaction.token_id')
+        .where('transaction.transfer_id', transferId)
+        .limit(limit)
+        .offset(offset);
   }
 }
 
