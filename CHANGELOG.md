@@ -1,3 +1,28 @@
+# [1.24.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.23.0...v1.24.0) (2023-08-21)
+
+
+### Features
+
+* add new GET endpoint ([2d62c4c](https://github.com/Greenstand/treetracker-wallet-api/commit/2d62c4c4385bc51ff72739ca90135f15dba3eee2))
+* added some tests ([3a2c596](https://github.com/Greenstand/treetracker-wallet-api/commit/3a2c59630937132a74d6aae9b972140fb258ae07))
+
+# [1.23.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.22.1...v1.23.0) (2023-08-21)
+
+
+### Features
+
+* added token_count field to created transfer ([e713fdd](https://github.com/Greenstand/treetracker-wallet-api/commit/e713fdd93cf6d5c8023f5f741f3c57369532089f))
+* updated tests ([1e41d78](https://github.com/Greenstand/treetracker-wallet-api/commit/1e41d783ac4f9fb16a059cadfb06c824448d4471))
+
+## [1.22.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.22.0...v1.22.1) (2023-08-21)
+
+
+### Bug Fixes
+
+* /transfers/:id/tokens works correctly ([70e00dd](https://github.com/Greenstand/treetracker-wallet-api/commit/70e00ddf5a255b5f509afda271d26007b2ab7b1d))
+* fixed broken tests ([f662599](https://github.com/Greenstand/treetracker-wallet-api/commit/f662599b05c9202e794113602ce0a53f368130b4))
+* remove unused query param validation ([4869b7f](https://github.com/Greenstand/treetracker-wallet-api/commit/4869b7f8be790d061161d3ea4beb2960ab0f98a9))
+
 # [1.22.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.21.6...v1.22.0) (2023-08-14)
 
 
