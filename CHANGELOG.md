@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.24.0...v1.25.0) (2023-08-22)
+
+
+### Features
+
+* added pr template ([85cd45d](https://github.com/Greenstand/treetracker-wallet-api/commit/85cd45ddb52c720dc9725bfa27361c3f177af4bd))
+
 # [1.24.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.23.0...v1.24.0) (2023-08-21)
 
 
