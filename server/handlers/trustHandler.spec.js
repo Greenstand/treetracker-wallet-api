@@ -210,4 +210,35 @@ describe('trustRouter', () => {
       });
     });
   });
+
+  describe('get /trust_relationships/:id', () => {
+    it('missed parameters -- relationshipId must be a guid', async () => {
+      const res = await request(app).get(
+          `/trust_relationships/trustRelationshipId`,
+      );
+      expect(res).property('statusCode').eq(422);
+      expect(res.body.message).match(/trustRelationshipId.*GUID/);
+    });
+
+    it('successfully', async () => {
+      const trustRelationshipId = uuid.v4();
+
+      const trustRelationshipGetByIdStub = sinon
+          .stub(TrustService.prototype, 'trustRelationshipGetById')
+          .resolves({id: trustRelationshipId});
+
+      const res = await request(app).get(
+          `/trust_relationships/${trustRelationshipId}`,
+      );
+
+      expect(res).property('statusCode').eq(200);
+      expect(
+          trustRelationshipGetByIdStub.calledOnceWithExactly({
+            walletLoginId: authenticatedWalletId,
+            trustRelationshipId,
+          }),
+      ).eql(true);
+    });
+
+  })
 });

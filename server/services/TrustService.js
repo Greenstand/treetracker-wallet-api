@@ -119,6 +119,15 @@ class TrustService {
       trustRelationshipId,
     });
   }
+
+  async trustRelationshipGetById({ walletLoginId, trustRelationshipId}){
+    return this._trust.getTrustRelationshipById({
+      walletId: walletLoginId,
+      trustRelationshipId
+    })
 }
+
+}
+
 
 module.exports = TrustService;

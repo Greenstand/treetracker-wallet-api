@@ -906,4 +906,35 @@ describe('Trust Model', () => {
       expect(getTrustRelationshipsTrustedStub).not.called;
     });
   });
+
+  describe('getTrustRelationshipById', () => {
+    const walletId = uuid();
+    const trustRelationshipId = uuid()
+    const filter = {
+      and: [
+        {
+          or: [
+            { actor_wallet_id: walletId },
+            { target_wallet_id: walletId },
+            { originator_wallet_id: walletId },
+          ],
+        },
+        {
+          'wallet_trust.id': trustRelationshipId,
+        },
+      ],
+    };
+
+    it('should get relationship', async () => {
+      trustRepositoryStub.getByFilter.resolves(['trustRelationship']);
+      const result = await trustModel.getTrustRelationshipById({
+        walletId,
+        trustRelationshipId
+      });
+      expect(result).eql('trustRelationship');
+      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(
+          {...filter}
+      );
+    });
+  })
 });

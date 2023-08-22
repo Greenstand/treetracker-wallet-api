@@ -1,7 +1,11 @@
 as
 #API Documentation
 
-To view the specs for the new API visit https://editor.swagger.io and load the YAML file from https://github.com/Greenstand/treetracker-wallet-api/docs/api/spec/treetracker-wallet-api-v1-10.yaml
+To view the specs for the new API visit https://editor.swagger.io and load the YAML file from 
+
+https://github.com/Greenstand/treetracker-wallet-api/blob/master/docs/api/spec/treetracker-wallet-api-v1-10.yaml // changed to the file that can be accessed
+
+https://github.com/Greenstand/treetracker-wallet-api/docs/api/spec/treetracker-wallet-api-v1-10.yaml // NOT found error even though the file is in this location 
 
 # Getting Started
 
