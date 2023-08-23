@@ -17,7 +17,7 @@ class TrustService {
     offset = 0,
     limit,
   }) {
-    // check of wallet exists first
+    // check if wallet exists first
     // throws error if no wallet matching walletId exists
     const walletService = new WalletService()
     await walletService.getWallet(walletId)

@@ -289,8 +289,8 @@ class Trust {
 
     if (!trustRelationship) {
       throw new HttpError(
-        403,
-        'Have no permission to accept this relationship',
+        404,
+        'No such trust relationship exists or it is not associated with the current wallet.',
       );
     }
     await this.checkManageCircle({ walletId, trustRelationship });
@@ -317,8 +317,8 @@ class Trust {
 
     if (!trustRelationship) {
       throw new HttpError(
-        403,
-        'Have no permission to decline this relationship',
+        404,
+        'No such trust relationship exists or it is not associated with the current wallet.',
       );
     }
 
@@ -332,24 +332,7 @@ class Trust {
    * Cancel a trust relationship request
    */
   async cancelTrustRequest({ trustRelationshipId, walletId }) {
-    const trustRelationships = await this._trustRepository.getByFilter({
-      'wallet_trust.id': trustRelationshipId,
-    });
-    const [trustRelationship] = trustRelationships;
-
-    if(!trustRelationship){
-      throw new HttpError(
-          404,
-          'No such trust relationship exists or it is not associated with the current wallet.'
-      )
-    }
-
-    if (trustRelationship?.originator_wallet_id !== walletId) {
-      throw new HttpError(
-        403,
-        'Have no permission to cancel this relationship',
-      );
-    }
+    const trustRelationship = await this.getTrustRelationshipById({ walletId, trustRelationshipId})
 
     return this.updateTrustState(
       trustRelationship,
