@@ -55,7 +55,7 @@ describe('Trust relationship: cancel send', () => {
         trust_request_type: 'send',
         requestee_wallet: seed.walletB.name,
       });
-    expect(res).property('statusCode').to.eq(200);
+    expect(res).property('statusCode').to.eq(201);
     trustRelationship = res.body;
   });
 
