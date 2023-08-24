@@ -1,3 +1,18 @@
+# [1.27.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.26.1...v1.27.0) (2023-08-24)
+
+
+### Bug Fixes
+
+* /wallets/:id/trust_relationships returns 404 for invalid id ([39ac44f](https://github.com/Greenstand/treetracker-wallet-api/commit/39ac44f355519dbc331e31087f516d7297021a56))
+* 404 error code- POST /tr_rel/:id/accept, /decline, DELETE /tr_rel/:id ([08b9eb3](https://github.com/Greenstand/treetracker-wallet-api/commit/08b9eb36052f467de062cc033f983dc45321da0a))
+* fixed broken tests ([e756e00](https://github.com/Greenstand/treetracker-wallet-api/commit/e756e008cf2e261326cc50afbeb4aa1e11d4739f))
+* undo cancel trust request and fix tests ([06df155](https://github.com/Greenstand/treetracker-wallet-api/commit/06df1554466f15409edf1ff991bfdcf6bd6a6060))
+
+
+### Features
+
+* delete /trust_relationship/:id ([6718a17](https://github.com/Greenstand/treetracker-wallet-api/commit/6718a177f5978219fca886e53d83891ac094906b))
+
 ## [1.26.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.26.0...v1.26.1) (2023-08-24)
 
 
