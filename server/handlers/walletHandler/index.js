@@ -64,7 +64,7 @@ const walletPost = async (req, res) => {
     req.body.wallet,
   );
 
-  res.status(200).json({
+  res.status(201).json({
     id,
     wallet,
   });

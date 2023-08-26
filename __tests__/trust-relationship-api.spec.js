@@ -76,7 +76,7 @@ describe('Trust relationship management', () => {
         trust_request_type: 'send',
         requestee_wallet: seed.walletC.name,
       });
-    expect(res).property('statusCode').to.eq(200);
+    expect(res).property('statusCode').to.eq(201);
   });
 
   it('GET /trust_relationships', async () => {
@@ -110,7 +110,7 @@ describe('Trust relationship management', () => {
         trust_request_type: 'send',
         requestee_wallet: seed.walletB.name,
       });
-    expect(res).property('statusCode').to.eq(200);
+    expect(res).property('statusCode').to.eq(201);
   });
 
   it(`${seed.walletB.name} try to request "manage" relationship to ${seed.wallet.name}`, async () => {
@@ -124,7 +124,7 @@ describe('Trust relationship management', () => {
         trust_request_type: 'manage',
         requestee_wallet: seed.wallet.name,
       });
-    expect(res).property('statusCode').to.eq(200);
+    expect(res).property('statusCode').to.eq(201);
     const trustRelationship = res.body;
     expect(trustRelationship).property('id').to.be.a.uuid('v4');
     expect(trustRelationship)
@@ -158,7 +158,7 @@ describe('Trust relationship management', () => {
         trust_request_type: 'yield',
         requestee_wallet: seed.wallet.name,
       });
-    expect(res).property('statusCode').to.eq(200);
+    expect(res).property('statusCode').to.eq(201);
     const trustRelationship = res.body;
     expect(trustRelationship).property('id').to.be.a.uuid('v4');
     expect(trustRelationship)
@@ -167,7 +167,7 @@ describe('Trust relationship management', () => {
     trustRelationshipId = trustRelationship.id;
   });
 
-  it(`${seed.wallet.name} accept yeild request`, async () => {
+  it(`${seed.wallet.name} accept yield request`, async () => {
     const res = await request(server)
       .post(`/trust_relationships/${trustRelationshipId}/accept`)
       .set('Content-Type', 'application/json')

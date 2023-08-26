@@ -16,7 +16,7 @@ class TransferService {
   }
 
   async getByFilter(query, walletLoginId) {
-    const { state, wallet, limit = 500, offset, before, after } = query;
+    const { state, wallet, limit, offset, before, after } = query;
 
     let walletId;
 
@@ -25,23 +25,32 @@ class TransferService {
       walletId = walletDetails.id;
     }
 
-    const results = await this._transfer.getTransfers({
+    const {transfers, count}= await this._transfer.getTransfers({
       state,
       walletId,
       offset,
       limit,
       walletLoginId,
       before,
-      after,
+      after
     });
 
-    return results;
+
+    return {transfers, count};
   }
 
   async initiateTransfer(transferBody, walletLoginId) {
     // begin transaction
     try {
       await this._session.beginTransaction();
+
+      if (transferBody.sender_wallet === transferBody.receiver_wallet) {
+        throw new HttpError(
+          422,
+          'Cannot transfer to the same wallet as the originating one!',
+        );
+      }
+      
       const walletSender = await this._walletService.getByIdOrName(
         transferBody.sender_wallet,
       );
@@ -436,8 +445,8 @@ class TransferService {
     return transfer;
   }
 
-  async getTokensByTransferId(transferId, limit, offset) {
-    const transfer = await this.getTransferById(transferId);
+  async getTokensByTransferId(transferId, walletLoginId, limit, offset) {
+    const transfer = await this.getTransferById(transferId, walletLoginId);
     const tokenService = new TokenService();
     let tokens;
     if (transfer.state === TransferEnums.STATE.completed) {

@@ -43,8 +43,25 @@ const trustPost = async (req, res) => {
     trustRequestType: req.body.trust_request_type,
   });
 
-  res.status(200).json(trustRelationship);
+  res.status(201).json(trustRelationship);
 };
+
+const trustRelationshipGetById = async (req, res) => {
+  await trustRelationshipIdSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+
+  const { trustRelationshipId } = req.params
+  const trustService = new TrustService()
+
+  const trustRelationship = await trustService.trustRelationshipGetById({
+    walletLoginId: req.wallet_id,
+    trustRelationshipId
+  })
+
+  res.status(200).json(trustRelationship)
+}
+
 
 const trustRelationshipAccept = async (req, res) => {
   // need to add to the events table
@@ -58,7 +75,7 @@ const trustRelationshipAccept = async (req, res) => {
     trustRelationshipId,
     walletLoginId: req.wallet_id,
   });
-  res.json(json);
+  res.status(200).json(json);
 };
 
 const trustRelationshipDecline = async (req, res) => {
@@ -97,4 +114,5 @@ module.exports = {
   trustRelationshipAccept,
   trustRelationshipDecline,
   trustRelationshipDelete,
+  trustRelationshipGetById
 };
