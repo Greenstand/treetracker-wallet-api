@@ -19,7 +19,11 @@ const trustPostSchema = Joi.object({
   trust_request_type: Joi.string()
     .required()
     .valid(...Object.keys(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE)),
-  requestee_wallet: Joi.string().required(),
+  requestee_wallet: Joi.string()
+      .required()
+      .invalid(Joi.ref('requester_wallet')).messages({
+        'any.invalid': 'Requester and requestee cannot be same.'
+      }),
   requester_wallet: Joi.string(),
 });
 
