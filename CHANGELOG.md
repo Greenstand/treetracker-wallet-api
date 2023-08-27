@@ -1,3 +1,19 @@
+## [1.27.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.1...v1.27.2) (2023-08-27)
+
+
+### Bug Fixes
+
+* fix broken test ([d9dce33](https://github.com/Greenstand/treetracker-wallet-api/commit/d9dce333b2d547aace5a7b2d1887e7dd35559c39))
+* schema validation ([55d04d8](https://github.com/Greenstand/treetracker-wallet-api/commit/55d04d853b91d33b722a568b1e19f4c78620257a))
+* transfer request claim is optional parameter ([7dbd62e](https://github.com/Greenstand/treetracker-wallet-api/commit/7dbd62ea17612bd5577a95c87f312ad7f3300965))
+
+## [1.27.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.0...v1.27.1) (2023-08-27)
+
+
+### Bug Fixes
+
+* bud fixed ([8712e20](https://github.com/Greenstand/treetracker-wallet-api/commit/8712e2000e24cd91c48bc06e1ad287adeed1c86b))
+
 # [1.27.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.26.1...v1.27.0) (2023-08-24)
 
 
