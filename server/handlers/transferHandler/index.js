@@ -8,11 +8,11 @@ const {
 } = require('./schemas');
 
 const transferPost = async (req, res) => {
-  await transferPostSchema.validateAsync(req.body, { abortEarly: false });
+  const validatedData = await transferPostSchema.validateAsync(req.body, { abortEarly: false });
   const transferService = new TransferService();
 
   const { result, status } = await transferService.initiateTransfer(
-    req.body,
+    validatedData,
     req.wallet_id,
   );
 

@@ -12,8 +12,7 @@ const transferPostSchema = Joi.alternatives()
         tokens: Joi.array().items(Joi.string()).required().unique(),
         sender_wallet: Joi.alternatives().try(Joi.string()).required(),
         receiver_wallet: Joi.alternatives().try(Joi.string()).required(),
-        // TODO: add boolean for claim, but default to false.
-        claim: Joi.boolean(),
+        claim: Joi.boolean().default(false),
       }),
       otherwise: Joi.object({
         bundle: Joi.object({
@@ -21,7 +20,7 @@ const transferPostSchema = Joi.alternatives()
         }).required(),
         sender_wallet: Joi.string().required(),
         receiver_wallet: Joi.string().required(),
-        claim: Joi.boolean().required(),
+        claim: Joi.boolean().default(false),
       }),
     },
   );
