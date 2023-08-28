@@ -1,3 +1,10 @@
+## [1.27.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.2...v1.27.3) (2023-08-28)
+
+
+### Bug Fixes
+
+* move transfer validation from service to handler ([bf128bc](https://github.com/Greenstand/treetracker-wallet-api/commit/bf128bc072cf836e8d22f1c050fbdb1891e6b42d))
+
 ## [1.27.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.1...v1.27.2) (2023-08-27)
 
 
