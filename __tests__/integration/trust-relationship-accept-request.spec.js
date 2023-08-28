@@ -46,7 +46,7 @@ describe('Accept trust relationship requests', () => {
             const request = await createTrustRelation(walletA,walletA, walletB, relation, 'requested');
             const res = await post(`/trust_relationships/${request.id}/accept`, walletC);
 
-            expect(res).property('statusCode').to.eq(403);
+            expect(res).property('statusCode').to.eq(404);
 
             const updatedRequest = await getTrustRelationship(request);
             expect(updatedRequest.id).to.eq(request.id);
@@ -80,6 +80,6 @@ describe('Accept trust relationship requests', () => {
 
     it('Accept trust relationship requests, but the ID is invalid', async () => {
         const res = await post(`/trust_relationships/f4b20216-6d8e-44f1-9b96-1f9e42a9b4d5/accept`, walletB);
-        expect(res).property('statusCode').to.eq(403);
+        expect(res).property('statusCode').to.eq(404);
     })
 })

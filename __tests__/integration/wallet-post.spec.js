@@ -24,7 +24,7 @@ describe('Wallet: create(POST) wallets of an account', () => {
 
     it('create wallet by a valid wallet name', async () => {
         const res = await post('/wallets', walletA, undefined, {wallet: 'azAZ.-@0123456789'})
-        expect(res).property('statusCode').to.eq(200);
+        expect(res).property('statusCode').to.eq(201);
         expect(res.body).contain({wallet: 'azAZ.-@0123456789'})
         expect(res.body.id).to.exist;
     })

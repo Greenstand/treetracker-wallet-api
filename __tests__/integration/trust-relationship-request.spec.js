@@ -25,7 +25,7 @@ describe('Send trust requests to another wallet', () => {
                 trust_request_type: relation,
                 requestee_wallet: walletB.name
             });
-            expect(res).property('statusCode').to.eq(200);
+            expect(res).property('statusCode').to.eq(201);
             expect(res.body.actor_wallet).to.eq(walletA.name);
             expect(res.body.originator_wallet).to.eq(walletA.name);
             expect(res.body.target_wallet).to.eq(walletB.name);
@@ -84,7 +84,7 @@ describe('Send trust requests to another wallet', () => {
                     trust_request_type: relation,
                 });
 
-            expect(res).property('statusCode').to.eq(200);
+            expect(res).property('statusCode').to.eq(201);
             expect(res.body.actor_wallet).to.eq(walletC.name);
             expect(res.body.originator_wallet).to.eq(walletA.name);
             expect(res.body.target_wallet).to.eq(walletB.name);
