@@ -17,6 +17,11 @@ class TrustService {
     offset = 0,
     limit,
   }) {
+    // check if wallet exists first
+    // throws error if no wallet matching walletId exists
+    const walletService = new WalletService()
+    await walletService.getWallet(walletId)
+
     return this._trust.getTrustRelationships({
       walletId,
       state,
@@ -109,6 +114,15 @@ class TrustService {
       trustRelationshipId,
     });
   }
+
+  async trustRelationshipGetById({ walletLoginId, trustRelationshipId}){
+    return this._trust.getTrustRelationshipById({
+      walletId: walletLoginId,
+      trustRelationshipId
+    })
 }
+
+}
+
 
 module.exports = TrustService;

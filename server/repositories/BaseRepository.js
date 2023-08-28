@@ -1,10 +1,10 @@
-const expect = require('expect-runtime');
+const Joi = require('joi');
 const log = require('loglevel');
 const HttpError = require('../utils/HttpError');
 
 class BaseRepository {
   constructor(tableName, session) {
-    expect(tableName).defined();
+    Joi.assert(tableName, Joi.required());
     this._tableName = tableName;
     this._session = session;
   }
@@ -25,22 +25,23 @@ class BaseRepository {
   whereBuilder(object, builder) {
     let result = builder;
     if (object.and) {
-      expect(Object.keys(object)).lengthOf(1);
-      expect(object.and).a(expect.any(Array));
+      Joi.assert(object, Joi.object().length(1));
+      Joi.assert(object.and, Joi.array().required());
       object.and.forEach((one) => {
         if (!one.or) {
-          expect(Object.keys(one)).lengthOf(1);
+          Joi.assert(one, Joi.object().length(1));
         }
         result = result.andWhere((subBuilder) =>
           this.whereBuilder(one, subBuilder),
         );
       });
     } else if (object.or) {
-      expect(Object.keys(object)).lengthOf(1);
-      expect(object.or).a(expect.any(Array));
+      Joi.assert(object, Joi.object().length(1));
+      Joi.assert(object.or, Joi.array().required());
+
       object.or.forEach((one) => {
         if (!one.and) {
-          expect(Object.keys(one)).lengthOf(1);
+          Joi.assert(one, Joi.object().length(1));
         }
         result = result.orWhere((subBuilder) =>
           this.whereBuilder(one, subBuilder),
@@ -90,7 +91,7 @@ class BaseRepository {
       promise = promise.limit(options.limit);
     }
     const result = await promise;
-    expect(result).a(expect.any(Array));
+    Joi.assert(result, Joi.array().required());
     return result;
   }
 
@@ -100,11 +101,13 @@ class BaseRepository {
       .count()
       .table(this._tableName)
       .where(filter);
-    expect(result).match([
-      {
-        count: expect.any(String),
-      },
-    ]);
+      
+    Joi.assert(result, Joi.array().items(
+      Joi.object({
+        count: Joi.string().required()
+      })
+    ));
+    
     return parseInt(result[0].count);
   }
 
@@ -152,7 +155,9 @@ class BaseRepository {
       .getDB()
       .batchInsert(this._tableName, objects)
       .returning('id');
-    expect(result).match([expect.any(String)]);
+    Joi.assert(result, Joi.array().items(
+        Joi.string()
+    ));
     return result;
   }
 }

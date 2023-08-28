@@ -1,4 +1,4 @@
-const expect = require('expect-runtime');
+const Joi = require('joi');
 const BaseRepository = require('./BaseRepository');
 const TransferEnum = require('../utils/transfer-enum');
 
@@ -45,9 +45,11 @@ class TransferRepository extends BaseRepository {
         'destination_wallet.id',
       );
 
-    expect(result[0]).match({
-      id: expect.anything(),
-    });
+
+    Joi.assert(result[0], Joi.object({
+      id: Joi.exist()
+    }).unknown());
+
     const transfer = result[0];
     return transfer;
   }
@@ -92,8 +94,6 @@ class TransferRepository extends BaseRepository {
   }
 
   async getByFilter(filter, limitOptions) {
-    const offset =
-      limitOptions && limitOptions.offset ? limitOptions.offset : 0;
     let promise = this._session
       .getDB()
       .select(
@@ -121,15 +121,22 @@ class TransferRepository extends BaseRepository {
         '=',
         'destination_wallet.id',
       )
-      .offset(offset)
       .where((builder) => this.whereBuilder(filter, builder));
 
-    if (limitOptions && limitOptions.limit) {
+    // get the total count (before applying limit and offset options)
+    const count = await this._session.getDB().from(promise.as('p')).count('*');
+
+    // apply limit and offset options
+    if(limitOptions && limitOptions.offset)
+      promise = promise.offset(limitOptions.offset)
+
+    if (limitOptions && limitOptions.limit)
       promise = promise.limit(limitOptions.limit);
-    }
+
     const result = await promise;
-    expect(result).a(expect.any(Array));
-    return result;
+    Joi.assert(result, Joi.array().required());
+
+    return { result, count: +count[0].count };
   }
 
   async getPendingTransfers(wallet_id) {

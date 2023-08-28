@@ -23,6 +23,10 @@ describe('TrustService', () => {
       .stub(Trust.prototype, 'getTrustRelationships')
       .resolves(['trustRelationships']);
 
+    const getWalletStub = sinon
+        .stub(WalletService.prototype, 'getWallet')
+        .resolves({id: 'walletId'})
+
     const trustRelationship = await trustService.getTrustRelationships({
       walletId: 'walletId',
       state: 'state',
@@ -32,6 +36,9 @@ describe('TrustService', () => {
     });
 
     expect(trustRelationship).eql(['trustRelationships']);
+    expect(getWalletStub.calledOnceWithExactly({
+        walletId: 'walletId',
+    }))
     expect(
       getTrustRelationshipsStub.calledOnceWithExactly({
         walletId: 'walletId',
@@ -218,4 +225,23 @@ describe('TrustService', () => {
       ).eql(true);
     });
   });
+
+  describe('trustRelationshipGetById', async () => {
+      const trustRelationshipGetByIdStub = sinon
+          .stub(Trust.prototype, 'trustRelationshipGetById')
+          .resolves('trustRelationship');
+
+      const trustRelationship = await trustService.trustRelationshipGetById({
+          walletId: 'walletId',
+          trustRelationshipId: 'id'
+      });
+
+      expect(trustRelationship).eql('trustRelationship');
+      expect(
+          trustRelationshipGetByIdStub.calledOnceWithExactly({
+              walletId: 'walletId',
+              trustRelationshipId: 'id'
+          }),
+      ).eql(true);
+  })
 });

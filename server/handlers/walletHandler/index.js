@@ -24,6 +24,7 @@ const walletGet = async (req, res) => {
 
   res.status(200).json({
     total: count,
+    query: { ...req.query, limit, offset },
     wallets,
   });
 };
@@ -62,7 +63,7 @@ const walletPost = async (req, res) => {
     req.body.wallet,
   );
 
-  res.status(200).json({
+  res.status(201).json({
     id,
     wallet,
   });

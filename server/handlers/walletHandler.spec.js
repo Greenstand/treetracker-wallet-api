@@ -48,6 +48,7 @@ describe('walletRouter', () => {
         .resolves({ wallets: [{ id: walletId }], count: 1 });
 
       const res = await request(app).get('/wallets?limit=2');
+
       expect(res).property('statusCode').eq(200);
       expect(res.body.wallets).lengthOf(1);
       expect(res.body.wallets[0]).property('id').eq(walletId);
@@ -152,7 +153,7 @@ describe('walletRouter', () => {
       const res = await request(app).post('/wallets').send({
         wallet: mockWallet.wallet,
       });
-      expect(res).property('statusCode').eq(200);
+      expect(res).property('statusCode').eq(201);
       expect(res.body.wallet).eq(mockWallet.wallet);
       expect(res.body.id).eq(mockWallet.id);
       expect(
