@@ -48,7 +48,7 @@ const requestTrustRelationshipPayload = (wallet) => {
   };
 };
 
-describe('Sending tokens with trust relationship (Wallet API)', function () {
+describe('Sending tokens with trust relationship (Wallet API)', () => {
   before(async () => {
     senderBearerToken = await getSession(senderWallet, password);
     receiverBearerToken = await getSession(receiverWallet, password);

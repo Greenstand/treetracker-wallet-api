@@ -50,7 +50,7 @@ const payload = (walletA, walletB) => {
   };
 };
 
-describe('Sending tokens without trust relationship (Wallet API)', function () {
+describe('Sending tokens without trust relationship (Wallet API)', () => {
   before(async () => {
     senderBearerToken = await getSession(senderWallet, password);
     receiverBearerToken = await getSession(receiverWallet, password);

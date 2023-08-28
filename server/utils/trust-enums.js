@@ -25,7 +25,7 @@ TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE = {
   release: 'release',
 };
 
-TrustRelationshipEnums.getTrustTypeByRequestType = function (requestType) {
+TrustRelationshipEnums.getTrustTypeByRequestType = requestType => {
   switch (requestType) {
     case TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.receive:
     case TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send: {

@@ -52,7 +52,7 @@ const requestTrustRelationshipPayload = (wallet) => {
   };
 };
 
-describe('Sending tokens via managed wallet (Wallet API)', function () {
+describe('Sending tokens via managed wallet (Wallet API)', () => {
   before(async () => {
     walletAToken = await getSession(walletA, password);
     walletBToken = await getSession(walletB, password);

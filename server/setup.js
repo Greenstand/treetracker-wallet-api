@@ -11,7 +11,7 @@ if (process.env.NODE_LOG_LEVEL) {
 
 const http = require('http');
 
-const _sendNextMessage = function (message) {
+const _sendNextMessage = message => {
   const options = {
     hostname: '104.131.78.177',
     port: 8000,
@@ -36,7 +36,7 @@ const _sendNextMessage = function (message) {
 
   req.end();
 };
-const loglevelServerSend = function (loggerParam, options) {
+const loglevelServerSend = (loggerParam, options) => {
   const logger = { ...loggerParam };
   if (!logger || !logger.methodFactory)
     throw new Error(
@@ -50,10 +50,10 @@ const loglevelServerSend = function (loggerParam, options) {
   const _sendQueue = [];
   const _isSending = false;
 
-  logger.methodFactory = function (methodName, logLevel, _loggerName) {
+  logger.methodFactory = (methodName, logLevel, _loggerName) => {
     const rawMethod = _originalFactory(methodName, logLevel);
 
-    return function (messageParam) {
+    return messageParam => {
       let message = messageParam;
       if (typeof _prefix === 'string') message = _prefix + message;
       else if (typeof _prefix === 'function')

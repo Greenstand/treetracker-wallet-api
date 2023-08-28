@@ -11,7 +11,7 @@ const knex = require('../../server/infra/database/knex');
  * register the user, create password hash, and apiKey
  */
 async function register(user) {
-  const sha512 = function (password, salt) {
+  const sha512 = (password, salt) => {
     const hash = Crypto.createHmac(
       'sha512',
       salt,

@@ -15,7 +15,7 @@ const knexConfig = {
     afterCreate(conn, done) {
       conn.query(
         'SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;',
-        function (err) {
+        err => {
           if (err) {
             log.error(err);
             done(err, conn);

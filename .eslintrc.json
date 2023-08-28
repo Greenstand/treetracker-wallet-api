@@ -27,23 +27,17 @@
       "error",
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
     ],
-    "func-names": "off",
-    "no-param-reassign": "error",
+    "func-names": "error",
     "consistent-return": "error",
     "no-restricted-syntax": "error",
     "global-require": "off",
     "radix": "off",
     "no-await-in-loop": "off",
-    "class-methods-use-this": "error",
-    "no-return-await": "error",
-    "no-new-wrappers": "error",
     "prefer-destructuring": "error",
-    "no-shadow": "error",
     "import/order": "error",
     "no-unused-expressions": "error",
     "import/no-extraneous-dependencies": "error",
     "import/no-unresolved": "error",
-    "no-plusplus": "error",
-    "no-continue": "off"
+    "no-plusplus": "error"
   }
 }
