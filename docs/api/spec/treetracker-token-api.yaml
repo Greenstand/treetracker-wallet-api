@@ -70,14 +70,13 @@ paths:
     get:
       tags:
         - Token details
-      summary: Get a list of tokens in the current wallet  or managed wallets
+      summary: 'Get a list of tokens in the current wallet  or managed wallets'
       description: 'Get a list of for tokens in the current wallet or managed wallets, matching certain parameters'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: Number of items to return
+          description: 'Number of items to return'
           required: true
           style: form
           explode: true
@@ -95,30 +94,32 @@ paths:
             type: integer
             format: int32
             example: 10
-        - name: matching_all_tags
-          description: An array of tags.  Tokens returned by the endpoints must be attached to trees that have ALL of these tags assigned
-          in: query
-          schema:
-            type: array
-            items:
-              type: string
         - name: wallet
-          description: Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet
+          description: 'Wallet name can be specified if the authenticated wallet manages other wallets. The default is to return tokens matching the authenticated wallet'
           in: query
           schema:
-            oneOf:
-              - type: string
-              - type: number
-            example: zaven2
+            type: string
+            example: wallet1
       responses:
         '200':
-          description: ''
+          description: 'Returns list of tokens matching the input parameters'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/tokens'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Missing request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" is required'
       deprecated: false
   '/tokens/{token_uuid}':
     get:
@@ -145,6 +146,50 @@ paths:
                 $ref: '#/components/schemas/tokenItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+      deprecated: false
+  '/tokens/{token_uuid}/transactions':
+    get:
+      tags:
+        - Token details
+      summary: Get transaction history for a particular token
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: token_uuid
+          in: path
+          description: ''
+          required: true
+          explode: true
+          schema:
+            type: string
+            example: e3cd6587-ff01-419b-b2c9-44ceed4dc749
+        - name: limit
+          in: query
+          description: Number of items to return
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
+        - name: start
+          in: query
+          description: 'Where does the list start, 1 means start from the beginning of the list'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 10
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/historyResponse'
       deprecated: false
   /wallets:
     get:
@@ -330,50 +375,6 @@ paths:
           description: Return array of matching transfers
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  '/tokens/{token_uuid}/transactions':
-    get:
-      tags:
-        - Token details
-      summary: Get transaction history for a particular token
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: token_uuid
-          in: path
-          description: ''
-          required: true
-          explode: true
-          schema:
-            type: string
-            example: e3cd6587-ff01-419b-b2c9-44ceed4dc749
-        - name: limit
-          in: query
-          description: Number of items to return
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 10
-        - name: start
-          in: query
-          description: 'Where does the list start, 1 means start from the beginning of the list'
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 10
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/historyResponse'
-      deprecated: false
   '/transfers/{transfer_id}':
     get:
       tags:
@@ -816,24 +817,77 @@ components:
     tokenItem:
       title: Token
       type: object
-      example:
-        token: d895cf1b-de4c-40ea-85c9-99540f2489a9
-        map_url: 'http://test.treetracker.org/?treeid=156867'
-        image_url: 'https://treetracker-test.eu-central-1/2019.08.13.17.56.13_5f87e44c-1b90-4d15-8ab8-ae4e75f8a898_IMG_20190813_175243_67017802.jpg'
-        tree_captured_at: '+051586-06-14T15:10:00.000Z'
-        latitude: 37.77295869
-        longitude: -122.1781304
-        region: United States
-        bill_of_value: json
       properties:
-        token:
+        id:
           type: string
-        map:
+          format: uuid
+          example: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
+        capture_id:
           type: string
-        image:
+          format: uuid
+          example: '8df635f6-2df8-496f-93da-3060fc1e3180'
+        wallet_id:
           type: string
-        capture:
+          format: uuid
+          example: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
+        transfer_pending:
+          type: boolean
+          example: false
+        transfer_pending_id:
           type: string
+          format: uuid
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        claim:
+          type: boolean
+          example: false
+    tokenItemWithLinks:
+      title: Single Token Item
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
+        capture_id:
+          type: string
+          format: uuid
+          example: '8df635f6-2df8-496f-93da-3060fc1e3180'
+        wallet_id:
+          type: string
+          format: uuid
+          example: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
+        transfer_pending:
+          type: boolean
+          example: false
+        transfer_pending_id:
+          type: string
+          format: uuid
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        claim:
+          type: boolean
+          example: false
+        links:
+          type: object
+          properties:
+            capture:
+              type: string
+              example: '/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180'
     accountrequest:
       title: accountrequest
       required:
