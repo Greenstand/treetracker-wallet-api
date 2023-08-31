@@ -153,7 +153,7 @@ describe('walletRouter', () => {
       const res = await request(app).post('/wallets').send({
         wallet: mockWallet.wallet,
       });
-      expect(res).property('statusCode').eq(200);
+      expect(res).property('statusCode').eq(201);
       expect(res.body.wallet).eq(mockWallet.wallet);
       expect(res.body.id).eq(mockWallet.id);
       expect(

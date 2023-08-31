@@ -1,3 +1,4 @@
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -9,10 +10,10 @@ function getRandomArbitrary(min, max) {
   const { v4: uuidv4 } = require('uuid');
   const generator = require('generate-password');
 
-  const Config = require('./config/config');
+  const Config = require('../../config/config');
   const knex = Knex({
     client: 'pg',
-    connection:  Config.connectionString[process.env.NODE_ENV]
+    connection:  Config.connectionString
   })
 
   const Crypto = require('crypto');

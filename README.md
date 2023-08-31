@@ -182,6 +182,23 @@ PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RS
 
 Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files. \*\*Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here. To find out more, read the dotenv documentation on Multiline Values https://www.npmjs.com/package/dotenv
 
+
+### Running Scripts
+
+#### To create a new wallet:
+
+1. Ensure that the database is already set up and running.
+
+2. Open the terminal and navigate to the root of the tree-tracker-api directory.
+
+3. Execute the following command, replacing <username> with your desired username:
+
+```
+NODE_ENV=development node scripts/create/create-wallet.js <username>
+
+```
+
+
 ### We are using linter to keep the project in shape
 
 if you are using VScode as your IDE, you can set up linter to run on save, which is very handy

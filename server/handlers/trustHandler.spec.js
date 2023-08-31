@@ -70,7 +70,7 @@ describe('trustRouter', () => {
         requestee_wallet: walletId,
       });
 
-      expect(res).property('statusCode').eq(200);
+      expect(res).property('statusCode').eq(201);
       expect(
         createTrustRelationshipStub.calledOnceWithExactly({
           walletLoginId: authenticatedWalletId,
