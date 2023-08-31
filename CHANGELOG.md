@@ -1,3 +1,10 @@
+## [1.27.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.3...v1.27.4) (2023-08-31)
+
+
+### Bug Fixes
+
+* before parameter returns results on the same day ([eb76428](https://github.com/Greenstand/treetracker-wallet-api/commit/eb764286fbbd08ccdccbd83690fe22765f5c6b96))
+
 ## [1.27.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.2...v1.27.3) (2023-08-28)
 
 
