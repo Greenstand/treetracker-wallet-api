@@ -1,3 +1,20 @@
+# [1.28.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.4...v1.28.0) (2023-08-31)
+
+
+### Features
+
+* /tokens, /transfers ([ebaaba6](https://github.com/Greenstand/treetracker-wallet-api/commit/ebaaba6782818048aba5e8b1f88ab7f72736a175))
+* /tokens, /wallets ([61950d0](https://github.com/Greenstand/treetracker-wallet-api/commit/61950d065c8f5441e98653a5f22327b16836866a))
+* /trust_relationships ([3da03a7](https://github.com/Greenstand/treetracker-wallet-api/commit/3da03a7bb0b8d562bef1ca5b8843cbbe3323802d))
+* /wallets trust_relationships, remove TODO ([d5e70f0](https://github.com/Greenstand/treetracker-wallet-api/commit/d5e70f0776afdb0fc7b08f6859bac104132aed0e))
+* get /trust_relationships/:id and get /transfers/:id/tokens ([ec76189](https://github.com/Greenstand/treetracker-wallet-api/commit/ec7618989ad5a6f012d3f3e32db33ac30ee7e8f4))
+* minor update ([f972a58](https://github.com/Greenstand/treetracker-wallet-api/commit/f972a5808291a571c6c2b958f9ba550240d33db8))
+* minor update ([6486d4e](https://github.com/Greenstand/treetracker-wallet-api/commit/6486d4eee1011bf1790c62bb885604f7e016ab23))
+* minor update, example, error code ([aa73829](https://github.com/Greenstand/treetracker-wallet-api/commit/aa738298f701a5553baae1f2a4d3ffa772b47cdf))
+* partial update treetracker-wallet-api.yaml ([5ab1c20](https://github.com/Greenstand/treetracker-wallet-api/commit/5ab1c200c9e05c8e7cf7f8d4004edcf6a86b10bf))
+* partial update treetracker-wallet-api.yaml ([467583d](https://github.com/Greenstand/treetracker-wallet-api/commit/467583df4ec485ce8fec85a6eaf9d75311aebc33))
+* up to date 1.27.3 ([5e442ed](https://github.com/Greenstand/treetracker-wallet-api/commit/5e442ed1aa5542d53680d1b5646259076b2c0daa))
+
 ## [1.27.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.3...v1.27.4) (2023-08-31)
 
 
