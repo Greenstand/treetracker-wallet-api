@@ -168,7 +168,7 @@ paths:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - name: token_uuid
           in: path
-          description: 'ID of specific token to retrieve'
+          description: 'ID of specific token to retrieve the transactions of'
           required: true
           explode: true
           schema:
@@ -198,11 +198,15 @@ paths:
             example: 10
       responses:
         '200':
-          description: ''
+          description: 'Return list of transactions associated with the token'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/historyResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
         '404':
           description: 'No token found matching token_uuid'
           content:
@@ -213,7 +217,7 @@ paths:
                 code: 404
                 message: 'cannot find token by id:a5fee1ec-31dd-4150-aae1-dfe423ee9fc7'
         '422':
-          description: 'Missing request parameters'
+          description: 'Missing or invalid request or query parameters'
           content:
             application/json:
               schema:
@@ -1171,12 +1175,14 @@ components:
       properties:
         token:
           type: string
+          format: uuid
         sender_wallet:
           type: string
         receiver_wallet:
           type: string
         processed_at:
           type: string
+          format: date-time
       example:
         token: e3cd6587-ff01-419b-b2c9-44ceed4dc749
         sender_wallet: zaven
