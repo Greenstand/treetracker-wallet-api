@@ -95,10 +95,11 @@ paths:
             example: 1
             default: 0
         - name: wallet
-          description: Wallet id or name can be specified if the authenticated wallet manages other wallets. The default is to return tokens matching the authenticated wallet.
+          description: 'Wallet name can be specified if the authenticated wallet manages other wallets. The default is to return tokens matching the authenticated wallet.'
           in: query
           schema:
-            $ref: '#/components/schemas/walletNameOrId'
+            type: string
+            example: wallet2
       responses:
         '200':
           description: 'Returns list of tokens matching the input parameters'
@@ -157,7 +158,7 @@ paths:
                 code: 404
                 message: 'can not found token by id:a5fee1ec-31dd-4150-aae1-dfe423ee9fc7'
         '422':
-          description: 'token_uuid is invalid'
+          description: 'Missing or invalid query or request parameters'
           content:
             application/json:
               schema:
@@ -175,7 +176,7 @@ paths:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - name: token_uuid
           in: path
-          description: ''
+          description: 'ID of specific token to retrieve'
           required: true
           explode: true
           schema:
@@ -222,6 +223,15 @@ paths:
               example:
                 code: 404
                 message: 'can not found token by id:d15f40b4-ed8b-457a-8c85-97beb8862682'
+        '422':
+          description: 'Missing or invalid query or request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"value" must be a valid GUID'
       deprecated: false
   '/wallets':
     get:
