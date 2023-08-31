@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Treetracker Wallet API
   contact: {}
-  version: '1.27.3'
+  version: '1.27.4'
 servers:
   - url: https://{environment}-k8s.treetracker.org/wallet/v2
     variables:
@@ -10,7 +10,7 @@ servers:
         default: dev
         enum:
           - dev     # Development server
-          - test # Test server
+          - test    # Test server
 paths:
   '/auth':
     post:
@@ -27,6 +27,15 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/authRequest'
+            examples:
+              ById:
+                value:
+                  wallet: 21af8154-b7f1-48d3-8520-2e376efae45e
+                  password: walnut
+              ByName:
+                value:
+                  wallet: wallet1
+                  password: walnut
         required: true
       responses:
         '200':
@@ -112,7 +121,7 @@ paths:
         '403':
           $ref: '#/components/responses/ForbiddenError'
         '422':
-          description: 'Missing request parameters'
+          description: 'Invalid or missing request parameters'
           content:
             application/json:
               schema:
@@ -273,6 +282,15 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" must be a number'
       deprecated: false
     post:
       tags:
@@ -283,7 +301,7 @@ paths:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
       requestBody:
-        description: ''
+        description: 'Wallet creation request'
         content:
           application/json:
             schema:
@@ -1637,7 +1655,7 @@ components:
       enum:
         - send
         - deduct
-        - managed
+        - manage
       example: send
       description: >
         Trust Type:
