@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: treetracker token api
+  title: Treetracker Wallet API
   contact: {}
-  version: '0.9'
+  version: '1.10.3'
 paths:
   /auth:
     post:
@@ -14,28 +14,57 @@ paths:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
       requestBody:
-        description: ''
+        description: 'Authentication request body'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/authrequest'
+              $ref: '#/components/schemas/authRequest'
             examples:
               ById:
                 value:
-                  wallet: 1
+                  wallet: 21af8154-b7f1-48d3-8520-2e376efae45e
                   password: walnut
               ByName:
                 value:
-                  wallet: zaven
+                  wallet: wallet1
                   password: walnut
         required: true
       responses:
         '200':
-          description: ''
+          description: 'Successful authentication response'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/bearerToken'
+        '401':
+          description: 'Incorrect password for wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 401
+                message: 'Invalid Credentials'
+        '404':
+          description: 'No wallet found with provided wallet name or id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Could not find entity by wallet name: bad_wallet'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Missing request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet" is not allowed to be empty'
       deprecated: false
   /tokens:
     get:
@@ -751,7 +780,7 @@ components:
         type: string
         example: application/json
   schemas:
-    authrequest:
+    authRequest:
       title: Authentication Request
       required:
         - wallet
@@ -761,18 +790,21 @@ components:
         wallet:
           oneOf:
             - type: string
-            - type: number
+              example: wallet1
+            - type: string
+              format: uuid
+              example: 21af8154-b7f1-48d3-8520-2e376efae45e
         password:
           type: string
-      example:
-        wallet: zaven
-        password: walnut
+          example: walnut
     bearerToken:
       title: Successful Authentication Response
       type: object
       properties:
         bearer:
           type: string
+          example:
+            bearer: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
     tokens:
       title: Token query response
       type: object
@@ -1111,11 +1143,34 @@ components:
           type: string
         created_at:
           type: string
+    walletNameOrId:
+      oneOf:
+        - type: string
+          example: wallet1
+        - type: string
+          format: uuid
+          example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
+    errorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
   responses:
     UnauthorizedError:
       description: Access bearer token is missing or invalid
     ForbiddenError:
       description: Access denied for that resource
+    UnsupportedMediaTypeError:
+      description: Invalid content type
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 415
+            message: 'Invalid content type. API only supports application/json'
   securitySchemes:
     httpBearer:
       type: http
