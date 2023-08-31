@@ -1331,28 +1331,6 @@ components:
               bundle_size: 100
             sender_wallet: wallet1
             receiver_wallet: wallet2
-    transferbundlerequest:
-      title: transferbundlerequest
-      required:
-        - parameters
-        - sender_wallet
-        - receiver_wallet
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        sender_wallet:
-          oneOf:
-            - type: string
-            - type: number
-        receiver_wallet:
-          oneOf:
-            - type: string
-            - type: number
-      example:
-        bundle_size: 500
-        sender_wallet: zaven
-        receiver_wallet: GreenEarthAppeal
     transferItem:
       title: Transfer Details
       properties:
@@ -1415,91 +1393,6 @@ components:
         - managed
       example: send
       description: 'The type of transfer. The value is computed by the server based on the submitted request'
-    sendrequest:
-      title: sendrequest
-      required:
-        - tokens
-        - receiver_wallet
-      type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: ''
-        receiver_wallet:
-          oneOf:
-            - type: string
-            - type: number
-      example:
-        tokens:
-          - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-          - e533653e-2dbf-48cd-940a-a87e5a393158
-        receiver_wallet: zaven
-    sendBundleRequest:
-      title: sendBundleRequest
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        receiver_wallet:
-          type: string
-      required:
-        - bundle_size
-        - receiver_wallet
-    pendingTransfersResponse:
-      title: List of Pending Transfers
-      type: object
-      properties:
-        pending:
-          type: array
-          items:
-            $ref: '#/components/schemas/pendingTransferItem'
-    pendingTransferItem:
-      title: Pending Transfer Item
-      type: object
-      properties:
-        id:
-          type: integer
-        sender_wallet:
-          type: string
-        receiver_wallet:
-          type: string
-        created_at:
-          type: string
-    requestBundleRequest:
-      title: requestBundleRequest
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        sender_wallet:
-          type: string
-          description: Senders other than the wallet requesting the transfer are not allowed at this time
-        receiver_wallet:
-          type: string
-      required:
-        - params
-        - receiver_wallet
-    requestBundleRequestParameters:
-      title: Parameters for Transfer Request
-      type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: optional array of explicit tokens
-        bundle_size:
-          type: integer
-          description: required number of trees to transfer
-        matching_all_tags:
-          type: array
-          items:
-            type: string
-          description: optional list of tags that trees must match ALL of
-      required:
-        - bundle_size
     requestBundleFulfillBody:
       title: Transfer Request Fulfillment
       type: object
@@ -1561,28 +1454,6 @@ components:
         sender_wallet: zaven
         receiver_wallet: zaven2
         processed_at: '2020-01-17T22:32:43.008Z'
-    eventStream:
-      title: Event Stream
-      type: object
-      properties:
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/eventItem'
-    eventItem:
-      title: Event Item
-      type: object
-      properties:
-        type:
-          type: string
-        wallet:
-          type: string
-        transfer_id:
-          type: integer
-        trust_relationship_id:
-          type: integer
-        created_at:
-          type: string
     trustRelationshipsResponse:
       title: Trust Relationships Response
       type: object
