@@ -93,6 +93,7 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 1
             example: 10
         - name: wallet
           description: 'Wallet name can be specified if the authenticated wallet manages other wallets. The default is to return tokens matching the authenticated wallet'
@@ -129,39 +130,50 @@ paths:
       description: 'Get details for one token in the current wallet or managed wallets, matching certain parameters'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: token_uuid
-          description: ''
+          description: 'ID of specific token to retrieve'
           in: path
           required: true
           schema:
             type: string
+            format: uuid
             example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
       responses:
         '200':
-          description: ''
+          description: 'ID of specific token to retrieve'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/tokenItem'
+                $ref: '#/components/schemas/tokenItemWithLinks'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No token found matching token_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'cannot find token by id:a5fee1ec-31dd-4150-aae1-dfe423ee9fc7'
       deprecated: false
   '/tokens/{token_uuid}/transactions':
     get:
       tags:
         - Token details
-      summary: Get transaction history for a particular token
+      summary: 'Get transaction history for a particular token'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: token_uuid
           in: path
-          description: ''
+          description: 'ID of specific token to retrieve'
           required: true
           explode: true
           schema:
             type: string
+            format: uuid
             example: e3cd6587-ff01-419b-b2c9-44ceed4dc749
         - name: limit
           in: query
@@ -182,6 +194,7 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 1
             example: 10
       responses:
         '200':
@@ -190,6 +203,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/historyResponse'
+        '404':
+          description: 'No token found matching token_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'cannot find token by id:a5fee1ec-31dd-4150-aae1-dfe423ee9fc7'
+        '422':
+          description: 'Missing request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" is required'
       deprecated: false
   /wallets:
     get:
@@ -218,6 +249,7 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 1
             example: 10
         - name: order_by
           in: query
@@ -369,6 +401,7 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 1
             example: 10
       responses:
         '200':
@@ -522,6 +555,7 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 1
             example: 10
       responses:
         '200':
@@ -601,6 +635,7 @@ paths:
           schema:
             type: integer
             format: int32
+            default: 1
             example: 10
         - name: state
           in: query
