@@ -230,10 +230,9 @@ paths:
     get:
       tags:
         - Managed wallets
-      summary: Get all wallets managed by the logged in account.  This endpoint is also used to get the total number of tokens in a given wallet.  Each wallet also returns all trust relationships for that wallet that have not been deleted
+      summary: 'Get all wallets managed by the logged in account. This endpoint is also used to get the total number of tokens in a given wallet.  Each wallet also returns all trust relationships for that wallet that have not been deleted.'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
           description: Number of items to return
@@ -257,66 +256,104 @@ paths:
             example: 10
         - name: order_by
           in: query
-          description: 'column to order by, only created_at currently supported'
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: timestamp
-        - name: order
-          in: query
-          description: 'either asc or desc'
+          description: 'Column to order by, only `created_at` is currently supported'
           required: false
           style: form
           explode: true
           schema:
             type: string
+            default: 'created_at'
+            example: 'created_at'
+        - name: order
+          in: query
+          description: 'Either `asc` or `desc`'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: 'desc'
+            example: 'asc'
         - name: created_at_start_date
           in: query
-          description: 'date to start checking from'
+          description: 'Date to start checking from, ISO date format'
           required: false
           style: form
           explode: true
           schema:
-            type: timestamp
+            type: string
+            format: date-time
+            example: '2021-08-09%2020:56:56.999999'
         - name: created_at_end_date
           in: query
-          description: 'date to stop checking at'
+          description: 'Date to stop checking at, ISO format'
           required: false
           style: form
           explode: true
           schema:
-            type: timestamp
+            type: string
+            format: date-time
+            example: '2021-08-19%2020:56:56.999999'
       responses:
         '200':
-          description: ''
+          description: 'Returns list of managed wallets'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/walletsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Missing or invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" is required'
       deprecated: false
     post:
       tags:
         - Managed wallets
-      summary: Create a new managed wallet
-      description: Create a new managed wallet.  Requires the manage_account role.
+      summary: 'Create a new managed wallet'
+      description: 'Create a new managed wallet. Requires the manage_account role.'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
       requestBody:
-        description: ''
+        description: 'Wallet creation request'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/accountrequest'
+              $ref: '#/components/schemas/accountRequest'
             example:
               wallet: sprinter_van_2004
         required: true
       responses:
-        '201':
-          description: A new wallet was created
+        '200':
+          description: 'A new wallet was created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/accountRequest'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Missing or invalid parameters in request body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet" is not allowed to be empty'
       deprecated: false
   /transfers:
     post:
@@ -927,8 +964,8 @@ components:
             capture:
               type: string
               example: '/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180'
-    accountrequest:
-      title: accountrequest
+    accountRequest:
+      title: accountRequest
       required:
         - wallet
       type: object
@@ -947,14 +984,23 @@ components:
     walletItem:
       title: Wallet Details
       properties:
+        id:
+          type: string
+          format: uuid
+          example: 'ef6a37ce-c459-4a2c-83c3-85e829e4a75e'
+        logo_url:
+          type: string
+          format: url
+          example: https://www.placehold.co/192x192
+        about:
+          type: string
+          example: 'feugiat pretium nibh ipsum consequat nisl vel pretium lectus quam id leo in vitae turpis massa sed elementum tempus egestas'
         wallet:
           type: string
-        email:
-          type: string
-        phone:
-          type: string
+          example: testwallet
         tokens_in_wallet:
           type: integer
+          example: 12
     transferrequest:
       title: transferrequest
       required:
