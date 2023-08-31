@@ -595,130 +595,94 @@ paths:
     get:
       tags:
         - Transfers
-      summary: Get information of a single transfer
+      summary: 'Get information of a single transfer'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: transfer_id
           in: path
-          description: ''
+          description: 'The unique ID for the transfer'
           required: true
           schema:
-            type: integer
-            format: int32
+            type: string
+            format: uuid
+            example: 03537683-5356-42f4-97b2-95ba287a453f
       responses:
         '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-    delete:
-      tags:
-        - Transfers
-      summary: Cancel a pending or requested transfer that has not closed
-      description: Cancel a pending (untrusted) or requested transfer.  The executor can delete the pending/requested transfer before it is executed.  Transfer is marked canceled by this command.
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: transfer_id
-          in: path
-          description: ''
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: Transfer was marked canceled
+          description: 'Return the transfer matching the transfer_id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transferItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Authenticated wallet does not have access to this transfer
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: No transfer record with that id
+          description: 'No transfer found matching input ID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Transfer does not exist, or it is not related to this wallet'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"transfer_id" must be a valid GUID'
+    delete:
+      tags:
+        - Transfers
+      summary: 'Cancel a pending or requested transfer that has not closed'
+      description: 'Cancel a pending (untrusted) or requested transfer.  The executor can delete the pending/requested transfer before it is executed. Transfer is marked canceled by this command.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - name: transfer_id
+          in: path
+          description: 'The unique ID for the transfer'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 03537683-5356-42f4-97b2-95ba287a453f
+      responses:
+        '200':
+          $ref: '#/components/responses/transferCancelledResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Cannot find transfer by id:03537683-5356-42f4-97b2-95ba287a453b'
         '406':
           description: Transfer with this id is not in requested or pending state
-  '/transfers/{transfer_id}/accept':
-    post:
-      tags:
-        - Transfers
-      summary: Accept a pending (untrusted) transfer
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: transfer_id
-          in: path
-          description: ''
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-  '/transfers/{transfer_id}/decline':
-    post:
-      tags:
-        - Transfers
-      summary: Decline a pending (untrusted) transfer
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: transfer_id
-          in: path
-          description: ''
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-  '/transfers/{transfer_id}/fulfill':
-    parameters:
-      - $ref: '#/components/parameters/treetrackerApiKeyParam'
-      - $ref: '#/components/parameters/contentTypeJsonHeader'
-    post:
-      tags:
-        - Transfers
-      summary: Fullfill a requested transfer
-      description: Post a list of tokens to fulfill the parameters of a transfer request that specifies tokens using a bundle.  This allows the debited wallet to decide which tokens matching the bundle parameters to attach to the transfer.  Application logic must check that each token matches the parameters of the request.
-      parameters:
-        - name: transfer_id
-          in: path
-          description: the id of the transfer record on the server
-          required: true
-          style: simple
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/requestBundleFulfillBody'
-      responses:
-        '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
   '/transfers/{transfer_id}/tokens':
     get:
       tags:
         - Transfers
-      summary: Get all tokens linked to a single transfer
+      summary: 'Get all tokens linked to a single transfer'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: transfer_id
           in: path
-          description: ''
+          description: 'The unique ID for the transfer'
           required: true
           schema:
-            type: integer
-            format: int32
+            type: string
+            format: uuid
+            example: 03537683-5356-42f4-97b2-95ba287a453f
         - name: limit
           in: query
           description: Number of items to return
@@ -742,55 +706,173 @@ paths:
             example: 10
       responses:
         '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-  /events:
-    get:
-      tags:
-        - Event stream
-      summary: Get event stream for wallet
-      description: 'The event stream contains notifications about execute and pending transfers, transfer request, trust requests, trust deletions, and trust approvals.  Event streams for managed wallets can also be requested'
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: limit
-          in: query
-          description: The number of records to return
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 10
-        - name: since
-          in: query
-          description: Only return events since a given timestamp
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: string
-            format: timestamp
-            example: '2019-10-12T07:20:50.52Z'
-        - name: wallet
-          description: Wallet (by name or id) can be specified if the authenticated wallet manages other wallets.  The default is to return events matching the authenticated wallet
-          in: query
-          schema:
-            oneOf:
-              - type: string
-              - type: number
-            example: zaven2
-      responses:
-        '200':
-          description: ''
+          description: 'Returns list of tokens associated with the transfer'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/eventStream'
+                type: object
+                properties:
+                  tokens:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/tokenItemWithLinks'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Transfer does not exist, or it is not related to this wallet'
+        '422':
+            description: 'Invalid query parameters'
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/errorResponse'
+                example:
+                  code: 422
+                  message: '"transfer_id" must be a valid GUID'
+  '/transfers/{transfer_id}/accept':
+    post:
+      tags:
+        - Transfers
+      summary: 'Accept a pending (untrusted) transfer'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: 'The unique ID for the transfer'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 03537683-5356-42f4-97b2-95ba287a453f
+      responses:
+        '200':
+          $ref: '#/components/responses/transferAcceptedResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Cannot find transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"transfer_id" must be a valid GUID'
+  '/transfers/{transfer_id}/decline':
+    post:
+      tags:
+        - Transfers
+      summary: 'Decline a pending (untrusted) transfer'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: 'The unique ID for the transfer'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 03537683-5356-42f4-97b2-95ba287a453f
+      responses:
+        '200':
+          $ref: '#/components/responses/transferCancelledResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Cannot find transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"transfer_id" must be a valid GUID'
+  '/transfers/{transfer_id}/fulfill':
+    post:
+      tags:
+        - Transfers
+      summary: 'Fulfill a requested transfer'
+      description: 'Post a list of tokens to fulfill the parameters of a transfer request that specifies tokens using a bundle.  This allows the debited wallet to decide which tokens matching the bundle parameters to attach to the transfer. Application logic must check that each token matches the parameters of the request.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: 'The unique ID for the transfer'
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 03537683-5356-42f4-97b2-95ba287a453f
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestBundleFulfillBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/transferAcceptedResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Cannot find transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"transfer_id" must be a valid GUID'
   /trust_relationships:
     get:
       tags:
@@ -1381,15 +1463,20 @@ components:
     requestBundleFulfillBody:
       title: Transfer Request Fulfillment
       type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: optional array of explicit tokens
-        implicit:
-          type: boolean
-          description: automatically fill the request with tokens matching the specified parameters if set
+      oneOf:
+        - properties:
+            tokens:
+              type: array
+              items:
+                type: string
+                format: uuid
+              description: 'Array of explicit tokens'
+              example: [ 'ed155d71-67f0-4d21-a73d-f5445b8c43c8' ]
+        - properties:
+            implicit:
+              type: boolean
+              description: 'Automatically fill the request with tokens matching the specified parameters if set'
+              example: true
     trustRequest:
       title: Trust Request
       type: object
@@ -1672,6 +1759,46 @@ components:
             claim: false
             originating_wallet: testuser
             source_wallet: wallet1
+            destination_wallet: wallet2
+    transferCancelledResponse:
+      description: 'Transfer is marked as cancelled'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/transferItem'
+          example:
+            id: df80b648-4fef-4ca6-b704-9e7e1c77d1ed
+            type: send
+            parameters:
+              bundle:
+                bundleSize: '1'
+            state: cancelled
+            created_at: '2023-08-01T22:09:35.642Z'
+            closed_at: '2023-08-01T22:09:35.642Z'
+            active: true
+            claim: false
+            originating_wallet: testuser
+            source_wallet: testuser
+            destination_wallet: wallet2
+    transferAcceptedResponse:
+      description: 'Transfer is marked as completed'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/transferItem'
+          example:
+            id: df80b648-4fef-4ca6-b704-9e7e1c77d1ed
+            type: send
+            parameters:
+              bundle:
+                bundleSize: '1'
+            state: completed
+            created_at: '2023-08-01T22:09:35.642Z'
+            closed_at: '2023-08-01T22:09:35.642Z'
+            active: true
+            claim: false
+            originating_wallet: testuser
+            source_wallet: testuser
             destination_wallet: wallet2
   securitySchemes:
     httpBearer:
