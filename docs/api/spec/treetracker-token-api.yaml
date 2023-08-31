@@ -432,6 +432,51 @@ paths:
               example:
                 code: 422
                 message: '"sender_wallet" is not allowed to be empty'
+      deprecated: false
+  /wallets/batch-transfer:
+    post:
+      tags:
+        - Managed wallets
+      summary: 'Batch transfer'
+      description: 'Create multiple transfers using a CSV file.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeMultipartHeader'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/batchTransferRequest'
+            encoding:
+              csv:
+                contentType: text/csv
+      responses:
+        '200':
+          description: 'Successful batch transfer response'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'batch transfer successfull'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/MultipartMediaTypeError'
+        '422':
+          description: 'Missing or invalid parameters in request body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"sender_wallet" is required'
+      deprecated: false
   /transfers:
     post:
       tags:
@@ -1481,6 +1526,23 @@ components:
         wallet_other_failure_count: 0
         extra_wallet_information_saved: 0
         extraWalletInformationNotSaved: [ ]
+    batchTransferRequest:
+      title: 'Batch transfer request'
+      required:
+        - csv
+        - sender_wallet
+      type: object
+      properties:
+        sender_wallet:
+          type: string
+          example: wallet1
+        token_transfer_amount_default:
+          type: integer
+          example: 5
+        csv:
+          type: string
+          format: binary
+          description: 'Must be a `.csv` file'
   responses:
     UnauthorizedError:
       description: 'API key is missing or invalid, or some permission is missing.'
