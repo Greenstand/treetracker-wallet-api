@@ -391,6 +391,47 @@ paths:
                 code: 404
                 message: 'Could not find wallet by id: ef6a37ce-c459-4a2c-83c3-85e829e4a753'
       deprecated: false
+  /wallets/batch-create-wallet:
+    post:
+      tags:
+        - Managed wallets
+      summary: 'Batch Create Wallets'
+      description: 'Create multiple wallets using a CSV file.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeMultipartHeader'
+      requestBody:
+        description: 'Wallet batch create request'
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/batchCreateRequest'
+            encoding:
+              csv:
+                contentType: text/csv
+        required: true
+      responses:
+        '200':
+          description: 'Batch create response'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/batchCreateResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/MultipartMediaTypeError'
+        '422':
+          description: 'Missing or invalid parameters in request body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"sender_wallet" is not allowed to be empty'
   /transfers:
     post:
       tags:
@@ -892,6 +933,15 @@ components:
       schema:
         type: string
         example: application/json
+    contentTypeMultipartHeader:
+      name: Content-Type
+      in: header
+      description: ''
+      required: true
+      style: simple
+      schema:
+        type: string
+        example: multipart/form-data
   schemas:
     authRequest:
       title: Authentication Request
@@ -1391,11 +1441,65 @@ components:
          * `send` - Allow actor to send to target.
          * `deduct` - Allow actor to deduct from wallet.
          * `manage` - Allow actor to move funds from target wallet to any other wallet they control.
+    batchCreateRequest:
+      title: 'Batch create request'
+      required:
+        - csv
+      type: object
+      properties:
+        sender_wallet:
+          type: string
+          example: wallet1
+        token_transfer_amount_default:
+          type: integer
+          example: 5
+        csv:
+          type: string
+          format: binary
+          description: 'Must be a `.csv` file'
+    batchCreateResponse:
+      title: 'Batch create response'
+      type: object
+      properties:
+        wallets_created:
+          type: integer
+        wallets_already_exists:
+          type: array
+          items:
+            type: string
+        wallet_other_failure_count:
+          type: integer
+        extra_wallet_information_saved:
+          type: integer
+        extraWalletInformationNotSaved:
+          type: array
+          items:
+            type: string
+      example:
+        wallets_created: 3
+        wallets_already_exists: [ ]
+        wallet_other_failure_count: 0
+        extra_wallet_information_saved: 0
+        extraWalletInformationNotSaved: [ ]
   responses:
     UnauthorizedError:
-      description: Access bearer token is missing or invalid
+      description: 'API key is missing or invalid, or some permission is missing.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 401
+            message: 'Invalid access - no API key'
     ForbiddenError:
-      description: Access denied for that resource
+      description: 'Access bearer token is missing or invalid, or some permission is missing, etc.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 403
+            message: 'ERROR: Authentication, no token supplied for protected path'
     UnsupportedMediaTypeError:
       description: Invalid content type
       content:
@@ -1405,6 +1509,15 @@ components:
           example:
             code: 415
             message: 'Invalid content type. API only supports application/json'
+    MultipartMediaTypeError:
+      description: Invalid content type
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 415
+            message: 'Invalid content type. API only supports multipart/form-data'
   securitySchemes:
     httpBearer:
       type: http
