@@ -146,6 +146,7 @@ describe('transferRouter', () => {
           tokens: ['1'],
           sender_wallet: 'wallet1',
           receiver_wallet: 'wallet2',
+          claim: false,
         },
         authenticatedWalletId,
       ),

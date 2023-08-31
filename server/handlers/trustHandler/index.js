@@ -42,7 +42,7 @@ const trustPost = async (req, res) => {
     trustRequestType: req.body.trust_request_type,
   });
 
-  res.status(200).json(trustRelationship);
+  res.status(201).json(trustRelationship);
 };
 
 const trustRelationshipGetById = async (req, res) => {
