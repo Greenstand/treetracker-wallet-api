@@ -355,6 +355,42 @@ paths:
                 code: 422
                 message: '"wallet" is not allowed to be empty'
       deprecated: false
+  '/wallets/{wallet_uuid}/trust_relationships':
+    get:
+      tags:
+        - Managed wallets
+      summary: Get list of trust relationships for the specified wallet
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - name: wallet_uuid
+          description: 'ID of wallet'
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+      responses:
+        '200':
+          description: 'Return list of trust relationships for the wallet matching wallet_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No wallet found matching wallet_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Could not find wallet by id: ef6a37ce-c459-4a2c-83c3-85e829e4a753'
+      deprecated: false
   /transfers:
     post:
       tags:
@@ -1257,7 +1293,7 @@ components:
         created_at:
           type: string
     trustRelationshipsResponse:
-      title: Trust Relationship Responses
+      title: Trust Relationships Response
       type: object
       properties:
         trust_relationships:
@@ -1269,21 +1305,32 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        actor_wallet:
           type: string
-        target_wallet:
-          type: string
-        trust_type:
-          type: string
+          format: uuid
+          example: 0b335cd4-db82-4784-89f5-c8800844c291
+        type:
+          $ref: '#/components/schemas/trustType'
+        request_type:
+          $ref: '#/components/schemas/trustRequestType'
         state:
-          type: string
-        trust_request_type:
-          type: string
-        orginating_wallet:
-          type: string
+          $ref: '#/components/schemas/trustStateType'
         created_at:
           type: string
+          format: date-time
+          example: 2023-08-15T23:29:12.261Z
+        updated_at:
+          type: string
+          format: date-time
+          example: 2023-08-15T23:29:12.261Z
+        originating_wallet:
+          type: string
+          example: testuser
+        actor_wallet:
+          type: string
+          example: testuser
+        target_wallet:
+          type: string
+          example: otherwallet
     walletNameOrId:
       oneOf:
         - type: string
@@ -1298,6 +1345,52 @@ components:
           type: integer
         message:
           type: string
+    trustStateType:
+      type: string
+      enum:
+        - requested
+        - cancelled_by_originator
+        - cancelled_by_actor
+        - cancelled_by_target
+        - trusted
+      example: trusted
+      description: >
+        Trust state type:
+         * `requested` - The trust relationship is pending approval.
+         * `cancelled_by_originator` - The trust relationship was cancelled by the originator.
+         * `cancelled_by_actor` - The trust relationship was cancelled by the actor.
+         * `cancelled_by_target` - The trust relationship was cancelled by the target.
+         * `trusted` - The trust relationship is active.
+    trustRequestType:
+      type: string
+      enum:
+        - send
+        - receive
+        - manage
+        - yield
+        - deduct
+        - release
+      example: manage
+      description: >
+        Trust Request type:
+          * `send` - Request to allow actor to send to target.
+          * `receive` - Request a send privilege to a wallet controlled by the originator on behalf of another sending wallet (opposite direction of send trust request).
+          * `manage` - Request to allow actor to move funds from target wallet to any other wallet they control.
+          * `yield` - Request to give manage privilege on a wallet controlled by the originator to another wallet (opposite direction of manage trust request).
+          * `deduct` - Request to allow actor to deduct from wallet.
+          * `release` - Request a deduct privilege from a wallet controlled by the originator on behalf of another deducting wallet (opposite direction of deduct trust request).
+    trustType:
+      type: string
+      enum:
+        - send
+        - deduct
+        - manage
+      example: send
+      description: >
+        Trust Type:
+         * `send` - Allow actor to send to target.
+         * `deduct` - Allow actor to deduct from wallet.
+         * `manage` - Allow actor to move funds from target wallet to any other wallet they control.
   responses:
     UnauthorizedError:
       description: Access bearer token is missing or invalid
