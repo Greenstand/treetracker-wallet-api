@@ -8,20 +8,22 @@ const {
 } = require('./schemas');
 
 const transferPost = async (req, res) => {
-  // need to add to the events table
-  await transferPostSchema.validateAsync(req.body, { abortEarly: false });
+  const validatedData = await transferPostSchema.validateAsync(req.body, {
+    abortEarly: false,
+  });
   const transferService = new TransferService();
 
   const { result, status } = await transferService.initiateTransfer(
-    req.body,
+    validatedData,
     req.wallet_id,
   );
 
   const modifiedTransfer = {
     ...result,
     token_count:
-        +result.parameters?.bundle?.bundleSize || +result.parameters?.tokens?.length,
-  }
+      +result.parameters?.bundle?.bundleSize ||
+      +result.parameters?.tokens?.length,
+  };
 
   res.status(status).send(modifiedTransfer);
 };
@@ -86,7 +88,10 @@ const transferGet = async (req, res) => {
 
   const { limit = 200, offset = 0, ...params } = req.query;
 
-  const {transfers, count} = await transferService.getByFilter({...params, limit, offset}, req.wallet_id);
+  const { transfers, count } = await transferService.getByFilter(
+    { ...params, limit, offset },
+    req.wallet_id,
+  );
 
   const modifiedTransfers = transfers.map((t) => ({
     ...t,
@@ -94,7 +99,11 @@ const transferGet = async (req, res) => {
       +t.parameters?.bundle?.bundleSize || +t.parameters?.tokens?.length,
   }));
 
-  res.status(200).json({ transfers: modifiedTransfers, query: {...params, limit, offset}, total:count });
+  res.status(200).json({
+    transfers: modifiedTransfers,
+    query: { ...params, limit, offset },
+    total: count,
+  });
 };
 
 const transferIdGet = async (req, res) => {
@@ -109,8 +118,9 @@ const transferIdGet = async (req, res) => {
   const modifiedTransfer = {
     ...result,
     token_count:
-        +result.parameters?.bundle?.bundleSize || +result.parameters?.tokens?.length,
-  }
+      +result.parameters?.bundle?.bundleSize ||
+      +result.parameters?.tokens?.length,
+  };
 
   res.json(modifiedTransfer);
 };
@@ -125,7 +135,8 @@ const transferIdTokenGet = async (req, res) => {
 
   const transferService = new TransferService();
   const tokens = await transferService.getTokensByTransferId(
-    req.params.transfer_id, req.wallet_id,
+    req.params.transfer_id,
+    req.wallet_id,
     limit,
     offset,
   );

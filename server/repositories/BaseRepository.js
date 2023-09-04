@@ -51,11 +51,7 @@ class BaseRepository {
       const filterObjectCopy = { ...object };
       const beforeFilter = object.before;
       if (object.before) {
-        result.where(
-          Object.keys(beforeFilter)[0],
-          '<=',
-          Object.values(beforeFilter)[0],
-        );
+        result.whereRaw(`cast(${Object.keys(beforeFilter)[0]} as date) <= ?`, [Object.values(beforeFilter)[0]])
         delete filterObjectCopy.before;
       }
       const afterFilter = object.after;

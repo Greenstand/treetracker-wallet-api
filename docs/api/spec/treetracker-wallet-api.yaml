@@ -1,10 +1,18 @@
 openapi: 3.0.0
 info:
-  title: treetracker token api
+  title: Treetracker Wallet API
   contact: {}
-  version: '0.9'
+  version: '1.27.4'
+servers:
+  - url: https://{environment}-k8s.treetracker.org/wallet/v2
+    variables:
+      environment:
+        default: dev
+        enum:
+          - dev     # Development server
+          - test    # Test server
 paths:
-  /auth:
+  '/auth':
     post:
       tags:
         - Authentication
@@ -14,29 +22,66 @@ paths:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
       requestBody:
-        description: ''
+        description: 'Authentication request body'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/authrequest'
+              $ref: '#/components/schemas/authRequest'
+            examples:
+              ById:
+                value:
+                  wallet: 21af8154-b7f1-48d3-8520-2e376efae45e
+                  password: walnut
+              ByName:
+                value:
+                  wallet: wallet1
+                  password: walnut
         required: true
       responses:
         '200':
-          description: ''
+          description: 'Successful authentication response'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/bearerToken'
+        '401':
+          description: 'Incorrect password for wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 401
+                message: 'Invalid Credentials'
+        '404':
+          description: 'No wallet found with provided wallet name or id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Could not find entity by wallet name: bad_wallet'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Missing request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet" is not allowed to be empty'
       deprecated: false
-  /tokens:
+  '/tokens':
     get:
       tags:
         - Token details
-      summary: Get a list of tokens in the current wallet  or managed wallets
+      summary: Get a list of tokens in the current wallet or managed wallets.
       description: 'Get a list of for tokens in the current wallet or managed wallets, matching certain parameters'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
           description: Number of items to return
@@ -56,21 +101,34 @@ paths:
           schema:
             type: integer
             format: int32
-            example: 0
+            example: 1
+            default: 0
         - name: wallet
-          description: Wallet id or name can be specified if the authenticated wallet manages other wallets.  The default is to return tokens matching the authenticated wallet
+          description: 'Wallet name can be specified if the authenticated wallet manages other wallets. The default is to return tokens matching the authenticated wallet.'
           in: query
           schema:
-            $ref: '#/components/schemas/walletNameOrId'
+            type: string
+            example: wallet2
       responses:
         '200':
-          description: ''
+          description: 'Returns list of tokens matching the input parameters'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/tokens'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Invalid or missing request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" is required'
       deprecated: false
   '/tokens/{token_uuid}':
     get:
@@ -80,202 +138,44 @@ paths:
       description: 'Get details for one token in the current wallet or managed wallets, matching certain parameters'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: token_uuid
-          description: ''
+          description: 'ID of specific token to retrieve'
           in: path
           required: true
           schema:
             type: string
+            format: uuid
             example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
       responses:
         '200':
-          description: ''
+          description: 'Returns token matching the input parameter'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/tokenItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-      deprecated: false
-  /wallets:
-    get:
-      tags:
-        - Managed wallets
-      summary: Get all wallets managed by the logged in account.  This endpoint is also used to get the total number of tokens in a given wallet.  Each wallet also returns all trust relationships for that wallet that have not been deleted
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: limit
-          in: query
-          description: Number of items to return
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 100
-        - name: offset
-          in: query
-          description: 'Where does the list offset, 0 means offset from the beginning of the list'
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 0
-      responses:
-        '200':
-          description: ''
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No token found matching token_uuid'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/walletsResponse'
-      deprecated: false
-    post:
-      tags:
-        - Managed wallets
-      summary: Create a new managed wallet
-      description: Create a new managed wallet.  Requires the manage_account role.
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-      requestBody:
-        description: ''
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/accountrequest'
-            example:
-              wallet: sprinter_van_2004
-        required: true
-      responses:
-        '201':
-          description: A new wallet was created
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-      deprecated: false
-  '/wallets/{wallet_uuid}':
-    get:
-      tags:
-        - Managed wallets
-      summary: Get details for one wallet, including number of tokens
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: wallet_uuid
-          description: ''
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
-      responses:
-        '200':
-          description: ''
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'can not found token by id:a5fee1ec-31dd-4150-aae1-dfe423ee9fc7'
+        '422':
+          description: 'Missing or invalid query or request parameters'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/walletItem'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"value" must be a valid GUID'
       deprecated: false
-  /transfers:
-    post:
-      tags:
-        - Transfers
-      summary: 'Move, request, and send tokens between wallets'
-      description: 'Move, request, and send tokens between wallets (by name or id) as allowed by trust relationships.  Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer.  The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debut, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval. A claim boolean is entered to specify if the tokens are transferrable. Claimed tokens cannot participate in further transfers after they are received.'
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-      requestBody:
-        description: ''
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/transferrequest'
-            examples:
-              ExplicitTokens:
-                value:
-                  tokens:
-                    - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-                    - e533653e-2dbf-48cd-940a-a87e5a393158
-                  sender_wallet: zaven4
-                  receiver_wallet: dadiorchen
-                  claim: false
-              Bundle:
-                value:
-                  bundle:
-                    bundle_size: 100
-                    matching_all_tags:
-                      - pine
-                      - Tanzania
-                  claim: false
-        required: true
-      responses:
-        '201':
-          description: The transfer was completely processed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/sendRequestProcessedResponse'
-        '202':
-          description: 'The transfer could not be completely processed because a trust relationship does not exist allowing for automated processing.  If a the source wallet is controlled by the authenitcated user, a  transfer in the pending state has been created. If the source wallet is not controlled but the authenticated user, but the destination wallet is, then a transfer in the requested state has been created'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/sendRequestPendingResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-    get:
-      tags:
-        - Transfers
-      summary: 'Get requested, pending, completed, cancelled, and failed transfers'
-      description: 'Get requested, pending, completed, cancelled and failed transfers for wallets (by name or id). The authenticated wallet is either the source, destination, or originating wallet entity.'
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - in: query
-          name: state
-          schema:
-            type: string
-            example: pending
-          required: false
-          description: 'requested, pending, completed, cancelled, failed'
-        - in: query
-          name: wallet
-          schema:
-            $ref: '#/components/schemas/walletNameOrId'
-          required: false
-          description: 'filter transfers matches the source, destination, or originating wallet (by name or id) of a transfer'
-        - name: limit
-          in: query
-          description: Number of items to return
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 100
-        - name: offset
-          in: query
-          description: 'Where does the list offset, 0 means offset from the beginning of the list'
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 0
-      responses:
-        '200':
-          description: Return array of matching transfers
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
   '/tokens/{token_uuid}/transactions':
     get:
       tags:
@@ -283,10 +183,9 @@ paths:
       summary: Get transaction history for a particular token
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: token_uuid
           in: path
-          description: ''
+          description: 'ID of specific token to retrieve'
           required: true
           explode: true
           schema:
@@ -312,141 +211,462 @@ paths:
             type: integer
             format: int32
             example: 0
+            default: 0
       responses:
         '200':
-          description: ''
+          description: 'Return list of transactions associated with the token'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/historyResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No token found matching token_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'can not found token by id:d15f40b4-ed8b-457a-8c85-97beb8862682'
+        '422':
+          description: 'Missing or invalid query or request parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"value" must be a valid GUID'
       deprecated: false
+  '/wallets':
+    get:
+      tags:
+        - Managed wallets
+      summary: 'Get all wallets managed by the logged in account. This endpoint is also used to get the total number of tokens in a given wallet.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - name: limit
+          in: query
+          description: 'Number of items to return'
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 100
+            default: 1000
+        - name: offset
+          in: query
+          description: 'Where does the list offset, 0 means offset from the beginning of the list'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 1
+            default: 0
+      responses:
+        '200':
+          description: 'Returns list of managed wallets'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/walletsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" must be a number'
+      deprecated: false
+    post:
+      tags:
+        - Managed wallets
+      summary: 'Create a new managed wallet'
+      description: 'Create a new managed wallet. Requires the manage_account role.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+      requestBody:
+        description: 'Wallet creation request'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/accountRequest'
+        required: true
+      responses:
+        '201':
+          description: 'A new wallet was created'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: 784311ee-156e-41c7-a85f-b51572cbcf91
+                  wallet:
+                    type: string
+                    example: new_wallet
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Missing or invalid parameters in request body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet" is required'
+      deprecated: false
+  '/wallets/{wallet_uuid}':
+    get:
+      tags:
+        - Managed wallets
+      summary: Get details for one wallet, including number of tokens
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - name: wallet_uuid
+          description: 'ID of wallet'
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+      responses:
+        '200':
+          description: 'Return wallet matching wallet_uuid'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: 'ef6a37ce-c459-4a2c-83c3-85e829e4a75e'
+                  logo_url:
+                    type: string
+                    format: url
+                    example: https://www.placehold.co/192x192
+                  about:
+                    type: string
+                    example: 'feugiat pretium nibh ipsum consequat nisl vel pretium lectus quam id leo in vitae turpis massa sed elementum tempus egestas'
+                  wallet:
+                    type: string
+                    example: testwallet
+                  tokens_in_wallet:
+                    type: integer
+                    example: 12
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/walletNotFound'
+        '422':
+          description: 'Missing or invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet_id" must be a valid GUID'
+      deprecated: false
+  '/wallets/{wallet_uuid}/trust_relationships':
+    get:
+      tags:
+        - Managed wallets
+      summary: Get list of trust relationships for the specified wallet
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - name: wallet_uuid
+          description: 'ID of wallet'
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+      responses:
+        '200':
+          description: 'Return list of trust relationships for the wallet matching wallet_uuid'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipsResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/walletNotFound'
+        '422':
+          description: 'Invalid query parameter'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet_id" must be a valid GUID'
+      deprecated: false
+  '/transfers':
+    post:
+      tags:
+        - Transfers
+      summary: 'Move, request, and send tokens between wallets'
+      description: 'Move, request, and send tokens between wallets (by name or id) as allowed by trust relationships. Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer. The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debit, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval. A claim boolean is entered to specify if the tokens are transferable. Claimed tokens cannot participate in further transfers after they are received.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+      requestBody:
+        description: 'Request body for creating a transfer'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/transferRequest'
+        required: true
+      responses:
+        '201':
+          description: 'The transfer was completely processed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transferItem'
+        '202':
+          $ref: '#/components/responses/transferPendingResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No wallet or token found matching the corresponding parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Could not find entity by wallet name: testwalletxyz'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Missing or invalid request parameters in body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"bundle" is required'
+    get:
+      tags:
+        - Transfers
+      summary: 'Get requested, pending, completed, cancelled, and failed transfers'
+      description: 'Get requested, pending, completed, cancelled and failed transfers for wallets (by name or id). The authenticated wallet is either the source, destination, or originating wallet entity.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - in: query
+          name: state
+          schema:
+            $ref: '#/components/schemas/transferState'
+          required: false
+          description: 'requested, pending, completed, cancelled, failed'
+        - in: query
+          name: wallet
+          schema:
+            $ref: '#/components/schemas/walletNameOrId'
+          required: false
+          description: 'filter transfers matches the source, destination, or originating wallet (by name or id) of a transfer'
+        - name: before
+          in: query
+          description: 'Get transfers that fall before this date'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            format: date
+            example: 2023-08-10
+        - name: after
+          in: query
+          description: 'Get transfers that fall after this date'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            format: date
+            example: 2023-08-02
+        - name: limit
+          in: query
+          description: Number of items to return
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 100
+            default: 200
+        - name: offset
+          in: query
+          description: 'Where does the list offset, 0 means offset from the beginning of the list'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+            format: int32
+            example: 1
+            default: 0
+      responses:
+        '200':
+          description: Return array of matching transfers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transfers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/transferItem'
+                  query:
+                    type: object
+                    properties:
+                      limit:
+                        type: integer
+                        example: 200
+                      offset:
+                        type: integer
+                        example: 0
+                  total:
+                    type: integer
+                    example: 1
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" must be a number'
   '/transfers/{transfer_id}':
     get:
       tags:
         - Transfers
-      summary: Get information of a single transfer
+      summary: 'Get information of a single transfer'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: transfer_id
           in: path
-          description: ''
+          description: 'The unique ID for the transfer'
           required: true
           schema:
             $ref: '#/components/schemas/uuid'
       responses:
         '200':
-          description: ''
+          description: 'Return the transfer matching the transfer_id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/transferItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Can not find this transfer or it is not related to this wallet'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"transfer_id" must be a valid GUID'
     delete:
       tags:
         - Transfers
       summary: Cancel a pending or requested transfer that has not closed
-      description: Cancel a pending (untrusted) or requested transfer.  The executor can delete the pending/requested transfer before it is executed.  Transfer is marked canceled by this command.
+      description: Cancel a pending (untrusted) or requested transfer. The executor can delete the pending/requested transfer before it is executed.  Transfer is marked canceled by this command.
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: transfer_id
           in: path
-          description: ''
+          description: 'The unique ID for the transfer'
           required: true
           schema:
             $ref: '#/components/schemas/uuid'
       responses:
         '200':
-          description: Transfer was marked canceled
+          $ref: '#/components/responses/transferCancelledResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          description: Authenticated wallet does not have access to this transfer
+          $ref: '#/components/responses/ForbiddenError'
         '404':
-          description: No transfer record with that id
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Can not found transfer by id:03537683-5356-42f4-97b2-95ba287a453b'
         '406':
-          description: Transfer with this id is not in requested or pending state
-  '/transfers/{transfer_id}/accept':
-    post:
-      tags:
-        - Transfers
-      summary: Accept a pending (untrusted) transfer
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: transfer_id
-          in: path
-          description: ''
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-      responses:
-        '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-  '/transfers/{transfer_id}/decline':
-    post:
-      tags:
-        - Transfers
-      summary: Decline a pending (untrusted) transfer
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: transfer_id
-          in: path
-          description: ''
-          required: true
-          schema:
-            $ref: '#/components/schemas/uuid'
-      responses:
-        '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-  '/transfers/{transfer_id}/fulfill':
-    parameters:
-      - $ref: '#/components/parameters/treetrackerApiKeyParam'
-      - $ref: '#/components/parameters/contentTypeJsonHeader'
-    post:
-      tags:
-        - Transfers
-      summary: Fullfill a requested transfer
-      description: Post a list of tokens to fulfill the parameters of a transfer request that specifies tokens using a bundle.  This allows the debited wallet to decide which tokens matching the bundle parameters to attach to the transfer.  Application logic must check that each token matches the parameters of the request.
-      parameters:
-        - name: transfer_id
-          in: path
-          description: the id of the transfer record on the server
-          required: true
-          style: simple
-          schema:
-            $ref: '#/components/schemas/uuid'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/requestBundleFulfillBody'
-      responses:
-        '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+          description: 'Transfer with this id is not in requested or pending state'
   '/transfers/{transfer_id}/tokens':
     get:
       tags:
         - Transfers
-      summary: Get all tokens linked to a single transfer
+      summary: 'Get all tokens linked to a single transfer'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: transfer_id
           in: path
-          description: ''
+          description: 'The unique ID for the transfer'
           required: true
           schema:
-            type: integer
-            format: int32
+            $ref: '#/components/schemas/uuid'
         - name: limit
           in: query
-          description: Number of items to return
+          description: 'Number of items to return'
           required: true
           style: form
           explode: true
@@ -464,69 +684,182 @@ paths:
             type: integer
             format: int32
             example: 0
+            default: 0
       responses:
         '200':
-          description: ''
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-  /events:
-    get:
-      tags:
-        - Event stream
-      summary: Get event stream for wallet
-      description: 'The event stream contains notifications about execute and pending transfers, transfer request, trust requests, trust deletions, and trust approvals.  Event streams for managed wallets can also be requested'
-      parameters:
-        - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
-        - name: limit
-          in: query
-          description: The number of records to return
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: integer
-            format: int32
-            example: 10
-        - name: since
-          in: query
-          description: Only return events since a given timestamp
-          required: true
-          style: form
-          explode: true
-          schema:
-            type: string
-            format: timestamp
-            example: '2019-10-12T07:20:50.52Z'
-        - name: wallet
-          description: Wallet (by name or id) can be specified if the authenticated wallet manages other wallets.  The default is to return events matching the authenticated wallet
-          in: query
-          schema:
-            oneOf:
-              - type: string
-              - type: number
-            example: zaven2
-      responses:
-        '200':
-          description: ''
+          description: 'Returns list of tokens associated with the transfer'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/eventStream'
+                type: object
+                properties:
+                  tokens:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/transferTokenItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  /trust_relationships:
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Can not find this transfer or it is not related to this wallet'
+        '422':
+          description: 'Invalid or missing query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"transfer_id" must be a valid GUID'
+  '/transfers/{transfer_id}/accept':
+    post:
+      tags:
+        - Transfers
+      summary: 'Accept a pending (untrusted) transfer'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: 'The unique ID for the transfer'
+          required: true
+          schema:
+            $ref: '#/components/schemas/uuid'
+      responses:
+        '200':
+          $ref: '#/components/responses/transferAcceptedResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Can not found transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"transfer_id" must be a valid GUID'
+  '/transfers/{transfer_id}/decline':
+    post:
+      tags:
+        - Transfers
+      summary: 'Decline a pending (untrusted) transfer'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: 'The unique ID for the transfer'
+          required: true
+          schema:
+            $ref: '#/components/schemas/uuid'
+      responses:
+        '200':
+          $ref: '#/components/responses/transferCancelledResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Can not found transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"transfer_id" must be a valid GUID'
+  '/transfers/{transfer_id}/fulfill':
+    post:
+      tags:
+        - Transfers
+      summary: 'Fulfill a requested transfer'
+      description: 'Post a list of tokens to fulfill the parameters of a transfer request that specifies tokens using a bundle. This allows the debited wallet to decide which tokens matching the bundle parameters to attach to the transfer. Application logic must check that each token matches the parameters of the request.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - $ref: '#/components/parameters/contentTypeJsonHeader'
+        - name: transfer_id
+          in: path
+          description: the id of the transfer record on the server
+          required: true
+          style: simple
+          schema:
+            $ref: '#/components/schemas/uuid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestBundleFulfillBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/transferAcceptedResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 404
+                message: 'Can not found transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid or missing parameters in query or request body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"implicit" is required'
+  '/trust_relationships':
     get:
       tags:
         - Trust relationships
       summary: 'Get a list of existing, requested, and pending trust relationships'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: limit
           in: query
-          description: Number of items to return
-          required: true
+          description: 'Number of items to return'
+          required: false
           style: form
           explode: true
           schema:
@@ -543,85 +876,52 @@ paths:
             type: integer
             format: int32
             example: 0
+            default: 0
         - name: state
           in: query
-          description: Filter by state of the trust relationship
+          description: 'Filter by state of the trust relationship'
           required: false
           style: form
           schema:
-            type: string
-          examples:
-            Trusted:
-              value: trusted
-              description: Active trust relationship
-            Requested:
-              value: requested
-              description: Trust relationship pending approval
-            CancelledByOriginator:
-              value: cancelled_by_originator
-              description: Trust relationship was cancelled by the originator
-            CancelledByActor:
-              value: cancelled_by_actor
-              description: Trust relationship was cancelled by the actor
-            CancelledByTarget:
-              value: cancelled_by_target
-              description: Trust relationship was cancelled by the target
+            $ref: '#/components/schemas/trustStateType'
         - name: type
           in: query
-          description: Type of trust relationship
+          description: 'Type of the trust relationship'
           required: false
           style: form
           schema:
-            type: string
-          examples:
-            Send:
-              value: send
-              description: Allow actor to send to target
-            Deduct:
-              value: deduct
-              description: Allow actor to deduct from wallet
-            Manage:
-              value: manage
-              description: Allow actor to move funds from target wallet to any other wallet they control
+            $ref: '#/components/schemas/trustType'
         - name: request_type
           in: query
-          description: Type of trust relationship
+          description: 'Type of the trust relationship request'
           required: false
           style: form
           schema:
-            type: string
-          examples:
-            Send:
-              value: send
-              description: Request to allow actor to send to target
-            Receive:
-              value: receive
-              description: Request a send priviledge to a wallet controlled by the originator on behalf of another sending wallet (opposite direction of send trust request)
-            Deduct:
-              value: deduct
-              description: Request to allow actor to deduct from wallet
-            Release:
-              value: release
-              description: Request a deduct priviledge from a wallet controlled by the originator on behalf of another deducting wallet  (opposite direction of deduct trust request)
-            Manage:
-              value: manage
-              description: Request to allow actor to move funds from target wallet to any other wallet they control
-            Yield:
-              value: manage
-              description: Request to give manage privilege on a wallet controlled by the originator to another wallet (opposite direction of manage trust request)
+            $ref: '#/components/schemas/trustRequestType'
       responses:
         '200':
-          description: ''
+          description: 'Returns list of trust relationships'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/trustRelationshipsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"limit" must be a number'
     post:
       tags:
         - Trust relationships
-      summary: Request a new trust relationship from another wallet
+      summary: 'Request a new trust relationship from another wallet'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -631,21 +931,71 @@ paths:
             schema:
               $ref: '#/components/schemas/trustRequest'
       responses:
-        '202':
-          description: Accepted but waiting for approval
+        '201':
+          description: 'Accepted but waiting for approval'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid or missing parameters in request body'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trust_request_type" is required'
   '/trust_relationships/{trust_relationship_id}':
+    get:
+      tags:
+        - Trust relationships
+      summary: 'Get details for a single trust relationship'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - name: trust_relationship_id
+          description: 'ID of the trust relationship'
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+      responses:
+        '200':
+          description: 'Return the trust relationship matching trust_relationship_id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/trustRelationshipNotFound'
+        '422':
+          description: 'Missing or invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trustRelationshipId" must be a valid GUID'
+      deprecated: false
     delete:
       tags:
         - Trust relationships
-      summary: Remove a trust relationship linked to the autheticated wallet
-      description: Remove a trust relationship linked to the autheticated wallet.  This could be either the actor wallet or the target wallet
+      summary: 'Remove a trust relationship linked to the authenticated wallet'
+      description: 'Remove a trust relationship linked to the authenticated wallet. This could be either the actor wallet or the target wallet'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
-        - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: trust_relationship_id
           in: path
           description: the id of the entity trust record on the server
@@ -655,59 +1005,152 @@ paths:
             $ref: '#/components/schemas/uuid'
       responses:
         '200':
-          description: ''
+          description: 'Trust relationship state is changed to `cancelled_by_originator`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
+              example:
+                id: c04e3b02-971c-4268-a701-b6c01468ca62
+                actor_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                target_wallet_id: 8428ea73-51df-4266-a038-4577b9aef06f
+                type: send
+                originator_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                request_type: send
+                state: cancelled_by_originator
+                created_at: '2023-08-19T03:40:38.200Z'
+                updated_at: '2023-08-19T03:40:38.200Z'
+                active: true
+                originating_wallet: testuser
+                actor_wallet: testuser
+                target_wallet: testWallet11
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/trustRelationshipNotFound'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trustRelationshipId" must be a valid GUID'
   '/trust_relationships/{trust_relationship_id}/accept':
     post:
       tags:
         - Trust relationships
-      summary: Accept a trust relationship
+      summary: 'Accept a trust relationship'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: trust_relationship_id
           in: path
-          description: the id of the entity trust record on the server
+          description: 'The unique ID of the entity trust record on the server'
           required: true
           style: simple
           schema:
             $ref: '#/components/schemas/uuid'
       responses:
         '200':
-          description: ''
+          description: 'Trust relationship state is changed to `trusted`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
+              example:
+                id: c04e3b02-971c-4268-a701-b6c01468ca62
+                actor_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                target_wallet_id: 8428ea73-51df-4266-a038-4577b9aef06f
+                type: send
+                originator_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                request_type: send
+                state: trusted
+                created_at: '2023-08-19T03:40:38.200Z'
+                updated_at: '2023-08-19T03:40:38.200Z'
+                active: true
+                originating_wallet: testuser
+                actor_wallet: testuser
+                target_wallet: testWallet11
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/trustRelationshipNotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trustRelationshipId" must be a valid GUID'
   '/trust_relationships/{trust_relationship_id}/decline':
     post:
       tags:
         - Trust relationships
-      summary: Decline a trust relationship
+      summary: 'Decline a trust relationship'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
         - name: trust_relationship_id
           in: path
-          description: the id of the entity trust record on the server
+          description: 'The unique ID of the entity trust record on the server'
           required: true
           style: simple
           schema:
             $ref: '#/components/schemas/uuid'
       responses:
         '200':
-          description: ''
+          description: 'Trust relationship state is changed to `cancelled_by_target`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/trustRelationshipItem'
+              example:
+                id: c04e3b02-971c-4268-a701-b6c01468ca62
+                actor_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                target_wallet_id: 8428ea73-51df-4266-a038-4577b9aef06f
+                type: send
+                originator_wallet_id: 644f4d3b-a53c-457c-8677-42b5b812c23d
+                request_type: send
+                state: cancelled_by_target
+                created_at: '2023-08-19T03:40:38.200Z'
+                updated_at: '2023-08-19T03:40:38.200Z'
+                active: true
+                originating_wallet: testuser
+                actor_wallet: testuser
+                target_wallet: testWallet11
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
           $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/trustRelationshipNotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaTypeError'
+        '422':
+          description: 'Invalid query parameters'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"trustRelationshipId" must be a valid GUID'
 components:
   parameters:
     treetrackerApiKeyParam:
       name: TREETRACKER-API-KEY
       in: header
-      description: ''
+      description: 'API key for authenticating requests to the Treetracker Wallet API'
       required: true
       style: simple
       schema:
@@ -716,14 +1159,14 @@ components:
     contentTypeJsonHeader:
       name: Content-Type
       in: header
-      description: ''
+      description: 'Specifies the media type of the request payload'
       required: true
       style: simple
       schema:
         type: string
         example: application/json
   schemas:
-    authrequest:
+    authRequest:
       title: Authentication Request
       required:
         - wallet
@@ -733,8 +1176,7 @@ components:
         wallet:
           oneOf:
             - type: string
-              format: string
-              example: zaven
+              example: wallet1
             - type: string
               format: uuid
               example: 21af8154-b7f1-48d3-8520-2e376efae45e
@@ -747,6 +1189,8 @@ components:
       properties:
         bearer:
           type: string
+          example:
+            bearer: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
     tokens:
       title: Token query response
       type: object
@@ -762,42 +1206,95 @@ components:
         id:
           type: string
           format: uuid
+          example: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
         capture_id:
           type: string
           format: uuid
+          example: '8df635f6-2df8-496f-93da-3060fc1e3180'
         wallet_id:
           type: string
           format: uuid
+          example: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
         transfer_pending:
           type: boolean
+          example: false
         transfer_pending_id:
           type: string
           format: uuid
+          example: null
         created_at:
           type: string
-          format: date
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
         updated_at:
           type: string
-          format: date
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        claim:
+          type: boolean
+          example: false
         links:
           type: object
           properties:
             capture:
               type: string
-      example:
-        id: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
-        capture_id: '8df635f6-2df8-496f-93da-3060fc1e3180'
-        wallet_id: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
-        transfer_pending: false
-        transfer_pending_id: null
-        created_at: '2021-07-02T18:31:07.208Z'
-        updated_at: '2021-07-02T18:31:07.208Z'
-        links:
-          type: object
-          properties:
-            capture: '/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180'
-    accountrequest:
-      title: accountrequest
+              example: '/webmap/tree?uuid=8df635f6-2df8-496f-93da-3060fc1e3180'
+    transferTokenItem:
+      title: Token Item (Transfer)
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 'ca1a99c3-9797-465d-8ee3-8dbd26a08faa'
+        capture_id:
+          type: string
+          format: uuid
+          example: '8df635f6-2df8-496f-93da-3060fc1e3180'
+        wallet_id:
+          type: string
+          format: uuid
+          example: 'c63da6b3-d7a3-444a-9ff0-10644036eccd'
+        transfer_pending:
+          type: boolean
+          example: false
+        transfer_pending_id:
+          type: string
+          format: uuid
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+        claim:
+          type: boolean
+          example: false
+        token_id:
+          type: string
+          format: uuid
+          example: cf6dde25-2eb1-4b44-a70c-724c36591b9a
+        transfer_id:
+          type: string
+          format: uuid
+          example: fea4faa4-0f37-4330-a970-4f0160d9d591
+        source_wallet_id:
+          type: string
+          format: uuid
+          example: 644f4d3b-a53c-457c-8677-42b5b812c23
+        destination_wallet_id:
+          type: string
+          format: uuid
+          example: ef6a37ce-c459-4a2c-83c3-85e829e4a75e
+        processed_at:
+          type: string
+          format: date-time
+          example: '2021-07-02T18:31:07.208Z'
+    accountRequest:
+      title: 'Account Request'
       required:
         - wallet
       type: object
@@ -808,46 +1305,136 @@ components:
         wallet: sprinter_van_2004
     walletsResponse:
       title: Wallets Response
+      type: object
       properties:
+        total:
+          type: integer
+          description: 'Total count of wallets satisfying the query condition'
+          example: 1
+        query:
+          type: object
+          properties:
+            offset:
+              type: integer
+              example: 0
+            limit:
+              type: integer
+              example: 5
         wallets:
           type: array
           items:
             $ref: '#/components/schemas/walletItem'
     walletItem:
-      title: Wallet Details
+      title: 'Wallet Details'
       properties:
         id:
           type: string
           format: uuid
-        wallet:
+          example: 482bf306-30c7-4cea-833a-1cdda3d96573
+        name:
           type: string
-        email:
+          example: test11
+        logo_url:
           type: string
-        phone:
+          format: url
+          example: https://www.placehold.co/192x192
+        created_at:
           type: string
+          format: date-time
+          example: 2023-08-08T06:28:39.766Z
         tokens_in_wallet:
           type: integer
-    transferrequest:
-      title: transferrequest
+          example: 12
+    transferItem:
+      title: Transfer Details
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 'The unique ID for this transfer'
+          example: cf0ce129-8c12-45cf-b914-a8f1cb6b7dc5
+        type:
+          $ref: '#/components/schemas/transferType'
+        parameters:
+          type: object
+          oneOf:
+            - properties:
+                bundle:
+                  type: object
+                  properties:
+                    bundleSize:
+                      type: integer
+                      description: Number of tokens associated with the transfer
+                      example: 2
+                  required:
+                    - bundleSize
+            - properties:
+                tokens:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of explicit tokens
+        state:
+          $ref: '#/components/schemas/transferState'
+        created_at:
+          type: string
+          format: date-time
+          example: 2023-08-02T21:46:35.134Z
+        closed_at:
+          type: string
+          format: date-time
+          example: 2023-08-02T21:46:35.134Z
+        active:
+          type: boolean
+          example: true
+        claim:
+          type: boolean
+          example: false
+        originating_wallet:
+          type: string
+          example: testuser
+        source_wallet:
+          type: string
+          example: testuser
+        destination_wallet:
+          type: string
+          example: wallet22
+        token_count:
+          type: integer
+          example: 1
+    transferRequest:
+      title: Transfer Request
       oneOf:
         - properties:
             tokens:
               type: array
               items:
                 type: string
+                format: uuid
               description: 'Explicitly transfer tokens'
             sender_wallet:
               oneOf:
                 - type: string
-                - type: number
+                - type: string
+                  format: uuid
             receiver_wallet:
               oneOf:
                 - type: string
-                - type: number
+                - type: string
+                  format: uuid
+            claim:
+              type: boolean
           required:
             - tokens
             - sender_wallet
             - receiver_wallet
+          example:
+            tokens:
+              - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
+              - e533653e-2dbf-48cd-940a-a87e5a393158
+            sender_wallet: wallet1
+            receiver_wallet: wallet2
+            claim: false
         - properties:
             bundle:
               type: object
@@ -859,187 +1446,59 @@ components:
             sender_wallet:
               oneOf:
                 - type: string
-                - type: number
+                - type: string
+                  format: uuid
             receiver_wallet:
               oneOf:
                 - type: string
-                - type: number
+                - type: string
+                  format: uuid
+            claim:
+              type: boolean
           required:
             - bundle
             - sender_wallet
             - receiver_wallet
-    transferbundlerequest:
-      title: transferbundlerequest
-      required:
-        - parameters
-        - sender_wallet
-        - receiver_wallet
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        sender_wallet:
-          oneOf:
-            - type: string
-            - type: number
-        receiver_wallet:
-          oneOf:
-            - type: string
-            - type: number
-      example:
-        bundle_size: 500
-        sender_wallet: zaven
-        receiver_wallet: GreenEarthAppeal
-    sendrequest:
-      title: sendrequest
-      required:
-        - tokens
-        - receiver_wallet
-      type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: ''
-        receiver_wallet:
-          oneOf:
-            - type: string
-            - type: number
-      example:
-        tokens:
-          - e1b278e8-f025-44b7-9dd8-36ffb2d58f7e
-          - e533653e-2dbf-48cd-940a-a87e5a393158
-        receiver_wallet: zaven
-    sendRequestProcessedResponse:
-      title: sendRequestProcessedResponse
-      type: object
-      properties:
-        id:
-          type: string
-          description: The unique ID for this transfer
-        originating_wallet:
-          type: string
-        source_wallet:
-          type: string
-        destination_wallet:
-          type: string
-        type:
-          type: string
-          description: 'the type of transfer.  send, deduct, or managed. the value is computed by the server based on the submitted request'
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        state:
-          type: string
-          description: 'the state of the transfer.  requested, pending, completed, cancelled, or failed'
-        created_at:
-          type: string
-        closed_at:
-          type: string
-      example:
-        originating_wallet: johnwallet1
-        source_wallet: planeter
-        destination_wallet: just.a.guy
-        type: send
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        state: completed
-        created_at: '2020-07-09T00:41:49+00:00'
-        closed_at: '2020-07-09T00:41:49+00:00'
-    sendRequestPendingResponse:
-      title: sendRequestPendingResponse
-    sendBundleRequest:
-      title: sendBundleRequest
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        receiver_wallet:
-          type: string
-      required:
-        - bundle_size
-        - receiver_wallet
-    pendingTransfersResponse:
-      title: List of Pending Transfers
-      type: object
-      properties:
-        pending:
-          type: array
-          items:
-            $ref: '#/components/schemas/pendingTransferItem'
-    pendingTransferItem:
-      title: Pending Transfer Item
-      type: object
-      properties:
-        id:
-          type: integer
-        sender_wallet:
-          type: string
-        receiver_wallet:
-          type: string
-        created_at:
-          type: string
-    requestBundleRequest:
-      title: requestBundleRequest
-      type: object
-      properties:
-        parameters:
-          $ref: '#/components/schemas/requestBundleRequestParameters'
-        sender_wallet:
-          type: string
-          description: Senders other than the wallet requesting the transfer are not allowed at this time
-        receiver_wallet:
-          type: string
-      required:
-        - params
-        - receiver_wallet
-    requestBundleRequestParameters:
-      title: Parameters for Transfer Request
-      type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: optional array of explicit tokens
-        bundle_size:
-          type: integer
-          description: required number of trees to transfer
-        matching_all_tags:
-          type: array
-          items:
-            type: string
-          description: optional list of tags that trees must match ALL of
-      required:
-        - bundle_size
+          example:
+            bundle:
+              bundle_size: 100
+            sender_wallet: wallet1
+            receiver_wallet: wallet2
+            claim: false
+    transferState:
+      type: string
+      enum:
+        - requested
+        - pending
+        - completed
+        - cancelled
+        - failed
+      example: pending
+    transferType:
+      type: string
+      enum:
+        - send
+        - deduct
+        - managed
+      example: send
+      description: 'The type of transfer. The value is computed by the server based on the submitted request'
     requestBundleFulfillBody:
-      title: Transfer Request Fulfillment
+      title: 'Transfer Request Fulfillment'
       type: object
-      properties:
-        tokens:
-          type: array
-          items:
-            type: string
-          description: optional array of explicit tokens
-          example: ['ed155d71-67f0-4d21-a73d-f5445b8c43c8']
-        implicit:
-          type: boolean
-          description: automatically fill the request with tokens matching the specified parameters if set
-          example: false
-    trustRequest:
-      title: Trust Request
-      type: object
-      properties:
-        trust_request_type:
-          type: string
-          example: send
-        requester_wallet:
-          type: string
-          description: 'This is optional, if ignore it, then the default requester_wallet should be the current logged in wallet'
-          example: dadiorchen
-        requestee_wallet:
-          type: string
-          description: The wallet to who this request are targetting
+      oneOf:
+        - properties:
+            tokens:
+              type: array
+              items:
+                type: string
+                format: uuid
+              description: 'Array of explicit tokens'
+              example: ['ed155d71-67f0-4d21-a73d-f5445b8c43c8']
+        - properties:
+            implicit:
+              type: boolean
+              description: 'Automatically fill the request with tokens matching the specified parameters if set'
+              example: false
     historyResponse:
       title: History Response
       type: object
@@ -1052,41 +1511,56 @@ components:
       title: History Item
       type: object
       properties:
-        token:
+        id:
           type: string
-        sender_wallet:
+          format: uuid
+          example: 'efaab5eb-1e6e-4f78-b3e8-4bc7f6989b12'
+        token_id:
           type: string
-        receiver_wallet:
+          format: uuid
+          example: 'd15f40b4-ed8b-457a-8c85-97beb8862685'
+        transfer_id:
           type: string
+          format: uuid
+          example: '57e70823-be2a-4b7d-9874-9a44e95baa1d'
+        source_wallet_id:
+          type: string
+          format: uuid
+          example: '482bf306-30c7-4cea-833a-1cdda3d96573'
+        destination_wallet_id:
+          type: string
+          format: uuid
+          example: '644f4d3b-a53c-457c-8677-42b5b812c23d'
         processed_at:
           type: string
-      example:
-        token: e3cd6587-ff01-419b-b2c9-44ceed4dc749
-        sender_wallet: zaven
-        receiver_wallet: zaven2
-        processed_at: '2020-01-17T22:32:43.008Z'
-    eventStream:
-      title: Event Stream
+          format: date-time
+          example: '2023-08-02T09:36:46.402Z'
+        claim:
+          type: boolean
+          example: false
+        sender_wallet:
+          type: string
+          example: 'testuser'
+        receiver_wallet:
+          type: string
+          example: 'otherwallet'
+    trustRequest:
+      title: Trust Request
       type: object
       properties:
-        events:
-          type: array
-          items:
-            $ref: '#/components/schemas/eventItem'
-    eventItem:
-      title: Event Item
-      type: object
-      properties:
-        type:
+        trust_request_type:
+          $ref: '#/components/schemas/trustRequestType'
+        requester_wallet:
           type: string
-        wallet:
+          description: 'Optional. If not present, then the default requester_wallet will be the current logged in wallet'
+          example: wallet1
+        requestee_wallet:
           type: string
-        transfer_id:
-          type: integer
-        trust_relationship_id:
-          type: integer
-        created_at:
-          type: string
+          description: 'The wallet to which this request is targeted.'
+          example: testwallet
+      required:
+        - trust_request_type
+        - requestee_wallet
     trustRelationshipsResponse:
       title: Trust Relationship Responses
       type: object
@@ -1100,26 +1574,99 @@ components:
       type: object
       properties:
         id:
-          type: integer
-        actor_wallet:
           type: string
-        target_wallet:
+          format: uuid
+          example: 0b335cd4-db82-4784-89f5-c8800844c291
+        actor_wallet_id:
           type: string
-        trust_type:
+          format: uuid
+          example: 644f4d3b-a53c-457c-8677-42b5b812c23d
+        target_wallet_id:
           type: string
+          format: uuid
+          example: ef6a37ce-c459-4a2c-83c3-85e829e4a75e
+        type:
+          $ref: '#/components/schemas/trustType'
+        originator_wallet_id:
+          type: string
+          format: uuid
+          example: 644f4d3b-a53c-457c-8677-42b5b812c23d
+        request_type:
+          $ref: '#/components/schemas/trustRequestType'
         state:
-          type: string
-        trust_request_type:
-          type: string
-        orginating_wallet:
-          type: string
+          $ref: '#/components/schemas/trustStateType'
         created_at:
           type: string
+          format: date-time
+          example: 2023-08-15T23:29:12.261Z
+        updated_at:
+          type: string
+          format: date-time
+          example: 2023-08-15T23:29:12.261Z
+        active:
+          type: boolean
+          example: true
+        originating_wallet:
+          type: string
+          example: testuser
+        actor_wallet:
+          type: string
+          example: testuser
+        target_wallet:
+          type: string
+          example: otherwallet
+    trustStateType:
+      type: string
+      enum:
+        - requested
+        - cancelled_by_originator
+        - cancelled_by_actor
+        - cancelled_by_target
+        - trusted
+      example: trusted
+      description: >
+        Trust state type:
+         * `requested` - The trust relationship is pending approval.
+         * `cancelled_by_originator` - The trust relationship was cancelled by the originator.
+         * `cancelled_by_actor` - The trust relationship was cancelled by the actor.
+         * `cancelled_by_target` - The trust relationship was cancelled by the target.
+         * `trusted` - The trust relationship is active.
+    trustRequestType:
+      type: string
+      enum:
+        - send
+        - receive
+        - manage
+        - yield
+        - deduct
+        - release
+      example: manage
+      description: >
+        Trust Request type:
+          * `send` - Request to allow actor to send to target.
+          * `receive` - Request a send privilege to a wallet controlled by the originator on behalf of another sending wallet (opposite direction of send trust request).
+          * `manage` - Request to allow actor to move funds from target wallet to any other wallet they control.
+          * `yield` - Request to give manage privilege on a wallet controlled by the originator to another wallet (opposite direction of manage trust request).
+          * `deduct` - Request to allow actor to deduct from wallet.
+          * `release` - Request a deduct privilege from a wallet controlled by the originator on behalf of another deducting wallet (opposite direction of deduct trust request).
+
+    trustType:
+      type: string
+      enum:
+        - send
+        - deduct
+        - manage
+      example: send
+      description: >
+        Trust Type:
+         * `send` - Allow actor to send to target.
+         * `deduct` - Allow actor to deduct from wallet.
+         * `manage` - Allow actor to move funds from target wallet to any other wallet they control.
+
     walletNameOrId:
       oneOf:
         - type: string
-          format: string
-          example: zaven
+          example: wallet1
         - type: string
           format: uuid
           example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
@@ -1127,11 +1674,120 @@ components:
       type: string
       format: uuid
       example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
+    errorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
   responses:
     UnauthorizedError:
-      description: Access bearer token is missing or invalid
+      description: API key is missing or invalid or missing
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 401
+            message: 'Invalid access - no API key'
     ForbiddenError:
-      description: Access denied for that resource
+      description: 'Access bearer token is missing or invalid, or some permission is missing, etc.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 403
+            message: 'ERROR: Authentication, no token supplied for protected path'
+    UnsupportedMediaTypeError:
+      description: Invalid content type
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 415
+            message: 'Invalid content type. API only supports application/json'
+    transferAcceptedResponse:
+      description: 'Transfer is marked as completed'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/transferItem'
+          example:
+            id: df80b648-4fef-4ca6-b704-9e7e1c77d1ed
+            type: send
+            parameters:
+              bundle:
+                bundleSize: '1'
+            state: completed
+            created_at: '2023-08-01T22:09:35.642Z'
+            closed_at: '2023-08-01T22:09:35.642Z'
+            active: true
+            claim: false
+            originating_wallet: testuser
+            source_wallet: testuser
+            destination_wallet: wallet2
+    transferCancelledResponse:
+      description: 'Transfer is marked as cancelled'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/transferItem'
+          example:
+            id: df80b648-4fef-4ca6-b704-9e7e1c77d1ed
+            type: send
+            parameters:
+              bundle:
+                bundleSize: '1'
+            state: cancelled
+            created_at: '2023-08-01T22:09:35.642Z'
+            closed_at: '2023-08-01T22:09:35.642Z'
+            active: true
+            claim: false
+            originating_wallet: testuser
+            source_wallet: testuser
+            destination_wallet: wallet2
+    transferPendingResponse:
+      description: 'The transfer could not be completely processed because a trust relationship does not exist allowing for automated processing.  If a the source wallet is controlled by the authenticated user, a transfer in the pending state has been created. If the source wallet is not controlled but the authenticated user, but the destination wallet is, then a transfer in the requested state has been created'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/transferItem'
+          example:
+            id: 251debc2-9077-4876-b710-f5543c9a7719
+            type: send
+            parameters:
+              bundle:
+                bundleSize: 1
+            state: pending
+            created_at: '2023-08-31T05:02:52.623Z'
+            closed_at: '2023-08-31T05:02:52.623Z'
+            active: true
+            claim: false
+            originating_wallet: testuser
+            source_wallet: wallet1
+            destination_wallet: wallet2
+            token_count: 1
+    trustRelationshipNotFound:
+      description: 'No trust relationship found matching trust_relationship_id or it is not associated with the logged in wallet'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 404
+            message: 'No such trust relationship exists or it is not associated with the current wallet.'
+    walletNotFound:
+      description: 'No wallet found matching wallet_uuid'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            code: 404
+            message: 'Could not find wallet by id: ef6a37ce-c459-4a2c-83c3-85e829e4a753'
   securitySchemes:
     httpBearer:
       type: http

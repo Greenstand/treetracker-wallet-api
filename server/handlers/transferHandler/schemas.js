@@ -10,18 +10,21 @@ const transferPostSchema = Joi.alternatives()
     {
       then: Joi.object({
         tokens: Joi.array().items(Joi.string()).required().unique(),
-        sender_wallet: Joi.alternatives().try(Joi.string()).required(),
+        sender_wallet: Joi.alternatives().try(Joi.string()).required().invalid(Joi.ref('receiver_wallet')).messages({
+          'any.invalid': 'Cannot transfer to the same wallet as the originating one!'
+        }),
         receiver_wallet: Joi.alternatives().try(Joi.string()).required(),
-        // TODO: add boolean for claim, but default to false.
-        claim: Joi.boolean(),
+        claim: Joi.boolean().default(false),
       }),
       otherwise: Joi.object({
         bundle: Joi.object({
           bundle_size: Joi.number().min(1).max(10000).integer(),
         }).required(),
-        sender_wallet: Joi.string().required(),
+        sender_wallet: Joi.string().required().invalid(Joi.ref('receiver_wallet')).messages({
+          'any.invalid': 'Cannot transfer to the same wallet as the originating one!'
+        }),
         receiver_wallet: Joi.string().required(),
-        claim: Joi.boolean().required(),
+        claim: Joi.boolean().default(false),
       }),
     },
   );
