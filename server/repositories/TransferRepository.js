@@ -123,6 +123,16 @@ class TransferRepository extends BaseRepository {
       )
       .where((builder) => this.whereBuilder(filter, builder));
 
+    if (limitOptions && limitOptions.sort_by) {
+      const column = limitOptions.sort_by.startsWith('-') ? 
+        limitOptions.sort_by.slice(1) : limitOptions.sort_by;
+      const order = limitOptions.sort_by.startsWith('-') ? 'desc' : 'asc';
+      promise = promise.orderBy(column, order);
+    } else {
+      // sort by created time by default
+      promise = promise.orderBy('transfer.created_at', 'desc');
+    }
+
     // get the total count (before applying limit and offset options)
     const count = await this._session.getDB().from(promise.as('p')).count('*');
 

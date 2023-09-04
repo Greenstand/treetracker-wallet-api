@@ -61,6 +61,7 @@ const transferGetQuerySchema = Joi.object({
   after: Joi.date().iso(),
   limit: Joi.number().min(1).max(1000),
   offset: Joi.number().min(0).integer().default(0),
+  sort_by: Joi.string().pattern(new RegExp(`^(-)?(${Object.values(TransferEnums.SORT).join('|')})$`)).optional(),
 });
 
 module.exports = {
