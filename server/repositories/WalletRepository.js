@@ -98,6 +98,9 @@ class WalletRepository extends BaseRepository {
 
     query = query.union(union1, union2);
 
+    // get the total count (before applying limit and offset options)
+    const count = await this._session.getDB().from(query.as('p')).count('*');
+
     if (limitOptions && limitOptions.limit) {
       query = query.limit(limitOptions.limit);
     }
@@ -107,11 +110,10 @@ class WalletRepository extends BaseRepository {
     }
 
     const wallets = await query;
-    if (getCount) {
-      const count = await this._session.getDB().from(query.as('p')).count('*');
+    Joi.assert(wallets, Joi.array().required());
 
+    if(getCount)
       return { wallets, count: +count[0].count };
-    }
 
     return { wallets };
   }
