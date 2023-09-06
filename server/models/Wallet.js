@@ -17,7 +17,7 @@ class Wallet {
     // check name
     try {
       await this._walletRepository.getByName(wallet);
-      throw new HttpError(403, `The wallet '${wallet}' already exists`);
+      throw new HttpError(409, `The wallet '${wallet}' already exists`);
     } catch (e) {
       if (e instanceof HttpError && e.code === 404) {
         // fine

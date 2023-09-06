@@ -30,7 +30,7 @@ class JWTService {
   static verify(authorization) {
     if (!authorization) {
       throw new HttpError(
-        403,
+        401,
         'ERROR: Authentication, no token supplied for protected path',
       );
     }
@@ -43,17 +43,17 @@ class JWTService {
       JWTTools.verify(token, publicKEY, verifyOptions, (err, decod) => {
         if (err || tokenArray[0] !== 'Bearer') {
           log.debug(err);
-          throw new HttpError(403, 'ERROR: Authentication, token not verified');
+          throw new HttpError(401, 'ERROR: Authentication, token not verified');
         }
         result = decod;
         if (!result.id)
           throw new HttpError(
-            403,
+            401,
             'ERROR: Authentication, invalid token received',
           );
       });
     } else {
-      throw new HttpError(403, 'ERROR: Authentication, token not verified');
+      throw new HttpError(401, 'ERROR: Authentication, token not verified');
     }
     return result;
   }
