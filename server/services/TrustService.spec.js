@@ -25,8 +25,8 @@ describe('TrustService', () => {
       .resolves(['trustRelationships']);
 
     const getWalletStub = sinon
-        .stub(WalletService.prototype, 'getWallet')
-        .resolves({id: 'walletId'})
+      .stub(WalletService.prototype, 'getWallet')
+      .resolves({ id: 'walletId' });
 
     const trustRelationship = await trustService.getTrustRelationships({
       walletId: 'walletId',
@@ -37,9 +37,11 @@ describe('TrustService', () => {
     });
 
     expect(trustRelationship).eql(['trustRelationships']);
-    expect(getWalletStub.calledOnceWithExactly({
+    expect(
+      getWalletStub.calledOnceWithExactly({
         walletId: 'walletId',
-    }))
+      }),
+    );
     expect(
       getTrustRelationshipsStub.calledOnceWithExactly({
         walletId: 'walletId',
@@ -57,21 +59,33 @@ describe('TrustService', () => {
       .stub(Trust.prototype, 'acceptTrustRequestSentToMe')
       .resolves('trustRelationship');
     const logEventStub = sinon.stub(Event.prototype, 'logEvent');
+    const getTrustRelationshipsByIdStub = sinon
+      .stub(Trust.prototype, 'getTrustRelationshipsById')
+      .resolves({ originator_wallet_id: 'originator_wallet_id' });
 
     const trustRelationship = await trustService.acceptTrustRequestSentToMe({
       trustRelationshipId: 'trustRelationshipId',
       walletLoginId: 'walletLoginId',
     });
-
-    expect(logEventStub.calledTwice).to.be.true;
     expect(
-      logEventStub.firstCall.calledWithExactly({
+      getTrustRelationshipsByIdStub.calledOnceWithExactly(
+        'trustRelationshipId',
+      ),
+    );
+    expect(
+      logEventStub.getCall(0).calledWithExactly({
         loggedInWalletId: 'walletLoginId',
         type: 'trust_request_granted',
-        payload: sinon.match.object,
+        payload: { trustRelationshipId: 'trustRelationshipId' },
       }),
-    ).to.be.true;
-
+    ).eql(true);
+    expect(
+      logEventStub.getCall(1).calledWithExactly({
+        loggedInWalletId: 'originator_wallet_id',
+        type: 'trust_request_granted',
+        payload: { trustRelationshipId: 'trustRelationshipId' },
+      }),
+    ).eql(true);
     expect(trustRelationship).eql('trustRelationship');
     expect(
       acceptTrustRelationshipStub.calledOnceWithExactly({
@@ -85,11 +99,34 @@ describe('TrustService', () => {
     const declineTrustRelationshipStub = sinon
       .stub(Trust.prototype, 'declineTrustRequestSentToMe')
       .resolves('trustRelationship');
+    const logEventStub = sinon.stub(Event.prototype, 'logEvent');
+    const getTrustRelationshipsByIdStub = sinon
+      .stub(Trust.prototype, 'getTrustRelationshipsById')
+      .resolves({ originator_wallet_id: 'originator_wallet_id' });
 
     const trustRelationship = await trustService.declineTrustRequestSentToMe({
       trustRelationshipId: 'trustRelationshipId',
       walletLoginId: 'walletLoginId',
     });
+    expect(
+      getTrustRelationshipsByIdStub.calledOnceWithExactly(
+        'trustRelationshipId',
+      ),
+    );
+    expect(
+      logEventStub.getCall(0).calledWithExactly({
+        loggedInWalletId: 'walletLoginId',
+        type: 'trust_request_cancelled_by_target',
+        payload: { trustRelationshipId: 'trustRelationshipId' },
+      }),
+    ).eql(true);
+    expect(
+      logEventStub.getCall(1).calledWithExactly({
+        loggedInWalletId: 'originator_wallet_id',
+        type: 'trust_request_cancelled_by_target',
+        payload: { trustRelationshipId: 'trustRelationshipId' },
+      }),
+    ).eql(true);
     expect(trustRelationship).eql('trustRelationship');
     expect(
       declineTrustRelationshipStub.calledOnceWithExactly({
@@ -100,14 +137,39 @@ describe('TrustService', () => {
   });
 
   it('cancelTrustRequest', async () => {
+    const trustMock = { target_wallet_id: 'target_wallet_id' };
+
     const cancelTrustRelationshipStub = sinon
       .stub(Trust.prototype, 'cancelTrustRequest')
       .resolves('trustRelationship');
+    const logEventStub = sinon.stub(Event.prototype, 'logEvent');
+    const getTrustRelationshipsByIdStub = sinon
+      .stub(Trust.prototype, 'getTrustRelationshipsById')
+      .resolves(trustMock);
 
     const trustRelationship = await trustService.cancelTrustRequest({
       trustRelationshipId: 'trustRelationshipId',
       walletLoginId: 'walletLoginId',
     });
+    expect(
+      getTrustRelationshipsByIdStub.calledOnceWithExactly(
+        'trustRelationshipId',
+      ),
+    );
+    expect(
+      logEventStub.getCall(0).calledWithExactly({
+        loggedInWalletId: 'walletLoginId',
+        type: 'trust_request_cancelled_by_originator',
+        payload: { trustRelationshipId: 'trustRelationshipId' },
+      }),
+    ).eql(true);
+    expect(
+      logEventStub.getCall(1).calledWithExactly({
+        loggedInWalletId: trustMock.target_wallet_id,
+        type: 'trust_request_cancelled_by_originator',
+        payload: { trustRelationshipId: 'trustRelationshipId' },
+      }),
+    ).eql(true);
     expect(trustRelationship).eql('trustRelationship');
     expect(
       cancelTrustRelationshipStub.calledOnceWithExactly({
@@ -179,19 +241,22 @@ describe('TrustService', () => {
     let getByIdStub;
     let getByNameStub;
     let requestTrustStub;
+    let logEventStub;
 
     beforeEach(() => {
-      getByIdStub = sinon
-        .stub(WalletService.prototype, 'getById')
-        .resolves({ wallet: 'wallet' });
+      getByIdStub = sinon.stub(WalletService.prototype, 'getById');
       getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
       requestTrustStub = sinon
         .stub(Trust.prototype, 'requestTrustFromAWallet')
         .resolves('trustRelationship');
+      logEventStub = sinon.stub(Event.prototype, 'logEvent');
     });
 
     it('createTrustRelationship -- no requester wallet', async () => {
-      getByNameStub.resolves('requesteeWallet');
+      const requesteeWallet = { name: 'requesteeWallet', id: 'id' };
+      const requesterWallet = { name: 'requesterWallet', id: 'id' };
+      getByNameStub.resolves(requesteeWallet);
+      getByIdStub.resolves(requesterWallet);
       const trustRelationship = await trustService.createTrustRelationship({
         walletLoginId: 'walletLoginId',
         requesteeWallet: 'requesteeWallet',
@@ -203,16 +268,42 @@ describe('TrustService', () => {
       expect(
         requestTrustStub.calledOnceWithExactly({
           trustRequestType: 'trustRequestType',
-          requesterWallet: { wallet: 'wallet' },
-          requesteeWallet: 'requesteeWallet',
-          originatorWallet: { wallet: 'wallet' },
+          requesterWallet: { name: 'requesterWallet', id: 'id' },
+          requesteeWallet: { name: 'requesteeWallet', id: 'id' },
+          originatorWallet: { name: 'requesterWallet', id: 'id' },
+        }),
+      ).eql(true);
+
+      expect(
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: requesterWallet.id,
+          type: 'trust_request',
+          payload: {
+            requesteeWallet: requesteeWallet.name,
+            requesterWallet: requesterWallet.name,
+            trustRequestType: 'trustRequestType',
+          },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: requesteeWallet.id,
+          type: 'trust_request',
+          payload: {
+            requesteeWallet: requesteeWallet.name,
+            requesterWallet: requesterWallet.name,
+            trustRequestType: 'trustRequestType',
+          },
         }),
       ).eql(true);
     });
 
     it('createTrustRelationship -- with requester wallet', async () => {
-      getByNameStub.onFirstCall().resolves('requesteeWallet');
-      getByNameStub.onSecondCall().resolves('requesterWallet');
+      const requesteeWallet = { name: 'requesteeWallet', id: 'id' };
+      const requesterWallet = { name: 'requesterWallet', id: 'id' };
+      getByIdStub.resolves(requesterWallet);
+      getByNameStub.onFirstCall().resolves(requesteeWallet);
+      getByNameStub.onSecondCall().resolves(requesterWallet);
       const trustRelationship = await trustService.createTrustRelationship({
         walletLoginId: 'walletLoginId',
         requesteeWallet: 'requesteeWallet',
@@ -230,30 +321,52 @@ describe('TrustService', () => {
       expect(
         requestTrustStub.calledOnceWithExactly({
           trustRequestType: 'trustRequestType',
-          requesterWallet: 'requesterWallet',
-          requesteeWallet: 'requesteeWallet',
-          originatorWallet: { wallet: 'wallet' },
+          requesterWallet: { name: 'requesterWallet', id: 'id' },
+          requesteeWallet: { name: 'requesteeWallet', id: 'id' },
+          originatorWallet: { name: 'requesterWallet', id: 'id' },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: requesterWallet.id,
+          type: 'trust_request',
+          payload: {
+            requesteeWallet: requesteeWallet.name,
+            requesterWallet: requesterWallet.name,
+            trustRequestType: 'trustRequestType',
+          },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: requesteeWallet.id,
+          type: 'trust_request',
+          payload: {
+            requesteeWallet: requesteeWallet.name,
+            requesterWallet: requesterWallet.name,
+            trustRequestType: 'trustRequestType',
+          },
         }),
       ).eql(true);
     });
   });
 
   describe('trustRelationshipGetById', async () => {
-      const trustRelationshipGetByIdStub = sinon
-          .stub(Trust.prototype, 'trustRelationshipGetById')
-          .resolves('trustRelationship');
+    const trustRelationshipGetByIdStub = sinon
+      .stub(Trust.prototype, 'trustRelationshipGetById')
+      .resolves('trustRelationship');
 
-      const trustRelationship = await trustService.trustRelationshipGetById({
-          walletId: 'walletId',
-          trustRelationshipId: 'id'
-      });
+    const trustRelationship = await trustService.trustRelationshipGetById({
+      walletId: 'walletId',
+      trustRelationshipId: 'id',
+    });
 
-      expect(trustRelationship).eql('trustRelationship');
-      expect(
-          trustRelationshipGetByIdStub.calledOnceWithExactly({
-              walletId: 'walletId',
-              trustRelationshipId: 'id'
-          }),
-      ).eql(true);
-  })
+    expect(trustRelationship).eql('trustRelationship');
+    expect(
+      trustRelationshipGetByIdStub.calledOnceWithExactly({
+        walletId: 'walletId',
+        trustRelationshipId: 'id',
+      }),
+    ).eql(true);
+  });
 });

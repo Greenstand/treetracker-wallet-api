@@ -25,25 +25,24 @@ class TransferService {
       walletId = walletDetails.id;
     }
 
-    const {transfers, count}= await this._transfer.getTransfers({
+    const { transfers, count } = await this._transfer.getTransfers({
       state,
       walletId,
       offset,
       limit,
       walletLoginId,
       before,
-      after
+      after,
     });
 
-
-    return {transfers, count};
+    return { transfers, count };
   }
 
   async initiateTransfer(transferBody, walletLoginId) {
     // begin transaction
     try {
       await this._session.beginTransaction();
-      
+
       const walletSender = await this._walletService.getByIdOrName(
         transferBody.sender_wallet,
       );
@@ -66,7 +65,6 @@ class TransferService {
         );
         // Case 1: with trust, token transfer
 
-        // log.info(walletLoginId, walletSender, walletReceiver, gottentokens);
         result = await this._transfer.transfer(
           walletLoginId,
           walletSender,
@@ -189,19 +187,12 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
+      log.info(transferId, walletLoginId);
+
       const transfer = await this._transfer.getById({
         transferId,
         walletLoginId,
       });
-
-      const originator_wallet_id = await this._walletService.getByName(
-        transfer.originating_wallet,
-      );
-      const destination_wallet_id = await this._walletService.getByName(
-        transfer.destination_wallet,
-      );
-
-      log.info(originator_wallet_id, destination_wallet_id);
 
       // TODO: claim
       const result = await this._transfer.acceptTransfer(
@@ -211,21 +202,30 @@ class TransferService {
 
       await this._session.commitTransaction();
 
-      // transfer completed
-      // the log should show up on both sender and receiver
-      await this._event.logEvent({
-        loggedInWalletId: originator_wallet_id.id,
-        type: 'transfer_completed',
-        payload: { transferId },
-      });
+      if (transfer) {
+        const originator_wallet_id = await this._walletService.getByName(
+          transfer.originating_wallet,
+        );
+        const destination_wallet_id = await this._walletService.getByName(
+          transfer.destination_wallet,
+        );
 
-      // transfer completed
-      // the log should show up on both sender and receiver
-      await this._event.logEvent({
-        loggedInWalletId: destination_wallet_id.id,
-        type: 'transfer_completed',
-        payload: { transferId },
-      });
+        // transfer completed
+        // the log should show up on both sender and receiver
+        await this._event.logEvent({
+          loggedInWalletId: originator_wallet_id.id,
+          type: 'transfer_completed',
+          payload: { transferId },
+        });
+
+        // transfer completed
+        // the log should show up on both sender and receiver
+        await this._event.logEvent({
+          loggedInWalletId: destination_wallet_id.id,
+          type: 'transfer_completed',
+          payload: { transferId },
+        });
+      }
 
       return result;
     } catch (e) {
@@ -376,6 +376,7 @@ class TransferService {
       );
 
       let result;
+      const tokens = [];
       if (requestBody.implicit) {
         result = await this._transfer.fulfillTransfer(
           transferId,
@@ -383,7 +384,7 @@ class TransferService {
         );
       } else {
         // load tokens
-        const tokens = [];
+
         const tokenService = new TokenService();
         await Promise.all(
           requestBody.tokens.map(async (id) => {
@@ -404,7 +405,7 @@ class TransferService {
       await this._event.logEvent({
         loggedInWalletId: originator_wallet_id.id,
         type: 'transfer_completed',
-        payload: { transferId },
+        payload: tokens.length === 0 ? { transferId } : { transferId, tokens },
       });
 
       // transfer completed
@@ -412,7 +413,7 @@ class TransferService {
       await this._event.logEvent({
         loggedInWalletId: destination_wallet_id.id,
         type: 'transfer_completed',
-        payload: { transferId },
+        payload: tokens.length === 0 ? { transferId } : { transferId, tokens },
       });
 
       return result;

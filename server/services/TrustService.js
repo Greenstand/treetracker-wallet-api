@@ -21,8 +21,8 @@ class TrustService {
   }) {
     // check if wallet exists first
     // throws error if no wallet matching walletId exists
-    const walletService = new WalletService()
-    await walletService.getWallet(walletId)
+    const walletService = new WalletService();
+    await walletService.getWallet(walletId);
 
     return this._trust.getTrustRelationships({
       walletId,
@@ -95,16 +95,24 @@ class TrustService {
 
     // the log should show up on both requester and requestee
     await this._event.logEvent({
-      loggedInWalletId: walletLoginId,
+      loggedInWalletId: requesterWalletDetails.id,
       type: 'trust_request',
-      payload: { requesteeWallet, requesterWallet, trustRequestType },
+      payload: {
+        requesteeWallet: requesteeWalletDetails.name,
+        requesterWallet: requesterWalletDetails.name,
+        trustRequestType,
+      },
     });
 
     // the log should show up on both requester and requestee
     await this._event.logEvent({
       loggedInWalletId: requesteeWalletDetails.id,
       type: 'trust_request',
-      payload: { requesteeWallet, requesterWallet, trustRequestType },
+      payload: {
+        requesteeWallet: requesteeWalletDetails.name,
+        requesterWallet: requesterWalletDetails.name,
+        trustRequestType,
+      },
     });
 
     return trustRelationship;
@@ -175,7 +183,7 @@ class TrustService {
     // the log should show up on both requester and requestee
     await this._event.logEvent({
       loggedInWalletId: trustRelationship.target_wallet_id,
-      type: 'trust_request_cancelled_by_target',
+      type: 'trust_request_cancelled_by_originator',
       payload: { trustRelationshipId },
     });
 
@@ -185,14 +193,12 @@ class TrustService {
     });
   }
 
-  async trustRelationshipGetById({ walletLoginId, trustRelationshipId}){
+  async trustRelationshipGetById({ walletLoginId, trustRelationshipId }) {
     return this._trust.getTrustRelationshipById({
       walletId: walletLoginId,
-      trustRelationshipId
-    })
+      trustRelationshipId,
+    });
+  }
 }
-
-}
-
 
 module.exports = TrustService;

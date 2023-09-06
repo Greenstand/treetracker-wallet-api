@@ -15,45 +15,6 @@ describe('TransferService', () => {
   let commitTransactionStub;
   let rollbackTransactionStub;
   let isTransactionInProgressStub;
-  let getByIdStub;
-  let getByNameStub;
-  let logEventStub;
-
-  const transferMock = {
-    originating_wallet: 'originating_wallet',
-    destination_wallet: 'destination_wallet',
-  };
-
-  const wallet_id = {
-    originating_wallet: 'originating_wallet',
-    destination_wallet: 'destination_wallet',
-  };
-
-  const expectCallWith = (stub, callIndex, type, walletId) => {
-    expect(
-      stub.getCall(callIndex).calledWithExactly({
-        loggedInWalletId: walletId,
-        type,
-        payload: sinon.match.object,
-      }),
-    ).to.be.true;
-  };
-
-  const expectTestErrorLogEvent = () => {
-    expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-    expect(getByNameStub.calledTwice).to.be.true;
-    expect(
-      getByNameStub.firstCall.calledWithExactly(
-        transferMock.originating_wallet,
-      ),
-    );
-    expect(
-      getByNameStub.secondCall.calledWithExactly(
-        transferMock.destination_wallet,
-      ),
-    );
-    expect(logEventStub.notCalled).to.eql(true);
-  };
 
   beforeEach(() => {
     transferService = new TransferService();
@@ -76,6 +37,8 @@ describe('TransferService', () => {
   });
 
   describe('getTransferById', () => {
+    let getByIdStub;
+
     beforeEach(() => {
       getByIdStub = sinon.stub(Transfer.prototype, 'getById');
     });
@@ -181,7 +144,7 @@ describe('TransferService', () => {
     beforeEach(() => {
       getTransfersStub = sinon
         .stub(Transfer.prototype, 'getTransfers')
-        .resolves({transfers: ['transfers'], count: 1});
+        .resolves({ transfers: ['transfers'], count: 1 });
 
       walletGetByIdOrNameStub = sinon
         .stub(WalletService.prototype, 'getByIdOrName')
@@ -193,7 +156,7 @@ describe('TransferService', () => {
         { state: 'state', limit: 1, offset: 1 },
         'walletLoginId',
       );
-      expect(transfers).eql({transfers: ['transfers'], count:1});
+      expect(transfers).eql({ transfers: ['transfers'], count: 1 });
       expect(
         getTransfersStub.calledOnceWithExactly({
           state: 'state',
@@ -222,7 +185,7 @@ describe('TransferService', () => {
         },
         'walletLoginId',
       );
-      expect(transfers).eql({transfers:['transfers'], count:1});
+      expect(transfers).eql({ transfers: ['transfers'], count: 1 });
       expect(
         getTransfersStub.calledOnceWithExactly({
           state: 'state',
@@ -240,16 +203,28 @@ describe('TransferService', () => {
 
   describe('acceptTransfer', () => {
     let acceptTransferStub;
+    let getByIdStub;
+    let getByNameStub;
+    let logEventStub;
+
+    const originator_wallet_id = {
+      id: 'id',
+    };
+
+    const destination_wallet_id = { id: 'id' };
+
+    const wallet_id = {
+      originating_wallet: 'originating_wallet',
+      destination_wallet: 'destination_wallet',
+    };
 
     beforeEach(() => {
       acceptTransferStub = sinon.stub(Transfer.prototype, 'acceptTransfer');
       logEventStub = sinon.stub(Event.prototype, 'logEvent');
       getByIdStub = sinon
         .stub(Transfer.prototype, 'getById')
-        .resolves(transferMock);
-      getByNameStub = sinon
-        .stub(WalletService.prototype, 'getByName')
         .resolves(wallet_id);
+      getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
     });
 
     it('should rollback transaction if it errors out', async () => {
@@ -258,7 +233,7 @@ describe('TransferService', () => {
         await transferService.acceptTransfer('transferId', 'walletLoginId');
       } catch (e) {}
 
-      expectTestErrorLogEvent();
+      expect(logEventStub.notCalled).to.eql(true);
       expect(
         acceptTransferStub.calledOnceWithExactly('transferId', 'walletLoginId'),
       ).eql(true);
@@ -268,34 +243,40 @@ describe('TransferService', () => {
     });
 
     it('should accept transfer', async () => {
+      getByNameStub.onFirstCall().resolves(originator_wallet_id);
+      getByNameStub.onSecondCall().resolves(destination_wallet_id);
+
       acceptTransferStub.resolves('transferAccepted');
       const result = await transferService.acceptTransfer(
         'transferId',
         'walletLoginId',
       );
+
       expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(getByNameStub.calledTwice).to.be.true;
       expect(
-        getByNameStub.firstCall.calledWithExactly(
-          transferMock.originating_wallet,
-        ),
+        getByNameStub
+          .getCall(0)
+          .calledWithExactly(wallet_id.originating_wallet),
       );
       expect(
-        getByNameStub.secondCall.calledWithExactly(
-          transferMock.destination_wallet,
-        ),
+        getByNameStub
+          .getCall(1)
+          .calledWithExactly(wallet_id.destination_wallet),
       );
-      expect(logEventStub.calledTwice).to.be.true;
       expect(
-        logEventStub.firstCall.calledWithExactly({
-          loggedInWalletId: wallet_id.id,
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: originator_wallet_id.id,
           type: 'transfer_completed',
-          payload: sinon.match.object,
+          payload: { transferId: 'transferId' },
         }),
-      ).to.be.true;
-      expect(logEventStub.firstCall.args).to.deep.equal(
-        logEventStub.secondCall.args,
-      );
+      ).eql(true);
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: destination_wallet_id.id,
+          type: 'transfer_completed',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
       expect(result).eql('transferAccepted');
       expect(
         acceptTransferStub.calledOnceWithExactly('transferId', 'walletLoginId'),
@@ -308,16 +289,28 @@ describe('TransferService', () => {
 
   describe('declineTransfer', () => {
     let declineTransferStub;
+    let getByIdStub;
+    let getByNameStub;
+    let logEventStub;
+
+    const originator_wallet_id = {
+      id: 'id',
+    };
+
+    const destination_wallet_id = { id: 'id' };
+
+    const wallet_id = {
+      originating_wallet: 'originating_wallet',
+      destination_wallet: 'destination_wallet',
+    };
 
     beforeEach(() => {
       declineTransferStub = sinon.stub(Transfer.prototype, 'declineTransfer');
       logEventStub = sinon.stub(Event.prototype, 'logEvent');
       getByIdStub = sinon
         .stub(Transfer.prototype, 'getById')
-        .resolves(transferMock);
-      getByNameStub = sinon
-        .stub(WalletService.prototype, 'getByName')
         .resolves(wallet_id);
+      getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
     });
 
     it('should rollback transaction if it errors out', async () => {
@@ -332,13 +325,16 @@ describe('TransferService', () => {
           'walletLoginId',
         ),
       ).eql(true);
-      expectTestErrorLogEvent();
+      expect(logEventStub.notCalled).to.eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.calledOnce).eql(true);
       expect(commitTransactionStub.notCalled).eql(true);
     });
 
     it('should decline transfer', async () => {
+      getByNameStub.onFirstCall().resolves(originator_wallet_id);
+      getByNameStub.onSecondCall().resolves(destination_wallet_id);
+
       declineTransferStub.resolves('transferDeclined');
       const result = await transferService.declineTransfer(
         'transferId',
@@ -352,31 +348,44 @@ describe('TransferService', () => {
         ),
       ).eql(true);
       expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(getByNameStub.calledTwice).to.be.true;
       expect(
-        getByNameStub.firstCall.calledWithExactly(
-          transferMock.originating_wallet,
-        ),
+        getByNameStub
+          .getCall(0)
+          .calledWithExactly(wallet_id.originating_wallet),
       );
       expect(
-        getByNameStub.secondCall.calledWithExactly(
-          transferMock.destination_wallet,
-        ),
+        getByNameStub
+          .getCall(1)
+          .calledWithExactly(wallet_id.destination_wallet),
       );
-      expectCallWith(
-        logEventStub,
-        0,
-        'transfer_request_cancelled_by_destination',
-        wallet_id.id,
-      );
-      expectCallWith(logEventStub, 1, 'transfer_failed', wallet_id.id);
-      expectCallWith(
-        logEventStub,
-        2,
-        'transfer_request_cancelled_by_destination',
-        wallet_id.id,
-      );
-      expectCallWith(logEventStub, 3, 'transfer_failed', wallet_id.id);
+      expect(
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: originator_wallet_id.id,
+          type: 'transfer_request_cancelled_by_destination',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: originator_wallet_id.id,
+          type: 'transfer_failed',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(2).calledWithExactly({
+          loggedInWalletId: destination_wallet_id.id,
+          type: 'transfer_request_cancelled_by_destination',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(3).calledWithExactly({
+          loggedInWalletId: destination_wallet_id.id,
+          type: 'transfer_failed',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.notCalled).eql(true);
       expect(commitTransactionStub.calledOnce).eql(true);
@@ -385,16 +394,28 @@ describe('TransferService', () => {
 
   describe('cancelTransfer', () => {
     let cancelTransferStub;
+    let logEventStub;
+    let getByIdStub;
+    let getByNameStub;
+
+    const originator_wallet_id = {
+      id: 'id',
+    };
+
+    const destination_wallet_id = { id: 'id' };
+
+    const wallet_id = {
+      originating_wallet: 'originating_wallet',
+      destination_wallet: 'destination_wallet',
+    };
 
     beforeEach(() => {
       cancelTransferStub = sinon.stub(Transfer.prototype, 'cancelTransfer');
       logEventStub = sinon.stub(Event.prototype, 'logEvent');
       getByIdStub = sinon
         .stub(Transfer.prototype, 'getById')
-        .resolves(transferMock);
-      getByNameStub = sinon
-        .stub(WalletService.prototype, 'getByName')
         .resolves(wallet_id);
+      getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
     });
 
     it('should rollback transaction if it errors out', async () => {
@@ -405,45 +426,59 @@ describe('TransferService', () => {
       expect(
         cancelTransferStub.calledOnceWithExactly('transferId', 'walletLoginId'),
       ).eql(true);
-      expectTestErrorLogEvent();
+      expect(logEventStub.notCalled).to.eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.calledOnce).eql(true);
       expect(commitTransactionStub.notCalled).eql(true);
     });
 
     it('should cancel transfer', async () => {
+      getByNameStub.onFirstCall().resolves(originator_wallet_id);
+      getByNameStub.onSecondCall().resolves(destination_wallet_id);
       cancelTransferStub.resolves('transferCancelled');
       const result = await transferService.cancelTransfer(
         'transferId',
         'walletLoginId',
       );
-
       expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(getByNameStub.calledTwice).to.be.true;
       expect(
-        getByNameStub.firstCall.calledWithExactly(
-          transferMock.originating_wallet,
-        ),
+        getByNameStub
+          .getCall(0)
+          .calledWithExactly(wallet_id.originating_wallet),
       );
       expect(
-        getByNameStub.secondCall.calledWithExactly(
-          transferMock.destination_wallet,
-        ),
+        getByNameStub
+          .getCall(1)
+          .calledWithExactly(wallet_id.destination_wallet),
       );
-      expectCallWith(
-        logEventStub,
-        0,
-        'transfer_pending_cancelled_by_requestor',
-        wallet_id.id,
-      );
-      expectCallWith(logEventStub, 1, 'transfer_failed', wallet_id.id);
-      expectCallWith(
-        logEventStub,
-        2,
-        'transfer_pending_cancelled_by_requestor',
-        wallet_id.id,
-      );
-      expectCallWith(logEventStub, 3, 'transfer_failed', wallet_id.id);
+      expect(
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: originator_wallet_id.id,
+          type: 'transfer_pending_cancelled_by_requestor',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: originator_wallet_id.id,
+          type: 'transfer_failed',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(2).calledWithExactly({
+          loggedInWalletId: destination_wallet_id.id,
+          type: 'transfer_pending_cancelled_by_requestor',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(3).calledWithExactly({
+          loggedInWalletId: destination_wallet_id.id,
+          type: 'transfer_failed',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
       expect(result).eql('transferCancelled');
       expect(
         cancelTransferStub.calledOnceWithExactly('transferId', 'walletLoginId'),
@@ -459,6 +494,7 @@ describe('TransferService', () => {
     let transferStub;
     let transferBundleStub;
     let tokenServiceGetByIdStub;
+    let logEventStub;
 
     beforeEach(() => {
       getByIdOrNameStub = sinon.stub(WalletService.prototype, 'getByIdOrName');
@@ -542,21 +578,29 @@ describe('TransferService', () => {
     });
 
     it('should initiate transfer -- token transfer with state completed', async () => {
-      getByIdOrNameStub.onFirstCall().resolves('senderWallet');
-      getByIdOrNameStub.onSecondCall().resolves('receiverWallet');
-      tokenServiceGetByIdStub.onFirstCall().resolves('token1');
-      tokenServiceGetByIdStub.onSecondCall().resolves('token2');
+      const senderWallet = { id: 'senderWalletId', name: 'senderWalletName' };
+      const receiverWallet = {
+        id: 'receiverWalletId',
+        name: 'receiverWalletName',
+      };
+
+      const transferBody = {
+        sender_wallet: 'wallet1',
+        receiver_wallet: 'wallet2',
+        claim: true,
+        tokens: ['id1', 'id2'],
+      };
+
+      getByIdOrNameStub.onFirstCall().resolves(senderWallet);
+      getByIdOrNameStub.onSecondCall().resolves(receiverWallet);
+      tokenServiceGetByIdStub.onFirstCall().resolves({ id: 'token1' });
+      tokenServiceGetByIdStub.onSecondCall().resolves({ id: 'token2' });
 
       transferStub.resolves({
         state: TransferEnums.STATE.completed,
       });
       const result = await transferService.initiateTransfer(
-        {
-          sender_wallet: 'wallet1',
-          receiver_wallet: 'wallet2',
-          claim: true,
-          tokens: ['id1', 'id2'],
-        },
+        transferBody,
         'walletLoginId',
       );
 
@@ -581,45 +625,52 @@ describe('TransferService', () => {
       expect(
         transferStub.calledOnceWithExactly(
           'walletLoginId',
-          'senderWallet',
-          'receiverWallet',
-          ['token1', 'token2'],
+          senderWallet,
+          receiverWallet,
+          [{ id: 'token1' }, { id: 'token2' }],
           true,
         ),
       );
-      expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(getByNameStub.calledTwice).to.be.true;
-      expect(
-        getByNameStub.firstCall.calledWithExactly(
-          transferMock.originating_wallet,
-        ),
-      );
-      expect(
-        getByNameStub.secondCall.calledWithExactly(
-          transferMock.destination_wallet,
-        ),
-      );
-      expect(logEventStub.calledTwice).to.be.true;
-      expect(
-        logEventStub.firstCall.calledWithExactly({
-          loggedInWalletId: wallet_id.id,
-          type: 'transfer_completed',
-          payload: sinon.match.object,
-        }),
-      ).to.be.true;
-      expect(logEventStub.firstCall.args).to.deep.equal(
-        logEventStub.secondCall.args,
-      );
       expect(beginTransactionStub.calledOnce).eql(true);
+      expect(
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: senderWallet.id,
+          type: 'transfer_completed',
+          payload: {
+            walletSender: senderWallet.name,
+            walletReceiver: receiverWallet.name,
+            tokenTransferred: ['token1', 'token2'],
+            claim: transferBody.claim,
+          },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: receiverWallet.id,
+          type: 'transfer_completed',
+          payload: {
+            walletSender: senderWallet.name,
+            walletReceiver: receiverWallet.name,
+            tokenTransferred: ['token1', 'token2'],
+            claim: transferBody.claim,
+          },
+        }),
+      ).eql(true);
       expect(commitTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.notCalled).eql(true);
     });
 
     it('should initiate transfer -- token transfer with state pending/requested', async () => {
-      getByIdOrNameStub.onFirstCall().resolves('senderWallet');
-      getByIdOrNameStub.onSecondCall().resolves('receiverWallet');
-      tokenServiceGetByIdStub.onFirstCall().resolves('token1');
-      tokenServiceGetByIdStub.onSecondCall().resolves('token2');
+      const senderWallet = { id: 'senderWalletId', name: 'senderWalletName' };
+      const receiverWallet = {
+        id: 'receiverWalletId',
+        name: 'receiverWalletName',
+      };
+
+      getByIdOrNameStub.onFirstCall().resolves(senderWallet);
+      getByIdOrNameStub.onSecondCall().resolves(receiverWallet);
+      tokenServiceGetByIdStub.onFirstCall().resolves({ id: 'token1' });
+      tokenServiceGetByIdStub.onSecondCall().resolves({ id: 'token2' });
       transferStub.resolves({
         state: TransferEnums.STATE.pending,
       });
@@ -654,43 +705,51 @@ describe('TransferService', () => {
       expect(
         transferStub.calledOnceWithExactly(
           'walletLoginId',
-          'senderWallet',
-          'receiverWallet',
-          ['token1', 'token2'],
+          senderWallet,
+          receiverWallet,
+          [{ id: 'token1' }, { id: 'token2' }],
           true,
         ),
       );
-      expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(getByNameStub.calledTwice).to.be.true;
       expect(
-        getByNameStub.firstCall.calledWithExactly(
-          transferMock.originating_wallet,
-        ),
-      );
-      expect(
-        getByNameStub.secondCall.calledWithExactly(
-          transferMock.destination_wallet,
-        ),
-      );
-      expect(logEventStub.calledTwice).to.be.true;
-      expect(
-        logEventStub.firstCall.calledWithExactly({
-          loggedInWalletId: wallet_id.id,
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: senderWallet.id,
           type: 'transfer_requested',
-          payload: sinon.match.object,
+          payload: {
+            walletSender: senderWallet.name,
+            walletReceiver: receiverWallet.name,
+            tokenTransferred: ['token1', 'token2'],
+            claim: true,
+          },
         }),
-      ).to.be.true;
-      expect(logEventStub.firstCall.args).to.deep.equal(
-        logEventStub.secondCall.args,
-      );
+      ).eql(true);
+
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: receiverWallet.id,
+          type: 'transfer_requested',
+          payload: {
+            walletSender: senderWallet.name,
+            walletReceiver: receiverWallet.name,
+            tokenTransferred: ['token1', 'token2'],
+            claim: true,
+          },
+        }),
+      ).eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(commitTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.notCalled).eql(true);
     });
 
     it('should initiate transfer -- bundle transfer', async () => {
-      getByIdOrNameStub.onFirstCall().resolves('senderWallet');
-      getByIdOrNameStub.onSecondCall().resolves('receiverWallet');
+      const senderWallet = { id: 'senderWalletId', name: 'senderWalletName' };
+      const receiverWallet = {
+        id: 'receiverWalletId',
+        name: 'receiverWalletName',
+      };
+
+      getByIdOrNameStub.onFirstCall().resolves(senderWallet);
+      getByIdOrNameStub.onSecondCall().resolves(receiverWallet);
       transferBundleStub.resolves({
         state: TransferEnums.STATE.pending,
       });
@@ -715,35 +774,37 @@ describe('TransferService', () => {
       expect(
         transferBundleStub.calledOnceWithExactly(
           'walletLoginId',
-          'senderWallet',
-          'receiverWallet',
+          senderWallet,
+          receiverWallet,
           10,
           true,
         ),
       );
-      expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(getByNameStub.calledTwice).to.be.true;
       expect(
-        getByNameStub.firstCall.calledWithExactly(
-          transferMock.originating_wallet,
-        ),
-      );
-      expect(
-        getByNameStub.secondCall.calledWithExactly(
-          transferMock.destination_wallet,
-        ),
-      );
-      expect(logEventStub.calledTwice).to.be.true;
-      expect(
-        logEventStub.firstCall.calledWithExactly({
-          loggedInWalletId: wallet_id.id,
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: senderWallet.id,
           type: 'transfer_requested',
-          payload: sinon.match.object,
+          payload: {
+            walletSender: senderWallet.name,
+            walletReceiver: receiverWallet.name,
+            bundle: 10,
+            claim: true,
+          },
         }),
-      ).to.be.true;
-      expect(logEventStub.firstCall.args).to.deep.equal(
-        logEventStub.secondCall.args,
-      );
+      ).eql(true);
+
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: receiverWallet.id,
+          type: 'transfer_requested',
+          payload: {
+            walletSender: senderWallet.name,
+            walletReceiver: receiverWallet.name,
+            bundle: 10,
+            claim: true,
+          },
+        }),
+      ).eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(commitTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.notCalled).eql(true);
@@ -754,6 +815,20 @@ describe('TransferService', () => {
     let fulfillTransferStub;
     let fulfillTransferWithTokensStub;
     let tokenServiceGetByIdStub;
+    let getByIdStub;
+    let getByNameStub;
+    let logEventStub;
+
+    const originator_wallet_id = {
+      id: 'id',
+    };
+
+    const destination_wallet_id = { id: 'id' };
+
+    const wallet_id = {
+      originating_wallet: 'originating_wallet',
+      destination_wallet: 'destination_wallet',
+    };
 
     beforeEach(() => {
       fulfillTransferStub = sinon.stub(Transfer.prototype, 'fulfillTransfer');
@@ -765,10 +840,8 @@ describe('TransferService', () => {
       logEventStub = sinon.stub(Event.prototype, 'logEvent');
       getByIdStub = sinon
         .stub(Transfer.prototype, 'getById')
-        .resolves(transferMock);
-      getByNameStub = sinon
-        .stub(WalletService.prototype, 'getByName')
         .resolves(wallet_id);
+      getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
     });
 
     it('should rollback transaction if error occurs', async () => {
@@ -778,13 +851,13 @@ describe('TransferService', () => {
           implicit: true,
         });
       } catch (e) {}
-      expectTestErrorLogEvent();
       expect(
         fulfillTransferStub.calledOnceWithExactly(
           'transferId',
           'walletLoginId',
         ),
       ).eql(true);
+      expect(logEventStub.notCalled).to.eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.calledOnce).eql(true);
       expect(commitTransactionStub.notCalled).eql(true);
@@ -793,6 +866,9 @@ describe('TransferService', () => {
     });
 
     it('should fulfillTransfer -- implicit', async () => {
+      getByNameStub.onFirstCall().resolves(originator_wallet_id);
+      getByNameStub.onSecondCall().resolves(destination_wallet_id);
+
       fulfillTransferStub.resolves('result');
       const result = await transferService.fulfillTransfer(
         'walletLoginId',
@@ -807,28 +883,31 @@ describe('TransferService', () => {
         ),
       ).eql(true);
       expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(getByNameStub.calledTwice).to.be.true;
       expect(
-        getByNameStub.firstCall.calledWithExactly(
-          transferMock.originating_wallet,
-        ),
+        getByNameStub
+          .getCall(0)
+          .calledWithExactly(wallet_id.originating_wallet),
       );
       expect(
-        getByNameStub.secondCall.calledWithExactly(
-          transferMock.destination_wallet,
-        ),
+        getByNameStub
+          .getCall(1)
+          .calledWithExactly(wallet_id.destination_wallet),
       );
-      expect(logEventStub.calledTwice).to.be.true;
       expect(
-        logEventStub.firstCall.calledWithExactly({
-          loggedInWalletId: wallet_id.id,
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: originator_wallet_id.id,
           type: 'transfer_completed',
           payload: { transferId: 'transferId' },
         }),
-      ).to.be.true;
-      expect(logEventStub.firstCall.args).to.deep.equal(
-        logEventStub.secondCall.args,
-      );
+      ).eql(true);
+
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: destination_wallet_id.id,
+          type: 'transfer_completed',
+          payload: { transferId: 'transferId' },
+        }),
+      ).eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.notCalled).eql(true);
       expect(commitTransactionStub.calledOnce).eql(true);
@@ -837,6 +916,9 @@ describe('TransferService', () => {
     });
 
     it('should fulfillTransfer -- tokens', async () => {
+      getByNameStub.onFirstCall().resolves(originator_wallet_id);
+      getByNameStub.onSecondCall().resolves(destination_wallet_id);
+
       fulfillTransferWithTokensStub.resolves('result');
       tokenServiceGetByIdStub.onFirstCall().resolves('token1');
       tokenServiceGetByIdStub.onSecondCall().resolves('token2');
@@ -869,28 +951,31 @@ describe('TransferService', () => {
           .calledWithExactly({ id: 'id2' }, true),
       ).eql(true);
       expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(getByNameStub.calledTwice).to.be.true;
       expect(
-        getByNameStub.firstCall.calledWithExactly(
-          transferMock.originating_wallet,
-        ),
+        getByNameStub
+          .getCall(0)
+          .calledWithExactly(wallet_id.originating_wallet),
       );
       expect(
-        getByNameStub.secondCall.calledWithExactly(
-          transferMock.destination_wallet,
-        ),
+        getByNameStub
+          .getCall(1)
+          .calledWithExactly(wallet_id.destination_wallet),
       );
-      expect(logEventStub.calledTwice).to.be.true;
       expect(
-        logEventStub.firstCall.calledWithExactly({
-          loggedInWalletId: wallet_id.id,
+        logEventStub.getCall(0).calledWithExactly({
+          loggedInWalletId: originator_wallet_id.id,
           type: 'transfer_completed',
-          payload: { transferId: 'transferId' },
+          payload: { transferId: 'transferId', tokens: ['token1', 'token2'] },
         }),
-      ).to.be.true;
-      expect(logEventStub.firstCall.args).to.deep.equal(
-        logEventStub.secondCall.args,
-      );
+      ).eql(true);
+
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          loggedInWalletId: destination_wallet_id.id,
+          type: 'transfer_completed',
+          payload: { transferId: 'transferId', tokens: ['token1', 'token2'] },
+        }),
+      ).eql(true);
     });
   });
 });

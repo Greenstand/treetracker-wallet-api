@@ -8,7 +8,7 @@ const Event = require('../models/Event');
 
 describe('AuthService', () => {
   it('signin', async () => {
-    const walletObject = { salt: 'salt', password: 'hash' };
+    const walletObject = { salt: 'salt', password: 'hash', id: 'id' };
     const getByIdOrNameStub = Sinon.stub(
       WalletService.prototype,
       'getByIdOrName',
@@ -25,10 +25,9 @@ describe('AuthService', () => {
     );
     expect(jwtSignStub.calledOnceWithExactly(walletObject)).eql(true);
     expect(token).eql('token');
-
     expect(
       logEventStub.calledOnceWithExactly({
-        loggedInWalletId: walletObject.id,
+        loggedInWalletId: 'id',
         type: 'login',
         payload: {},
       }),
