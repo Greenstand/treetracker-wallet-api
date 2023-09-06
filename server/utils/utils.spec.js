@@ -159,7 +159,7 @@ describe('routers/utils', () => {
       const res = await request(app)
         .get('/test')
         .set('Authorization', `Bearer ${token.slice(1)}`); // NOTE corupt here
-      expect(res.statusCode).eq(403);
+      expect(res.statusCode).eq(401);
       ApiKeyService.prototype.check.restore();
     });
   });
