@@ -45,7 +45,7 @@ describe('Wallet Model', () => {
       }
 
       expect(error.code).eql(409);
-      expect(error.message).eql(`The wallet 'wallet' already exists`);
+      expect(error.message).eql(`The wallet "wallet" already exists`);
       expect(walletRepositoryStub.getByName).calledOnceWithExactly('wallet');
       expect(trustRepositoryStub.create).not.called;
       expect(walletRepositoryStub.create).not.called;
