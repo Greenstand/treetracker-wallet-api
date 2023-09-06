@@ -310,7 +310,7 @@ describe('Trust Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'The trust relationship has been requested or trusted',
       );
@@ -344,7 +344,7 @@ describe('Trust Model', () => {
       } catch (e) {
         error = e;
       }
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'The trust relationship has been requested or trusted',
       );

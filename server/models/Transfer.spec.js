@@ -584,7 +584,7 @@ describe('Transfer Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(`Do not have enough tokens to send`);
       expect(isDeductStub).not.called;
       expect(hasTrustStub).not.called;
@@ -827,7 +827,7 @@ describe('Transfer Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql('The transfer state is not pending');
       expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
       expect(hasControlOverStub).not.called;
@@ -903,7 +903,7 @@ describe('Transfer Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql('Do not have enough tokens');
       expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
       expect(hasControlOverStub).calledOnceWithExactly(
@@ -1046,7 +1046,7 @@ describe('Transfer Model', () => {
       } catch (e) {
         error = e;
       }
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'The transfer state is neither pending nor requested',
       );
@@ -1191,7 +1191,7 @@ describe('Transfer Model', () => {
       } catch (e) {
         error = e;
       }
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'The transfer state is neither pending nor requested',
       );
@@ -1371,7 +1371,7 @@ describe('Transfer Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'Operation forbidden, the transfer state is wrong',
       );
@@ -1521,7 +1521,7 @@ describe('Transfer Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'Operation forbidden, the transfer state is wrong',
       );
@@ -1556,7 +1556,7 @@ describe('Transfer Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql('No need to specify tokens');
       expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
       expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
@@ -1594,7 +1594,7 @@ describe('Transfer Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'Too many tokens to transfer, please provider 1 tokens for this transfer',
       );
@@ -1634,7 +1634,7 @@ describe('Transfer Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'Too few tokens to transfer, please provider 3 tokens for this transfer',
       );
