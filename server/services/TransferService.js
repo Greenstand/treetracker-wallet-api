@@ -44,6 +44,7 @@ class TransferService {
       before,
       after,
       sort_by,
+      order,
     });
 
     return { transfers, count };
