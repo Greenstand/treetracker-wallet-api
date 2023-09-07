@@ -5,11 +5,12 @@ const walletGetQuerySchema = Joi.object({
   limit: Joi.number()
       .integer().message('limit can only be non-negative integer')
       .min(0).message('limit can only be non-negative integer')
-      .max(Number.MAX_SAFE_INTEGER).message('limit value overflow'),
+      .max(2000)
+      .default(1000),
   offset: Joi.number()
       .integer().message('offset can only be non-negative integer')
       .min(0).message('offset can only be non-negative integer')
-      .max(Number.MAX_SAFE_INTEGER).message('offset value overflow'),
+      .default(0),
   name: Joi.string(),
 });
 
