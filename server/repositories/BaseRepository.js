@@ -86,7 +86,7 @@ class BaseRepository {
     }
 
     if(options && options.offset) {
-      promise = promise.limit(options.offset)
+      promise = promise.offset(options.offset)
     }
 
     const result = await promise;
