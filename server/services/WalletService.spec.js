@@ -191,7 +191,7 @@ describe('WalletService', () => {
     const walletId2 = uuid.v4();
     const limitOptions = {
       limit: 10,
-      offet: 0,
+      offset: 0,
     };
     const result = [
       {
@@ -220,11 +220,11 @@ describe('WalletService', () => {
         id,
         limitOptions,
         'name',
+         false,
       );
-
       expect(
-        getAllWalletsStub.calledOnceWithExactly(id, limitOptions, 'name', true),
-      ).eql(true);
+        getAllWalletsStub).calledOnceWithExactly(id, limitOptions, 'name', true)
+    // ).eql(true);
       expect(allWallets).eql({ wallets: result, count });
     });
 
