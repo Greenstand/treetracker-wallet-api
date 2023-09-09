@@ -9,7 +9,6 @@ const tokenGetSchema = Joi.object({
 const tokenGetTransactionsByIdSchema = Joi.object({
   limit: Joi.number().integer().min(1).max(2000).default(1000),
   offset: Joi.number().integer().min(0).default(0),
-  id: Joi.string().uuid(),
 });
 
 module.exports = {
