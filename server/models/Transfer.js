@@ -68,6 +68,7 @@ class Transfer {
     before,
     after,
     sort_by,
+    order,
   }) {
     const filter = {
       and: [],
@@ -100,7 +101,7 @@ class Transfer {
     if (after) {
       filter.and.push({ after: { 'transfer.created_at': after } });
     }
-    return this.getByFilter(filter, { offset, limit, sort_by });
+    return this.getByFilter(filter, { offset, limit, sort_by, order });
   }
 
   /*

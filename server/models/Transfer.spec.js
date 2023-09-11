@@ -136,6 +136,7 @@ describe('Transfer Model', () => {
       state,
       walletId,
       sort_by: null,
+      order: null,
     });
 
     expect(result).eql({transfers:[{id: transferId}]});
@@ -160,7 +161,7 @@ describe('Transfer Model', () => {
           { 'transfer.id': transferId },
         ],
       },
-      { limit: 10, offset: 0, sort_by: null },
+      { limit: 10, offset: 0, sort_by: null, order: null },
     );
   });
 
