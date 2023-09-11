@@ -3,7 +3,8 @@ const {expect} = require('chai');
 const chai = require('chai');
 const TransferEnums = require('../../server/utils/transfer-enum');
 const {
-    clear, registerAndLogin, getTransfer, feedTokens, cancelPending, sendBundleTransfer
+    clear, registerAndLogin, getTransfer,
+    sendTokensTransfer, feedTokens, cancelPending
 } = require("../utils/testUtils");
 const {post} = require('../utils/sendReq');
 const walletAInfo = require("../mock-data/wallet/walletA.json");
@@ -14,11 +15,13 @@ describe('Create and decline a pending transfer', () => {
     let walletA;
     let walletB;
     let transfer;
+    let tokens = [];
 
     before(async () => {
         await clear();
     });
     afterEach(async () => {
+        tokens = [];
         await clear();
     });
 
@@ -27,8 +30,8 @@ describe('Create and decline a pending transfer', () => {
         walletA = await registerAndLogin(walletAInfo);
         walletB = await registerAndLogin(walletBInfo);
 
-        await feedTokens(walletA, 5);
-        transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.pending, 5);
+        tokens = await feedTokens(walletA, 5);
+        transfer = await sendTokensTransfer(walletA, walletB, TransferEnums.STATE.pending, tokens.map(token => token.id));
     });
 
     it('Decline a pending transfer', async () => {

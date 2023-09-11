@@ -1,6 +1,6 @@
 const { expect } = require('chai');
-const seed = require('./seed');
-const knex = require('../server/infra/database/knex');
+const seed = require('../utils/seed');
+const knex = require('../../server/infra/database/knex');
 
 describe('Seed data into DB', () => {
   let token;
