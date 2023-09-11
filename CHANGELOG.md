@@ -1,3 +1,18 @@
+# [1.30.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.29.0...v1.30.0) (2023-09-11)
+
+
+### Bug Fixes
+
+* fixed broken tests ([1aee998](https://github.com/Greenstand/treetracker-wallet-api/commit/1aee998706c59ca5b41142d1d0cbe06e43b2688b))
+* replaced 400 error with 422 ([e94f1f5](https://github.com/Greenstand/treetracker-wallet-api/commit/e94f1f58c767edf64dfd67130c929a9494f762e1))
+* replaced error codes ([a5d2ec8](https://github.com/Greenstand/treetracker-wallet-api/commit/a5d2ec8b95c1fc13545a30f0f9dcf0577c679e3c))
+
+
+### Features
+
+* fix broken test ([bac90e7](https://github.com/Greenstand/treetracker-wallet-api/commit/bac90e736d5b251697ded0c8a59713c479b3f7fd))
+* update API spec ([df1d2e1](https://github.com/Greenstand/treetracker-wallet-api/commit/df1d2e1b9a07d6156983b5159440a1cb2656d75f))
+
 # [1.29.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.28.0...v1.29.0) (2023-09-11)
 
 
