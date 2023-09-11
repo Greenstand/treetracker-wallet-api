@@ -122,6 +122,19 @@ class TransferRepository extends BaseRepository {
         'destination_wallet.id',
       )
       .where((builder) => this.whereBuilder(filter, builder));
+    
+    let order = 'desc';
+    let column = 'transfer.created_at';
+
+    if (limitOptions) {
+      if (limitOptions.order) {
+        order = limitOptions.order;
+      }
+      if (limitOptions.sort_by) {
+        column = limitOptions.sort_by;
+      }
+    }
+    promise = promise.orderBy(column, order);
 
     // get the total count (before applying limit and offset options)
     const count = await this._session.getDB().from(promise.as('p')).count('*');
