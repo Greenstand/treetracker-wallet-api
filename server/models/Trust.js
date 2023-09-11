@@ -163,7 +163,7 @@ class Trust {
       ) {
         log.debug('Has duplicated trust');
         throw new HttpError(
-          403,
+          409,
           'The trust relationship has been requested or trusted',
         );
       }

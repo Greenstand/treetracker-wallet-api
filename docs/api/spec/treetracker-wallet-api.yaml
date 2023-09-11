@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Treetracker Wallet API
   contact: {}
-  version: '1.27.4'
+  version: '1.28.0'
 servers:
   - url: https://{environment}-k8s.treetracker.org/wallet/v2
     variables:
@@ -118,8 +118,6 @@ paths:
                 $ref: '#/components/schemas/tokens'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '422':
           description: 'Invalid or missing request parameters'
           content:
@@ -155,8 +153,6 @@ paths:
                 $ref: '#/components/schemas/tokenItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           description: 'No token found matching token_uuid'
           content:
@@ -221,8 +217,6 @@ paths:
                 $ref: '#/components/schemas/historyResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           description: 'No token found matching token_uuid'
           content:
@@ -280,8 +274,6 @@ paths:
                 $ref: '#/components/schemas/walletsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '422':
           description: 'Invalid query parameters'
           content:
@@ -324,8 +316,15 @@ paths:
                     example: new_wallet
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
+        '409':
+          description: 'The wallet to be created already exists'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 409
+                message: 'The wallet "walletX" already exists'
         '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
         '422':
@@ -379,8 +378,6 @@ paths:
                     example: 12
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/walletNotFound'
         '422':
@@ -417,8 +414,6 @@ paths:
                 $ref: '#/components/schemas/trustRelationshipsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/walletNotFound'
         '422':
@@ -459,7 +454,14 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/ForbiddenError'
+          description: 'Lacking permission to transfer the tokens'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 403
+                message: 'The token 89b071ee-c49d-420c-b43d-0d3dfe323962 does not belong to the sender wallet'
         '404':
           description: 'No wallet or token found matching the corresponding parameters'
           content:
@@ -469,6 +471,15 @@ paths:
               example:
                 code: 404
                 message: 'Could not find entity by wallet name: testwalletxyz'
+        '409':
+          description: 'The transfer cannot be processed due to some conflict'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 409
+                message: 'The token 89b071ee-c49d-420c-b43d-0d3dfe32396 is claimed, cannot be transfered'
         '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
         '422':
@@ -567,8 +578,6 @@ paths:
                     example: 1
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '422':
           description: 'Invalid query parameters'
           content:
@@ -600,8 +609,6 @@ paths:
                 $ref: '#/components/schemas/transferItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
           content:
@@ -623,8 +630,8 @@ paths:
     delete:
       tags:
         - Transfers
-      summary: Cancel a pending or requested transfer that has not closed
-      description: Cancel a pending (untrusted) or requested transfer. The executor can delete the pending/requested transfer before it is executed.  Transfer is marked canceled by this command.
+      summary: 'Cancel a pending or requested transfer that has not closed'
+      description: 'Cancel a pending (untrusted) or requested transfer. The executor can delete the pending/requested transfer before it is executed.  Transfer is marked canceled by this command.'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - name: transfer_id
@@ -638,8 +645,6 @@ paths:
           $ref: '#/components/responses/transferCancelledResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
           content:
@@ -649,8 +654,15 @@ paths:
               example:
                 code: 404
                 message: 'Can not found transfer by id:03537683-5356-42f4-97b2-95ba287a453b'
-        '406':
-          description: 'Transfer with this id is not in requested or pending state'
+        '409':
+          description: 'Transfer could not be cancelled due to some conflict'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 409
+                message: 'The transfer state is neither pending nor requested'
   '/transfers/{transfer_id}/tokens':
     get:
       tags:
@@ -699,8 +711,6 @@ paths:
                       $ref: '#/components/schemas/transferTokenItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
           content:
@@ -739,7 +749,14 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/ForbiddenError'
+          description: 'Lacking permission to accept the transfer'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 403
+                message: 'Current account has no permission to accept this transfer'
         '404':
           description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
           content:
@@ -749,6 +766,15 @@ paths:
               example:
                 code: 404
                 message: 'Can not found transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '409':
+          description: 'Transfer could not be processed due to some conflict'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 409
+                message: 'Do not have enough tokens'
         '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
         '422':
@@ -780,7 +806,14 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/ForbiddenError'
+          description: 'Lacking permission to decline the transfer'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 403
+                message: 'Current account has no permission to decline this transfer'
         '404':
           description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
           content:
@@ -790,6 +823,15 @@ paths:
               example:
                 code: 404
                 message: 'Can not found transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '409':
+          description: 'Transfer could not be processed due to some conflict'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 409
+                message: 'The transfer state is neither pending nor requested'
         '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
         '422':
@@ -828,7 +870,14 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/ForbiddenError'
+          description: 'Lacking permission to fulfill the transfer'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 403
+                message: 'Current account has no permission to decline this transfer'
         '404':
           description: 'No transfer found matching the transfer_id or the transfer is not associated with the logged in wallet'
           content:
@@ -838,6 +887,15 @@ paths:
               example:
                 code: 404
                 message: 'Can not found transfer by id:df80b648-4fef-4ca6-b704-9e7e1c77d1ef'
+        '409':
+          description: 'Transfer could not be processed due to some conflict'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 409
+                message: 'Operation forbidden, the transfer state is wron'
         '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
         '422':
@@ -907,8 +965,6 @@ paths:
                 $ref: '#/components/schemas/trustRelationshipsResponse'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '422':
           description: 'Invalid query parameters'
           content:
@@ -940,7 +996,14 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/ForbiddenError'
+          description: 'Lacking permission to create the trust relationship'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 403
+                message: 'Have no permission to deal with this actor'
         '415':
           $ref: '#/components/responses/UnsupportedMediaTypeError'
         '422':
@@ -975,8 +1038,6 @@ paths:
                 $ref: '#/components/schemas/trustRelationshipItem'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/trustRelationshipNotFound'
         '422':
@@ -1027,7 +1088,14 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/ForbiddenError'
+          description: 'Lacking permission to cancel the trust relationship'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 403
+                message: 'Have no permission to cancel this relationship'
         '404':
           $ref: '#/components/responses/trustRelationshipNotFound'
         '422':
@@ -1077,8 +1145,6 @@ paths:
                 target_wallet: testWallet11
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/trustRelationshipNotFound'
         '415':
@@ -1130,8 +1196,6 @@ paths:
                 target_wallet: testWallet11
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '403':
-          $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/trustRelationshipNotFound'
         '415':
@@ -1683,23 +1747,20 @@ components:
           type: string
   responses:
     UnauthorizedError:
-      description: API key is missing or invalid or missing
+      description: 'API key and/or Bearer token is missing or invalid'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/errorResponse'
-          example:
-            code: 401
-            message: 'Invalid access - no API key'
-    ForbiddenError:
-      description: 'Access bearer token is missing or invalid, or some permission is missing, etc.'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/errorResponse'
-          example:
-            code: 403
-            message: 'ERROR: Authentication, no token supplied for protected path'
+          examples:
+            Invalid API Key:
+              value:
+                code: 401
+                message: 'Invalid access - no API key'
+            Invalid Bearer Token:
+              value:
+                code: 401
+                message: 'ERROR: Authentication, no token supplied for protected path'
     UnsupportedMediaTypeError:
       description: Invalid content type
       content:
