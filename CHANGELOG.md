@@ -1,3 +1,11 @@
+# [1.29.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.28.0...v1.29.0) (2023-09-11)
+
+
+### Features
+
+* added order query parameter ([89ef79a](https://github.com/Greenstand/treetracker-wallet-api/commit/89ef79abe7bfabb8296e1ec272f953e4da6d4155))
+* added sort_by query parameter ([426cad7](https://github.com/Greenstand/treetracker-wallet-api/commit/426cad7623f9a16b20701270bff6b8ead0064d9e))
+
 # [1.28.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.27.4...v1.28.0) (2023-08-31)
 
 
