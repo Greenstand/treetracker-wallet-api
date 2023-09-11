@@ -48,7 +48,7 @@ describe('Cancel pending transfer', () => {
         transfer = await sendBundleTransfer(walletA, walletB, TransferEnums.STATE.cancelled, 1);
 
         const res = await del(`/transfers/${transfer.id}`, walletA)
-        expect(res).to.have.property('statusCode', 403);
+        expect(res).to.have.property('statusCode', 409);
     })
 
     it('Cancel the pending transfer which is belong to other wallet', async () => {

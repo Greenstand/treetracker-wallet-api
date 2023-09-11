@@ -49,7 +49,7 @@ describe('Create and accept a bundle transfer', () => {
     it('Accept the transfer which already canceled', async () => {
         await cancelPending(transfer);
         const res = await post(`/transfers/${transfer.id}/accept`, walletB)
-        expect(res).to.have.property('statusCode', 403);
+        expect(res).to.have.property('statusCode', 409);
         const walletBToken = await getToken(walletB);
         expect(walletBToken.length).to.eq(0);
         const walletAToken = await getToken(walletA);
@@ -60,7 +60,7 @@ describe('Create and accept a bundle transfer', () => {
         await completePending(transfer);
 
         const res = await post(`/transfers/${transfer.id}/accept`, walletB)
-        expect(res).to.have.property('statusCode', 403);
+        expect(res).to.have.property('statusCode', 409);
         const walletBToken = await getToken(walletB);
         expect(walletBToken.length).to.eq(0);
         const walletAToken = await getToken(walletA);
@@ -71,7 +71,7 @@ describe('Create and accept a bundle transfer', () => {
         await deleteToken(tokens[0]);
 
         const res = await post(`/transfers/${transfer.id}/accept`, walletB)
-        expect(res).to.have.property('statusCode', 403);
+        expect(res).to.have.property('statusCode', 409);
         const walletBToken = await getToken(walletB);
         expect(walletBToken.length).to.eq(0);
         const walletAToken = await getToken(walletA);

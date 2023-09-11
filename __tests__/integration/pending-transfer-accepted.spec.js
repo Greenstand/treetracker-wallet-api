@@ -48,7 +48,7 @@ describe('Create and accept a pending transfer', () => {
         await completePending(transfer);
 
         const res = await post(`/transfers/${transfer.id}/accept`, walletB)
-        expect(res).to.have.property('statusCode', 403);
+        expect(res).to.have.property('statusCode', 409);
         const walletBToken = await getToken(walletB);
         expect(walletBToken.length).to.eq(0);
         const walletAToken = await getToken(walletA);

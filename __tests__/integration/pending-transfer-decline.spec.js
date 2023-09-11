@@ -46,7 +46,7 @@ describe('Create and decline a pending transfer', () => {
         await cancelPending(transfer);
 
         const res = await post(`/transfers/${transfer.id}/decline`, walletB);
-        expect(res).to.have.property('statusCode', 403);
+        expect(res).to.have.property('statusCode', 409);
 
         const updatedTransfer = await getTransfer(transfer);
         expect(updatedTransfer.state).to.eq(TransferEnums.STATE.cancelled);

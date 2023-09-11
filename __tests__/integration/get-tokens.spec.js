@@ -42,7 +42,7 @@ describe('GET tokens', () => {
 
     it('Get tokens from a wallet, but the token belong to another wallet', async () => {
         const res = await get(`/tokens/${tokens[0].id}`, walletB);
-        expect(res).to.have.property('statusCode', 401);
+        expect(res).to.have.property('statusCode', 403);
     })
 
     it('Get a set of tokens from a wallet', async () => {

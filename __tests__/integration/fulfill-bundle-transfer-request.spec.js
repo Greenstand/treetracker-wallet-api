@@ -49,7 +49,7 @@ describe('Request and fulfill a bundle transfer', () => {
         tokens = await getToken(walletA);
 
         const res = await post(`/transfers/${transfer.id}/fulfill`, walletA, null, {tokens: tokens.map(token => token.id)})
-        expect(res).property('statusCode').to.eq(403);
+        expect(res).property('statusCode').to.eq(409);
 
         const walletBTokens = await getToken(walletB);
         const walletATokens = await getToken(walletA);
