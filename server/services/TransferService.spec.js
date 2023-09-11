@@ -166,6 +166,7 @@ describe('TransferService', () => {
           before: undefined,
           after: undefined,
           sort_by: undefined,
+          order: undefined,
         }),
       ).eql(true);
       expect(walletGetByIdOrNameStub.notCalled).eql(true);
@@ -196,6 +197,7 @@ describe('TransferService', () => {
           before,
           after,
           sort_by: undefined,
+          order: undefined,
         }),
       ).eql(true);
       expect(walletGetByIdOrNameStub.calledOnceWithExactly('wallet')).eql(true);
