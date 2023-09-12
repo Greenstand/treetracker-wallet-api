@@ -14,11 +14,9 @@ class WalletRepository extends BaseRepository {
   }
 
   async getByName(wallet) {
-    try {
-      Joi.assert(wallet, Joi.string().pattern(/^\S+$/));
-    } catch (error) {
-      throw new HttpError(400, `invalid wallet name:${wallet}`);
-    }
+      Joi.assert(wallet, Joi.string().pattern(/^\S+$/).messages({
+        'string.pattern.base': `Invalid wallet name: "${wallet}"`
+      }) );
 
     const list = await this._session
       .getDB()

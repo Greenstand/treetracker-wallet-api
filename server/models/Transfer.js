@@ -65,6 +65,8 @@ class Transfer {
     transferId,
     before,
     after,
+    sort_by,
+    order,
   }) {
     const filter = {
       and: [],
@@ -97,7 +99,7 @@ class Transfer {
     if (after) {
       filter.and.push({ after: { 'transfer.created_at': after } });
     }
-    return this.getByFilter(filter, { offset, limit });
+    return this.getByFilter(filter, { offset, limit, sort_by, order });
   }
 
   /*
@@ -141,7 +143,7 @@ class Transfer {
       }
       if (token.claim) {
         throw new HttpError(
-          403,
+          409,
           `The token ${token.id} is claimed, cannot be transfered`,
         );
       }
@@ -242,7 +244,7 @@ class Transfer {
     // }
     // console.log(notClaimedTokenCount);
     if (notClaimedTokenCount < bundleSize) {
-      throw new HttpError(403, `Do not have enough tokens to send`);
+      throw new HttpError(409, `Do not have enough tokens to send`);
     }
 
     const isDeduct = await this.isDeduct(walletLoginId, sender);
@@ -336,7 +338,7 @@ class Transfer {
     const transfer = await this._transferRepository.getById(transferId);
     const receiverId = transfer.destination_wallet_id;
     if (transfer.state !== TransferEnums.STATE.pending) {
-      throw new HttpError(403, 'The transfer state is not pending');
+      throw new HttpError(409, 'The transfer state is not pending');
     }
     const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
       walletLoginId,
@@ -362,7 +364,7 @@ class Transfer {
         bundleSize,
       );
       if (tokens.length < bundleSize) {
-        throw new HttpError(403, 'Do not have enough tokens');
+        throw new HttpError(409, 'Do not have enough tokens');
       }
       await this._token.completeTransfer(tokens, transfer);
     } else {
@@ -388,7 +390,7 @@ class Transfer {
       transfer.state !== TransferEnums.STATE.requested
     ) {
       throw new HttpError(
-        403,
+        409,
         'The transfer state is neither pending nor requested',
       );
     }
@@ -433,7 +435,7 @@ class Transfer {
       transfer.state !== TransferEnums.STATE.requested
     ) {
       throw new HttpError(
-        403,
+        409,
         'The transfer state is neither pending nor requested',
       );
     }
@@ -489,7 +491,7 @@ class Transfer {
     }
     if (transfer.state !== TransferEnums.STATE.requested) {
       throw new HttpError(
-        403,
+        409,
         'Operation forbidden, the transfer state is wrong',
       );
     }
@@ -533,7 +535,7 @@ class Transfer {
     }
     if (transfer.state !== TransferEnums.STATE.requested) {
       throw new HttpError(
-        403,
+        409,
         'Operation forbidden, the transfer state is wrong',
       );
     }
@@ -547,14 +549,14 @@ class Transfer {
       // check it
       if (tokens.length > bundleSize) {
         throw new HttpError(
-          403,
+          409,
           `Too many tokens to transfer, please provider ${bundleSize} tokens for this transfer`,
           true,
         );
       }
       if (tokens.length < bundleSize) {
         throw new HttpError(
-          403,
+          409,
           `Too few tokens to transfer, please provider ${bundleSize} tokens for this transfer`,
           true,
         );
@@ -573,7 +575,7 @@ class Transfer {
       // transfer
       await this._token.completeTransfer(tokens, transfer);
     } else {
-      throw new HttpError(403, 'No need to specify tokens', true);
+      throw new HttpError(409, 'No need to specify tokens', true);
     }
     return transferJson;
   }
