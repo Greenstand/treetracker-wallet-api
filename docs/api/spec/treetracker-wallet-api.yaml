@@ -27,15 +27,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/authRequest'
-            examples:
-              ById:
-                value:
-                  wallet: 21af8154-b7f1-48d3-8520-2e376efae45e
-                  password: walnut
-              ByName:
-                value:
-                  wallet: wallet1
-                  password: walnut
         required: true
       responses:
         '200':
@@ -1220,12 +1211,7 @@ components:
       type: object
       properties:
         wallet:
-          oneOf:
-            - type: string
-              example: wallet1
-            - type: string
-              format: uuid
-              example: 21af8154-b7f1-48d3-8520-2e376efae45e
+          $ref: '#/components/schemas/walletName'
         password:
           type: string
           example: walnut
@@ -1346,11 +1332,7 @@ components:
       type: object
       properties:
         wallet:
-          type: string
-          minLength: 3
-          maxLength: 254
-      example:
-        wallet: sprinter_van_2004
+          $ref: '#/components/schemas/walletName'
     walletsResponse:
       title: Wallets Response
       type: object
@@ -1721,6 +1703,11 @@ components:
         - type: string
           format: uuid
           example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
+    walletName:
+      type: string
+      minLength: 3
+      maxLength: 254
+      example: sprinter_van_2004
     uuid:
       type: string
       format: uuid
