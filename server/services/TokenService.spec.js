@@ -196,7 +196,7 @@ describe('Token', () => {
       } catch (e) {
         error = e;
       }
-      expect(error.code).eql(401);
+      expect(error.code).eql(403);
       expect(error.message).eql('Have no permission to visit this token');
       expect(getByIdStub.calledOnceWithExactly('tokenId')).eql(true);
       expect(
