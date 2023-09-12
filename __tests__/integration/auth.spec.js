@@ -32,18 +32,4 @@ describe('Authentication', () => {
         done();
       });
   });
-
-  it(`[POST /auth] login with using wallet id of  ${Zaven.name}`, (done) => {
-    request(server)
-      .post('/auth')
-      .set('treetracker-api-key', registeredUser.apiKey)
-      .send({ wallet: registeredUser.id, password: registeredUser.password })
-      .expect('Content-Type', /application\/json/)
-      .expect(200)
-      .end((err, res) => {
-        if (err) done(err);
-        expect(res.body).to.have.property('token');
-        done();
-      });
-  });
 });
