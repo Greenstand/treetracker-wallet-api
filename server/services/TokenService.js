@@ -73,7 +73,7 @@ class TokenService{
     {
       const token = await this.getById(token_id);
       const json = await token.toJSON();
-      result.token = json.uuid;
+      result.token = json.id;
     }
     {
       const wallet = await this.walletService.getById(source_wallet_id);
