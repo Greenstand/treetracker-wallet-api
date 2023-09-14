@@ -20,14 +20,14 @@ trustRouter.get('/',
         state: Joi.string(),
         type: Joi.string(),
         request_type: Joi.string(),
-        start: Joi.number(),
-        limit: Joi.number().min(1).max(10000).integer(),
+        start: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).max(2000).required(),
       })
     )
     Joi.assert(
       res.locals,
       Joi.object({
-        wallet_id: Joi.string().required()
+        wallet_id: Joi.string().uuid().required()
       })
     )
     const {state, type, request_type, limit, start} = req.query;
@@ -84,12 +84,13 @@ trustRouter.post('/',
       Joi.object({
         trust_request_type: Joi.string().required().valid(...Object.keys(TrustRelationship.ENTITY_TRUST_REQUEST_TYPE)),
         requestee_wallet: Joi.string().required(),
+        requester_wallet: Joi.string(),
       })
     );
     Joi.assert(
       res.locals,
       Joi.object({
-        wallet_id: Joi.string().required()
+        wallet_id: Joi.string().uuid().required()
       })
     )
     
@@ -120,13 +121,13 @@ trustRouter.post('/:trustRelationshipId/accept',
     Joi.assert(
       res.locals,
       Joi.object({
-        wallet_id: Joi.string().required()
+        wallet_id: Joi.string().uuid().required()
       })
     )
     Joi.assert(
       req.params,
       Joi.object({
-        trustRelationshipId: Joi.string().required()
+        trustRelationshipId: Joi.string().uuid().required()
       })
     )
     const trustRelationshipId = req.params.trustRelationshipId;
@@ -147,13 +148,13 @@ trustRouter.post('/:trustRelationshipId/decline',
     Joi.assert(
       res.locals,
       Joi.object({
-        wallet_id: Joi.string().required()
+        wallet_id: Joi.string().uuid().required()
       })
     )
     Joi.assert(
       req.params,
       Joi.object({
-        trustRelationshipId: Joi.string().required()
+        trustRelationshipId: Joi.string().uuid().required()
       })
     )
     const trustRelationshipId = req.params.trustRelationshipId;
@@ -174,13 +175,13 @@ trustRouter.delete('/:trustRelationshipId',
     Joi.assert(
       res.locals,
       Joi.object({
-        wallet_id: Joi.string().required()
+        wallet_id: Joi.string().uuid().required()
       })
     )
     Joi.assert(
       req.params,
       Joi.object({
-        trustRelationshipId: Joi.string().required()
+        trustRelationshipId: Joi.string().uuid().required()
       })
     )
     const trustRelationshipId = req.params.trustRelationshipId;
