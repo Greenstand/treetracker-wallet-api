@@ -163,7 +163,7 @@ describe("transferRouter", () => {
     const res = await request(app)
       .post('/')
       .send({
-        tokens: ['1'],
+        tokens: [tokenId],
         sender_wallet: 'wallet1',
         receiver_wallet: 'wallet2',
       });
