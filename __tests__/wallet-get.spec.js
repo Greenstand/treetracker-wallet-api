@@ -127,7 +127,7 @@ describe('Wallet: Get wallets of an account', () => {
 
         expect(resB).property('statusCode').to.eq(200);
         expect(resB.body.total).to.eq(11);
-        expect(resB.body.query.offset).to.eq('2');
+        expect(resB.body.query.offset).to.eq(2);
 
         const resC = await request(server)
             .get('/wallets')
@@ -137,8 +137,8 @@ describe('Wallet: Get wallets of an account', () => {
             .set('Authorization', `Bearer ${bearerTokenA}`);
         expect(resC).property('statusCode').to.eq(200);
         expect(resC.body.total).to.eq(11);
-        expect(resC.body.query.offset).to.eq('0');
-        expect(resC.body.query.limit).to.eq('2');
+        expect(resC.body.query.offset).to.eq(0);
+        expect(resC.body.query.limit).to.eq(2);
     })
 
     it('Get wallet by valid uuid', async () => {
