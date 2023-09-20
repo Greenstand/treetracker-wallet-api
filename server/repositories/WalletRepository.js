@@ -14,9 +14,14 @@ class WalletRepository extends BaseRepository {
   }
 
   async getByName(wallet) {
-      Joi.assert(wallet, Joi.string().pattern(/^\S+$/).messages({
-        'string.pattern.base': `Invalid wallet name: "${wallet}"`
-      }) );
+    Joi.assert(
+      wallet,
+      Joi.string()
+        .pattern(/^\S+$/)
+        .messages({
+          'string.pattern.base': `Invalid wallet name: "${wallet}"`,
+        }),
+    );
 
     const list = await this._session
       .getDB()
@@ -27,7 +32,10 @@ class WalletRepository extends BaseRepository {
     try {
       Joi.assert(list, Joi.array().required().length(1));
     } catch (error) {
-      throw new HttpError(404, `Could not find entity by wallet name: ${wallet}`);
+      throw new HttpError(
+        404,
+        `Could not find entity by wallet name: ${wallet}`,
+      );
     }
     return list[0];
   }
@@ -96,11 +104,11 @@ class WalletRepository extends BaseRepository {
 
     query = query.union(union1, union2);
 
-
-    let count;
-    if(getCount)
     // total count query (before applying limit and offset options)
-    count = await this._session.getDB().from(query.as('p')).count('*');
+    const countQuery = this._session
+      .getDB()
+      .from(query.clone().as('q'))
+      .count('*');
 
     if (limitOptions && limitOptions.limit) {
       query = query.limit(limitOptions.limit);
@@ -112,8 +120,9 @@ class WalletRepository extends BaseRepository {
 
     const wallets = await query;
 
-    if(getCount) {
-      return {wallets, count: +count[0].count};
+    if (getCount) {
+      const count = await countQuery;
+      return { wallets, count: +count[0].count };
     }
 
     return { wallets };
