@@ -1,3 +1,22 @@
+# [1.31.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.30.0...v1.31.0) (2023-09-20)
+
+
+### Bug Fixes
+
+* auth schema, function, spec ([52b526f](https://github.com/Greenstand/treetracker-wallet-api/commit/52b526ffd37dde15cc8fbca40c910ebc1b24975d))
+* broken test ([bea2e15](https://github.com/Greenstand/treetracker-wallet-api/commit/bea2e153d882aa7307cc6162cbcae001c1fa3273))
+* fix broken tests, remove defunct tests ([efd891c](https://github.com/Greenstand/treetracker-wallet-api/commit/efd891c25b0f20da6e6dab74c86f1340abfc0fb4))
+* remove id from token transactions schema ([a264bb4](https://github.com/Greenstand/treetracker-wallet-api/commit/a264bb4af3c3cb3cc9877e6fa2b4470162885740))
+
+
+### Features
+
+* fixed broken tests ([fc78f2e](https://github.com/Greenstand/treetracker-wallet-api/commit/fc78f2e359c166c1172912d991fc1bcf0f11eb16))
+* fixed broken tests ([92f8439](https://github.com/Greenstand/treetracker-wallet-api/commit/92f8439ebdf1ed2e3432089ebde3e4faf271a9a6))
+* remove default values from lower layers ([0608662](https://github.com/Greenstand/treetracker-wallet-api/commit/06086628d7132849414a681a33c6652a35679972))
+* update api spec ([feeb9ef](https://github.com/Greenstand/treetracker-wallet-api/commit/feeb9ef0f828b07915f4658c50b21176150b1760))
+* update validation schemas ([0fe3a99](https://github.com/Greenstand/treetracker-wallet-api/commit/0fe3a9906ad20e9cab0b0b08e24f6179e3723398))
+
 # [1.30.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.29.0...v1.30.0) (2023-09-11)
 
 
