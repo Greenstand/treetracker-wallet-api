@@ -52,12 +52,6 @@ describe('tokenRouter', () => {
       links: { capture: `/webmap/tree?uuid=${capture2Id}` },
     };
 
-    it('limit parameters missed', async () => {
-      const res = await request(app).get('/tokens');
-      expect(res).property('statusCode').eq(422);
-      expect(res.body.message).match(/limit.*required/);
-    });
-
     it('successfully, no wallet query', async () => {
       const getByTokensStub = sinon
         .stub(TokenService.prototype, 'getTokens')
@@ -73,8 +67,8 @@ describe('tokenRouter', () => {
       expect(
         getByTokensStub.calledOnceWithExactly({
           wallet: undefined,
-          limit: '10',
-          offset: '1',
+          limit: 10,
+          offset: 1,
           walletLoginId: authenticatedWallet.id,
         }),
       ).eql(true);
@@ -95,8 +89,8 @@ describe('tokenRouter', () => {
       expect(
         getByTokensStub.calledOnceWithExactly({
           wallet: walletId,
-          limit: '10',
-          offset: undefined,
+          limit: 10,
+          offset: 0,
           walletLoginId: authenticatedWallet.id,
         }),
       ).eql(true);
@@ -158,17 +152,11 @@ describe('tokenRouter', () => {
       expect(
         getTransactionsStub.calledOnceWithExactly({
           tokenId,
-          limit: '1',
-          offset: undefined,
+          limit: 1,
+          offset: 0,
           walletLoginId: authenticatedWallet.id,
         }),
       ).eql(true);
-    });
-
-    it('/{token_uuid}/transactions: limit parameters missed', async () => {
-      const res = await request(app).get(`/tokens/${tokenId}/transactions`);
-      expect(res).property('statusCode').eq(422);
-      expect(res.body.message).match(/limit.*required/);
     });
   });
 });

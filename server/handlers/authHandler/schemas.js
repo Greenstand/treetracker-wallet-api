@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const authPostSchema = Joi.object({
-  wallet: Joi.string().min(4).max(36).required(),
+  wallet: Joi.string().min(3).max(254).required(),
   password: Joi.string().max(32).required(),
 }).unknown(false);
 

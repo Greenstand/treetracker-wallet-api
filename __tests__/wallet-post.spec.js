@@ -66,7 +66,11 @@ describe('Wallet: create(POST) wallets of an account', () => {
 
         const resB = await request(server)
             .post('/wallets')
-            .send({wallet: '2023.7.26CodingAtCanadaNiceToMeetYouuuuuuuuuuuuuuuu'})
+            .send({wallet: 'Kc6tWQiD99FZTxYgALuqhsY0XMRchFx3ecLuX1CfITgatCmsHEWFboGBUBU' +
+                    'mTHRjfoQpUHWUU5BMJqX9mz9i3mvFvhT8zPSvqYyDougCT1XL93K9AqAil6x22d1APuo5' +
+                    'GuQeXmxzL3YIJUWORWuGAMeWIbRrxdeKxrK7S0922As3sjr2k' +
+                    'mZk4GYzLbSUffoRE7CYeSmQIguyHNcVe18wWP5zj78G0rISTiCj8wvn' +
+                    'rtFbYBuGPfxEwHVs9kh6fSTUT3t6r6aYIPsvsRfM1wy'})
             .set('treetracker-api-key', apiKey)
             .set('content-type', 'application/json')
             .set('Authorization', `Bearer ${bearerTokenA}`);

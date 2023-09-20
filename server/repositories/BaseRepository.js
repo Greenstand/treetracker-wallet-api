@@ -75,17 +75,20 @@ class BaseRepository {
    *  limit: number
    */
   async getByFilter(filter, options) {
-    const offset = options && options.offset ? options.offset : 0;
     let promise = this._session
       .getDB()
       .select()
       .table(this._tableName)
-      .offset(offset)
       .where((builder) => this.whereBuilder(filter, builder));
 
     if (options && options.limit) {
       promise = promise.limit(options.limit);
     }
+
+    if(options && options.offset) {
+      promise = promise.offset(options.offset)
+    }
+
     const result = await promise;
     Joi.assert(result, Joi.array().required());
     return result;

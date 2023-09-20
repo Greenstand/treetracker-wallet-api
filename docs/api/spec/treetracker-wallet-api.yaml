@@ -27,15 +27,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/authRequest'
-            examples:
-              ById:
-                value:
-                  wallet: 21af8154-b7f1-48d3-8520-2e376efae45e
-                  password: walnut
-              ByName:
-                value:
-                  wallet: wallet1
-                  password: walnut
         required: true
       responses:
         '200':
@@ -85,13 +76,16 @@ paths:
         - name: limit
           in: query
           description: Number of items to return
-          required: true
+          required: false
           style: form
           explode: true
           schema:
             type: integer
             format: int32
+            minimum: 1
+            maximum: 2000
             example: 100
+            default: 2000
         - name: offset
           in: query
           description: 'Where does the list offset, 0 means start from the beginning of the list'
@@ -101,6 +95,7 @@ paths:
           schema:
             type: integer
             format: int32
+            minimum: 0
             example: 1
             default: 0
         - name: wallet
@@ -190,12 +185,15 @@ paths:
         - name: limit
           in: query
           description: Number of items to return
-          required: true
+          required: false
           style: form
           explode: true
           schema:
             type: integer
             format: int32
+            minimum: 1
+            maximum: 2000
+            default: 1000
             example: 100
         - name: offset
           in: query
@@ -206,6 +204,7 @@ paths:
           schema:
             type: integer
             format: int32
+            minimum: 0
             example: 0
             default: 0
       responses:
@@ -246,12 +245,14 @@ paths:
         - name: limit
           in: query
           description: 'Number of items to return'
-          required: true
+          required: false
           style: form
           explode: true
           schema:
             type: integer
             format: int32
+            minimum: 1
+            maximum: 2000
             example: 100
             default: 1000
         - name: offset
@@ -263,6 +264,7 @@ paths:
           schema:
             type: integer
             format: int32
+            minimum: 0
             example: 1
             default: 0
       responses:
@@ -405,6 +407,30 @@ paths:
             type: string
             format: uuid
             example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+        - name: state
+          in: query
+          description: 'Trust state'
+          required: false
+          style: form
+          explode: true
+          schema:
+            $ref: '#/components/schemas/trustStateType'
+        - name: type
+          in: query
+          description: 'Trust type'
+          required: false
+          style: form
+          explode: true
+          schema:
+            $ref: '#/components/schemas/trustType'
+        - name: request_type
+          in: query
+          description: 'Trust request type'
+          required: false
+          style: form
+          explode: true
+          schema:
+            $ref: '#/components/schemas/trustRequestType'
       responses:
         '200':
           description: 'Return list of trust relationships for the wallet matching wallet_uuid'
@@ -518,7 +544,7 @@ paths:
           explode: true
           schema:
             type: string
-            format: date
+            format: date-time
             example: 2023-08-10
         - name: after
           in: query
@@ -528,19 +554,21 @@ paths:
           explode: true
           schema:
             type: string
-            format: date
+            format: date-time
             example: 2023-08-02
         - name: limit
           in: query
           description: Number of items to return
-          required: true
+          required: false
           style: form
           explode: true
           schema:
             type: integer
             format: int32
+            minimum: 1
+            maximum: 2000
             example: 100
-            default: 200
+            default: 1000
         - name: offset
           in: query
           description: 'Where does the list offset, 0 means offset from the beginning of the list'
@@ -550,6 +578,7 @@ paths:
           schema:
             type: integer
             format: int32
+            minimum: 0
             example: 1
             default: 0
       responses:
@@ -679,12 +708,15 @@ paths:
         - name: limit
           in: query
           description: 'Number of items to return'
-          required: true
+          required: false
           style: form
           explode: true
           schema:
             type: integer
             format: int32
+            minimum: 1
+            maximum: 2000
+            default: 2000
             example: 100
         - name: offset
           in: query
@@ -695,6 +727,7 @@ paths:
           schema:
             type: integer
             format: int32
+            minimum: 0
             example: 0
             default: 0
       responses:
@@ -923,6 +956,9 @@ paths:
           schema:
             type: integer
             format: int32
+            minimum: 1
+            maximum: 2000
+            default: 500
             example: 100
         - name: offset
           in: query
@@ -933,6 +969,7 @@ paths:
           schema:
             type: integer
             format: int32
+            minimum: 0
             example: 0
             default: 0
         - name: state
@@ -1238,12 +1275,7 @@ components:
       type: object
       properties:
         wallet:
-          oneOf:
-            - type: string
-              example: wallet1
-            - type: string
-              format: uuid
-              example: 21af8154-b7f1-48d3-8520-2e376efae45e
+          $ref: '#/components/schemas/walletName'
         password:
           type: string
           example: walnut
@@ -1364,9 +1396,7 @@ components:
       type: object
       properties:
         wallet:
-          type: string
-      example:
-        wallet: sprinter_van_2004
+          $ref: '#/components/schemas/walletName'
     walletsResponse:
       title: Wallets Response
       type: object
@@ -1506,6 +1536,9 @@ components:
               properties:
                 bundle_size:
                   type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 10000
                   description: required number of trees to transfer
             sender_wallet:
               oneOf:
@@ -1734,6 +1767,11 @@ components:
         - type: string
           format: uuid
           example: bc7d4c0d-1ea5-4ead-9fef-b726a34c2d74
+    walletName:
+      type: string
+      minLength: 3
+      maxLength: 254
+      example: sprinter_van_2004
     uuid:
       type: string
       format: uuid

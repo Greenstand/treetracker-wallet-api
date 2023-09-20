@@ -6,7 +6,7 @@ const {
 } = require('./schemas');
 
 const trustGet = async (req, res) => {
-  await trustGetQuerySchema.validateAsync(req.query, {
+  const validatedQuery = await trustGetQuerySchema.validateAsync(req.query, {
     abortEarly: false,
   });
 
@@ -15,10 +15,12 @@ const trustGet = async (req, res) => {
     type,
     request_type,
     // limit, offset
-  } = req.query;
+  } = validatedQuery;
+
+  const {wallet_id} = req
   const trustService = new TrustService();
   const trustRelationships = await trustService.getAllTrustRelationships({
-    walletId: req.wallet_id,
+    walletId: wallet_id,
     state,
     type,
     request_type,
@@ -32,29 +34,32 @@ const trustGet = async (req, res) => {
 };
 
 const trustPost = async (req, res) => {
-  await trustPostSchema.validateAsync(req.body, { abortEarly: false });
+  const validatedBody = await trustPostSchema.validateAsync(req.body, { abortEarly: false });
 
+  const { requestee_wallet, requester_wallet, trust_request_type } = validatedBody
+  const {wallet_id} = req
   const trustService = new TrustService();
   const trustRelationship = await trustService.createTrustRelationship({
-    walletLoginId: req.wallet_id,
-    requesteeWallet: req.body.requestee_wallet,
-    requesterWallet: req.body.requester_wallet,
-    trustRequestType: req.body.trust_request_type,
+    walletLoginId: wallet_id,
+    requesteeWallet: requestee_wallet,
+    requesterWallet: requester_wallet,
+    trustRequestType: trust_request_type,
   });
 
   res.status(201).json(trustRelationship);
 };
 
 const trustRelationshipGetById = async (req, res) => {
-  await trustRelationshipIdSchema.validateAsync(req.params, {
+  const validatedParams = await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
 
-  const { trustRelationshipId } = req.params
-  const trustService = new TrustService()
+  const { trustRelationshipId } = validatedParams
+  const {wallet_id} = req
 
+  const trustService = new TrustService()
   const trustRelationship = await trustService.trustRelationshipGetById({
-    walletLoginId: req.wallet_id,
+    walletLoginId: wallet_id,
     trustRelationshipId
   })
 
@@ -63,42 +68,45 @@ const trustRelationshipGetById = async (req, res) => {
 
 
 const trustRelationshipAccept = async (req, res) => {
-  await trustRelationshipIdSchema.validateAsync(req.params, {
+  const validatedParams = await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
 
-  const { trustRelationshipId } = req.params;
+  const { trustRelationshipId } = validatedParams;
+  const {wallet_id} = req
   const trustService = new TrustService();
   const json = await trustService.acceptTrustRequestSentToMe({
     trustRelationshipId,
-    walletLoginId: req.wallet_id,
+    walletLoginId: wallet_id,
   });
   res.status(200).json(json);
 };
 
 const trustRelationshipDecline = async (req, res) => {
-  await trustRelationshipIdSchema.validateAsync(req.params, {
+  const validatedParams = await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
 
-  const { trustRelationshipId } = req.params;
+  const { trustRelationshipId } = validatedParams;
+  const {wallet_id} = req
   const trustService = new TrustService();
   const json = await trustService.declineTrustRequestSentToMe({
-    walletLoginId: req.wallet_id,
+    walletLoginId: wallet_id,
     trustRelationshipId,
   });
   res.status(200).json(json);
 };
 
 const trustRelationshipDelete = async (req, res) => {
-  await trustRelationshipIdSchema.validateAsync(req.params, {
+  const validatedParams = await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
 
-  const { trustRelationshipId } = req.params;
+  const { trustRelationshipId } = validatedParams;
+  const {wallet_id} = req
   const trustService = new TrustService();
   const json = await trustService.cancelTrustRequest({
-    walletLoginId: req.wallet_id,
+    walletLoginId: wallet_id,
     trustRelationshipId,
   });
   res.status(200).json(json);
