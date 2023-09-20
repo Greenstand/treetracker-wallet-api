@@ -116,7 +116,7 @@ describe('Wallet: Get wallets of an account', () => {
 
         expect(res).property('statusCode').to.eq(200);
         expect(res.body.total).to.eq(11);
-        expect(res.body.query.offset).to.eq('0');
+        expect(res.body.query.offset).to.eq(0);
 
         const resB = await request(server)
             .get('/wallets')
