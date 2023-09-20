@@ -89,12 +89,12 @@ describe('WalletRepository', () => {
         expect(query.sql).match(
           /select.*wallet.*where.*actor_wallet_id.*request_type.*/,
         );
-        query.response([{ count: 1 }]);
+        query.response([{ id: 1 }]);
       } else if (step === 2) {
         expect(query.sql).match(
-          /select.*wallet.*where.*actor_wallet_id.*request_type.*name.*limit.*/,
+          /select.*count.*where.*actor_wallet_id.*request_type.*name.*/,
         );
-        query.response([{ id: 1 }]);
+        query.response([{ count: 1 }]);
       }
     });
     const entity = await walletRepository.getAllWallets(
