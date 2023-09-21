@@ -835,7 +835,7 @@ describe("Wallet", () => {
       sinon.stub(Wallet.prototype, "hasControlOver").resolves(true);
       await jestExpect(async () => {
         await wallet.fulfillTransferWithTokens(1, [token]);
-      }).rejects.toThrow(/no need/i);
+      }).rejects.toThrow(/Do not specify token IDs/i);
     });
 
     it("Too many tokens", async () => {
@@ -1330,7 +1330,7 @@ describe("Wallet", () => {
       sinon.stub(Wallet.prototype, "getTransfers").resolves([]);
       await jestExpect(async () => {
         await wallet.getTransferById(1);
-      }).rejects.toThrow(/not find/);
+      }).rejects.toThrow(/Transfer does not exist/);
     });
   });
 

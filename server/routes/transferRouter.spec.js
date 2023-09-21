@@ -328,7 +328,7 @@ describe("transferRouter", () => {
         .send({
         });
       expect(res).property("statusCode").eq(422);
-      expect(res.body.message).match(/implicit.*required/i);
+      expect(res.body.message).match(/implicit property/i);
     });
 
     it("Duplicated token uuid should throw error", async () => {

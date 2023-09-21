@@ -80,7 +80,6 @@ describe("Token", () => {
     }
     sinon.stub(TokenService.prototype, "getById").resolves(new Token({
       id: tokenId1,
-      uuid: "xxx",
       capture_id: captureId1,
     }));
     sinon.stub(WalletService.prototype, "getById").resolves(new Wallet({
@@ -88,7 +87,7 @@ describe("Token", () => {
       name: "testName",
     }));
     const result = await tokenService.convertToResponse(transactionObject);
-    expect(result).property("token").eq("xxx");
+    expect(result).property("token").eq(tokenId1);
     expect(result).property("sender_wallet").eq("testName");
     expect(result).property("receiver_wallet").eq("testName");
   });
