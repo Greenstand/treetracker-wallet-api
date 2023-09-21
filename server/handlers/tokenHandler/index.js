@@ -1,5 +1,5 @@
 const TokenService = require('../../services/TokenService');
-const { tokenGetSchema, tokenGetTransactionsByIdSchema } = require('./schemas');
+const { tokenGetSchema, tokenIdSchema, tokenGetTransactionsByIdSchema } = require('./schemas');
 
 const tokenGet = async (req, res) => {
   const validatedQuery = await tokenGetSchema.validateAsync(req.query, { abortEarly: false });
@@ -21,7 +21,10 @@ const tokenGet = async (req, res) => {
 };
 
 const tokenGetById = async (req, res) => {
-  const { id } = req.params;
+  const validatedParams = await tokenIdSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+  const {id} = validatedParams;
   const {wallet_id} = req
   const tokenService = new TokenService();
   const token = await tokenService.getById({
@@ -38,7 +41,10 @@ const tokenGetTransactionsById = async (req, res) => {
     abortEarly: false,
   });
   const { limit, offset } = validatedQuery;
-  const { id } = req.params;
+  const validatedParams = await tokenIdSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+  const { id } = validatedParams;
   const {wallet_id} = req
   const tokenService = new TokenService();
   const transactions = await tokenService.getTransactions({
