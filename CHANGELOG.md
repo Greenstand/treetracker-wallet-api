@@ -1,3 +1,10 @@
+## [1.31.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.31.1...v1.31.2) (2023-09-21)
+
+
+### Bug Fixes
+
+* validated id in endpoint /token/:id ([451eaf8](https://github.com/Greenstand/treetracker-wallet-api/commit/451eaf8654e36973bb7b59303b6c83b5a18f005b))
+
 ## [1.31.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.31.0...v1.31.1) (2023-09-20)
 
 
