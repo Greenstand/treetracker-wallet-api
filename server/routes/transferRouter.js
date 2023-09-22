@@ -24,7 +24,7 @@ transferRouter.post(
         tokens: Joi.any().required(),
       }).unknown(),{
         then: Joi.object({
-          tokens: Joi.array().items(Joi.string()).required().unique(),
+          tokens: Joi.array().items(Joi.string().uuid()).required().unique(),
           sender_wallet: Joi.alternatives().try(
             Joi.string(),
           ).required(),
@@ -269,10 +269,10 @@ transferRouter.get("/",
           .valid(...Object.values(Transfer.STATE)),
         wallet: Joi.alternatives().try(
           Joi.string(),
-          Joi.number().min(4).max(32)
+          Joi.string().uuid(),
         ),
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer()
+        limit: Joi.number().integer().min(1).max(2000).required(),
+        start: Joi.number().integer().min(1).default(1)
       })
     );
     const {state, wallet, limit, start} = req.query;
@@ -336,8 +336,8 @@ transferRouter.get('/:transfer_id/tokens',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer(),
+        limit: Joi.number().integer().min(1).max(2000).required(),
+        start: Joi.number().integer().min(1).default(1),
       })
     );
     const {limit, start} = req.query;

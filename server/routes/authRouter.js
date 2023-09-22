@@ -15,7 +15,7 @@ authRouter.post(
       req.body,
       Joi.object({
         wallet: Joi.alternatives().try(
-          Joi.string().min(4).max(36),
+          Joi.string().min(4).max(254),
         ).required(),
         password: Joi.string()
           .max(32)

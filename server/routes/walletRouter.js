@@ -115,6 +115,13 @@ walletRouter.get(
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    Joi.assert(
+      req.params,
+      Joi.object({
+          wallet_id: Joi.string().uuid().required(),
+      }),
+    );
+
     const session = new Session();
     const trustService = new TrustService(session);
     const walletService = new WalletService(session);

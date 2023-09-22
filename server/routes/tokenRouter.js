@@ -14,6 +14,13 @@ tokenRouter.get('/:id',
   helper.apiKeyHandler,
   helper.verifyJWTHandler,
   helper.handlerWrapper(async (req, res, next) => {
+    Joi.assert(
+      req.params,
+      Joi.object({
+          id: Joi.string().uuid().required(),
+      })
+    );
+
     const {id} = req.params;
     const session = new Session();
     const tokenService = new TokenService(session);
@@ -42,8 +49,8 @@ tokenRouter.get('/',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().min(1).max(1000).required(),
-        start: Joi.number().min(1).integer(),
+        limit: Joi.number().integer().min(1).max(2000).required(),
+        start: Joi.number().integer().min(1).default(1),
         wallet: Joi.string(),
       })
     );
@@ -104,12 +111,18 @@ tokenRouter.get('/:id/transactions',
     Joi.assert(
       req.query,
       Joi.object({
-        limit: Joi.number().required(),
-        start: Joi.number().min(1).max(10000).integer(),
-        id: Joi.string().uuid(), 
-        transactions: Joi.string(),
+        limit: Joi.number().integer().min(1).max(2000).required(),
+        start: Joi.number().integer().min(1).default(1),
       })
     );
+
+    Joi.assert(
+      req.params,
+      Joi.object({
+          id: Joi.string().uuid().required(),
+      })
+    );
+
     const {limit, start} = req.query;
 
     const session = new Session();

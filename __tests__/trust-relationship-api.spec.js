@@ -86,7 +86,7 @@ describe('Trust relationship management', () => {
 
   it("GET /trust_relationships", async () => {
     const res = await request(server)
-      .get("/trust_relationships")
+      .get("/trust_relationships?limit=20")
       .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).property("statusCode").to.eq(200); // Integration
