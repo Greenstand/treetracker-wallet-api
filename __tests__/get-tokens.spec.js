@@ -62,7 +62,7 @@ describe('GET tokens', () => {
       .get(`/tokens/${seed.tokenB.id}`)
       .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
-    expect(res).to.have.property('statusCode', 401);
+    expect(res).to.have.property('statusCode', 403);
   });
 
   it(`walletA, GET /tokens Should be able to get a token `, async () => {

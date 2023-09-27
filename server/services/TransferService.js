@@ -13,7 +13,7 @@ class TransferService {
   }
 
   async getByFilter(query, walletLoginId) {
-    const { state, wallet, limit, offset, before, after } = query;
+    const { state, wallet, limit, offset, before, after, sort_by, order } = query;
 
     let walletId;
 
@@ -29,7 +29,9 @@ class TransferService {
       limit,
       walletLoginId,
       before,
-      after
+      after,
+      sort_by,
+      order
     });
 
 
@@ -40,13 +42,6 @@ class TransferService {
     // begin transaction
     try {
       await this._session.beginTransaction();
-
-      if (transferBody.sender_wallet === transferBody.receiver_wallet) {
-        throw new HttpError(
-          422,
-          'Cannot transfer to the same wallet as the originating one!',
-        );
-      }
       
       const walletSender = await this._walletService.getByIdOrName(
         transferBody.sender_wallet,

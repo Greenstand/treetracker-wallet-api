@@ -48,7 +48,7 @@ class TokenService {
 
       const walletIds = [...allWallets.map((e) => e.id)];
       if (!walletIds.includes(token.wallet_id)) {
-        throw new HttpError(401, 'Have no permission to visit this token');
+        throw new HttpError(403, 'Have no permission to visit this token');
       }
     }
 

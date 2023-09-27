@@ -124,6 +124,9 @@ class Trust {
       created_at: result.created_at,
       updated_at: result.updated_at,
       active: result.active,
+      actor_wallet_id: actorWallet.id,
+      originator_wallet_id: originatorWallet.id,
+      target_wallet_id: targetWallet.id,
     };
   }
 
@@ -160,7 +163,7 @@ class Trust {
       ) {
         log.debug('Has duplicated trust');
         throw new HttpError(
-          403,
+          409,
           'The trust relationship has been requested or trusted',
         );
       }
@@ -289,8 +292,8 @@ class Trust {
 
     if (!trustRelationship) {
       throw new HttpError(
-        403,
-        'Have no permission to accept this relationship',
+        404,
+        'No such trust relationship exists or it is not associated with the current wallet.',
       );
     }
     await this.checkManageCircle({ walletId, trustRelationship });
@@ -317,8 +320,8 @@ class Trust {
 
     if (!trustRelationship) {
       throw new HttpError(
-        403,
-        'Have no permission to decline this relationship',
+        404,
+        'No such trust relationship exists or it is not associated with the current wallet.',
       );
     }
 
@@ -336,6 +339,14 @@ class Trust {
       'wallet_trust.id': trustRelationshipId,
     });
     const [trustRelationship] = trustRelationships;
+
+    if(!trustRelationship){
+      throw new HttpError(
+          404,
+          'No such trust relationship exists or it is not associated with the current wallet.'
+      )
+    }
+
     if (trustRelationship?.originator_wallet_id !== walletId) {
       throw new HttpError(
         403,

@@ -9,25 +9,28 @@ const transferPostSchema = Joi.alternatives()
     }).unknown(),
     {
       then: Joi.object({
-        tokens: Joi.array().items(Joi.string()).required().unique(),
-        sender_wallet: Joi.alternatives().try(Joi.string()).required(),
-        receiver_wallet: Joi.alternatives().try(Joi.string()).required(),
-        // TODO: add boolean for claim, but default to false.
-        claim: Joi.boolean(),
+        tokens: Joi.array().items(Joi.string().uuid()).required().unique(),
+        sender_wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()).required().invalid(Joi.ref('receiver_wallet')).messages({
+          'any.invalid': 'Cannot transfer to the same wallet as the originating one!'
+        }),
+        receiver_wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()).required(),
+        claim: Joi.boolean().default(false),
       }),
       otherwise: Joi.object({
         bundle: Joi.object({
-          bundle_size: Joi.number().min(1).max(10000).integer(),
+          bundle_size: Joi.number().integer().min(1).max(10000),
         }).required(),
-        sender_wallet: Joi.string().required(),
-        receiver_wallet: Joi.string().required(),
-        claim: Joi.boolean().required(),
+        sender_wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()).required().invalid(Joi.ref('receiver_wallet')).messages({
+          'any.invalid': 'Cannot transfer to the same wallet as the originating one!'
+        }),
+        receiver_wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()).required(),
+        claim: Joi.boolean().default(false),
       }),
     },
   );
 
 const transferIdParamSchema = Joi.object({
-  transfer_id: Joi.string().guid().required(),
+  transfer_id: Joi.string().uuid().required(),
 });
 
 const transferIdFulfillSchema = Joi.alternatives()
@@ -38,26 +41,28 @@ const transferIdFulfillSchema = Joi.alternatives()
     }).unknown(),
     {
       then: Joi.object({
-        tokens: Joi.array().items(Joi.string()).required().unique(),
+        tokens: Joi.array().items(Joi.string().uuid()).required().unique(),
       }),
       otherwise: Joi.object({
-        implicit: Joi.boolean().truthy().required(),
+        implicit: Joi.boolean().valid(true).required(),
       }),
     },
   );
 
 const transferLimitOffsetQuerySchema = Joi.object({
-  limit: Joi.number().integer().min(1).max(1000).required(),
+  limit: Joi.number().integer().min(1).max(2000).default(1000),
   offset: Joi.number().integer().min(0).default(0),
 });
 
 const transferGetQuerySchema = Joi.object({
   state: Joi.string().valid(...Object.values(TransferEnums.STATE)),
-  wallet: Joi.alternatives().try(Joi.string(), Joi.number().min(4).max(32)),
+  wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()),
   before: Joi.date().iso(),
   after: Joi.date().iso(),
-  limit: Joi.number().min(1).max(1000),
-  offset: Joi.number().min(0).integer().default(0),
+  limit: Joi.number().integer().min(1).max(2000).default(1000),
+  offset: Joi.number().integer().min(0).default(0),
+  sort_by: Joi.string().valid(...Object.values(TransferEnums.SORT)).optional(),
+  order: Joi.string().valid('desc', 'asc').optional(),
 });
 
 module.exports = {

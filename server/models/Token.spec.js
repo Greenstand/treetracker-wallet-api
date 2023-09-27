@@ -162,6 +162,7 @@ describe('Token Model', () => {
 
     const result = await tokenModel.getTransactions({
       limit: 1,
+      offset: 0,
       tokenId,
     });
     expect(result).eql(['transaction1', 'transaction2']);
@@ -218,6 +219,7 @@ describe('Token Model', () => {
     const result = await tokenModel.getTokensByPendingTransferId(
       transferId,
       10,
+      0
     );
     expect(result).eql({ id: transferId });
     expect(tokenRepositoryStub.getByFilter).calledOnceWithExactly(

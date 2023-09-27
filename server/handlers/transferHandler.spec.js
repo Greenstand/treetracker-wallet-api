@@ -125,7 +125,7 @@ describe('transferRouter', () => {
     const res = await request(app)
       .post('/transfers')
       .send({
-        tokens: ['1'],
+        tokens: ['c5d2c7f6-4aab-40a6-ba0a-af8a3f10d320'],
         sender_wallet: 'wallet1',
         receiver_wallet: 'wallet2',
       });
@@ -143,9 +143,10 @@ describe('transferRouter', () => {
     expect(
       initiateTranferStub.calledOnceWithExactly(
         {
-          tokens: ['1'],
+          tokens: ['c5d2c7f6-4aab-40a6-ba0a-af8a3f10d320'],
           sender_wallet: 'wallet1',
           receiver_wallet: 'wallet2',
+          claim: false,
         },
         authenticatedWalletId,
       ),
@@ -414,12 +415,6 @@ describe('transferRouter', () => {
       expect(res.body.message).match(/transfer_id.*guid/i);
     });
 
-    it('limit is required, should throw error', async () => {
-      const res = await request(app).get(`/transfers/${transferId}/tokens`);
-      expect(res).property('statusCode').eq(422);
-      expect(res.body.message).match(/limit.*required/i);
-    });
-
     it('Successfully', async () => {
       const getTokensByTransferIdStub = sinon
         .stub(TransferService.prototype, 'getTokensByTransferId')
@@ -434,8 +429,8 @@ describe('transferRouter', () => {
         getTokensByTransferIdStub.calledOnceWithExactly(
           transferId,
           authenticatedWalletId,
-          '1',
-          undefined,
+          1,
+          0,
         ),
       ).eql(true);
     });

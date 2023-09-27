@@ -223,6 +223,9 @@ describe('Trust Model', () => {
         created_at: resultObject.created_at,
         updated_at: resultObject.updated_at,
         active: resultObject.active,
+        actor_wallet_id: requesterWallet.id,
+        originator_wallet_id: originatorWallet.id,
+        target_wallet_id: requesteeWallet.id,
       });
       expect(hasControlStub).calledOnceWithExactly(
         originatorWallet.id,
@@ -307,7 +310,7 @@ describe('Trust Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'The trust relationship has been requested or trusted',
       );
@@ -341,7 +344,7 @@ describe('Trust Model', () => {
       } catch (e) {
         error = e;
       }
-      expect(error.code).eql(403);
+      expect(error.code).eql(409);
       expect(error.message).eql(
         'The trust relationship has been requested or trusted',
       );
@@ -626,9 +629,9 @@ describe('Trust Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(404);
       expect(error.message).eql(
-        'Have no permission to accept this relationship',
+        'No such trust relationship exists or it is not associated with the current wallet.',
       );
       expect(getTrustRelationshipsRequestedToMeStub).calledOnceWithExactly(
         walletId,
@@ -693,9 +696,9 @@ describe('Trust Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(404);
       expect(error.message).eql(
-        'Have no permission to decline this relationship',
+        'No such trust relationship exists or it is not associated with the current wallet.',
       );
       expect(getTrustRelationshipsRequestedToMeStub).calledOnceWithExactly(
         walletId,
@@ -740,6 +743,7 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves([]);
       const trustRelationshipId = uuid();
       const walletId = uuid();
+
       let error;
       try {
         await trustModel.cancelTrustRequest({
@@ -750,9 +754,9 @@ describe('Trust Model', () => {
         error = e;
       }
 
-      expect(error.code).eql(403);
+      expect(error.code).eql(404);
       expect(error.message).eql(
-        'Have no permission to cancel this relationship',
+        'No such trust relationship exists or it is not associated with the current wallet.',
       );
       expect(trustRepositoryStub.getByFilter).calledOnceWithExactly({
         'wallet_trust.id': trustRelationshipId,
