@@ -1,4 +1,5 @@
 const { validate: uuidValidate } = require('uuid');
+const axios = require('axios');
 const fs = require('fs').promises;
 const Wallet = require('../models/Wallet');
 const Session = require('../infra/database/Session');
@@ -111,82 +112,177 @@ class WalletService {
     csvJson,
     filePath,
   ) {
-    let senderWallet;
-    if (sender_wallet) senderWallet = await this.getByName(sender_wallet);
+    try {
+      let senderWallet;
+      if (sender_wallet) senderWallet = await this.getByName(sender_wallet);
 
-    const walletPromises = [];
-    let totalAmountToTransfer = 0;
+      const walletPromises = [];
+      let totalAmountToTransfer = 0;
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
-      if (token_transfer_amount_overwrite && !sender_wallet) {
-        throw new HttpError(422, 'sender_wallet is required for transfer.');
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
+        if (token_transfer_amount_overwrite && !sender_wallet) {
+          throw new HttpError(422, 'sender_wallet is required for transfer.');
+        }
+        const amount =
+          token_transfer_amount_overwrite || token_transfer_amount_default;
+        if (amount) totalAmountToTransfer += +amount;
+
+        walletPromises.push(this.createWallet(wallet_id, wallet_name));
       }
-      const amount =
-        token_transfer_amount_overwrite || token_transfer_amount_default;
-      totalAmountToTransfer += amount;
 
-      walletPromises.push(this.createWallet(wallet_id, wallet_name));
-    }
+      const tokenModel = new Token(this._session);
 
-    const tokenModel = new Token(this._session);
+      let walletsCreatedCount = 0;
+      let walletsAlreadyExistsFailureCount = 0;
+      let walletsOtherFailureCount = 0;
+      const walletsCreated = [];
 
-    let walletsCreatedCount = 0;
-    let walletsAlreadyExistsFailureCount = 0;
-    let walletsOtherFailureCount = 0;
-    const walletsCreated = [];
+      const walletsPromise = await Promise.allSettled(walletPromises);
 
-    const walletsPromise = await Promise.allSettled(walletPromises);
-
-    const tokenCount = await tokenModel.countTokenByWallet(senderWallet.id);
-    if (totalAmountToTransfer > tokenCount) {
-      throw new HttpError(409, 'Sender does not have enough tokens.');
-    }
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const { status, value, reason } of walletsPromise) {
-      if (status === 'fulfilled') {
-        walletsCreated.push(value);
-        walletsCreatedCount += 1;
-      } else if (reason.toString().match(/.*already.*exists/g)) {
-        walletsAlreadyExistsFailureCount += 1;
-      } else {
-        walletsOtherFailureCount += 1;
+      let tokenCount = 0;
+      if (senderWallet)
+        tokenCount = await tokenModel.countTokenByWallet(senderWallet.id);
+      if (totalAmountToTransfer > tokenCount) {
+        throw new HttpError(409, 'Sender does not have enough tokens.');
       }
-    }
 
-    const transferModel = new Transfer(this._session);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { status, value, reason } of walletsPromise) {
+        if (status === 'fulfilled') {
+          walletsCreated.push(value);
+          walletsCreatedCount += 1;
+        } else if (reason.toString().match(/.*already.*exists/g)) {
+          walletsAlreadyExistsFailureCount += 1;
+        } else {
+          walletsOtherFailureCount += 1;
+        }
+      }
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const wallet of walletsCreated) {
-      const receiverWallet = await this.getByName(wallet.wallet);
-      const walletDetails = csvJson.find(
-        (w) => w.wallet_name === wallet.wallet,
-      );
-      const amountToTransfer =
-        walletDetails.token_transfer_amount_overwrite ||
-        token_transfer_amount_default;
-      if (amountToTransfer) {
-        // claim is false for now
-        await transferModel.transferBundle(
-          wallet_id,
-          senderWallet,
-          receiverWallet,
-          amountToTransfer,
-          false,
+      const transferModel = new Transfer(this._session);
+      const extraWalletInformation = [];
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const wallet of walletsCreated) {
+        const receiverWallet = await this.getByName(wallet.wallet);
+        const walletDetails = csvJson.find(
+          (w) => w.wallet_name === wallet.wallet,
         );
+
+        const {
+          extra_wallet_data_about,
+          extra_wallet_data_logo_url,
+          extra_wallet_data_cover_url,
+        } = walletDetails;
+
+        if (
+          extra_wallet_data_about ||
+          extra_wallet_data_logo_url ||
+          extra_wallet_data_cover_url
+        ) {
+          extraWalletInformation.push({
+            walletId: wallet.id,
+            walletAbout: extra_wallet_data_about,
+            walletLogoUrl: extra_wallet_data_logo_url,
+            walletCoverUrl: extra_wallet_data_cover_url,
+          });
+        }
+        const amountToTransfer =
+          walletDetails.token_transfer_amount_overwrite ||
+          token_transfer_amount_default;
+        if (amountToTransfer) {
+          // claim is false for now
+          await transferModel.transferBundle(
+            wallet_id,
+            senderWallet,
+            receiverWallet,
+            amountToTransfer,
+            false,
+          );
+        }
       }
+
+      await fs.unlink(filePath);
+
+      const walletConfigPromises = [];
+
+      if (extraWalletInformation.length) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const {
+          walletId,
+          walletAbout,
+          walletLogoUrl,
+          walletCoverUrl,
+        } of extraWalletInformation) {
+          walletConfigPromises.push(
+            this.addWalletToMapConfig({
+              walletId,
+              walletAbout,
+              walletCoverUrl,
+              walletLogoUrl,
+            }),
+          );
+        }
+      }
+
+      const walletConfigResults = await Promise.allSettled(
+        walletConfigPromises,
+      );
+
+      let extraWalletInformationSaved = 0;
+      let extraWalletInformationNotSaved = 0;
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { status } of walletConfigResults) {
+        if (status === 'fulfilled') {
+          extraWalletInformationSaved += 1;
+        } else {
+          extraWalletInformationNotSaved += 1;
+        }
+      }
+
+      const result = {
+        wallets_created: walletsCreatedCount,
+        wallets_already_exists: walletsAlreadyExistsFailureCount,
+        wallet_other_failure_count: walletsOtherFailureCount,
+        extra_wallet_information_saved: extraWalletInformationSaved,
+        extra_wallet_information_not_saved: extraWalletInformationNotSaved,
+      };
+
+      return result;
+    } catch (e) {
+      await fs.unlink(filePath);
+      throw e;
     }
+  }
 
-    const result = {
-      wallets_created: walletsCreatedCount,
-      wallets_already_exists: walletsAlreadyExistsFailureCount,
-      wallet_other_failure_count: walletsOtherFailureCount,
-    };
+  // eslint-disable-next-line class-methods-use-this
+  async addWalletToMapConfig({
+    walletId,
+    walletAbout,
+    walletLogoUrl,
+    walletCoverUrl,
+  }) {
+    const MAP_CONFIG_API_URL =
+      process.env.MAP_CONFIG_API_URL ||
+      'http://treetracker-map-config-api.webmap-config';
 
-    await fs.unlink(filePath);
-
-    return result;
+    const response = await axios.post(`${MAP_CONFIG_API_URL}/config`, {
+      name: 'extra-wallet',
+      ref_uuid: walletId,
+      data: {
+        ...(walletAbout && {
+          about: walletAbout,
+        }),
+        ...(walletLogoUrl && {
+          logo_url: walletLogoUrl,
+        }),
+        ...(walletCoverUrl && {
+          cover_url: walletCoverUrl,
+        }),
+      },
+    });
+    return response.body;
   }
 }
 
