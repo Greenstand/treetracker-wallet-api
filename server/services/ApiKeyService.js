@@ -8,7 +8,7 @@ class ApiKeyService {
     this._apiKey = new ApiKey(this._session);
   }
 
-  async check(apiKey) {
+  async check(apiKey, url) {
     if (!apiKey) {
       throw new HttpError(401, 'Invalid access - no API key');
     }
@@ -17,6 +17,12 @@ class ApiKeyService {
     if (!result) throw new HttpError(401, 'Invalid API access');
     if (result.tree_token_api_access === false) {
       throw new HttpError(401, 'Invalid API access, apiKey was deprecated');
+    }
+    if (!result.batch_create_access && url.includes('batch-create-wallet')) {
+      throw new HttpError(
+        401,
+        'Invalid API access, no permission to access this endpoint',
+      );
     }
   }
 }

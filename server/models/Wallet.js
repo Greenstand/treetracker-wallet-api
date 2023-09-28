@@ -4,6 +4,8 @@ const TrustRepository = require('../repositories/TrustRepository');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 const HttpError = require('../utils/HttpError');
 const TokenRepository = require('../repositories/TokenRepository');
+const Token = require('./Token');
+const Transfer = require('./Transfer');
 
 class Wallet {
   constructor(session) {
@@ -140,13 +142,106 @@ class Wallet {
   }
 
   // get wallet itself along with all subwallets
-  async getAllWallets(id, limitOptions, name, getCount) {
+  async getAllWallets(
+    id,
+    limitOptions,
+    name,
+    // sort_by,
+    // order,
+    // created_at_start_date,
+    // created_at_end_date,
+    getCount,
+  ) {
     return this._walletRepository.getAllWallets(
       id,
       limitOptions,
       name,
+      // sort_by,
+      // order,
+      // created_at_start_date,
+      // created_at_end_date,
       getCount,
     );
+  }
+
+  async batchCreateWallet(
+    sender_wallet,
+    token_transfer_amount_default,
+    wallet_id,
+    csvJson,
+  ) {
+    // const loggedInWallet = await this.getById(wallet_id);
+
+    let senderWallet;
+    if (sender_wallet) senderWallet = await this.getByName(sender_wallet);
+
+    const walletPromises = [];
+    let totalAmountToTransfer = 0;
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
+      if (token_transfer_amount_overwrite && !sender_wallet) {
+        throw new HttpError(422, 'sender_wallet is required for transfer.');
+      }
+      const amount =
+        token_transfer_amount_overwrite || token_transfer_amount_default;
+      totalAmountToTransfer += amount;
+
+      walletPromises.push(this.createWallet(wallet_id, wallet_name));
+    }
+
+    const tokenModel = new Token(this._session);
+
+    let walletsCreatedCount = 0;
+    let walletsAlreadyExistsFailureCount = 0;
+    let walletsOtherFailureCount = 0;
+    const walletsCreated = [];
+
+    const walletsPromise = await Promise.allSettled(walletPromises);
+
+    const tokenCount = await tokenModel.countTokenByWallet(sender_wallet);
+    if (totalAmountToTransfer > tokenCount) {
+      throw new HttpError(409, 'Sender does not have enough tokens.');
+    }
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { status, value, reason } of walletsPromise) {
+      if (status === 'fulfilled') {
+        walletsCreated.push(value);
+        walletsCreatedCount += 1;
+      } else if (reason.toString().match(/.*already.*exists/g)) {
+        walletsAlreadyExistsFailureCount += 1;
+      } else {
+        walletsOtherFailureCount += 1;
+      }
+    }
+
+    const transferModel = new Transfer(this._session);
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const wallet of walletsCreated) {
+      const receiverWallet = await this.getByName(wallet.name);
+      const walletDetails = csvJson.find((w) => w.wallet_name === wallet.name);
+      const amountToTransfer =
+        walletDetails.token_transfer_amount_overwrite ||
+        token_transfer_amount_default;
+      if (amountToTransfer) {
+        // claim is false for now
+        await transferModel.transferBundle(
+          wallet_id,
+          senderWallet,
+          receiverWallet,
+          amountToTransfer,
+          false,
+        );
+      }
+    }
+
+    return {
+      wallets_created: walletsCreatedCount,
+      wallets_already_exists: walletsAlreadyExistsFailureCount,
+      wallet_other_failure_count: walletsOtherFailureCount,
+    };
   }
 }
 

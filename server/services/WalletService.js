@@ -1,4 +1,5 @@
 const { validate: uuidValidate } = require('uuid');
+const fs = require('fs').promises;
 const Wallet = require('../models/Wallet');
 const Session = require('../infra/database/Session');
 const Token = require('../models/Token');
@@ -59,6 +60,10 @@ class WalletService {
     id,
     limitOptions,
     name,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
     getTokenCount = true,
     getWalletCount = true,
   ) {
@@ -81,11 +86,50 @@ class WalletService {
         count,
       };
     }
-    return this._wallet.getAllWallets(id, limitOptions, name, getWalletCount);
+    return this._wallet.getAllWallets(
+      id,
+      limitOptions,
+      name,
+      sort_by,
+      order,
+      created_at_start_date,
+      created_at_end_date,
+      getWalletCount,
+    );
   }
 
   async hasControlOver(parentId, childId) {
     return this._wallet.hasControlOver(parentId, childId);
+  }
+
+  async batchCreateWallet(
+    sender_wallet,
+    token_transfer_amount_default,
+    wallet_id,
+    csvJson,
+    filePath,
+  ) {
+    try {
+      await this._session.beginTransaction();
+
+      const result = await this._wallet.batchCreateWallet(
+        sender_wallet,
+        token_transfer_amount_default,
+        wallet_id,
+        csvJson,
+      );
+
+      await this._session.commitTransaction();
+      await fs.unlink(filePath);
+
+      return result;
+    } catch (e) {
+      if (this._session.isTransactionInProgress()) {
+        await this._session.rollbackTransaction();
+      }
+      await fs.unlink(filePath);
+      throw e;
+    }
   }
 }
 
