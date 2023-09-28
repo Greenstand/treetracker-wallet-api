@@ -1,3 +1,5 @@
+const csvtojson = require('csvtojson');
+
 const WalletService = require('../../services/WalletService');
 const TrustService = require('../../services/TrustService');
 
@@ -6,14 +8,26 @@ const {
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
+  walletBatchCreateBodySchema,
+  csvValidationSchema,
 } = require('./schemas');
 
 const walletGet = async (req, res) => {
-  const validatedQuery = await walletGetQuerySchema.validateAsync(req.query, { abortEarly: false });
+  const validatedQuery = await walletGetQuerySchema.validateAsync(req.query, {
+    abortEarly: false,
+  });
   const walletService = new WalletService();
 
-  const { name, limit, offset } = validatedQuery;
-  const {wallet_id} = req
+  const {
+    name,
+    limit,
+    offset,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
+  } = validatedQuery;
+  const { wallet_id } = req;
   const { wallets, count } = await walletService.getAllWallets(
     wallet_id,
     {
@@ -21,6 +35,10 @@ const walletGet = async (req, res) => {
       offset,
     },
     name,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
   );
 
   res.status(200).json({
@@ -31,22 +49,29 @@ const walletGet = async (req, res) => {
 };
 
 const walletSingleGet = async (req, res) => {
-  const validatedParams = await walletIdParamSchema.validateAsync(req.params, { abortEarly: false });
+  const validatedParams = await walletIdParamSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
 
-  const { wallet_id } = validatedParams
+  const { wallet_id } = validatedParams;
   const walletService = new WalletService();
   const wallet = await walletService.getWallet(wallet_id);
   res.status(200).send(wallet);
 };
 
 const walletGetTrustRelationships = async (req, res) => {
-  const validatedParams = await walletIdParamSchema.validateAsync(req.params, { abortEarly: false });
-  const validatedQuery = await walletGetTrustRelationshipsSchema.validateAsync(req.query, {
+  const validatedParams = await walletIdParamSchema.validateAsync(req.params, {
     abortEarly: false,
   });
+  const validatedQuery = await walletGetTrustRelationshipsSchema.validateAsync(
+    req.query,
+    {
+      abortEarly: false,
+    },
+  );
 
-  const {wallet_id} = validatedParams
-  const {state, type, request_type} = validatedQuery
+  const { wallet_id } = validatedParams;
+  const { state, type, request_type } = validatedQuery;
   const trustService = new TrustService();
   const trust_relationships = await trustService.getTrustRelationships({
     walletId: wallet_id,
@@ -60,10 +85,12 @@ const walletGetTrustRelationships = async (req, res) => {
 };
 
 const walletPost = async (req, res) => {
-  const validatedBody = await walletPostSchema.validateAsync(req.body, { abortEarly: false });
+  const validatedBody = await walletPostSchema.validateAsync(req.body, {
+    abortEarly: false,
+  });
 
-  const {wallet_id} = req
-  const {wallet: walletToBeCreated} = validatedBody
+  const { wallet_id } = req;
+  const { wallet: walletToBeCreated } = validatedBody;
   const walletService = new WalletService();
   const { wallet, id } = await walletService.createWallet(
     wallet_id,
@@ -76,9 +103,37 @@ const walletPost = async (req, res) => {
   });
 };
 
+const walletBatchCreate = async (req, res) => {
+  const validatedBody = await walletBatchCreateBodySchema.validateAsync(
+    req.body,
+    { abortEarly: false },
+  );
+
+  const { path } = req.file;
+  const jsonResult = await csvtojson().fromFile(path);
+  const validatedCsvFile = await csvValidationSchema.validateAsync(jsonResult, {
+    abortEarly: false,
+  });
+
+  const { sender_wallet, token_transfer_amount_default } = validatedBody;
+  const { wallet_id } = req;
+  const walletService = new WalletService();
+
+  const result = await walletService.batchCreateWallet(
+    sender_wallet,
+    token_transfer_amount_default,
+    wallet_id,
+    validatedCsvFile,
+    path,
+  );
+
+  res.status(201).send(result);
+};
+
 module.exports = {
   walletPost,
   walletGetTrustRelationships,
   walletGet,
   walletSingleGet,
+  walletBatchCreate,
 };

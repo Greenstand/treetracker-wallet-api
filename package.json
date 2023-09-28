@@ -35,9 +35,11 @@
   "license": "GPL-3.0-or-later",
   "dependencies": {
     "@sentry/node": "^5.1.0",
+    "axios": "^1.5.1",
     "bcryptjs": "^2.4.3",
     "chai-uuid": "^1.0.6",
     "cors": "^2.8.5",
+    "csvtojson": "^2.0.10",
     "dotenv": "^8.2.0",
     "expect": "^26.4.2",
     "expect-runtime": "^0.7.0",
@@ -50,6 +52,7 @@
     "knex": "^0.21.5",
     "loglevel": "^1.6.8",
     "morgan": "^1.9.1",
+    "multer": "^1.4.5-lts.1",
     "nodemon": "^2.0.4",
     "pg": "^8.5.1",
     "uuid": "^8.2.0"

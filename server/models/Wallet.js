@@ -42,7 +42,6 @@ class Wallet {
       type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
       state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
     });
-
     return newWallet;
   }
 
@@ -140,11 +139,24 @@ class Wallet {
   }
 
   // get wallet itself along with all subwallets
-  async getAllWallets(id, limitOptions, name, getCount) {
+  async getAllWallets(
+    id,
+    limitOptions,
+    name,
+    // sort_by,
+    // order,
+    // created_at_start_date,
+    // created_at_end_date,
+    getCount,
+  ) {
     return this._walletRepository.getAllWallets(
       id,
       limitOptions,
       name,
+      // sort_by,
+      // order,
+      // created_at_start_date,
+      // created_at_end_date,
       getCount,
     );
   }

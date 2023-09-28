@@ -54,7 +54,16 @@ class WalletRepository extends BaseRepository {
   }
 
   // Get a wallet itself including its sub wallets
-  async getAllWallets(id, limitOptions, name, getCount) {
+  async getAllWallets(
+    id,
+    limitOptions,
+    name,
+    // sort_by,
+    // order,
+    // created_at_start_date,
+    // created_at_end_date,
+    getCount,
+  ) {
     let query = this._session
       .getDB()
       .select('id', 'name', 'logo_url', 'created_at')

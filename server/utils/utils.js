@@ -53,7 +53,7 @@ exports.errorHandler = (err, req, res, _next) => {
 
 exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
   const apiKey = new ApiKeyService();
-  await apiKey.check(req.headers['treetracker-api-key']);
+  await apiKey.check(req.headers['treetracker-api-key'], req.originalUrl);
   log.debug('Valid Access');
   next();
 });
