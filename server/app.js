@@ -19,6 +19,7 @@ Sentry.init({ dsn: config.sentry_dsn });
  * Check request
  */
 app.use(
+  // eslint-disable-next-line consistent-return
   handlerWrapper(async (req, res, next) => {
     if (req.path === '/wallets/batch-create-wallet' && req.method === 'POST') {
       if (
@@ -30,7 +31,7 @@ app.use(
           'Invalid content type. Endpoint only supports multipart/form-data',
         );
       }
-      next();
+      return next();
     }
     if (
       req.method === 'POST' ||

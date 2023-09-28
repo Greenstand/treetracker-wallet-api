@@ -119,7 +119,7 @@ const walletBatchCreate = async (req, res) => {
   const { wallet_id } = req;
   const walletService = new WalletService();
 
-  const result = walletService.batchCreateWallet(
+  const result = await walletService.batchCreateWallet(
     sender_wallet,
     token_transfer_amount_default,
     wallet_id,
