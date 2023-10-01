@@ -8,7 +8,7 @@ class AuthService {
   static async signIn({ wallet, password }) {
     const eventService = new EventService();
     const walletService = new WalletService();
-    const walletObject = await walletService.getByIdOrName(wallet);
+    const walletObject = await walletService.getByName(wallet);
 
     const hash = HashService.sha512(password, walletObject.salt);
 

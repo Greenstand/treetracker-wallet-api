@@ -117,7 +117,7 @@ class Token {
     return false;
   }
 
-  async getTransactions({ limit, offset = 0, tokenId }) {
+  async getTransactions({ limit, offset, tokenId }) {
     const transactions = await this._transactionRepository.getByFilter(
       { token_id: tokenId },
       { limit, offset },
@@ -146,7 +146,7 @@ class Token {
     return tokenObject;
   }
 
-  async getTokensByPendingTransferId(transferId, limit, offset = 0) {
+  async getTokensByPendingTransferId(transferId, limit, offset) {
     const result = await this._tokenRepository.getByFilter(
       { transfer_pending_id: transferId },
       { limit, offset },
@@ -154,7 +154,7 @@ class Token {
     return result;
   }
 
-  async getTokensByTransferId(transferId, limit, offset = 0) {
+  async getTokensByTransferId(transferId, limit, offset) {
     const result = await this._tokenRepository.getByTransferId(
       transferId,
       limit,

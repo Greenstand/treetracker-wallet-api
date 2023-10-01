@@ -17,7 +17,7 @@ class TrustService {
     state,
     type,
     request_type,
-    offset = 0,
+    offset,
     limit,
   }) {
     // check if wallet exists first

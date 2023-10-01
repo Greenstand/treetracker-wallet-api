@@ -34,6 +34,7 @@ describe('TrustService', () => {
       type: 'type',
       request_type: 'request_type',
       limit: 1,
+      offset: 0
     });
 
     expect(trustRelationship).eql(['trustRelationships']);

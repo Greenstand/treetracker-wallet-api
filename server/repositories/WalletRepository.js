@@ -104,6 +104,12 @@ class WalletRepository extends BaseRepository {
 
     query = query.union(union1, union2);
 
+    // total count query (before applying limit and offset options)
+    const countQuery = this._session
+      .getDB()
+      .from(query.clone().as('q'))
+      .count('*');
+
     if (limitOptions && limitOptions.limit) {
       query = query.limit(limitOptions.limit);
     }
@@ -113,9 +119,9 @@ class WalletRepository extends BaseRepository {
     }
 
     const wallets = await query;
-    if (getCount) {
-      const count = await this._session.getDB().from(query.as('p')).count('*');
 
+    if (getCount) {
+      const count = await countQuery;
       return { wallets, count: +count[0].count };
     }
 

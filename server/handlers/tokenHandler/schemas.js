@@ -1,18 +1,22 @@
 const Joi = require('joi');
 
 const tokenGetSchema = Joi.object({
-  limit: Joi.number().min(1).max(1000).required().default(1000),
-  offset: Joi.number().min(0).integer().default(0),
+  limit: Joi.number().integer().min(1).max(2000).default(2000),
+  offset: Joi.number().integer().min(0).default(0),
   wallet: Joi.string(),
 });
 
+const tokenIdSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+});
+
 const tokenGetTransactionsByIdSchema = Joi.object({
-  limit: Joi.number().min(1).max(1000).integer().default(1000).required(),
-  offset: Joi.number().min(0).integer(),
-  id: Joi.string().guid(),
+  limit: Joi.number().integer().min(1).max(2000).default(1000),
+  offset: Joi.number().integer().min(0).default(0),
 });
 
 module.exports = {
   tokenGetSchema,
+  tokenIdSchema,
   tokenGetTransactionsByIdSchema,
 };

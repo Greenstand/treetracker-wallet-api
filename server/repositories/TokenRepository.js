@@ -27,7 +27,7 @@ class TokenRepository extends BaseRepository {
   /*
    * select transaction table by transfer id, return matched tokens
    */
-  async getByTransferId(transferId, limit, offset = 0) {
+  async getByTransferId(transferId, limit, offset) {
     return this._session
       .getDB()
       .select('*')

@@ -4,12 +4,13 @@ const TrustRelationshipEnums = require('../../utils/trust-enums');
 const walletGetQuerySchema = Joi.object({
   limit: Joi.number()
       .integer().message('limit can only be non-negative integer')
-      .min(0).message('limit can only be non-negative integer')
-      .max(Number.MAX_SAFE_INTEGER).message('limit value overflow'),
+      .min(1).message('limit can only be non-negative integer')
+      .max(2000)
+      .default(1000),
   offset: Joi.number()
       .integer().message('offset can only be non-negative integer')
       .min(0).message('offset can only be non-negative integer')
-      .max(Number.MAX_SAFE_INTEGER).message('offset value overflow'),
+      .default(0),
   name: Joi.string(),
 });
 
@@ -32,7 +33,7 @@ const walletGetTrustRelationshipsSchema = Joi.object({
 const walletPostSchema = Joi.object({
   wallet: Joi.string()
     .required()
-    .max(50)
+    .max(254)
     .min(3)
     .trim(true)
     .regex(new RegExp('^[A-Za-z0-9-@.]+$'))
