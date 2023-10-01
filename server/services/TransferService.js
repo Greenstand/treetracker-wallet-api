@@ -16,16 +16,7 @@ class TransferService {
   }
 
   async getByFilter(query, walletLoginId) {
-    const {
-      state,
-      wallet,
-      limit,
-      offset,
-      before,
-      after,
-      sort_by,
-      order,
-    } = query;
+    const { state, wallet, limit, offset, before, after } = query;
 
     let walletId;
 

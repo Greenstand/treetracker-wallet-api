@@ -128,19 +128,6 @@ class TransferRepository extends BaseRepository {
         'destination_wallet.id',
       )
       .where((builder) => this.whereBuilder(filter, builder));
-    
-    let order = 'desc';
-    let column = 'transfer.created_at';
-
-    if (limitOptions) {
-      if (limitOptions.order) {
-        order = limitOptions.order;
-      }
-      if (limitOptions.sort_by) {
-        column = limitOptions.sort_by;
-      }
-    }
-    promise = promise.orderBy(column, order);
 
     let order = 'desc';
     let column = 'transfer.created_at';

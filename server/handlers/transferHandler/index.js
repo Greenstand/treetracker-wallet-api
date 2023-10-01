@@ -8,7 +8,7 @@ const {
 } = require('./schemas');
 
 const transferPost = async (req, res) => {
-  const validatedData = await transferPostSchema.validateAsync(req.body, {
+  const validatedBody = await transferPostSchema.validateAsync(req.body, {
     abortEarly: false,
   });
   const transferService = new TransferService();
