@@ -1,4 +1,3 @@
-const log = require('loglevel');
 const BaseRepository = require('./BaseRepository');
 
 class EventRepository extends BaseRepository {
@@ -9,7 +8,6 @@ class EventRepository extends BaseRepository {
   }
 
   async getAllEvents(filter, limitOptions) {
-    log.info(filter);
     let promise = this._session
       .getDB()
       .select('wallet_event.*')

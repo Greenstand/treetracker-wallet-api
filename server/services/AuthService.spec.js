@@ -27,7 +27,7 @@ describe('AuthService', () => {
     expect(token).eql('token');
     expect(
       logEventStub.calledOnceWithExactly({
-        loggedInWalletId: 'id',
+        wallet_id: 'id',
         type: 'login',
         payload: {},
       }),

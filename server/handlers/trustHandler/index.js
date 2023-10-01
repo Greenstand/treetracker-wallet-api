@@ -32,7 +32,6 @@ const trustGet = async (req, res) => {
 };
 
 const trustPost = async (req, res) => {
-  // need to add to the events table
   await trustPostSchema.validateAsync(req.body, { abortEarly: false });
 
   const trustService = new TrustService();
@@ -51,20 +50,18 @@ const trustRelationshipGetById = async (req, res) => {
     abortEarly: false,
   });
 
-  const { trustRelationshipId } = req.params
-  const trustService = new TrustService()
+  const { trustRelationshipId } = req.params;
+  const trustService = new TrustService();
 
   const trustRelationship = await trustService.trustRelationshipGetById({
     walletLoginId: req.wallet_id,
-    trustRelationshipId
-  })
+    trustRelationshipId,
+  });
 
-  res.status(200).json(trustRelationship)
-}
-
+  res.status(200).json(trustRelationship);
+};
 
 const trustRelationshipAccept = async (req, res) => {
-  // need to add to the events table
   await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
@@ -79,7 +76,6 @@ const trustRelationshipAccept = async (req, res) => {
 };
 
 const trustRelationshipDecline = async (req, res) => {
-  // need to add to the events table
   await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
@@ -94,7 +90,6 @@ const trustRelationshipDecline = async (req, res) => {
 };
 
 const trustRelationshipDelete = async (req, res) => {
-  // need to add to the events table
   await trustRelationshipIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
@@ -114,5 +109,5 @@ module.exports = {
   trustRelationshipAccept,
   trustRelationshipDecline,
   trustRelationshipDelete,
-  trustRelationshipGetById
+  trustRelationshipGetById,
 };

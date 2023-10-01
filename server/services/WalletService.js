@@ -2,7 +2,10 @@ const { validate: uuidValidate } = require('uuid');
 const Wallet = require('../models/Wallet');
 const Session = require('../infra/database/Session');
 const Token = require('../models/Token');
+// const EventService = require('./EventService');
+const EventEnums = require('../utils/event-enum');
 const Event = require('../models/Event');
+const HttpError = require('../utils/HttpError');
 
 class WalletService {
   constructor() {
@@ -46,13 +49,27 @@ class WalletService {
         wallet,
       );
 
-      await this._session.commitTransaction();
-
+      // log event for the newly created wallet
       await this._event.logEvent({
-        loggedInWalletId: addedWallet.id,
-        type: 'wallet_created',
-        payload: { wallet: addedWallet.name },
+        wallet_id: addedWallet.id,
+        type: EventEnums.WALLET.wallet_created,
+        payload: {
+          parentWallet: loggedInWalletId,
+          childWallet: addedWallet.name,
+        },
       });
+
+      // log event for the parent wallet
+      await this._event.logEvent({
+        wallet_id: loggedInWalletId,
+        type: EventEnums.WALLET.wallet_created,
+        payload: {
+          parentWallet: loggedInWalletId,
+          childWallet: addedWallet.name,
+        },
+      });
+
+      await this._session.commitTransaction();
 
       return { wallet: addedWallet.name, id: addedWallet.id };
     } catch (e) {
@@ -94,6 +111,23 @@ class WalletService {
 
   async hasControlOver(parentId, childId) {
     return this._wallet.hasControlOver(parentId, childId);
+  }
+
+  async hasControlOverByName(parentId, childName) {
+    //
+    const walletInstance = await this._walletService.getByName(childName);
+    const isSub = await this._walletService.hasControlOver(
+      parentId,
+      childName.id,
+    );
+    if (!isSub) {
+      throw new HttpError(
+        403,
+        'Wallet does not belong to the logged in wallet',
+      );
+    }
+
+    return walletInstance;
   }
 }
 

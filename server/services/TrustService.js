@@ -2,13 +2,14 @@ const Trust = require('../models/Trust');
 const Session = require('../infra/database/Session');
 const Wallet = require('../models/Wallet');
 const WalletService = require('./WalletService');
-const Event = require('../models/Event');
+const EventService = require('./EventService');
+const EventEnums = require('../utils/event-enum');
 
 class TrustService {
   constructor() {
     this._session = new Session();
     this._trust = new Trust(this._session);
-    this._event = new Event(this._session);
+    this._eventService = new EventService();
   }
 
   async getTrustRelationships({
@@ -94,9 +95,9 @@ class TrustService {
     });
 
     // the log should show up on both requester and requestee
-    await this._event.logEvent({
-      loggedInWalletId: requesterWalletDetails.id,
-      type: 'trust_request',
+    await this._eventService.logEvent({
+      wallet_id: requesterWalletDetails.id,
+      type: EventEnums.TRUST.trust_request,
       payload: {
         requesteeWallet: requesteeWalletDetails.name,
         requesterWallet: requesterWalletDetails.name,
@@ -105,9 +106,9 @@ class TrustService {
     });
 
     // the log should show up on both requester and requestee
-    await this._event.logEvent({
-      loggedInWalletId: requesteeWalletDetails.id,
-      type: 'trust_request',
+    await this._eventService.logEvent({
+      wallet_id: requesteeWalletDetails.id,
+      type: EventEnums.TRUST.trust_request,
       payload: {
         requesteeWallet: requesteeWalletDetails.name,
         requesterWallet: requesterWalletDetails.name,
@@ -124,16 +125,16 @@ class TrustService {
     );
 
     // the log should show up on both requester and requestee
-    await this._event.logEvent({
-      loggedInWalletId: walletLoginId,
-      type: 'trust_request_granted',
+    await this._eventService.logEvent({
+      wallet_id: walletLoginId,
+      type: EventEnums.TRUST.trust_request_granted,
       payload: { trustRelationshipId },
     });
 
     // the log should show up on both requester and requestee
-    await this._event.logEvent({
-      loggedInWalletId: trustRelationship.originator_wallet_id,
-      type: 'trust_request_granted',
+    await this._eventService.logEvent({
+      wallet_id: trustRelationship.originator_wallet_id,
+      type: EventEnums.TRUST.trust_request_granted,
       payload: { trustRelationshipId },
     });
 
@@ -149,16 +150,16 @@ class TrustService {
     );
 
     // the log should show up on both requester and requestee
-    await this._event.logEvent({
-      loggedInWalletId: walletLoginId,
-      type: 'trust_request_cancelled_by_target',
+    await this._eventService.logEvent({
+      wallet_id: walletLoginId,
+      type: EventEnums.TRUST.trust_request_cancelled_by_target,
       payload: { trustRelationshipId },
     });
 
     // the log should show up on both requester and requestee
-    await this._event.logEvent({
-      loggedInWalletId: trustRelationship.originator_wallet_id,
-      type: 'trust_request_cancelled_by_target',
+    await this._eventService.logEvent({
+      wallet_id: trustRelationship.originator_wallet_id,
+      type: EventEnums.TRUST.trust_request_cancelled_by_target,
       payload: { trustRelationshipId },
     });
 
@@ -174,16 +175,16 @@ class TrustService {
     );
 
     // the log should show up on both requester and requestee
-    await this._event.logEvent({
-      loggedInWalletId: walletLoginId,
-      type: 'trust_request_cancelled_by_originator',
+    await this._eventService.logEvent({
+      wallet_id: walletLoginId,
+      type: EventEnums.TRUST.trust_request_cancelled_by_originator,
       payload: { trustRelationshipId },
     });
 
     // the log should show up on both requester and requestee
-    await this._event.logEvent({
-      loggedInWalletId: trustRelationship.target_wallet_id,
-      type: 'trust_request_cancelled_by_originator',
+    await this._eventService.logEvent({
+      wallet_id: trustRelationship.target_wallet_id,
+      type: EventEnums.TRUST.trust_request_cancelled_by_originator,
       payload: { trustRelationshipId },
     });
 

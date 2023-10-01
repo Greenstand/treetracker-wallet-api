@@ -1,7 +1,6 @@
 const Event = require('../models/Event');
 const WalletService = require('./WalletService');
 const Session = require('../infra/database/Session');
-const HttpError = require('../utils/HttpError');
 
 class EventService {
   constructor() {
@@ -14,17 +13,10 @@ class EventService {
     let events = [];
 
     if (wallet) {
-      const walletInstance = await this._walletService.getByName(wallet);
-      const isSub = await this._walletService.hasControlOver(
+      const walletInstance = await this._walletService.hasControlOverByName(
         walletLoginId,
-        walletInstance.id,
+        wallet,
       );
-      if (!isSub) {
-        throw new HttpError(
-          403,
-          'Wallet does not belong to the logged in wallet',
-        );
-      }
 
       events = await this._event.getAllEvents(walletInstance.id, limit, since);
     } else {
@@ -32,6 +24,16 @@ class EventService {
     }
 
     return events;
+  }
+
+  async logEvent({ wallet_id, type, payload }) {
+    const event = await this._event.logEvent({
+      wallet_id,
+      type,
+      payload,
+    });
+
+    return event;
   }
 }
 

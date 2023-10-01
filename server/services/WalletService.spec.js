@@ -187,10 +187,17 @@ describe('WalletService', () => {
       ).eql(true);
       expect(sessionBeginTransactionStub.calledOnce).eql(true);
       expect(
-        logEventStub.calledOnceWithExactly({
-          loggedInWalletId: walletId,
+        logEventStub.getCall(0).calledWithExactly({
+          wallet_id: walletId,
           type: 'wallet_created',
-          payload: { wallet },
+          payload: { parentWallet: loggedInWalletId, childWallet: wallet },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          wallet_id: loggedInWalletId,
+          type: 'wallet_created',
+          payload: { parentWallet: loggedInWalletId, childWallet: wallet },
         }),
       ).eql(true);
       expect(sessionCommitTransactionStub.calledOnce).eql(true);

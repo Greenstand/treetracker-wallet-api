@@ -5,9 +5,10 @@ const TransferService = require('./TransferService');
 const Transfer = require('../models/Transfer');
 const TokenService = require('./TokenService');
 const TransferEnums = require('../utils/transfer-enum');
+const EventEnums = require('../utils/event-enum');
 const WalletService = require('./WalletService');
 const Session = require('../infra/database/Session');
-const Event = require('../models/Event');
+const EventService = require('./EventService');
 
 describe('TransferService', () => {
   let transferService;
@@ -217,17 +218,13 @@ describe('TransferService', () => {
 
     const destination_wallet_id = { id: 'id' };
 
-    const wallet_id = {
-      originating_wallet: 'originating_wallet',
-      destination_wallet: 'destination_wallet',
-    };
-
     beforeEach(() => {
       acceptTransferStub = sinon.stub(Transfer.prototype, 'acceptTransfer');
-      logEventStub = sinon.stub(Event.prototype, 'logEvent');
-      getByIdStub = sinon
-        .stub(Transfer.prototype, 'getById')
-        .resolves(wallet_id);
+      logEventStub = sinon.stub(EventService.prototype, 'logEvent');
+      getByIdStub = sinon.stub(Transfer.prototype, 'getById').resolves({
+        originating_wallet: 'originating_wallet',
+        destination_wallet: 'destination_wallet',
+      });
       getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
     });
 
@@ -249,43 +246,37 @@ describe('TransferService', () => {
     it('should accept transfer', async () => {
       getByNameStub.onFirstCall().resolves(originator_wallet_id);
       getByNameStub.onSecondCall().resolves(destination_wallet_id);
-
-      acceptTransferStub.resolves('transferAccepted');
+      acceptTransferStub.resolves({
+        state: TransferEnums.STATE.completed,
+      });
       const result = await transferService.acceptTransfer(
         'transferId',
         'walletLoginId',
       );
-
+      expect(beginTransactionStub.calledOnce).eql(true);
       expect(getByIdStub.calledOnceWithExactly('transferId', 'walletLoginId'));
-      expect(
-        getByNameStub
-          .getCall(0)
-          .calledWithExactly(wallet_id.originating_wallet),
-      );
-      expect(
-        getByNameStub
-          .getCall(1)
-          .calledWithExactly(wallet_id.destination_wallet),
-      );
+      expect(getByNameStub.getCall(0).calledWithExactly('originating_wallet'));
+      expect(getByNameStub.getCall(1).calledWithExactly('destination_wallet'));
       expect(
         logEventStub.getCall(0).calledWithExactly({
-          loggedInWalletId: originator_wallet_id.id,
-          type: 'transfer_completed',
-          payload: { transferId: 'transferId' },
+          wallet_id: originator_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: { result },
         }),
       ).eql(true);
       expect(
         logEventStub.getCall(1).calledWithExactly({
-          loggedInWalletId: destination_wallet_id.id,
-          type: 'transfer_completed',
-          payload: { transferId: 'transferId' },
+          wallet_id: destination_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: { result },
         }),
       ).eql(true);
-      expect(result).eql('transferAccepted');
+      expect(result).eql({
+        state: TransferEnums.STATE.completed,
+      });
       expect(
         acceptTransferStub.calledOnceWithExactly('transferId', 'walletLoginId'),
       ).eql(true);
-      expect(beginTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.notCalled).eql(true);
       expect(commitTransactionStub.calledOnce).eql(true);
     });
@@ -310,7 +301,7 @@ describe('TransferService', () => {
 
     beforeEach(() => {
       declineTransferStub = sinon.stub(Transfer.prototype, 'declineTransfer');
-      logEventStub = sinon.stub(Event.prototype, 'logEvent');
+      logEventStub = sinon.stub(EventService.prototype, 'logEvent');
       getByIdStub = sinon
         .stub(Transfer.prototype, 'getById')
         .resolves(wallet_id);
@@ -364,30 +355,30 @@ describe('TransferService', () => {
       );
       expect(
         logEventStub.getCall(0).calledWithExactly({
-          loggedInWalletId: originator_wallet_id.id,
-          type: 'transfer_request_cancelled_by_destination',
-          payload: { transferId: 'transferId' },
+          wallet_id: originator_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_request_cancelled_by_destination,
+          payload: { result },
         }),
       ).eql(true);
       expect(
         logEventStub.getCall(1).calledWithExactly({
-          loggedInWalletId: originator_wallet_id.id,
-          type: 'transfer_failed',
-          payload: { transferId: 'transferId' },
+          wallet_id: originator_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_failed,
+          payload: { result },
         }),
       ).eql(true);
       expect(
         logEventStub.getCall(2).calledWithExactly({
-          loggedInWalletId: destination_wallet_id.id,
-          type: 'transfer_request_cancelled_by_destination',
-          payload: { transferId: 'transferId' },
+          wallet_id: destination_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_request_cancelled_by_destination,
+          payload: { result },
         }),
       ).eql(true);
       expect(
         logEventStub.getCall(3).calledWithExactly({
-          loggedInWalletId: destination_wallet_id.id,
-          type: 'transfer_failed',
-          payload: { transferId: 'transferId' },
+          wallet_id: destination_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_failed,
+          payload: { result },
         }),
       ).eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
@@ -415,7 +406,7 @@ describe('TransferService', () => {
 
     beforeEach(() => {
       cancelTransferStub = sinon.stub(Transfer.prototype, 'cancelTransfer');
-      logEventStub = sinon.stub(Event.prototype, 'logEvent');
+      logEventStub = sinon.stub(EventService.prototype, 'logEvent');
       getByIdStub = sinon
         .stub(Transfer.prototype, 'getById')
         .resolves(wallet_id);
@@ -457,30 +448,30 @@ describe('TransferService', () => {
       );
       expect(
         logEventStub.getCall(0).calledWithExactly({
-          loggedInWalletId: originator_wallet_id.id,
-          type: 'transfer_pending_cancelled_by_requestor',
-          payload: { transferId: 'transferId' },
+          wallet_id: originator_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_pending_cancelled_by_requestor,
+          payload: { result },
         }),
       ).eql(true);
       expect(
         logEventStub.getCall(1).calledWithExactly({
-          loggedInWalletId: originator_wallet_id.id,
-          type: 'transfer_failed',
-          payload: { transferId: 'transferId' },
+          wallet_id: originator_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_failed,
+          payload: { result },
         }),
       ).eql(true);
       expect(
         logEventStub.getCall(2).calledWithExactly({
-          loggedInWalletId: destination_wallet_id.id,
-          type: 'transfer_pending_cancelled_by_requestor',
-          payload: { transferId: 'transferId' },
+          wallet_id: destination_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_pending_cancelled_by_requestor,
+          payload: { result },
         }),
       ).eql(true);
       expect(
         logEventStub.getCall(3).calledWithExactly({
-          loggedInWalletId: destination_wallet_id.id,
-          type: 'transfer_failed',
-          payload: { transferId: 'transferId' },
+          wallet_id: destination_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_failed,
+          payload: { result },
         }),
       ).eql(true);
       expect(result).eql('transferCancelled');
@@ -505,7 +496,7 @@ describe('TransferService', () => {
       transferStub = sinon.stub(Transfer.prototype, 'transfer');
       transferBundleStub = sinon.stub(Transfer.prototype, 'transferBundle');
       tokenServiceGetByIdStub = sinon.stub(TokenService.prototype, 'getById');
-      logEventStub = sinon.stub(Event.prototype, 'logEvent');
+      logEventStub = sinon.stub(EventService.prototype, 'logEvent');
     });
 
     it('should rollback transaction if error occurs', async () => {
@@ -638,8 +629,8 @@ describe('TransferService', () => {
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(
         logEventStub.getCall(0).calledWithExactly({
-          loggedInWalletId: senderWallet.id,
-          type: 'transfer_completed',
+          wallet_id: senderWallet.id,
+          type: EventEnums.TRANSFER.transfer_completed,
           payload: {
             walletSender: senderWallet.name,
             walletReceiver: receiverWallet.name,
@@ -650,8 +641,8 @@ describe('TransferService', () => {
       ).eql(true);
       expect(
         logEventStub.getCall(1).calledWithExactly({
-          loggedInWalletId: receiverWallet.id,
-          type: 'transfer_completed',
+          wallet_id: receiverWallet.id,
+          type: EventEnums.TRANSFER.transfer_completed,
           payload: {
             walletSender: senderWallet.name,
             walletReceiver: receiverWallet.name,
@@ -690,6 +681,7 @@ describe('TransferService', () => {
 
       expect(result.status).eql(202);
       expect(result.result).eql({ state: TransferEnums.STATE.pending });
+      expect(beginTransactionStub.calledOnce).eql(true);
       expect(
         tokenServiceGetByIdStub
           .getCall(0)
@@ -717,30 +709,30 @@ describe('TransferService', () => {
       );
       expect(
         logEventStub.getCall(0).calledWithExactly({
-          loggedInWalletId: senderWallet.id,
-          type: 'transfer_requested',
+          wallet_id: senderWallet.id,
+          type: EventEnums.TRANSFER.transfer_requested,
           payload: {
             walletSender: senderWallet.name,
             walletReceiver: receiverWallet.name,
             tokenTransferred: ['token1', 'token2'],
+            transferState: 'pending',
             claim: true,
           },
         }),
       ).eql(true);
-
       expect(
         logEventStub.getCall(1).calledWithExactly({
-          loggedInWalletId: receiverWallet.id,
-          type: 'transfer_requested',
+          wallet_id: receiverWallet.id,
+          type: EventEnums.TRANSFER.transfer_requested,
           payload: {
             walletSender: senderWallet.name,
             walletReceiver: receiverWallet.name,
             tokenTransferred: ['token1', 'token2'],
+            transferState: 'pending',
             claim: true,
           },
         }),
       ).eql(true);
-      expect(beginTransactionStub.calledOnce).eql(true);
       expect(commitTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.notCalled).eql(true);
     });
@@ -786,12 +778,13 @@ describe('TransferService', () => {
       );
       expect(
         logEventStub.getCall(0).calledWithExactly({
-          loggedInWalletId: senderWallet.id,
-          type: 'transfer_requested',
+          wallet_id: senderWallet.id,
+          type: EventEnums.TRANSFER.transfer_requested,
           payload: {
             walletSender: senderWallet.name,
             walletReceiver: receiverWallet.name,
             bundle: 10,
+            transferState: 'pending',
             claim: true,
           },
         }),
@@ -799,12 +792,13 @@ describe('TransferService', () => {
 
       expect(
         logEventStub.getCall(1).calledWithExactly({
-          loggedInWalletId: receiverWallet.id,
-          type: 'transfer_requested',
+          wallet_id: receiverWallet.id,
+          type: EventEnums.TRANSFER.transfer_requested,
           payload: {
             walletSender: senderWallet.name,
             walletReceiver: receiverWallet.name,
             bundle: 10,
+            transferState: 'pending',
             claim: true,
           },
         }),
@@ -841,7 +835,7 @@ describe('TransferService', () => {
         'fulfillTransferWithTokens',
       );
       tokenServiceGetByIdStub = sinon.stub(TokenService.prototype, 'getById');
-      logEventStub = sinon.stub(Event.prototype, 'logEvent');
+      logEventStub = sinon.stub(EventService.prototype, 'logEvent');
       getByIdStub = sinon
         .stub(Transfer.prototype, 'getById')
         .resolves(wallet_id);
@@ -899,17 +893,17 @@ describe('TransferService', () => {
       );
       expect(
         logEventStub.getCall(0).calledWithExactly({
-          loggedInWalletId: originator_wallet_id.id,
-          type: 'transfer_completed',
-          payload: { transferId: 'transferId' },
+          wallet_id: originator_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: { result },
         }),
       ).eql(true);
 
       expect(
         logEventStub.getCall(1).calledWithExactly({
-          loggedInWalletId: destination_wallet_id.id,
-          type: 'transfer_completed',
-          payload: { transferId: 'transferId' },
+          wallet_id: destination_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: { result },
         }),
       ).eql(true);
       expect(beginTransactionStub.calledOnce).eql(true);
@@ -967,17 +961,17 @@ describe('TransferService', () => {
       );
       expect(
         logEventStub.getCall(0).calledWithExactly({
-          loggedInWalletId: originator_wallet_id.id,
+          wallet_id: originator_wallet_id.id,
           type: 'transfer_completed',
-          payload: { transferId: 'transferId', tokens: ['token1', 'token2'] },
+          payload: { result, tokens: ['token1', 'token2'] },
         }),
       ).eql(true);
 
       expect(
         logEventStub.getCall(1).calledWithExactly({
-          loggedInWalletId: destination_wallet_id.id,
+          wallet_id: destination_wallet_id.id,
           type: 'transfer_completed',
-          payload: { transferId: 'transferId', tokens: ['token1', 'token2'] },
+          payload: { result, tokens: ['token1', 'token2'] },
         }),
       ).eql(true);
     });

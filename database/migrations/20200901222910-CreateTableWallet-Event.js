@@ -22,7 +22,6 @@ exports.up = function (db) {
       notNull: true,
       defaultValue: new String('now()'),
     },
-    payload: { type: 'json', notNull: true },
   });
 };
 

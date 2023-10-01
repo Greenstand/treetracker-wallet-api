@@ -1,13 +1,12 @@
 const WalletService = require('./WalletService');
-const Event = require('../models/Event');
-const Session = require('../infra/database/Session');
+const EventService = require('./EventService');
 const JWTService = require('./JWTService');
 const HashService = require('./HashService');
+const EventEnums = require('../utils/event-enum');
 
 class AuthService {
   static async signIn({ wallet, password }) {
-    const session = new Session();
-    const event = new Event(session);
+    const eventService = new EventService();
     const walletService = new WalletService();
     const walletObject = await walletService.getByIdOrName(wallet);
 
@@ -16,9 +15,9 @@ class AuthService {
     if (hash === walletObject.password) {
       const token = JWTService.sign(walletObject);
 
-      await event.logEvent({
-        loggedInWalletId: walletObject.id,
-        type: 'login',
+      await eventService.logEvent({
+        wallet_id: walletObject.id,
+        type: EventEnums.AUTH.login,
         payload: {},
       });
 

@@ -55,7 +55,6 @@ const walletGetTrustRelationships = async (req, res) => {
 };
 
 const walletPost = async (req, res) => {
-  // need to add to the events table
   await walletPostSchema.validateAsync(req.body, { abortEarly: false });
 
   const walletService = new WalletService();

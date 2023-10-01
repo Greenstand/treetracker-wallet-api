@@ -185,8 +185,6 @@ class Transfer {
         claim: claimBoolean,
       });
 
-      log.info(transfer);
-      log.info('here');
       log.debug('now, deal with tokens');
       await this._token.completeTransfer(tokens, transfer, claimBoolean);
       return this.constructor.removeWalletIds(transfer);

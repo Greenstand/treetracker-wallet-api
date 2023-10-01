@@ -1,19 +1,18 @@
-const log = require('loglevel');
-const log = require('loglevel');
 const Session = require('../infra/database/Session');
 const Transfer = require('../models/Transfer');
 const HttpError = require('../utils/HttpError');
 const WalletService = require('./WalletService');
 const TokenService = require('./TokenService');
 const TransferEnums = require('../utils/transfer-enum');
-const Event = require('../models/Event');
+const EventService = require('./EventService');
+const EventEnums = require('../utils/event-enum');
 
 class TransferService {
   constructor() {
     this._session = new Session();
     this._transfer = new Transfer(this._session);
     this._walletService = new WalletService();
-    this._event = new Event(this._session);
+    this._eventService = new EventService();
   }
 
   async getByFilter(query, walletLoginId) {
@@ -101,9 +100,9 @@ class TransferService {
       let status;
       if (result.state === TransferEnums.STATE.completed) {
         // the log should show up on both sender and receiver
-        await this._event.logEvent({
-          loggedInWalletId: walletSender.id,
-          type: 'transfer_completed',
+        await this._eventService.logEvent({
+          wallet_id: walletSender.id,
+          type: EventEnums.TRANSFER.transfer_completed,
           payload: tokens
             ? {
                 walletSender: walletSender.name,
@@ -120,9 +119,9 @@ class TransferService {
         });
 
         // the log should show up on both sender and receiver
-        await this._event.logEvent({
-          loggedInWalletId: walletReceiver.id,
-          type: 'transfer_completed',
+        await this._eventService.logEvent({
+          wallet_id: walletReceiver.id,
+          type: EventEnums.TRANSFER.transfer_completed,
           payload: tokens
             ? {
                 walletSender: walletSender.name,
@@ -144,39 +143,43 @@ class TransferService {
         result.state === TransferEnums.STATE.requested
       ) {
         // the log should show up on both sender and receiver
-        await this._event.logEvent({
-          loggedInWalletId: walletSender.id,
-          type: 'transfer_requested',
+        await this._eventService.logEvent({
+          wallet_id: walletSender.id,
+          type: EventEnums.TRANSFER.transfer_requested,
           payload: tokens
             ? {
                 walletSender: walletSender.name,
                 walletReceiver: walletReceiver.name,
                 tokenTransferred: tokenArr,
+                transferState: result.state,
                 claim,
               }
             : {
                 walletSender: walletSender.name,
                 walletReceiver: walletReceiver.name,
                 bundle: bundle.bundle_size,
+                transferState: result.state,
                 claim,
               },
         });
 
         // the log should show up on both sender and receiver
-        await this._event.logEvent({
-          loggedInWalletId: walletReceiver.id,
-          type: 'transfer_requested',
+        await this._eventService.logEvent({
+          wallet_id: walletReceiver.id,
+          type: EventEnums.TRANSFER.transfer_requested,
           payload: tokens
             ? {
                 walletSender: walletSender.name,
                 walletReceiver: walletReceiver.name,
                 tokenTransferred: tokenArr,
+                transferState: result.state,
                 claim,
               }
             : {
                 walletSender: walletSender.name,
                 walletReceiver: walletReceiver.name,
                 bundle: bundle.bundle_size,
+                transferState: result.state,
                 claim,
               },
         });
@@ -199,8 +202,6 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
-      log.info(transferId, walletLoginId);
-
       const transfer = await this._transfer.getById({
         transferId,
         walletLoginId,
@@ -212,9 +213,7 @@ class TransferService {
         walletLoginId,
       );
 
-      await this._session.commitTransaction();
-
-      if (transfer) {
+      if (transfer && result.state === TransferEnums.STATE.completed) {
         const originator_wallet_id = await this._walletService.getByName(
           transfer.originating_wallet,
         );
@@ -224,20 +223,22 @@ class TransferService {
 
         // transfer completed
         // the log should show up on both sender and receiver
-        await this._event.logEvent({
-          loggedInWalletId: originator_wallet_id.id,
-          type: 'transfer_completed',
-          payload: { transferId },
+        await this._eventService.logEvent({
+          wallet_id: originator_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: { result },
         });
 
         // transfer completed
         // the log should show up on both sender and receiver
-        await this._event.logEvent({
-          loggedInWalletId: destination_wallet_id.id,
-          type: 'transfer_completed',
-          payload: { transferId },
+        await this._eventService.logEvent({
+          wallet_id: destination_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: { result },
         });
       }
+
+      await this._session.commitTransaction();
 
       return result;
     } catch (e) {
@@ -270,35 +271,35 @@ class TransferService {
         walletLoginId,
       );
 
+      // transfer request cancelled by destination
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_request_cancelled_by_destination,
+        payload: { result },
+      });
+
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_failed,
+        payload: { result },
+      });
+
+      // transfer request cancelled by destination
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_request_cancelled_by_destination,
+        payload: { result },
+      });
+
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_failed,
+        payload: { result },
+      });
+
       await this._session.commitTransaction();
-
-      // transfer request cancelled by destination
-      // the log should show up on both sender and receiver
-      await this._event.logEvent({
-        loggedInWalletId: originator_wallet_id.id,
-        type: 'transfer_request_cancelled_by_destination',
-        payload: { transferId },
-      });
-
-      await this._event.logEvent({
-        loggedInWalletId: originator_wallet_id.id,
-        type: 'transfer_failed',
-        payload: { transferId },
-      });
-
-      // transfer request cancelled by destination
-      // the log should show up on both sender and receiver
-      await this._event.logEvent({
-        loggedInWalletId: destination_wallet_id.id,
-        type: 'transfer_request_cancelled_by_destination',
-        payload: { transferId },
-      });
-
-      await this._event.logEvent({
-        loggedInWalletId: destination_wallet_id.id,
-        type: 'transfer_failed',
-        payload: { transferId },
-      });
 
       return result;
     } catch (e) {
@@ -331,35 +332,35 @@ class TransferService {
         walletLoginId,
       );
 
+      // transfer pending cancelled by requestor
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_pending_cancelled_by_requestor,
+        payload: { result },
+      });
+
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_failed,
+        payload: { result },
+      });
+
+      // transfer pending cancelled by requestor
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_pending_cancelled_by_requestor,
+        payload: { result },
+      });
+
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_failed,
+        payload: { result },
+      });
+
       await this._session.commitTransaction();
-
-      // transfer pending cancelled by requestor
-      // the log should show up on both sender and receiver
-      await this._event.logEvent({
-        loggedInWalletId: originator_wallet_id.id,
-        type: 'transfer_pending_cancelled_by_requestor',
-        payload: { transferId },
-      });
-
-      await this._event.logEvent({
-        loggedInWalletId: originator_wallet_id.id,
-        type: 'transfer_failed',
-        payload: { transferId },
-      });
-
-      // transfer pending cancelled by requestor
-      // the log should show up on both sender and receiver
-      await this._event.logEvent({
-        loggedInWalletId: destination_wallet_id.id,
-        type: 'transfer_pending_cancelled_by_requestor',
-        payload: { transferId },
-      });
-
-      await this._event.logEvent({
-        loggedInWalletId: destination_wallet_id.id,
-        type: 'transfer_failed',
-        payload: { transferId },
-      });
 
       return result;
     } catch (e) {
@@ -410,23 +411,24 @@ class TransferService {
           walletLoginId,
         );
       }
+
+      // transfer completed
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_completed,
+        payload: tokens.length === 0 ? { result } : { result, tokens },
+      });
+
+      // transfer completed
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_completed,
+        payload: tokens.length === 0 ? { result } : { result, tokens },
+      });
+
       await this._session.commitTransaction();
-
-      // transfer completed
-      // the log should show up on both sender and receiver
-      await this._event.logEvent({
-        loggedInWalletId: originator_wallet_id.id,
-        type: 'transfer_completed',
-        payload: tokens.length === 0 ? { transferId } : { transferId, tokens },
-      });
-
-      // transfer completed
-      // the log should show up on both sender and receiver
-      await this._event.logEvent({
-        loggedInWalletId: destination_wallet_id.id,
-        type: 'transfer_completed',
-        payload: tokens.length === 0 ? { transferId } : { transferId, tokens },
-      });
 
       return result;
     } catch (e) {

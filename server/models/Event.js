@@ -1,10 +1,12 @@
-const log = require('loglevel');
 // const Joi = require('joi');
 const EventRepository = require('../repositories/EventRepository');
+// const WalletService = require('../services/WalletService');
+// const HttpError = require('../utils/HttpError');
 
 class Event {
   constructor(session) {
     this._eventRepository = new EventRepository(session);
+    // this._walletService = new WalletService();
   }
 
   async getAllEvents(walletId, limit, since) {
@@ -31,10 +33,9 @@ class Event {
     });
   }
 
-  async logEvent({ loggedInWalletId, type, payload }) {
-    log.info(loggedInWalletId);
+  async logEvent({ wallet_id, type, payload }) {
     const event = await this._eventRepository.create({
-      wallet_id: loggedInWalletId,
+      wallet_id,
       type,
       payload,
     });
