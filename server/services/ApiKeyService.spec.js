@@ -50,7 +50,7 @@ describe('ApiKey', () => {
 
   it('good key should pass', async () => {
     sinon.stub(ApiKey.prototype, 'getByApiKey').returns({});
-    await apiKey.check('not_exist');
+    await apiKey.check('not_exist', '');
     ApiKey.prototype.getByApiKey.restore();
   });
 });

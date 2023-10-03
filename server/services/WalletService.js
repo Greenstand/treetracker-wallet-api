@@ -274,6 +274,7 @@ class WalletService {
     const response = await axios.post(`${MAP_CONFIG_API_URL}/config`, {
       name: 'extra-wallet',
       ref_uuid: walletId,
+      ref_id: walletId,
       data: {
         ...(walletAbout && {
           about: walletAbout,

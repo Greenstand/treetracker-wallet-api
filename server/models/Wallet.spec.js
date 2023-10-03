@@ -137,6 +137,10 @@ describe('Wallet Model', () => {
       walletId,
       { limit: 1, offset: 1 },
       wallet,
+      'created_at',
+      'asc',
+      undefined,
+      undefined,
       false,
     );
 
@@ -147,6 +151,10 @@ describe('Wallet Model', () => {
       walletId,
       { limit: 1, offset: 1 },
       wallet,
+      'created_at',
+      'asc',
+      undefined,
+      undefined,
       false,
     );
   });

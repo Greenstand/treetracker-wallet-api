@@ -220,11 +220,23 @@ describe('WalletService', () => {
         id,
         limitOptions,
         'name',
-         false,
+        'created_at',
+        'asc',
+        undefined,
+        undefined,
+        false,
       );
-      expect(
-        getAllWalletsStub).calledOnceWithExactly(id, limitOptions, 'name', true)
-    // ).eql(true);
+      expect(getAllWalletsStub).calledOnceWithExactly(
+        id,
+        limitOptions,
+        'name',
+        'created_at',
+        'asc',
+        undefined,
+        undefined,
+        true,
+      );
+      // ).eql(true);
       expect(allWallets).eql({ wallets: result, count });
     });
 
