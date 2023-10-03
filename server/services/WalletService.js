@@ -331,7 +331,7 @@ class WalletService {
       }
 
       const tokenModel = new Token(this._session);
-      const tokenCount = await tokenModel.countTokenByWallet(senderWallet);
+      const tokenCount = await tokenModel.countTokenByWallet(senderWallet.id);
 
       if (totalAmountToTransfer > tokenCount)
         throw new HttpError(422, 'sender does not have enough tokens');
