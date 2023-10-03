@@ -28,6 +28,7 @@ const {
   walletPost,
   walletSingleGet,
   walletBatchCreate,
+  walletBatchTransfer,
 } = require('../handlers/walletHandler');
 
 router.get('/', handlerWrapper(walletGet));
@@ -44,6 +45,12 @@ router.post(
   '/batch-create-wallet',
   upload.single('csv'),
   handlerWrapper(walletBatchCreate),
+);
+
+router.post(
+  '/batch-transfer',
+  upload.single('csv'),
+  handlerWrapper(walletBatchTransfer),
 );
 
 routerWrapper.use('/wallets', apiKeyHandler, verifyJWTHandler, router);

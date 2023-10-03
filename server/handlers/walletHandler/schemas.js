@@ -67,6 +67,11 @@ const csvValidationSchema = Joi.array()
   .min(1)
   .max(2500);
 
+const walletBatchTransferBodySchema = Joi.object({
+  sender_wallet: Joi.string().required(),
+  token_transfer_amount_default: Joi.number().integer(),
+}).with('token_transfer_amount_default', 'sender_wallet');
+
 module.exports = {
   walletGetQuerySchema,
   walletIdParamSchema,
@@ -74,4 +79,5 @@ module.exports = {
   walletPostSchema,
   walletBatchCreateBodySchema,
   csvValidationSchema,
+  walletBatchTransferBodySchema,
 };

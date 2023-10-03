@@ -289,6 +289,63 @@ class WalletService {
     });
     return response.body;
   }
+
+  async batchTransferWallet(
+    sender_wallet,
+    token_transfer_amount_default,
+    wallet_id,
+    csvJson,
+    filePath,
+  ) {
+    try {
+      await this._session.beginTransaction();
+
+      const senderWallet = await this.getByName(sender_wallet);
+
+      const recipientWallets = [];
+      let totalAmountToTransfer = 0;
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
+        const amount =
+          token_transfer_amount_overwrite || token_transfer_amount_default;
+        if (amount && !sender_wallet) {
+          throw new HttpError(422, 'sender_wallet is required for transfer.');
+        }
+        if (amount) {
+          totalAmountToTransfer += +amount;
+        }
+        const walletDetails = await this.getByName(wallet_name);
+        recipientWallets.push({ amount, walletDetails });
+      }
+
+      const tokenModel = new Token(this._session);
+      const tokenCount = await tokenModel.countTokenByWallet(senderWallet);
+
+      if (totalAmountToTransfer > tokenCount)
+        throw new HttpError(422, 'sender does not have enough tokens');
+
+      const transferModel = new Transfer(this._session);
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { walletDetails, amount } of recipientWallets) {
+        if (amount) {
+          // claim is false for now
+          await transferModel.transferBundle(
+            wallet_id,
+            senderWallet,
+            walletDetails,
+            amount,
+            false,
+          );
+        }
+      }
+    } catch (e) {
+      await this._session.rollbackTransaction();
+      await fs.unlink(filePath);
+      throw e;
+    }
+  }
 }
 
 module.exports = WalletService;
