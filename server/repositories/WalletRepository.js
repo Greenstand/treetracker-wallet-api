@@ -58,10 +58,10 @@ class WalletRepository extends BaseRepository {
     id,
     limitOptions,
     name,
-    // sort_by,
-    // order,
-    // created_at_start_date,
-    // created_at_end_date,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
     getCount,
   ) {
     let query = this._session
@@ -111,7 +111,21 @@ class WalletRepository extends BaseRepository {
       union2 = union2.where('name', 'ilike', `%${name}%`);
     }
 
-    query = query.union(union1, union2);
+    query = query.union(union1, union2).orderBy(sort_by, order);
+
+    query = this._session.getDB().select('*').from(query.as('t'));
+
+    if (created_at_start_date) {
+      query = query.whereRaw(`cast("created_at" as date) >= ?`, [
+        created_at_start_date,
+      ]);
+    }
+
+    if (created_at_end_date) {
+      query = query.whereRaw(`cast("created_at" as date) <= ?`, [
+        created_at_end_date,
+      ]);
+    }
 
     // total count query (before applying limit and offset options)
     const countQuery = this._session

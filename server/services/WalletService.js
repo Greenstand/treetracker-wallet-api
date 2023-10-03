@@ -76,6 +76,10 @@ class WalletService {
         id,
         limitOptions,
         name,
+        sort_by,
+        order,
+        created_at_start_date,
+        created_at_end_date,
         getWalletCount,
       );
       return {

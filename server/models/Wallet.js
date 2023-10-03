@@ -143,20 +143,20 @@ class Wallet {
     id,
     limitOptions,
     name,
-    // sort_by,
-    // order,
-    // created_at_start_date,
-    // created_at_end_date,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
     getCount,
   ) {
     return this._walletRepository.getAllWallets(
       id,
       limitOptions,
       name,
-      // sort_by,
-      // order,
-      // created_at_start_date,
-      // created_at_end_date,
+      sort_by,
+      order,
+      created_at_start_date,
+      created_at_end_date,
       getCount,
     );
   }
