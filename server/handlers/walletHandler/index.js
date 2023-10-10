@@ -11,6 +11,7 @@ const {
   walletBatchCreateBodySchema,
   csvValidationSchema,
   walletBatchTransferBodySchema,
+  csvValidationSchemaTransfer,
 } = require('./schemas');
 
 const walletGet = async (req, res) => {
@@ -91,17 +92,15 @@ const walletPost = async (req, res) => {
   });
 
   const { wallet_id } = req;
-  const { wallet: walletToBeCreated } = validatedBody;
+  const { wallet: walletToBeCreated, about } = validatedBody;
   const walletService = new WalletService();
-  const { wallet, id } = await walletService.createWallet(
+  const returnedWallet = await walletService.createWallet(
     wallet_id,
     walletToBeCreated,
+    about,
   );
 
-  res.status(201).json({
-    id,
-    wallet,
-  });
+  res.status(201).json(returnedWallet);
 };
 
 const walletBatchCreate = async (req, res) => {
@@ -139,9 +138,12 @@ const walletBatchTransfer = async (req, res) => {
 
   const { path } = req.file;
   const jsonResult = await csvtojson().fromFile(path);
-  const validatedCsvFile = await csvValidationSchema.validateAsync(jsonResult, {
-    abortEarly: false,
-  });
+  const validatedCsvFile = await csvValidationSchemaTransfer.validateAsync(
+    jsonResult,
+    {
+      abortEarly: false,
+    },
+  );
 
   const { sender_wallet, token_transfer_amount_default } = validatedBody;
   const { wallet_id } = req;

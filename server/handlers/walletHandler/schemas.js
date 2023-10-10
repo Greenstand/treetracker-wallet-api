@@ -46,6 +46,7 @@ const walletPostSchema = Joi.object({
     .trim(true)
     .regex(new RegExp('^[A-Za-z0-9-@.]+$'))
     .message('wallet can only contain numbers, letters and the - . @ symbols'),
+  about: Joi.string(),
 });
 
 const walletBatchCreateBodySchema = Joi.object({
@@ -54,6 +55,21 @@ const walletBatchCreateBodySchema = Joi.object({
 }).with('token_transfer_amount_default', 'sender_wallet');
 
 const csvValidationSchema = Joi.array()
+  .items(
+    Joi.object({
+      wallet_name: Joi.string().trim().required(),
+      token_transfer_amount_overwrite: [
+        Joi.number().integer(),
+        Joi.string().valid(''),
+      ],
+      extra_wallet_data_about: Joi.string(),
+    }),
+  )
+  .unique('wallet_name')
+  .min(1)
+  .max(2500);
+
+const csvValidationSchemaTransfer = Joi.array()
   .items(
     Joi.object({
       wallet_name: Joi.string().trim().required(),
@@ -79,5 +95,6 @@ module.exports = {
   walletPostSchema,
   walletBatchCreateBodySchema,
   csvValidationSchema,
+  csvValidationSchemaTransfer,
   walletBatchTransferBodySchema,
 };

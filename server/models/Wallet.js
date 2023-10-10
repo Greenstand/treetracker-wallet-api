@@ -13,7 +13,7 @@ class Wallet {
     this._tokenRepository = new TokenRepository(session);
   }
 
-  async createWallet(loggedInWalletId, wallet) {
+  async createWallet(loggedInWalletId, wallet, about) {
     // check name
     try {
       await this._walletRepository.getByName(wallet);
@@ -32,6 +32,7 @@ class Wallet {
     // need to create a wallet object
     const newWallet = await this._walletRepository.create({
       name: wallet,
+      about,
     });
 
     await this._trustRepository.create({

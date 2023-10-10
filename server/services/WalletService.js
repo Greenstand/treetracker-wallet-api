@@ -40,18 +40,23 @@ class WalletService {
     return wallet;
   }
 
-  async createWallet(loggedInWalletId, wallet) {
+  async createWallet(loggedInWalletId, wallet, about) {
     try {
       await this._session.beginTransaction();
 
       const addedWallet = await this._wallet.createWallet(
         loggedInWalletId,
         wallet,
+        about,
       );
 
       await this._session.commitTransaction();
 
-      return { wallet: addedWallet.name, id: addedWallet.id };
+      return {
+        id: addedWallet.id,
+        wallet: addedWallet.name,
+        about: addedWallet.about,
+      };
     } catch (e) {
       if (this._session.isTransactionInProgress()) {
         await this._session.rollbackTransaction();
@@ -125,7 +130,11 @@ class WalletService {
       let totalAmountToTransfer = 0;
 
       // eslint-disable-next-line no-restricted-syntax
-      for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
+      for (const {
+        wallet_name,
+        token_transfer_amount_overwrite,
+        extra_wallet_data_about,
+      } of csvJson) {
         if (token_transfer_amount_overwrite && !sender_wallet) {
           throw new HttpError(422, 'sender_wallet is required for transfer.');
         }
@@ -133,7 +142,9 @@ class WalletService {
           token_transfer_amount_overwrite || token_transfer_amount_default;
         if (amount) totalAmountToTransfer += +amount;
 
-        walletPromises.push(this.createWallet(wallet_id, wallet_name));
+        walletPromises.push(
+          this.createWallet(wallet_id, wallet_name, extra_wallet_data_about),
+        );
       }
 
       const tokenModel = new Token(this._session);
@@ -177,24 +188,21 @@ class WalletService {
         );
 
         const {
-          extra_wallet_data_about,
           extra_wallet_data_logo_url,
           extra_wallet_data_cover_url,
         } = walletDetails;
 
-        if (
-          extra_wallet_data_about ||
-          extra_wallet_data_logo_url ||
-          extra_wallet_data_cover_url
-        ) {
+        if (extra_wallet_data_logo_url || extra_wallet_data_cover_url) {
           extraWalletInformation.push({
             walletId: wallet.id,
             name: wallet.name,
-            walletAbout: extra_wallet_data_about,
             walletLogoUrl: extra_wallet_data_logo_url,
             walletCoverUrl: extra_wallet_data_cover_url,
           });
         }
+
+        await this._session.beginTransaction();
+
         const amountToTransfer =
           walletDetails.token_transfer_amount_overwrite ||
           token_transfer_amount_default;
@@ -208,6 +216,8 @@ class WalletService {
             false,
           );
         }
+
+        await this._session.commitTransaction();
       }
 
       await fs.unlink(filePath);
@@ -218,7 +228,6 @@ class WalletService {
         // eslint-disable-next-line no-restricted-syntax
         for (const {
           walletId,
-          walletAbout,
           walletLogoUrl,
           walletCoverUrl,
           name,
@@ -226,7 +235,6 @@ class WalletService {
           walletConfigPromises.push(
             this.addWalletToMapConfig({
               walletId,
-              walletAbout,
               walletCoverUrl,
               walletLogoUrl,
               name,
@@ -261,6 +269,9 @@ class WalletService {
 
       return result;
     } catch (e) {
+      if (this._session.isTransactionInProgress()) {
+        await this._session.rollbackTransaction();
+      }
       await fs.unlink(filePath);
       throw e;
     }
@@ -269,7 +280,6 @@ class WalletService {
   // eslint-disable-next-line class-methods-use-this
   async addWalletToMapConfig({
     walletId,
-    walletAbout,
     walletLogoUrl,
     walletCoverUrl,
     name,
@@ -283,9 +293,6 @@ class WalletService {
         ref_uuid: walletId,
         ref_id: walletId,
         data: {
-          ...(walletAbout && {
-            about: walletAbout,
-          }),
           ...(walletLogoUrl && {
             logo_url: walletLogoUrl,
           }),
@@ -351,6 +358,14 @@ class WalletService {
           );
         }
       }
+
+      await this._session.commitTransaction();
+
+      await fs.unlink(filePath);
+
+      return {
+        message: 'batch transfer successful',
+      };
     } catch (e) {
       await this._session.rollbackTransaction();
       await fs.unlink(filePath);
