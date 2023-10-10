@@ -19,11 +19,6 @@ exports.up = function (db) {
     password: { type: 'string' },
     salt: { type: 'string' },
     logo_url: { type: 'string' },
-    created_at: {
-      type: 'timestamp',
-      notNull: true,
-      defaultValue: new String('now()'),
-    },
   });
 };
 
