@@ -13,7 +13,16 @@ class TransferService {
   }
 
   async getByFilter(query, walletLoginId) {
-    const { state, wallet, limit, offset, before, after, sort_by, order } = query;
+    const {
+      state,
+      wallet,
+      limit,
+      offset,
+      before,
+      after,
+      sort_by,
+      order,
+    } = query;
 
     let walletId;
 
@@ -22,7 +31,7 @@ class TransferService {
       walletId = walletDetails.id;
     }
 
-    const {transfers, count}= await this._transfer.getTransfers({
+    const { transfers, count } = await this._transfer.getTransfers({
       state,
       walletId,
       offset,
@@ -31,18 +40,17 @@ class TransferService {
       before,
       after,
       sort_by,
-      order
+      order,
     });
 
-
-    return {transfers, count};
+    return { transfers, count };
   }
 
   async initiateTransfer(transferBody, walletLoginId) {
     // begin transaction
     try {
       await this._session.beginTransaction();
-      
+
       const walletSender = await this._walletService.getByIdOrName(
         transferBody.sender_wallet,
       );
@@ -208,7 +216,7 @@ class TransferService {
     if (!transfer) {
       throw new HttpError(
         404,
-        'Can not find this transfer or it is not related to this wallet',
+        'Transfer does not exist or it is not related to this wallet',
       );
     }
     return transfer;

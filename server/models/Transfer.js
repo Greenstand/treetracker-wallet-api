@@ -27,19 +27,21 @@ class Transfer {
   }
 
   async getByFilter(filter, limitOptions) {
-    const {result, count} = await this._transferRepository.getByFilter(
+    const { result, count } = await this._transferRepository.getByFilter(
       filter,
       limitOptions,
     );
 
+    const transfers = result.map((t) => this.constructor.removeWalletIds(t));
 
-    const transfers =  result.map((t) => this.constructor.removeWalletIds(t));
-
-    return { transfers, count }
+    return { transfers, count };
   }
 
   async getById({ transferId, walletLoginId }) {
-    const {transfers} = await this.getTransfers({ walletLoginId, transferId });
+    const { transfers } = await this.getTransfers({
+      walletLoginId,
+      transferId,
+    });
     return transfers[0];
   }
 
@@ -144,7 +146,7 @@ class Transfer {
       if (token.claim) {
         throw new HttpError(
           409,
-          `The token ${token.id} is claimed, cannot be transfered`,
+          `The token ${token.id} is claimed, cannot be transferred`,
         );
       }
 
@@ -370,9 +372,12 @@ class Transfer {
     } else {
       log.debug('transfer tokens');
       const tokens = await this._token.getTokensByPendingTransferId(transferId);
-      Joi.assert(transfer, Joi.object({
-        source_wallet_id: Joi.string().required()
-      }).unknown());
+      Joi.assert(
+        transfer,
+        Joi.object({
+          source_wallet_id: Joi.string().required(),
+        }).unknown(),
+      );
       await this._token.completeTransfer(tokens, transfer);
     }
     return transferJson;

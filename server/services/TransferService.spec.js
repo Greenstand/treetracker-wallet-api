@@ -58,7 +58,7 @@ describe('TransferService', () => {
       ).eql(true);
       expect(error.code).eql(404);
       expect(error.message).eql(
-        'Can not find this transfer or it is not related to this wallet',
+        'Transfer does not exist or it is not related to this wallet',
       );
     });
 
@@ -143,7 +143,7 @@ describe('TransferService', () => {
     beforeEach(() => {
       getTransfersStub = sinon
         .stub(Transfer.prototype, 'getTransfers')
-        .resolves({transfers: ['transfers'], count: 1});
+        .resolves({ transfers: ['transfers'], count: 1 });
 
       walletGetByIdOrNameStub = sinon
         .stub(WalletService.prototype, 'getByIdOrName')
@@ -155,7 +155,7 @@ describe('TransferService', () => {
         { state: 'state', limit: 1, offset: 1 },
         'walletLoginId',
       );
-      expect(transfers).eql({transfers: ['transfers'], count:1});
+      expect(transfers).eql({ transfers: ['transfers'], count: 1 });
       expect(
         getTransfersStub.calledOnceWithExactly({
           state: 'state',
@@ -186,7 +186,7 @@ describe('TransferService', () => {
         },
         'walletLoginId',
       );
-      expect(transfers).eql({transfers:['transfers'], count:1});
+      expect(transfers).eql({ transfers: ['transfers'], count: 1 });
       expect(
         getTransfersStub.calledOnceWithExactly({
           state: 'state',

@@ -17,7 +17,7 @@ class BaseRepository {
       .where('id', id)
       .first();
     if (!object) {
-      throw new HttpError(404, `Can not found ${this._tableName} by id:${id}`);
+      throw new HttpError(404, `Can not find ${this._tableName} by id: ${id}`);
     }
     return object;
   }
@@ -51,7 +51,9 @@ class BaseRepository {
       const filterObjectCopy = { ...object };
       const beforeFilter = object.before;
       if (object.before) {
-        result.whereRaw(`cast(${Object.keys(beforeFilter)[0]} as date) <= ?`, [Object.values(beforeFilter)[0]])
+        result.whereRaw(`cast(${Object.keys(beforeFilter)[0]} as date) <= ?`, [
+          Object.values(beforeFilter)[0],
+        ]);
         delete filterObjectCopy.before;
       }
       const afterFilter = object.after;
@@ -85,8 +87,8 @@ class BaseRepository {
       promise = promise.limit(options.limit);
     }
 
-    if(options && options.offset) {
-      promise = promise.offset(options.offset)
+    if (options && options.offset) {
+      promise = promise.offset(options.offset);
     }
 
     const result = await promise;
@@ -100,13 +102,16 @@ class BaseRepository {
       .count()
       .table(this._tableName)
       .where(filter);
-      
-    Joi.assert(result, Joi.array().items(
-      Joi.object({
-        count: Joi.string().required()
-      })
-    ));
-    
+
+    Joi.assert(
+      result,
+      Joi.array().items(
+        Joi.object({
+          count: Joi.string().required(),
+        }),
+      ),
+    );
+
     return parseInt(result[0].count);
   }
 
@@ -154,9 +159,7 @@ class BaseRepository {
       .getDB()
       .batchInsert(this._tableName, objects)
       .returning('id');
-    Joi.assert(result, Joi.array().items(
-        Joi.string()
-    ));
+    Joi.assert(result, Joi.array().items(Joi.string()));
     return result;
   }
 }

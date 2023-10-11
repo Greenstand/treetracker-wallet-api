@@ -364,7 +364,7 @@ class WalletService {
       await fs.unlink(filePath);
 
       return {
-        message: 'batch transfer successful',
+        message: 'Batch transfer successful',
       };
     } catch (e) {
       await this._session.rollbackTransaction();
