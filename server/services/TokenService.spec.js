@@ -204,8 +204,8 @@ describe('Token', () => {
           'walletLoginId',
           undefined,
           undefined,
-          false,
-          false,
+          'created_at',
+          'desc',
         ),
       ).eql(true);
     });
@@ -223,8 +223,8 @@ describe('Token', () => {
           'walletLoginId',
           undefined,
           undefined,
-          false,
-          false,
+          'created_at',
+          'desc',
         ),
       ).eql(true);
     });
