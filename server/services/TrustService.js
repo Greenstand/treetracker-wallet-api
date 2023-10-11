@@ -19,8 +19,8 @@ class TrustService {
   }) {
     // check if wallet exists first
     // throws error if no wallet matching walletId exists
-    const walletService = new WalletService()
-    await walletService.getWallet(walletId)
+    const walletService = new WalletService();
+    await walletService.getWallet(walletId);
 
     return this._trust.getTrustRelationships({
       walletId,
@@ -36,7 +36,13 @@ class TrustService {
   // except if done manually or coming up with a single query
   async getAllTrustRelationships({ walletId, state, type, request_type }) {
     const walletModel = new Wallet(this._session);
-    const { wallets } = await walletModel.getAllWallets(walletId);
+    const { wallets } = await walletModel.getAllWallets(
+      walletId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
 
     const alltrustRelationships = [];
 
@@ -115,14 +121,12 @@ class TrustService {
     });
   }
 
-  async trustRelationshipGetById({ walletLoginId, trustRelationshipId}){
+  async trustRelationshipGetById({ walletLoginId, trustRelationshipId }) {
     return this._trust.getTrustRelationshipById({
       walletId: walletLoginId,
-      trustRelationshipId
-    })
+      trustRelationshipId,
+    });
+  }
 }
-
-}
-
 
 module.exports = TrustService;

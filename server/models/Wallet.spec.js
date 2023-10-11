@@ -70,10 +70,11 @@ describe('Wallet Model', () => {
     it('should create wallet', async () => {
       walletRepositoryStub.getByName.rejects(new HttpError(404));
       const newWalletId = uuid();
+      const about = 'test about';
 
       walletRepositoryStub.create.resolves({ id: newWalletId });
 
-      const result = await walletModel.createWallet(walletId, wallet);
+      const result = await walletModel.createWallet(walletId, wallet, about);
 
       expect(result).eql({ id: newWalletId });
       expect(trustRepositoryStub.create).calledOnceWithExactly({
@@ -87,6 +88,7 @@ describe('Wallet Model', () => {
       expect(walletRepositoryStub.getByName).calledOnceWithExactly('wallet');
       expect(walletRepositoryStub.create).calledOnceWithExactly({
         name: wallet,
+        about,
       });
     });
   });

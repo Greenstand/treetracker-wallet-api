@@ -247,7 +247,13 @@ class Trust {
    */
   async getTrustRelationshipsRequestedToMe(walletId) {
     const walletModel = new Wallet(this._session);
-    const { wallets: allWallets } = await walletModel.getAllWallets(walletId);
+    const { wallets: allWallets } = await walletModel.getAllWallets(
+      walletId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
     const allTrustRelationships = [];
     await Promise.all(
       allWallets.map(async (wallet) => {
@@ -340,11 +346,11 @@ class Trust {
     });
     const [trustRelationship] = trustRelationships;
 
-    if(!trustRelationship){
+    if (!trustRelationship) {
       throw new HttpError(
-          404,
-          'No such trust relationship exists or it is not associated with the current wallet.'
-      )
+        404,
+        'No such trust relationship exists or it is not associated with the current wallet.',
+      );
     }
 
     if (trustRelationship?.originator_wallet_id !== walletId) {
@@ -365,10 +371,12 @@ class Trust {
    * target wallet
    */
   async hasTrust(walletLoginId, trustType, senderWallet, receiveWallet) {
-    
-    Joi.assert(trustType,
-         Joi.string()
-          .valid(...Object.values(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE)));
+    Joi.assert(
+      trustType,
+      Joi.string().valid(
+        ...Object.values(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
+      ),
+    );
 
     const trustRelationships = await this.getTrustRelationshipsTrusted(
       walletLoginId,
@@ -404,7 +412,7 @@ class Trust {
     return false;
   }
 
-  async getTrustRelationshipById({ walletId, trustRelationshipId}) {
+  async getTrustRelationshipById({ walletId, trustRelationshipId }) {
     const filter = {
       and: [
         {
@@ -420,13 +428,16 @@ class Trust {
       ],
     };
 
-    const [trustRelationship] =  await this._trustRepository.getByFilter(filter)
+    const [trustRelationship] = await this._trustRepository.getByFilter(filter);
 
-    if(!trustRelationship){
-      throw new HttpError(404, 'No such trust relationship exists or it is not associated with the current wallet.')
+    if (!trustRelationship) {
+      throw new HttpError(
+        404,
+        'No such trust relationship exists or it is not associated with the current wallet.',
+      );
     }
 
-    return trustRelationship
+    return trustRelationship;
   }
 
   // NOT YET IN USE
