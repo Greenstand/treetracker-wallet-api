@@ -101,6 +101,10 @@ describe('WalletRepository', () => {
       uuid.v4(),
       { limit: 1 },
       'wallet',
+      'created_at',
+      'desc',
+      undefined,
+      undefined,
       true,
     );
     expect(entity).to.eql({ wallets: [{ id: 1 }], count: 1 });
