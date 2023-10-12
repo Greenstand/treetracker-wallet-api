@@ -2,7 +2,26 @@
   "name": "treetracker",
   "version": "1.31.2",
   "description": "https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest",
+  "author": "Greenstand Engineers",
+  "license": "GPL-3.0-or-later",
   "private": true,
+  "keywords": [
+    "ecology"
+  ],
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Greenstand/treetracker-wallet-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Greenstand/treetracker-wallet-api/issues"
+  },
+  "homepage": "https://github.com/Greenstand/treetracker-wallet-api#readme",
+  "engines": {
+    "node": ">= 16"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
