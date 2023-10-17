@@ -12,6 +12,7 @@ database.json
 .vscode
 .nyc_output
 tmp/
+dist/
 
 # Logs and databases #
 ######################
