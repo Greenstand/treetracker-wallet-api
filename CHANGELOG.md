@@ -1,3 +1,10 @@
+## [1.31.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.31.2...v1.31.3) (2023-10-24)
+
+
+### Bug Fixes
+
+* update production cors ([7d7d3aa](https://github.com/Greenstand/treetracker-wallet-api/commit/7d7d3aa41e3caad55550e980a03d0a77784cee9f))
+
 ## [1.31.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.31.1...v1.31.2) (2023-09-21)
 
 
