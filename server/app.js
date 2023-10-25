@@ -1,5 +1,4 @@
 const express = require('express');
-const Sentry = require('@sentry/node');
 const cors = require('cors');
 const HttpError = require('./utils/HttpError');
 const routes = require('./routes');
@@ -10,10 +9,6 @@ const app = express();
 if (process.env.NODE_ENV === 'development') {
   app.use(cors());
 }
-
-const config = require('../config/config.js');
-
-Sentry.init({ dsn: config.sentry_dsn });
 
 /*
  * Check request
