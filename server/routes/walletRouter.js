@@ -18,6 +18,7 @@ const {
 router.get('/', handlerWrapper(walletGet));
 router.get('/:wallet_id', handlerWrapper(walletSingleGet));
 
+// TO DO: Add below route to yaml
 router.get(
   '/:wallet_id/trust_relationships',
   handlerWrapper(walletGetTrustRelationships),
