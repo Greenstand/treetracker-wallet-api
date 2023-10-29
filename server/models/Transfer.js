@@ -27,19 +27,21 @@ class Transfer {
   }
 
   async getByFilter(filter, limitOptions) {
-    const {result, count} = await this._transferRepository.getByFilter(
+    const { result, count } = await this._transferRepository.getByFilter(
       filter,
       limitOptions,
     );
 
+    const transfers = result.map((t) => this.constructor.removeWalletIds(t));
 
-    const transfers =  result.map((t) => this.constructor.removeWalletIds(t));
-
-    return { transfers, count }
+    return { transfers, count };
   }
 
   async getById({ transferId, walletLoginId }) {
-    const {transfers} = await this.getTransfers({ walletLoginId, transferId });
+    const { transfers } = await this.getTransfers({
+      walletLoginId,
+      transferId,
+    });
     return transfers[0];
   }
 
@@ -182,6 +184,7 @@ class Transfer {
         // TODO: add boolean for claim in transferRepository
         claim: claimBoolean,
       });
+
       log.debug('now, deal with tokens');
       await this._token.completeTransfer(tokens, transfer, claimBoolean);
       return this.constructor.removeWalletIds(transfer);
@@ -370,9 +373,16 @@ class Transfer {
     } else {
       log.debug('transfer tokens');
       const tokens = await this._token.getTokensByPendingTransferId(transferId);
-      Joi.assert(transfer, Joi.object({
-        source_wallet_id: Joi.string().required()
-      }).unknown());
+      // expect(transfer).match({
+      //   source_wallet_id: expect.any(String),
+      // });
+
+      Joi.assert(
+        transfer,
+        Joi.object({
+          source_wallet_id: Joi.string().required(),
+        }).unknown(),
+      );
       await this._token.completeTransfer(tokens, transfer);
     }
     return transferJson;

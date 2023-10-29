@@ -45,10 +45,16 @@ class TransferRepository extends BaseRepository {
         'destination_wallet.id',
       );
 
+    // expect(result[0]).match({
+    //   id: expect.anything(),
+    // });
 
-    Joi.assert(result[0], Joi.object({
-      id: Joi.exist()
-    }).unknown());
+    Joi.assert(
+      result[0],
+      Joi.object({
+        id: Joi.exist(),
+      }).unknown(),
+    );
 
     const transfer = result[0];
     return transfer;
@@ -122,7 +128,7 @@ class TransferRepository extends BaseRepository {
         'destination_wallet.id',
       )
       .where((builder) => this.whereBuilder(filter, builder));
-    
+
     let order = 'desc';
     let column = 'transfer.created_at';
 
@@ -140,8 +146,8 @@ class TransferRepository extends BaseRepository {
     const count = await this._session.getDB().from(promise.as('p')).count('*');
 
     // apply limit and offset options
-    if(limitOptions && limitOptions.offset)
-      promise = promise.offset(limitOptions.offset)
+    if (limitOptions && limitOptions.offset)
+      promise = promise.offset(limitOptions.offset);
 
     if (limitOptions && limitOptions.limit)
       promise = promise.limit(limitOptions.limit);

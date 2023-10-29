@@ -4,6 +4,7 @@ const AuthService = require('./AuthService');
 const HashService = require('./HashService');
 const JWTService = require('./JWTService');
 const WalletService = require('./WalletService');
+const Event = require('../models/Event');
 
 describe('AuthService', () => {
   it('signin', async () => {
@@ -12,6 +13,8 @@ describe('AuthService', () => {
       WalletService.prototype,
       'getByName',
     ).resolves(walletObject);
+
+    const logEventStub = Sinon.stub(Event.prototype, 'logEvent');
     const sha512Stub = Sinon.stub(HashService, 'sha512').returns('hash');
     const jwtSignStub = Sinon.stub(JWTService, 'sign').resolves('token');
     const details = { wallet: 'wallet', password: 'password' };
@@ -25,6 +28,7 @@ describe('AuthService', () => {
     getByNameStub.restore();
     sha512Stub.restore();
     jwtSignStub.restore();
+    logEventStub.restore();
   });
 
   it('failed signin', async () => {
@@ -33,6 +37,7 @@ describe('AuthService', () => {
       WalletService.prototype,
       'getByName',
     ).resolves(walletObject);
+    const logEventStub = Sinon.stub(Event.prototype, 'logEvent');
     const sha512Stub = Sinon.stub(HashService, 'sha512').returns('hash');
     const jwtSignStub = Sinon.stub(JWTService, 'sign').resolves('token');
     const details = { wallet: 'wallet', password: 'password' };
@@ -46,5 +51,6 @@ describe('AuthService', () => {
     getByNameStub.restore();
     sha512Stub.restore();
     jwtSignStub.restore();
+    logEventStub.restore();
   });
 });
