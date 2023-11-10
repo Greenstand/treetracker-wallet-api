@@ -10,20 +10,34 @@ const transferPostSchema = Joi.alternatives()
     {
       then: Joi.object({
         tokens: Joi.array().items(Joi.string().uuid()).required().unique(),
-        sender_wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()).required().invalid(Joi.ref('receiver_wallet')).messages({
-          'any.invalid': 'Cannot transfer to the same wallet as the originating one!'
-        }),
-        receiver_wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()).required(),
+        sender_wallet: Joi.alternatives()
+          .try(Joi.string(), Joi.string().uuid())
+          .required()
+          .invalid(Joi.ref('receiver_wallet'))
+          .messages({
+            'any.invalid':
+              'Cannot transfer to the same wallet as the originating one!',
+          }),
+        receiver_wallet: Joi.alternatives()
+          .try(Joi.string(), Joi.string().uuid())
+          .required(),
         claim: Joi.boolean().default(false),
       }),
       otherwise: Joi.object({
         bundle: Joi.object({
           bundle_size: Joi.number().integer().min(1).max(10000),
         }).required(),
-        sender_wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()).required().invalid(Joi.ref('receiver_wallet')).messages({
-          'any.invalid': 'Cannot transfer to the same wallet as the originating one!'
-        }),
-        receiver_wallet: Joi.alternatives().try(Joi.string(), Joi.string().uuid()).required(),
+        sender_wallet: Joi.alternatives()
+          .try(Joi.string(), Joi.string().uuid())
+          .required()
+          .invalid(Joi.ref('receiver_wallet'))
+          .messages({
+            'any.invalid':
+              'Cannot transfer to the same wallet as the originating one!',
+          }),
+        receiver_wallet: Joi.alternatives()
+          .try(Joi.string(), Joi.string().uuid())
+          .required(),
         claim: Joi.boolean().default(false),
       }),
     },
@@ -61,7 +75,9 @@ const transferGetQuerySchema = Joi.object({
   after: Joi.date().iso(),
   limit: Joi.number().integer().min(1).max(2000).default(1000),
   offset: Joi.number().integer().min(0).default(0),
-  sort_by: Joi.string().valid(...Object.values(TransferEnums.SORT)).optional(),
+  sort_by: Joi.string()
+    .valid(...Object.values(TransferEnums.SORT))
+    .optional(),
   order: Joi.string().valid('desc', 'asc').optional(),
 });
 

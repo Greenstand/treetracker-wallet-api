@@ -4,12 +4,15 @@ const HttpError = require('../utils/HttpError');
 const WalletService = require('./WalletService');
 const TokenService = require('./TokenService');
 const TransferEnums = require('../utils/transfer-enum');
+const EventService = require('./EventService');
+const EventEnums = require('../utils/event-enum');
 
 class TransferService {
   constructor() {
     this._session = new Session();
     this._transfer = new Transfer(this._session);
     this._walletService = new WalletService();
+    this._eventService = new EventService();
   }
 
   async getByFilter(query, walletLoginId) {
@@ -61,10 +64,9 @@ class TransferService {
       const { claim, bundle, tokens } = transferBody;
 
       let result;
-
+      const gottentokens = [];
       // TODO: put the claim boolean into each tokens
       if (tokens) {
-        const gottentokens = [];
         const tokenService = new TokenService();
         await Promise.all(
           tokens.map(async (id) => {
@@ -73,6 +75,7 @@ class TransferService {
           }),
         );
         // Case 1: with trust, token transfer
+
         result = await this._transfer.transfer(
           walletLoginId,
           walletSender,
@@ -92,13 +95,95 @@ class TransferService {
         );
       }
 
+      const tokenArr = gottentokens.map((token) => token.id);
+
       let status;
       if (result.state === TransferEnums.STATE.completed) {
+        // the log should show up on both sender and receiver
+        await this._eventService.logEvent({
+          wallet_id: walletSender.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: tokens
+            ? {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                tokenTransferred: tokenArr,
+                claim,
+              }
+            : {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                bundle: bundle.bundle_size,
+                claim,
+              },
+        });
+
+        // the log should show up on both sender and receiver
+        await this._eventService.logEvent({
+          wallet_id: walletReceiver.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: tokens
+            ? {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                tokenTransferred: tokenArr,
+                claim,
+              }
+            : {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                bundle: bundle.bundle_size,
+                claim,
+              },
+        });
+
         status = 201;
       } else if (
         result.state === TransferEnums.STATE.pending ||
         result.state === TransferEnums.STATE.requested
       ) {
+        // the log should show up on both sender and receiver
+        await this._eventService.logEvent({
+          wallet_id: walletSender.id,
+          type: EventEnums.TRANSFER.transfer_requested,
+          payload: tokens
+            ? {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                tokenTransferred: tokenArr,
+                transferState: result.state,
+                claim,
+              }
+            : {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                bundle: bundle.bundle_size,
+                transferState: result.state,
+                claim,
+              },
+        });
+
+        // the log should show up on both sender and receiver
+        await this._eventService.logEvent({
+          wallet_id: walletReceiver.id,
+          type: EventEnums.TRANSFER.transfer_requested,
+          payload: tokens
+            ? {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                tokenTransferred: tokenArr,
+                transferState: result.state,
+                claim,
+              }
+            : {
+                walletSender: walletSender.name,
+                walletReceiver: walletReceiver.name,
+                bundle: bundle.bundle_size,
+                transferState: result.state,
+                claim,
+              },
+        });
+
         status = 202;
       } else {
         throw new Error(`Unexpected state ${result.state}`);
@@ -117,11 +202,41 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
+      const transfer = await this._transfer.getById({
+        transferId,
+        walletLoginId,
+      });
+
       // TODO: claim
       const result = await this._transfer.acceptTransfer(
         transferId,
         walletLoginId,
       );
+
+      if (transfer && result.state === TransferEnums.STATE.completed) {
+        const originator_wallet_id = await this._walletService.getByName(
+          transfer.originating_wallet,
+        );
+        const destination_wallet_id = await this._walletService.getByName(
+          transfer.destination_wallet,
+        );
+
+        // transfer completed
+        // the log should show up on both sender and receiver
+        await this._eventService.logEvent({
+          wallet_id: originator_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: { result },
+        });
+
+        // transfer completed
+        // the log should show up on both sender and receiver
+        await this._eventService.logEvent({
+          wallet_id: destination_wallet_id.id,
+          type: EventEnums.TRANSFER.transfer_completed,
+          payload: { result },
+        });
+      }
 
       await this._session.commitTransaction();
 
@@ -138,12 +253,54 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
+      const transfer = await this._transfer.getById({
+        transferId,
+        walletLoginId,
+      });
+
+      const originator_wallet_id = await this._walletService.getByName(
+        transfer.originating_wallet,
+      );
+
+      const destination_wallet_id = await this._walletService.getByName(
+        transfer.destination_wallet,
+      );
+
       const result = await this._transfer.declineTransfer(
         transferId,
         walletLoginId,
       );
 
+      // transfer request cancelled by destination
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_request_cancelled_by_destination,
+        payload: { result },
+      });
+
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_failed,
+        payload: { result },
+      });
+
+      // transfer request cancelled by destination
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_request_cancelled_by_destination,
+        payload: { result },
+      });
+
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_failed,
+        payload: { result },
+      });
+
       await this._session.commitTransaction();
+
       return result;
     } catch (e) {
       if (this._session.isTransactionInProgress()) {
@@ -157,12 +314,54 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
+      const transfer = await this._transfer.getById({
+        transferId,
+        walletLoginId,
+      });
+
+      const originator_wallet_id = await this._walletService.getByName(
+        transfer.originating_wallet,
+      );
+
+      const destination_wallet_id = await this._walletService.getByName(
+        transfer.destination_wallet,
+      );
+
       const result = await this._transfer.cancelTransfer(
         transferId,
         walletLoginId,
       );
 
+      // transfer pending cancelled by requestor
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_pending_cancelled_by_requestor,
+        payload: { result },
+      });
+
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_failed,
+        payload: { result },
+      });
+
+      // transfer pending cancelled by requestor
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_pending_cancelled_by_requestor,
+        payload: { result },
+      });
+
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_failed,
+        payload: { result },
+      });
+
       await this._session.commitTransaction();
+
       return result;
     } catch (e) {
       if (this._session.isTransactionInProgress()) {
@@ -176,7 +375,21 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
+      const transfer = await this._transfer.getById({
+        transferId,
+        walletLoginId,
+      });
+
+      const originator_wallet_id = await this._walletService.getByName(
+        transfer.originating_wallet,
+      );
+
+      const destination_wallet_id = await this._walletService.getByName(
+        transfer.destination_wallet,
+      );
+
       let result;
+      const tokens = [];
       if (requestBody.implicit) {
         result = await this._transfer.fulfillTransfer(
           transferId,
@@ -184,7 +397,7 @@ class TransferService {
         );
       } else {
         // load tokens
-        const tokens = [];
+
         const tokenService = new TokenService();
         await Promise.all(
           requestBody.tokens.map(async (id) => {
@@ -198,7 +411,25 @@ class TransferService {
           walletLoginId,
         );
       }
+
+      // transfer completed
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: originator_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_completed,
+        payload: tokens.length === 0 ? { result } : { result, tokens },
+      });
+
+      // transfer completed
+      // the log should show up on both sender and receiver
+      await this._eventService.logEvent({
+        wallet_id: destination_wallet_id.id,
+        type: EventEnums.TRANSFER.transfer_completed,
+        payload: tokens.length === 0 ? { result } : { result, tokens },
+      });
+
       await this._session.commitTransaction();
+
       return result;
     } catch (e) {
       if (this._session.isTransactionInProgress()) {

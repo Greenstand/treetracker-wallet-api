@@ -5,6 +5,7 @@ const WalletService = require('./WalletService');
 const Wallet = require('../models/Wallet');
 const Session = require('../infra/database/Session');
 const Token = require('../models/Token');
+const Event = require('../models/Event');
 
 describe('WalletService', () => {
   let walletService;
@@ -124,8 +125,11 @@ describe('WalletService', () => {
     let sessionRollbackTransactionStub;
     let sessionIsTransactionInProgressStub;
     let createWalletStub;
+    let logEventStub;
 
     beforeEach(() => {
+      logEventStub = sinon.stub(Event.prototype, 'logEvent');
+
       sessionIsTransactionInProgressStub = sinon.stub(
         Session.prototype,
         'isTransactionInProgress',
@@ -161,6 +165,7 @@ describe('WalletService', () => {
       expect(
         createWalletStub.calledOnceWithExactly(loggedInWalletId, wallet, null),
       ).eql(true);
+      expect(logEventStub.notCalled).to.eql(true);
       expect(sessionBeginTransactionStub.calledOnce).eql(true);
       expect(sessionRollbackTransactionStub.calledOnce).eql(true);
       expect(sessionCommitTransactionStub.notCalled).eql(true);
@@ -183,6 +188,20 @@ describe('WalletService', () => {
         createWalletStub.calledOnceWithExactly(loggedInWalletId, wallet, about),
       ).eql(true);
       expect(sessionBeginTransactionStub.calledOnce).eql(true);
+      expect(
+        logEventStub.getCall(0).calledWithExactly({
+          wallet_id: walletId,
+          type: 'wallet_created',
+          payload: { parentWallet: loggedInWalletId, childWallet: wallet },
+        }),
+      ).eql(true);
+      expect(
+        logEventStub.getCall(1).calledWithExactly({
+          wallet_id: loggedInWalletId,
+          type: 'wallet_created',
+          payload: { parentWallet: loggedInWalletId, childWallet: wallet },
+        }),
+      ).eql(true);
       expect(sessionCommitTransactionStub.calledOnce).eql(true);
       expect(sessionRollbackTransactionStub.notCalled).eql(true);
     });

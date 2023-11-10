@@ -4,4 +4,5 @@ module.exports = [
   require('./transferRouter'),
   require('./trustRouter'),
   require('./walletRouter'),
+  require('./eventRouter'),
 ];
