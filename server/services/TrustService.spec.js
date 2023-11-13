@@ -34,7 +34,7 @@ describe('TrustService', () => {
       type: 'type',
       request_type: 'request_type',
       limit: 1,
-      offset: 0
+      offset: 0,
     });
 
     expect(trustRelationship).eql(['trustRelationships']);
@@ -219,7 +219,15 @@ describe('TrustService', () => {
       { id: 'trustId5' },
       { id: 'trustId6' },
     ]);
-    expect(getAllWalletsStub.calledOnceWithExactly('walletId')).eql(true);
+    expect(
+      getAllWalletsStub.calledOnceWithExactly(
+        'walletId',
+        undefined,
+        undefined,
+        'created_at',
+        'desc',
+      ),
+    ).eql(true);
     expect(
       getTrustRelationshipsStub.getCall(0).calledWithExactly({
         walletId: 'id1',

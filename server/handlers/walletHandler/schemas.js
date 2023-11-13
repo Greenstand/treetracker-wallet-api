@@ -3,15 +3,23 @@ const TrustRelationshipEnums = require('../../utils/trust-enums');
 
 const walletGetQuerySchema = Joi.object({
   limit: Joi.number()
-      .integer().message('limit can only be non-negative integer')
-      .min(1).message('limit can only be non-negative integer')
-      .max(2000)
-      .default(1000),
+    .integer()
+    .message('limit can only be non-negative integer')
+    .min(1)
+    .message('limit can only be non-negative integer')
+    .max(2000)
+    .default(1000),
   offset: Joi.number()
-      .integer().message('offset can only be non-negative integer')
-      .min(0).message('offset can only be non-negative integer')
-      .default(0),
+    .integer()
+    .message('offset can only be non-negative integer')
+    .min(0)
+    .message('offset can only be non-negative integer')
+    .default(0),
   name: Joi.string(),
+  sort_by: Joi.string().valid('created_at').default('created_at'),
+  order: Joi.string().valid('asc', 'desc').default('desc'),
+  created_at_start_date: Joi.date().iso(),
+  created_at_end_date: Joi.date().iso(),
 });
 
 const walletIdParamSchema = Joi.object({
@@ -38,11 +46,55 @@ const walletPostSchema = Joi.object({
     .trim(true)
     .regex(new RegExp('^[A-Za-z0-9-@.]+$'))
     .message('wallet can only contain numbers, letters and the - . @ symbols'),
+  about: Joi.string(),
 });
+
+const walletBatchCreateBodySchema = Joi.object({
+  sender_wallet: Joi.string(),
+  token_transfer_amount_default: Joi.number().integer(),
+}).with('token_transfer_amount_default', 'sender_wallet');
+
+const csvValidationSchema = Joi.array()
+  .items(
+    Joi.object({
+      wallet_name: Joi.string().trim().required(),
+      token_transfer_amount_overwrite: [
+        Joi.number().integer(),
+        Joi.string().valid(''),
+      ],
+      extra_wallet_data_about: Joi.string(),
+    }),
+  )
+  .unique('wallet_name')
+  .min(1)
+  .max(2500);
+
+const csvValidationSchemaTransfer = Joi.array()
+  .items(
+    Joi.object({
+      wallet_name: Joi.string().trim().required(),
+      token_transfer_amount_overwrite: [
+        Joi.number().integer(),
+        Joi.string().valid(''),
+      ],
+    }),
+  )
+  .unique('wallet_name')
+  .min(1)
+  .max(2500);
+
+const walletBatchTransferBodySchema = Joi.object({
+  sender_wallet: Joi.string().required(),
+  token_transfer_amount_default: Joi.number().integer(),
+}).with('token_transfer_amount_default', 'sender_wallet');
 
 module.exports = {
   walletGetQuerySchema,
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
+  walletBatchCreateBodySchema,
+  csvValidationSchema,
+  csvValidationSchemaTransfer,
+  walletBatchTransferBodySchema,
 };

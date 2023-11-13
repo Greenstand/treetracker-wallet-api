@@ -1,3 +1,5 @@
+const csvtojson = require('csvtojson');
+
 const WalletService = require('../../services/WalletService');
 const TrustService = require('../../services/TrustService');
 
@@ -6,6 +8,10 @@ const {
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
+  walletBatchCreateBodySchema,
+  csvValidationSchema,
+  walletBatchTransferBodySchema,
+  csvValidationSchemaTransfer,
 } = require('./schemas');
 
 const walletGet = async (req, res) => {
@@ -14,7 +20,15 @@ const walletGet = async (req, res) => {
   });
   const walletService = new WalletService();
 
-  const { name, limit, offset } = validatedQuery;
+  const {
+    name,
+    limit,
+    offset,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
+  } = validatedQuery;
   const { wallet_id } = req;
   const { wallets, count } = await walletService.getAllWallets(
     wallet_id,
@@ -23,6 +37,10 @@ const walletGet = async (req, res) => {
       offset,
     },
     name,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
   );
 
   res.status(200).json({
@@ -74,17 +92,72 @@ const walletPost = async (req, res) => {
   });
 
   const { wallet_id } = req;
-  const { wallet: walletToBeCreated } = validatedBody;
+  const { wallet: walletToBeCreated, about } = validatedBody;
   const walletService = new WalletService();
-  const { wallet, id } = await walletService.createWallet(
+  const returnedWallet = await walletService.createWallet(
     wallet_id,
     walletToBeCreated,
+    about,
   );
 
-  res.status(201).json({
-    id,
-    wallet,
+  res.status(201).json(returnedWallet);
+};
+
+const walletBatchCreate = async (req, res) => {
+  const validatedBody = await walletBatchCreateBodySchema.validateAsync(
+    req.body,
+    { abortEarly: false },
+  );
+
+  const { path } = req.file;
+  const jsonResult = await csvtojson().fromFile(path);
+  const validatedCsvFile = await csvValidationSchema.validateAsync(jsonResult, {
+    abortEarly: false,
   });
+
+  const { sender_wallet, token_transfer_amount_default } = validatedBody;
+  const { wallet_id } = req;
+  const walletService = new WalletService();
+
+  const result = await walletService.batchCreateWallet(
+    sender_wallet,
+    token_transfer_amount_default,
+    wallet_id,
+    validatedCsvFile,
+    path,
+  );
+
+  res.status(201).send(result);
+};
+
+const walletBatchTransfer = async (req, res) => {
+  const validatedBody = await walletBatchTransferBodySchema.validateAsync(
+    req.body,
+    { abortEarly: false },
+  );
+
+  const { path } = req.file;
+  const jsonResult = await csvtojson().fromFile(path);
+  const validatedCsvFile = await csvValidationSchemaTransfer.validateAsync(
+    jsonResult,
+    {
+      abortEarly: false,
+    },
+  );
+
+  const { sender_wallet, token_transfer_amount_default } = validatedBody;
+  const { wallet_id } = req;
+  const walletService = new WalletService();
+
+  const result = await walletService.batchTransferWallet(
+    sender_wallet,
+    token_transfer_amount_default,
+    wallet_id,
+    validatedCsvFile,
+    path,
+  );
+
+  res.status(200).send(result);
 };
 
 module.exports = {
@@ -92,4 +165,6 @@ module.exports = {
   walletGetTrustRelationships,
   walletGet,
   walletSingleGet,
+  walletBatchCreate,
+  walletBatchTransfer,
 };

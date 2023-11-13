@@ -160,10 +160,10 @@ describe('WalletService', () => {
       const loggedInWalletId = uuid.v4();
       const wallet = 'wallet';
       try {
-        await walletService.createWallet(loggedInWalletId, wallet);
+        await walletService.createWallet(loggedInWalletId, wallet, null);
       } catch (e) {}
       expect(
-        createWalletStub.calledOnceWithExactly(loggedInWalletId, wallet),
+        createWalletStub.calledOnceWithExactly(loggedInWalletId, wallet, null),
       ).eql(true);
       expect(logEventStub.notCalled).to.eql(true);
       expect(sessionBeginTransactionStub.calledOnce).eql(true);
@@ -174,16 +174,18 @@ describe('WalletService', () => {
     it('should create wallet', async () => {
       const loggedInWalletId = uuid.v4();
       const wallet = 'wallet';
+      const about = 'test about';
       const walletId = uuid.v4();
-      createWalletStub.resolves({ name: wallet, id: walletId });
+      createWalletStub.resolves({ name: wallet, id: walletId, about });
       expect(walletService).instanceOf(WalletService);
       const createdWallet = await walletService.createWallet(
         loggedInWalletId,
         wallet,
+        about,
       );
-      expect(createdWallet).eql({ wallet, id: walletId });
+      expect(createdWallet).eql({ wallet, id: walletId, about });
       expect(
-        createWalletStub.calledOnceWithExactly(loggedInWalletId, wallet),
+        createWalletStub.calledOnceWithExactly(loggedInWalletId, wallet, about),
       ).eql(true);
       expect(sessionBeginTransactionStub.calledOnce).eql(true);
       expect(
@@ -239,11 +241,23 @@ describe('WalletService', () => {
         id,
         limitOptions,
         'name',
-         false,
+        'created_at',
+        'asc',
+        undefined,
+        undefined,
+        false,
       );
-      expect(
-        getAllWalletsStub).calledOnceWithExactly(id, limitOptions, 'name', true)
-    // ).eql(true);
+      expect(getAllWalletsStub).calledOnceWithExactly(
+        id,
+        limitOptions,
+        'name',
+        'created_at',
+        'asc',
+        undefined,
+        undefined,
+        true,
+      );
+      // ).eql(true);
       expect(allWallets).eql({ wallets: result, count });
     });
 

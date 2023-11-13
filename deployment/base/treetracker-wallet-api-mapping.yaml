@@ -6,4 +6,4 @@ spec:
   prefix: /wallet/v2/
   service: treetracker-wallet-api-v2
   rewrite: /
-  timeout_ms: 0
+  timeout_ms: 10000

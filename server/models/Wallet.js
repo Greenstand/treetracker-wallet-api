@@ -13,7 +13,7 @@ class Wallet {
     this._tokenRepository = new TokenRepository(session);
   }
 
-  async createWallet(loggedInWalletId, wallet) {
+  async createWallet(loggedInWalletId, wallet, about) {
     // check name
     try {
       await this._walletRepository.getByName(wallet);
@@ -32,6 +32,7 @@ class Wallet {
     // need to create a wallet object
     const newWallet = await this._walletRepository.create({
       name: wallet,
+      about,
     });
 
     await this._trustRepository.create({
@@ -42,7 +43,6 @@ class Wallet {
       type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage,
       state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
     });
-
     return newWallet;
   }
 
@@ -140,11 +140,24 @@ class Wallet {
   }
 
   // get wallet itself along with all subwallets
-  async getAllWallets(id, limitOptions, name, getCount) {
+  async getAllWallets(
+    id,
+    limitOptions,
+    name,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
+    getCount,
+  ) {
     return this._walletRepository.getAllWallets(
       id,
       limitOptions,
       name,
+      sort_by,
+      order,
+      created_at_start_date,
+      created_at_end_date,
       getCount,
     );
   }
