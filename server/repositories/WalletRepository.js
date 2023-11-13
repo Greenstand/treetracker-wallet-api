@@ -54,10 +54,19 @@ class WalletRepository extends BaseRepository {
   }
 
   // Get a wallet itself including its sub wallets
-  async getAllWallets(id, limitOptions, name, getCount) {
+  async getAllWallets(
+    id,
+    limitOptions,
+    name,
+    sort_by,
+    order,
+    created_at_start_date,
+    created_at_end_date,
+    getCount,
+  ) {
     let query = this._session
       .getDB()
-      .select('id', 'name', 'logo_url', 'created_at')
+      .select('id', 'name', 'about', 'logo_url', 'created_at')
       .table('wallet')
       .where('id', id);
 
@@ -66,6 +75,7 @@ class WalletRepository extends BaseRepository {
       .select(
         'wallet.id',
         'wallet.name',
+        'wallet.about',
         'wallet.logo_url',
         'wallet.created_at',
       )
@@ -84,6 +94,7 @@ class WalletRepository extends BaseRepository {
       .select(
         'wallet.id',
         'wallet.name',
+        'wallet.about',
         'wallet.logo_url',
         'wallet.created_at',
       )
@@ -102,7 +113,21 @@ class WalletRepository extends BaseRepository {
       union2 = union2.where('name', 'ilike', `%${name}%`);
     }
 
-    query = query.union(union1, union2);
+    query = query.union(union1, union2).orderBy(sort_by, order);
+
+    query = this._session.getDB().select('*').from(query.as('t'));
+
+    if (created_at_start_date) {
+      query = query.whereRaw(`cast("created_at" as date) >= ?`, [
+        created_at_start_date,
+      ]);
+    }
+
+    if (created_at_end_date) {
+      query = query.whereRaw(`cast("created_at" as date) <= ?`, [
+        created_at_end_date,
+      ]);
+    }
 
     // total count query (before applying limit and offset options)
     const countQuery = this._session

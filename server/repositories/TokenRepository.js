@@ -17,8 +17,13 @@ class TokenRepository extends BaseRepository {
       .where('id', id)
       .first();
 
-    if (!result) {
-      throw new HttpError(404, `can not found token by id:${id}`);
+    try {
+      Joi.assert(
+        result,
+        Joi.object({ id: Joi.string().required() }).unknown().required(),
+      );
+    } catch (error) {
+      throw new HttpError(404, `Can not find token by id: ${id}`);
     }
 
     return result;

@@ -146,7 +146,7 @@ class Transfer {
       if (token.claim) {
         throw new HttpError(
           409,
-          `The token ${token.id} is claimed, cannot be transfered`,
+          `The token ${token.id} is claimed, cannot be transferred`,
         );
       }
 
@@ -184,7 +184,6 @@ class Transfer {
         // TODO: add boolean for claim in transferRepository
         claim: claimBoolean,
       });
-
       log.debug('now, deal with tokens');
       await this._token.completeTransfer(tokens, transfer, claimBoolean);
       return this.constructor.removeWalletIds(transfer);
@@ -373,10 +372,6 @@ class Transfer {
     } else {
       log.debug('transfer tokens');
       const tokens = await this._token.getTokensByPendingTransferId(transferId);
-      // expect(transfer).match({
-      //   source_wallet_id: expect.any(String),
-      // });
-
       Joi.assert(
         transfer,
         Joi.object({

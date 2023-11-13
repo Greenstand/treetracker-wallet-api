@@ -17,7 +17,7 @@ class BaseRepository {
       .where('id', id)
       .first();
     if (!object) {
-      throw new HttpError(404, `Can not found ${this._tableName} by id:${id}`);
+      throw new HttpError(404, `Can not find ${this._tableName} by id: ${id}`);
     }
     return object;
   }
@@ -87,8 +87,8 @@ class BaseRepository {
       promise = promise.limit(options.limit);
     }
 
-    if(options && options.offset) {
-      promise = promise.offset(options.offset)
+    if (options && options.offset) {
+      promise = promise.offset(options.offset);
     }
 
     const result = await promise;
@@ -102,11 +102,6 @@ class BaseRepository {
       .count()
       .table(this._tableName)
       .where(filter);
-    // expect(result).match([
-    //   {
-    //     count: expect.any(String),
-    //   },
-    // ]);
 
     Joi.assert(
       result,
@@ -164,7 +159,6 @@ class BaseRepository {
       .getDB()
       .batchInsert(this._tableName, objects)
       .returning('id');
-    // expect(result).match([expect.any(String)]);
     Joi.assert(result, Joi.array().items(Joi.string()));
     return result;
   }

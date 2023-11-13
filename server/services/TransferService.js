@@ -447,7 +447,7 @@ class TransferService {
     if (!transfer) {
       throw new HttpError(
         404,
-        'Can not find this transfer or it is not related to this wallet',
+        'Transfer does not exist or it is not related to this wallet',
       );
     }
     return transfer;

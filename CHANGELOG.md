@@ -1,3 +1,29 @@
+# [1.33.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.32.0...v1.33.0) (2023-11-13)
+
+
+### Bug Fixes
+
+* broken test ([c792609](https://github.com/Greenstand/treetracker-wallet-api/commit/c792609ccad0acd26a76a0970c1aecdf6ee9626c))
+* broken unit tests ([40ea9ad](https://github.com/Greenstand/treetracker-wallet-api/commit/40ea9ad11d66bbc35bc96c7b61e7262240aa46d9))
+* remove created_at migration ([8449bf2](https://github.com/Greenstand/treetracker-wallet-api/commit/8449bf28a9b5a4eefaa633127b6fd36b7fe681b3))
+* unit, integration tests ([c59923c](https://github.com/Greenstand/treetracker-wallet-api/commit/c59923ccc2739da6edd1b45050fb5e7ddb6ca78d))
+
+
+### Features
+
+* /batch-create-wallet basic functions ([97ec9cb](https://github.com/Greenstand/treetracker-wallet-api/commit/97ec9cbb4ec5014c8f12fc244196aefc7f2b6d15))
+* /batch-create-wallet fix functions ([7fe5ab8](https://github.com/Greenstand/treetracker-wallet-api/commit/7fe5ab81aeab23f40ea2d76ba1ad47e75aca8c5e))
+* /batch-create-wallet migration, extra information ([9d351db](https://github.com/Greenstand/treetracker-wallet-api/commit/9d351db98a11b136cca3d679d10cb5cd209e2e4c))
+* /batch-create-wallet, minor fixes ([b8556f2](https://github.com/Greenstand/treetracker-wallet-api/commit/b8556f2fc30c8d7d458961ac6343b7a3679b4e00))
+* /batch-create-wallets log info ([847e28b](https://github.com/Greenstand/treetracker-wallet-api/commit/847e28bf81e4e041ed54992d2537a522edd2abcd))
+* /batch-transfer ([492155a](https://github.com/Greenstand/treetracker-wallet-api/commit/492155a1dd614e6f60e7a084c61a96e7af2830b8))
+* /wallets query parameters ([9ae9487](https://github.com/Greenstand/treetracker-wallet-api/commit/9ae948701721f49b1447f2e3d5f97886251a3f1d))
+* csv validation, transactions,/batch-create-wallet about field, /wallets about field ([fef965a](https://github.com/Greenstand/treetracker-wallet-api/commit/fef965a52a0b2ce9191ba215674b5ed638b07472))
+* minor fix ([e06c27f](https://github.com/Greenstand/treetracker-wallet-api/commit/e06c27fbc947cc300d754344e0d9f9b27237a533))
+* rename migrations ([1f20e97](https://github.com/Greenstand/treetracker-wallet-api/commit/1f20e97fb08d0cb516f71f07d5dc1655785b739f))
+* update api spec, error messages ([dd13cb8](https://github.com/Greenstand/treetracker-wallet-api/commit/dd13cb8eeeaa9d326211dff5c3f6b9e912f93f93))
+* update migration, fix tests ([977e9f9](https://github.com/Greenstand/treetracker-wallet-api/commit/977e9f9dc24de521fc90211b307922e1c9fb1321))
+
 # [1.32.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.31.5...v1.32.0) (2023-10-29)
 
 

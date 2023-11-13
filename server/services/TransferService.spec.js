@@ -60,7 +60,7 @@ describe('TransferService', () => {
       ).eql(true);
       expect(error.code).eql(404);
       expect(error.message).eql(
-        'Can not find this transfer or it is not related to this wallet',
+        'Transfer does not exist or it is not related to this wallet',
       );
     });
 

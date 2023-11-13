@@ -251,7 +251,13 @@ class Trust {
    */
   async getTrustRelationshipsRequestedToMe(walletId) {
     const walletModel = new Wallet(this._session);
-    const { wallets: allWallets } = await walletModel.getAllWallets(walletId);
+    const { wallets: allWallets } = await walletModel.getAllWallets(
+      walletId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
     const allTrustRelationships = [];
     await Promise.all(
       allWallets.map(async (wallet) => {
@@ -369,10 +375,6 @@ class Trust {
    * target wallet
    */
   async hasTrust(walletLoginId, trustType, senderWallet, receiveWallet) {
-    // expect(trustType).oneOf(
-    //   Object.keys(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
-    // );
-
     Joi.assert(
       trustType,
       Joi.string().valid(

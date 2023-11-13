@@ -571,7 +571,13 @@ describe('Trust Model', () => {
       walletId: walletId3,
     });
     expect(getTrustRelationshipsStub).calledThrice;
-    expect(getAllWalletStub).calledOnceWithExactly(walletId1);
+    expect(getAllWalletStub).calledOnceWithExactly(
+      walletId1,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
   });
 
   it('updateTrustState', async () => {
@@ -913,7 +919,7 @@ describe('Trust Model', () => {
 
   describe('getTrustRelationshipById', () => {
     const walletId = uuid();
-    const trustRelationshipId = uuid()
+    const trustRelationshipId = uuid();
     const filter = {
       and: [
         {
@@ -933,12 +939,12 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves(['trustRelationship']);
       const result = await trustModel.getTrustRelationshipById({
         walletId,
-        trustRelationshipId
+        trustRelationshipId,
       });
       expect(result).eql('trustRelationship');
-      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(
-          {...filter}
-      );
+      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly({
+        ...filter,
+      });
     });
-  })
+  });
 });

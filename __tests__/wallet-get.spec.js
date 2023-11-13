@@ -53,7 +53,13 @@ describe('Wallet: Get wallets of an account', () => {
       await walletService.createWallet(seed.wallet.id, `test${i}`);
     }
 
-    const res = await walletService.getAllWallets(seed.wallet.id);
+    const res = await walletService.getAllWallets(
+      seed.wallet.id,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
     expect(res.count).to.eq(11);
   });
 

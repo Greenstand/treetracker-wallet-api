@@ -42,8 +42,8 @@ class TokenService {
         walletLoginId,
         undefined,
         undefined,
-        false,
-        false,
+        'created_at',
+        'desc',
       );
 
       const walletIds = [...allWallets.map((e) => e.id)];
