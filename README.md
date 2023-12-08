@@ -1,11 +1,11 @@
 as
 #API Documentation
 
-To view the specs for the new API visit https://editor.swagger.io and load the YAML file from 
+To view the specs for the new API visit https://editor.swagger.io and load the YAML file from
 
 https://github.com/Greenstand/treetracker-wallet-api/blob/master/docs/api/spec/treetracker-wallet-api-v1-10.yaml // changed to the file that can be accessed
 
-https://github.com/Greenstand/treetracker-wallet-api/docs/api/spec/treetracker-wallet-api-v1-10.yaml // NOT found error even though the file is in this location 
+https://github.com/Greenstand/treetracker-wallet-api/docs/api/spec/treetracker-wallet-api-v1-10.yaml // NOT found error even though the file is in this location
 
 # Getting Started
 
@@ -89,6 +89,11 @@ GRANT ALL PRIVILEGES ON SCHEMA wallet TO wallet_user;
 ```
 ../node_modules/db-migrate/bin/db-migrate --env dev up
 ```
+
+[troubleshoot] if run into this issue:
+
+[ERROR] AssertionError [ERR_ASSERTION]: ifError got unwanted exception: The server does not support SSL connections
+remove "ssl" : {"rejectUnauthorized": false} from your `/database/database.json`.
 
 8. that's it, your db should be running and set up
 
@@ -182,7 +187,6 @@ PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RS
 
 Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files. \*\*Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here. To find out more, read the dotenv documentation on Multiline Values https://www.npmjs.com/package/dotenv
 
-
 ### Running Scripts
 
 #### To create a new wallet:
@@ -197,7 +201,6 @@ Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then,
 NODE_ENV=development node scripts/create/create-wallet.js <username>
 
 ```
-
 
 ### We are using linter to keep the project in shape
 
