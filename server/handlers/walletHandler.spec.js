@@ -177,4 +177,129 @@ describe('walletRouter', () => {
       expect(res.body.message).match(/wallet.*required/);
     });
   });
+
+  describe('post /wallet/batch-create-wallet', () => {
+
+    const mockCsvContent = `wallet_name,token_transfer_amount_overwrite,extra_wallet_data_about,extra_wallet_data_cover_url,extra_wallet_data_logo_url
+                            wallet1,5,about wallet1,,
+                            wallet2,,about wallet2,wallet2 cover url,wallet2 logo url`;
+    const mock_file_path = "mockfile.csv";
+    const mock_sender_wallet = "wallet";
+    const token_transfer_amount_default = 10;
+    
+    it('successfully creates wallets', async () => {
+      
+      const mockCsvJson = [
+        { wallet_name: "wallet1", 
+          token_transfer_amount_overwrite: 5, 
+          extra_wallet_data_about: "about wallet1",
+          extra_wallet_data_cover_url: '',
+          extra_wallet_data_logo_url: ''
+        },
+        { wallet_name: "wallet2", 
+          token_transfer_amount_overwrite: '', 
+          extra_wallet_data_about: "about wallet2",
+          extra_wallet_data_cover_url: "wallet2 cover url",
+          extra_wallet_data_logo_url: "wallet2 logo url" 
+        },
+      ];
+
+      const walletBatchCreateStub = sinon
+          .stub(WalletService.prototype, 'batchCreateWallet')
+          .resolves({
+            wallets_created: 2,
+            wallets_already_exists: [],
+            wallet_other_failure_count: 0,
+            extra_wallet_information_saved: 0,
+            extra_wallet_information_not_saved: [],
+          });
+
+      const res = await request(app)
+          .post('/wallets/batch-create-wallet')
+          .field('sender_wallet', mock_sender_wallet)
+          .field('token_transfer_amount_default', token_transfer_amount_default)
+          .attach('csv', Buffer.from(mockCsvContent), mock_file_path);
+
+      expect(res).property('statusCode').eq(201);
+      expect(walletBatchCreateStub.calledOnce).eql(true);
+      expect(walletBatchCreateStub.args[0].slice(0,-1)).eql([
+        mock_sender_wallet,
+        token_transfer_amount_default,
+        authenticatedWalletId,
+        mockCsvJson
+      ]);
+
+
+    })
+
+    it('missing parameter', async () => {
+
+      const res = await request(app)
+          .post('/wallets/batch-create-wallet')
+          .field('token_transfer_amount_default', token_transfer_amount_default)
+          .attach('csv', Buffer.from(mockCsvContent), mock_file_path);
+
+      expect(res).property('statusCode').eq(422);
+      expect(res.body.message).match(/required/);
+    })
+  })
+
+  describe('post /wallet/batch-transfer', () => {
+
+    const mockCsvContent = `wallet_name,token_transfer_amount_overwrite
+                            wallet1,5
+                            wallet2,
+                            wallet3,7`;
+    const mock_file_path = "mockfile.csv";
+    const mock_sender_wallet = "wallet";
+    const token_transfer_amount_default = 10;
+    
+    
+    it('successfully transfer all tokens', async () => {
+      
+      const mockCsvJson = [
+        { wallet_name: "wallet1", 
+          token_transfer_amount_overwrite: 5
+        },
+        { wallet_name: "wallet2", 
+          token_transfer_amount_overwrite: ''
+        },
+        { wallet_name: "wallet3",
+          token_transfer_amount_overwrite: 7
+        }
+      ];
+
+      const walletBatchTransferWalletStub = sinon
+          .stub(WalletService.prototype, 'batchTransferWallet')
+          .resolves();
+
+      const res = await request(app)
+          .post('/wallets/batch-transfer')
+          .field('sender_wallet', mock_sender_wallet)
+          .field('token_transfer_amount_default', token_transfer_amount_default)
+          .attach('csv', Buffer.from(mockCsvContent), mock_file_path);
+
+      expect(res).property('statusCode').eq(200);
+      expect(walletBatchTransferWalletStub.calledOnce).eql(true);
+      expect(walletBatchTransferWalletStub.args[0].slice(0,-1)).eql([
+        mock_sender_wallet,
+        token_transfer_amount_default,
+        authenticatedWalletId,
+        mockCsvJson
+      ]);
+
+
+    })
+
+    it('missing parameter', async () => {
+
+      const res = await request(app)
+          .post('/wallets/batch-transfer')
+          .field('token_transfer_amount_default', token_transfer_amount_default)
+          .attach('csv', Buffer.from(mockCsvContent), mock_file_path);
+
+      expect(res).property('statusCode').eq(422);
+      expect(res.body.message).match(/required/);
+    })
+  })
 });
