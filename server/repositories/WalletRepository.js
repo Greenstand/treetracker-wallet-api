@@ -47,7 +47,7 @@ class WalletRepository extends BaseRepository {
   }
 
   // Get a wallet itself including its sub wallets
-  async getAllWallets(id, limitOptions) {
+  async getAllWallets(id, limitOptions, sortOptions) {
     let promise = this._session
       .getDB()
       .select('id', 'name', 'logo_url', 'created_at')
@@ -96,6 +96,10 @@ class WalletRepository extends BaseRepository {
 
     if (limitOptions && limitOptions.offset) {
       promise = promise.offset(limitOptions.offset);
+    }
+
+    if (sortOptions && sortOptions.sortField && sortOptions.sortOrder) {
+      promise = promise.orderBy(sortOptions.sortField, sortOptions.sortOrder);
     }
 
     return promise;

@@ -55,10 +55,14 @@ class WalletService {
     }
   }
 
-  async getAllWallets(id, limitOptions, getTokenCount = true) {
+  async getAllWallets(id, limitOptions, sortOptions, getTokenCount = true) {
     if (getTokenCount) {
       const token = new Token(this._session);
-      const wallets = await this._wallet.getAllWallets(id, limitOptions);
+      const wallets = await this._wallet.getAllWallets(
+        id,
+        limitOptions,
+        sortOptions,
+      );
       return Promise.all(
         wallets.map(async (wallet) => {
           const json = { ...wallet };
@@ -67,7 +71,7 @@ class WalletService {
         }),
       );
     }
-    return this._wallet.getAllWallets(id, limitOptions);
+    return this._wallet.getAllWallets(id, limitOptions, sortOptions);
   }
 
   async hasControlOver(parentId, childId) {
