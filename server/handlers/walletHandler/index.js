@@ -12,11 +12,18 @@ const walletGet = async (req, res) => {
   await walletGetQuerySchema.validateAsync(req.query, { abortEarly: false });
   const walletService = new WalletService();
 
-  const { limit, offset } = req.query;
-  const wallets = await walletService.getAllWallets(req.wallet_id, {
-    limit,
-    offset,
-  });
+  const { limit, offset, sortField, sortOrder } = req.query;
+  const wallets = await walletService.getAllWallets(
+    req.wallet_id,
+    {
+      limit,
+      offset,
+    },
+    {
+      sortField: sortField || 'name',
+      sortOrder: sortOrder || 'asc',
+    },
+  );
 
   res.status(200).json({ wallets });
 };

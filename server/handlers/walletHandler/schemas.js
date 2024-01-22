@@ -4,6 +4,8 @@ const TrustRelationshipEnums = require('../../utils/trust-enums');
 const walletGetQuerySchema = Joi.object({
   limit: Joi.number().required(),
   offset: Joi.number().integer(),
+  sortField: Joi.string(),
+  sortOrder: Joi.string(),
 });
 
 const walletIdParamSchema = Joi.object({
