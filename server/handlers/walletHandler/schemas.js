@@ -16,7 +16,7 @@ const walletGetQuerySchema = Joi.object({
     .message('offset can only be non-negative integer')
     .default(0),
   name: Joi.string(),
-  sort_by: Joi.string().valid('created_at').default('created_at'),
+  sort_by: Joi.string().valid('created_at', 'name').default('created_at'),
   order: Joi.string().valid('asc', 'desc').default('desc'),
   created_at_start_date: Joi.date().iso(),
   created_at_end_date: Joi.date().iso(),
