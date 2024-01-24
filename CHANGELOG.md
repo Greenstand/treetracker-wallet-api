@@ -1,3 +1,15 @@
+# [1.34.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.33.0...v1.34.0) (2024-01-24)
+
+
+### Bug Fixes
+
+* update semantic release node version ([78888af](https://github.com/Greenstand/treetracker-wallet-api/commit/78888af4f249014b8137417bd3691cbeb380374c))
+
+
+### Features
+
+* update commit message for semantic release ([b14c830](https://github.com/Greenstand/treetracker-wallet-api/commit/b14c830c7e793bdecd94c95e30fc964fdf38e8af))
+
 # [1.33.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.32.0...v1.33.0) (2023-11-13)
 
 
