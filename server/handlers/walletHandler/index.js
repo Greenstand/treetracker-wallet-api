@@ -29,7 +29,9 @@ const walletGet = async (req, res) => {
     created_at_start_date,
     created_at_end_date,
   } = validatedQuery;
+
   const { wallet_id } = req;
+
   const { wallets, count } = await walletService.getAllWallets(
     wallet_id,
     {
