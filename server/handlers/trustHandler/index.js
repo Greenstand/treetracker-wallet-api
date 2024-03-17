@@ -17,11 +17,13 @@ const trustGet = async (req, res) => {
     limit, offset
   } = validatedQuery;
 
+  const { wallet_id } = req;
   const trustService = new TrustService();
   const {
     result: trust_relationships,
     count: total,
   } = await trustService.getAllTrustRelationships({
+    walletId: wallet_id,
     state,
     type,
     request_type,

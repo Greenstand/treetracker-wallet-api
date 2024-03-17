@@ -52,9 +52,12 @@ class Trust {
   /*
    * Get all trust relationships by filters, setting filter to undefined to allow all data
    */
-  async getAllTrustRelationships({ state, type, request_type, offset, limit }) {
+  async getAllTrustRelationships({ walletId, state, type, request_type, offset, limit }) {
+    
     const filter = {
-      and: [],
+      and: [
+        {'originator_wallet.id': walletId},
+      ],
     };
     if (state) {
       filter.and.push({ state });

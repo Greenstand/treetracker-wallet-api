@@ -213,7 +213,8 @@ describe('trustRouter', () => {
         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
         limit,
-        offset
+        offset,
+        walletId: authenticatedWalletId,
       });
     });
   });
