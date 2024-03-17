@@ -131,7 +131,6 @@ class TrustRepository extends BaseRepository {
     }
 
     const result = await promise;
-    //    Joi.assert(result, Joi.array().required());
 
     return { result, count: +count[0].count };
   }
