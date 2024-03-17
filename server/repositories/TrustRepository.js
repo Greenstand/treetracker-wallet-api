@@ -78,6 +78,63 @@ class TrustRepository extends BaseRepository {
 
     return promise;
   }
+
+  async getAllByFilter(filter, limitOptions) {
+    let promise = this._session
+      .getDB()
+      .select(
+        'wallet_trust.id',
+        'wallet_trust.actor_wallet_id',
+        'wallet_trust.target_wallet_id',
+        'wallet_trust.type',
+        'wallet_trust.originator_wallet_id',
+        'wallet_trust.request_type',
+        'wallet_trust.state',
+        'wallet_trust.created_at',
+        'wallet_trust.updated_at',
+        'wallet_trust.active',
+        'originator_wallet.name as originating_wallet',
+        'actor_wallet.name as actor_wallet',
+        'target_wallet.name as target_wallet',
+      )
+      .from('wallet_trust')
+      .leftJoin(
+        'wallet as originator_wallet',
+        'wallet_trust.originator_wallet_id',
+        '=',
+        'originator_wallet.id',
+      )
+      .leftJoin(
+        'wallet as actor_wallet',
+        'wallet_trust.actor_wallet_id',
+        '=',
+        'actor_wallet.id',
+      )
+      .leftJoin(
+        'wallet as target_wallet',
+        'wallet_trust.target_wallet_id',
+        '=',
+        'target_wallet.id',
+      )
+      .where((builder) => this.whereBuilder(filter, builder))
+      .distinctOn('wallet_trust.id'); // distinct on id to avoid duplicates
+
+    // get the total count (before applying limit and offset options)
+    const count = await this._session.getDB().from(promise.as('p')).count('*');
+
+    if (limitOptions && limitOptions.limit) {
+      promise = promise.limit(limitOptions.limit);
+    }
+
+    if (limitOptions && limitOptions.offset) {
+      promise = promise.offset(limitOptions.offset);
+    }
+
+    const result = await promise;
+    //    Joi.assert(result, Joi.array().required());
+
+    return { result, count: +count[0].count };
+  }
 }
 
 module.exports = TrustRepository;
