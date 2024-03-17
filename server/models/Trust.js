@@ -50,6 +50,25 @@ class Trust {
   }
 
   /*
+   * Get all trust relationships by filters, setting filter to undefined to allow all data
+   */
+  async getAllTrustRelationships({ state, type, request_type, offset, limit }) {
+    const filter = {
+      and: [],
+    };
+    if (state) {
+      filter.and.push({ state });
+    }
+    if (type) {
+      filter.and.push({ type });
+    }
+    if (request_type) {
+      filter.and.push({ request_type });
+    }
+    return this._trustRepository.getAllByFilter(filter, { offset, limit });
+  }
+
+  /*
    * Get all relationships which has been accepted
    */
   async getTrustRelationshipsTrusted(walletId) {
