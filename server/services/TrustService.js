@@ -1,6 +1,5 @@
 const Trust = require('../models/Trust');
 const Session = require('../infra/database/Session');
-const Wallet = require('../models/Wallet');
 const WalletService = require('./WalletService');
 const EventService = require('./EventService');
 const EventEnums = require('../utils/event-enum');
@@ -35,44 +34,14 @@ class TrustService {
     });
   }
 
-  // limit and offset not feasible using the current implementation
-  // except if done manually or coming up with a single query
-  async getAllTrustRelationships({ walletId, state, type, request_type }) {
-    const walletModel = new Wallet(this._session);
-    const { wallets } = await walletModel.getAllWallets(
-      walletId,
-      undefined,
-      undefined,
-      'created_at',
-      'desc',
-    );
-
-    const alltrustRelationships = [];
-
-    await Promise.all(
-      wallets.map(async (w) => {
-        const trustRelationships = await this.getTrustRelationships({
-          walletId: w.id,
-          state,
-          type,
-          request_type,
-        });
-        alltrustRelationships.push(...trustRelationships);
-      }),
-    );
-
-    // remove possible duplicates
-    const ids = {};
-    const finalTrustRelationships = [];
-
-    alltrustRelationships.forEach((tr) => {
-      if (!ids[tr.id]) {
-        finalTrustRelationships.push(tr);
-        ids[tr.id] = 1;
-      }
+  async getAllTrustRelationships({ state, type, request_type, offset, limit }) {
+    return this._trust.getAllTrustRelationships({
+      state,
+      type,
+      request_type,
+      offset,
+      limit,
     });
-
-    return finalTrustRelationships;
   }
 
   async createTrustRelationship({
