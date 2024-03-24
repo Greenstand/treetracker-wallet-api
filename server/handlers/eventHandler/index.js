@@ -7,13 +7,16 @@ const eventsGet = async (req, res) => {
 
   const { limit, since, wallet } = req.query;
 
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const eventService = new EventService();
 
   const events = await eventService.getAllEvents({
     limit,
     since,
     wallet,
-    walletLoginId: req.wallet_id,
+    walletLoginId: wallet_id,
   });
 
   res.status(200).json({ events });

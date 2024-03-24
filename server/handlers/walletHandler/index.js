@@ -30,7 +30,8 @@ const walletGet = async (req, res) => {
     created_at_end_date,
   } = validatedQuery;
 
-  const { wallet_id } = req;
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
 
   const { wallets, count } = await walletService.getAllWallets(
     wallet_id,
@@ -93,7 +94,9 @@ const walletPost = async (req, res) => {
     abortEarly: false,
   });
 
-  const { wallet_id } = req;
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const { wallet: walletToBeCreated, about } = validatedBody;
   const walletService = new WalletService();
   const returnedWallet = await walletService.createWallet(
@@ -117,8 +120,10 @@ const walletBatchCreate = async (req, res) => {
     abortEarly: false,
   });
 
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
   const { sender_wallet, token_transfer_amount_default } = validatedBody;
-  const { wallet_id } = req;
+
   const walletService = new WalletService();
 
   const result = await walletService.batchCreateWallet(
@@ -147,8 +152,10 @@ const walletBatchTransfer = async (req, res) => {
     },
   );
 
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
   const { sender_wallet, token_transfer_amount_default } = validatedBody;
-  const { wallet_id } = req;
+
   const walletService = new WalletService();
 
   const result = await walletService.batchTransferWallet(

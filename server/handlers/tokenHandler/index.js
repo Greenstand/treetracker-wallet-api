@@ -1,11 +1,19 @@
 const TokenService = require('../../services/TokenService');
-const { tokenGetSchema, tokenIdSchema, tokenGetTransactionsByIdSchema } = require('./schemas');
+const {
+  tokenGetSchema,
+  tokenIdSchema,
+  tokenGetTransactionsByIdSchema,
+} = require('./schemas');
 
 const tokenGet = async (req, res) => {
-  const validatedQuery = await tokenGetSchema.validateAsync(req.query, { abortEarly: false });
+  const validatedQuery = await tokenGetSchema.validateAsync(req.query, {
+    abortEarly: false,
+  });
 
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
   const { limit, wallet, offset } = validatedQuery;
-  const { wallet_id } = req
+
   const tokenService = new TokenService();
 
   const tokens = await tokenService.getTokens({
@@ -24,8 +32,11 @@ const tokenGetById = async (req, res) => {
   const validatedParams = await tokenIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
-  const {id} = validatedParams;
-  const {wallet_id} = req
+
+  const { id } = validatedParams;
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const tokenService = new TokenService();
   const token = await tokenService.getById({
     id,
@@ -37,15 +48,22 @@ const tokenGetById = async (req, res) => {
 
 const tokenGetTransactionsById = async (req, res) => {
   // validate input
-  const validatedQuery = await tokenGetTransactionsByIdSchema.validateAsync(req.query, {
-    abortEarly: false,
-  });
+  const validatedQuery = await tokenGetTransactionsByIdSchema.validateAsync(
+    req.query,
+    {
+      abortEarly: false,
+    },
+  );
+
   const { limit, offset } = validatedQuery;
   const validatedParams = await tokenIdSchema.validateAsync(req.params, {
     abortEarly: false,
   });
+
   const { id } = validatedParams;
-  const {wallet_id} = req
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const tokenService = new TokenService();
   const transactions = await tokenService.getTransactions({
     tokenId: id,

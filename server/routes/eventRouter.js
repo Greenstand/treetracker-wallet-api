@@ -2,14 +2,13 @@ const express = require('express');
 
 const router = express.Router();
 const routerWrapper = express.Router();
-const {
-  handlerWrapper,
-  verifyJWTHandler,
-  apiKeyHandler,
-} = require('../utils/utils');
+
+const keycloak = require('../middleware/keycloak');
+
+const { handlerWrapper, apiKeyHandler } = require('../utils/utils');
 const { eventsGet } = require('../handlers/eventHandler');
 
-router.get('/', handlerWrapper(eventsGet));
+router.get('/', keycloak.protect(), handlerWrapper(eventsGet));
 
-routerWrapper.use('/events', apiKeyHandler, verifyJWTHandler, router);
+routerWrapper.use('/events', apiKeyHandler, router);
 module.exports = routerWrapper;

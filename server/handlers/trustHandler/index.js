@@ -10,14 +10,11 @@ const trustGet = async (req, res) => {
     abortEarly: false,
   });
 
-  const {
-    state,
-    type,
-    request_type,
-    limit, offset
-  } = validatedQuery;
+  const { state, type, request_type, limit, offset } = validatedQuery;
 
-  const { wallet_id } = req;
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const trustService = new TrustService();
   const {
     result: trust_relationships,
@@ -48,7 +45,10 @@ const trustPost = async (req, res) => {
     requester_wallet,
     trust_request_type,
   } = validatedBody;
-  const { wallet_id } = req;
+
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const trustService = new TrustService();
   const trustRelationship = await trustService.createTrustRelationship({
     walletLoginId: wallet_id,
@@ -69,7 +69,9 @@ const trustRelationshipGetById = async (req, res) => {
   );
 
   const { trustRelationshipId } = validatedParams;
-  const { wallet_id } = req;
+
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
 
   const trustService = new TrustService();
   const trustRelationship = await trustService.trustRelationshipGetById({
@@ -89,7 +91,10 @@ const trustRelationshipAccept = async (req, res) => {
   );
 
   const { trustRelationshipId } = validatedParams;
-  const { wallet_id } = req;
+
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const trustService = new TrustService();
   const json = await trustService.acceptTrustRequestSentToMe({
     trustRelationshipId,
@@ -107,7 +112,10 @@ const trustRelationshipDecline = async (req, res) => {
   );
 
   const { trustRelationshipId } = validatedParams;
-  const { wallet_id } = req;
+
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const trustService = new TrustService();
   const json = await trustService.declineTrustRequestSentToMe({
     walletLoginId: wallet_id,
@@ -125,7 +133,10 @@ const trustRelationshipDelete = async (req, res) => {
   );
 
   const { trustRelationshipId } = validatedParams;
-  const { wallet_id } = req;
+
+  const accessToken = req.kauth.grant.access_token.content;
+  const wallet_id = accessToken.sub;
+
   const trustService = new TrustService();
   const json = await trustService.cancelTrustRequest({
     walletLoginId: wallet_id,

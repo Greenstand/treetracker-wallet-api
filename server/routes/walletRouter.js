@@ -6,6 +6,8 @@ const routerWrapper = express.Router();
 const multer = require('multer');
 const HttpError = require('../utils/HttpError');
 
+const keycloak = require('../middleware/keycloak');
+
 const upload = multer({
   // eslint-disable-next-line consistent-return
   fileFilter(req, file, cb) {
@@ -17,11 +19,7 @@ const upload = multer({
   dest: '/tmp/csv',
 });
 
-const {
-  handlerWrapper,
-  verifyJWTHandler,
-  apiKeyHandler,
-} = require('../utils/utils');
+const { handlerWrapper, apiKeyHandler } = require('../utils/utils');
 const {
   walletGet,
   walletGetTrustRelationships,
@@ -31,27 +29,32 @@ const {
   walletBatchTransfer,
 } = require('../handlers/walletHandler');
 
-router.get('/', handlerWrapper(walletGet));
-router.get('/:wallet_id', handlerWrapper(walletSingleGet));
+router.get('/', keycloak.protect(), handlerWrapper(walletGet));
+
+router.get('/:wallet_id', keycloak.protect(), handlerWrapper(walletSingleGet));
 
 router.get(
   '/:wallet_id/trust_relationships',
+  keycloak.protect(),
   handlerWrapper(walletGetTrustRelationships),
 );
 
-router.post('/', handlerWrapper(walletPost));
+router.post('/', keycloak.protect(), handlerWrapper(walletPost));
 
 router.post(
   '/batch-create-wallet',
   upload.single('csv'),
+  keycloak.protect(),
   handlerWrapper(walletBatchCreate),
 );
 
 router.post(
   '/batch-transfer',
   upload.single('csv'),
+  keycloak.protect(),
   handlerWrapper(walletBatchTransfer),
 );
 
-routerWrapper.use('/wallets', apiKeyHandler, verifyJWTHandler, router);
+routerWrapper.use('/wallets', apiKeyHandler, router);
+
 module.exports = routerWrapper;
