@@ -3,12 +3,17 @@ const cors = require('cors');
 const HttpError = require('./utils/HttpError');
 const routes = require('./routes');
 const { errorHandler, handlerWrapper } = require('./utils/utils');
+const { sessionMiddleware } = require('./middleware/sessionConfig');
+const keycloak = require('./middleware/keycloak');
 
 const app = express();
 
 if (process.env.NODE_ENV === 'development') {
   app.use(cors());
 }
+
+app.use(sessionMiddleware);
+app.use(keycloak.middleware());
 
 /*
  * Check request
