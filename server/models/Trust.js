@@ -25,6 +25,8 @@ class Trust {
     request_type,
     offset,
     limit,
+    sort_by,
+    order
   }) {
     const filter = {
       and: [

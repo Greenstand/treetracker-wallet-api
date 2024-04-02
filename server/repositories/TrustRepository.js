@@ -76,6 +76,19 @@ class TrustRepository extends BaseRepository {
       promise = promise.offset(limitOptions.offset);
     }
 
+    let order = 'desc';
+    let column = 'trust.created_at';
+
+    if (limitOptions) {
+      if (limitOptions.order) {
+        order = limitOptions.order;
+      }
+      if (limitOptions.sort_by) {
+        column = limitOptions.sort_by;
+      }
+    }
+    promise = promise.orderBy(column, order);
+
     return promise;
   }
 

@@ -18,6 +18,8 @@ class TrustService {
     request_type,
     offset,
     limit,
+    sort_by,
+    order
   }) {
     // check if wallet exists first
     // throws error if no wallet matching walletId exists
@@ -31,6 +33,8 @@ class TrustService {
       request_type,
       offset,
       limit,
+      sort_by,
+      order
     });
   }
 
