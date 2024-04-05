@@ -1,19 +1,16 @@
 const express = require('express');
 const cors = require('cors');
+const passport = require('passport');
+const tokenAuthValidation = require('./middleware/tokenAuthValidation');
 const HttpError = require('./utils/HttpError');
 const routes = require('./routes');
 const { errorHandler, handlerWrapper } = require('./utils/utils');
-const { sessionMiddleware } = require('./middleware/sessionConfig');
-const keycloak = require('./middleware/keycloak');
 
 const app = express();
 
 if (process.env.NODE_ENV === 'development') {
   app.use(cors());
 }
-
-app.use(sessionMiddleware);
-app.use(keycloak.middleware());
 
 /*
  * Check request
@@ -55,6 +52,9 @@ app.use(
 
 app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
 app.use(express.json()); // parse application/json
+app.use(passport.initialize()); // initialize passport
+
+tokenAuthValidation.configurePassport(passport); // set up token validation middleware
 
 app.use(routes);
 
