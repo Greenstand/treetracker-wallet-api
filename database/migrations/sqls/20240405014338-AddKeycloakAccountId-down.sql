@@ -1,0 +1,1 @@
+ALTER TABLE wallet DROP COLUMN keycloak_account_id;
