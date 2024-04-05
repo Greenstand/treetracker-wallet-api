@@ -34,6 +34,10 @@ class WalletService {
     return this._wallet.getWallet(walletId);
   }
 
+  async getWalletIdByKeycloakId(keycloakAccountId) {
+    return this._wallet.getWalletIdByKeycloakId(keycloakAccountId);
+  }
+
   async getByIdOrName(idOrName) {
     let wallet;
     if (uuidValidate(idOrName)) {

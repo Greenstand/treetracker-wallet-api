@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const routerWrapper = express.Router();
 
-const keycloak = require('../middleware/keycloak');
+const { authenticateToken } = require('../middleware/tokenAuthValidation');
 
 const { handlerWrapper, apiKeyHandler } = require('../utils/utils');
 const {
@@ -17,34 +17,14 @@ const {
   transferPost,
 } = require('../handlers/transferHandler');
 
-router.post('/', keycloak.protect(), handlerWrapper(transferPost));
-router.post(
-  '/:transfer_id/accept',
-  keycloak.protect(),
-  handlerWrapper(transferIdAcceptPost),
-);
-router.post(
-  '/:transfer_id/decline',
-  keycloak.protect(),
-  handlerWrapper(transferIdDeclinePost),
-);
-router.delete(
-  '/:transfer_id',
-  keycloak.protect(),
-  handlerWrapper(transferIdDelete),
-);
-router.post(
-  '/:transfer_id/fulfill',
-  keycloak.protect(),
-  handlerWrapper(transferIdFulfill),
-);
-router.get('/', keycloak.protect(), handlerWrapper(transferGet));
-router.get('/:transfer_id', keycloak.protect(), handlerWrapper(transferIdGet));
-router.get(
-  '/:transfer_id/tokens',
-  keycloak.protect(),
-  handlerWrapper(transferIdTokenGet),
-);
+router.post('/', handlerWrapper(transferPost));
+router.post('/:transfer_id/accept', handlerWrapper(transferIdAcceptPost));
+router.post('/:transfer_id/decline', handlerWrapper(transferIdDeclinePost));
+router.delete('/:transfer_id', handlerWrapper(transferIdDelete));
+router.post('/:transfer_id/fulfill', handlerWrapper(transferIdFulfill));
+router.get('/', handlerWrapper(transferGet));
+router.get('/:transfer_id', handlerWrapper(transferIdGet));
+router.get('/:transfer_id/tokens', handlerWrapper(transferIdTokenGet));
 
-routerWrapper.use('/transfers', apiKeyHandler, router);
+routerWrapper.use('/transfers', apiKeyHandler, authenticateToken, router);
 module.exports = routerWrapper;

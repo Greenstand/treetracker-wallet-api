@@ -63,6 +63,10 @@ class Wallet {
     return { ...wallet, wallet: walletName, tokens_in_wallet: tokenCount };
   }
 
+  async getWalletIdByKeycloakId(keycloakAccountId) {
+    return this._walletRepository.getWalletIdByKeycloakId(keycloakAccountId);
+  }
+
   async getByName(name) {
     return this._walletRepository.getByName(name);
   }

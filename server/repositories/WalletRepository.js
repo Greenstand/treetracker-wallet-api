@@ -53,6 +53,19 @@ class WalletRepository extends BaseRepository {
     return object;
   }
 
+  async getWalletIdByKeycloakId(keycloakAccountId) {
+    const object = await this._session
+      .getDB()
+      .select('id')
+      .table(this._tableName)
+      .where('keycloak_account_id', keycloakAccountId)
+      .first();
+    if (!object) {
+      throw new HttpError(404, `User is not associated with any wallet`);
+    }
+    return object;
+  }
+
   // Get a wallet itself including its sub wallets
   async getAllWallets(
     id,

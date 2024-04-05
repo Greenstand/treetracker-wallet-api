@@ -10,8 +10,8 @@ const tokenGet = async (req, res) => {
     abortEarly: false,
   });
 
-  const accessToken = req.kauth.grant.access_token.content;
-  const wallet_id = accessToken.sub;
+  const accessToken = req.user;
+  const { wallet_id } = accessToken;
   const { limit, wallet, offset } = validatedQuery;
 
   const tokenService = new TokenService();
@@ -34,8 +34,8 @@ const tokenGetById = async (req, res) => {
   });
 
   const { id } = validatedParams;
-  const accessToken = req.kauth.grant.access_token.content;
-  const wallet_id = accessToken.sub;
+  const accessToken = req.user;
+  const { wallet_id } = accessToken;
 
   const tokenService = new TokenService();
   const token = await tokenService.getById({
@@ -61,8 +61,8 @@ const tokenGetTransactionsById = async (req, res) => {
   });
 
   const { id } = validatedParams;
-  const accessToken = req.kauth.grant.access_token.content;
-  const wallet_id = accessToken.sub;
+  const accessToken = req.user;
+  const { wallet_id } = accessToken;
 
   const tokenService = new TokenService();
   const transactions = await tokenService.getTransactions({

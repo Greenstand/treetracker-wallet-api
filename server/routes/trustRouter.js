@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const routerWrapper = express.Router();
 
-const keycloak = require('../middleware/keycloak');
+const { authenticateToken } = require('../middleware/tokenAuthValidation');
 
 const { handlerWrapper, apiKeyHandler } = require('../utils/utils');
 
@@ -16,28 +16,23 @@ const {
   trustPost,
 } = require('../handlers/trustHandler');
 
-router.get('/', keycloak.protect(), handlerWrapper(trustGet));
-router.post('/', keycloak.protect(), handlerWrapper(trustPost));
+router.get('/', handlerWrapper(trustGet));
+router.post('/', handlerWrapper(trustPost));
 router.post(
   '/:trustRelationshipId/accept',
-  keycloak.protect(),
   handlerWrapper(trustRelationshipAccept),
 );
 router.post(
   '/:trustRelationshipId/decline',
-  keycloak.protect(),
   handlerWrapper(trustRelationshipDecline),
 );
-router.delete(
-  '/:trustRelationshipId',
-  keycloak.protect(),
-  handlerWrapper(trustRelationshipDelete),
-);
-router.get(
-  '/:trustRelationshipId',
-  keycloak.protect(),
-  handlerWrapper(trustRelationshipGetById),
-);
+router.delete('/:trustRelationshipId', handlerWrapper(trustRelationshipDelete));
+router.get('/:trustRelationshipId', handlerWrapper(trustRelationshipGetById));
 
-routerWrapper.use('/trust_relationships', apiKeyHandler, router);
+routerWrapper.use(
+  '/trust_relationships',
+  apiKeyHandler,
+  authenticateToken,
+  router,
+);
 module.exports = routerWrapper;
