@@ -13,6 +13,8 @@ const trustGetQuerySchema = Joi.object({
   ),
   offset: Joi.number().integer().min(0).default(0),
   limit: Joi.number().integer().min(1).max(2000).default(500),
+  sort_by: Joi.string().valid( 'state', 'created_at', 'updated_at').default('created_at'),
+  order: Joi.string().valid('asc', 'desc').default('desc'),
 });
 
 const trustPostSchema = Joi.object({

@@ -38,7 +38,7 @@ class TrustService {
     });
   }
 
-  async getAllTrustRelationships({ walletId, state, type, request_type, offset, limit }) {
+  async getAllTrustRelationships({ walletId, state, type, request_type, offset, limit, sort_by, order}) {
     return this._trust.getAllTrustRelationships({
       walletId,
       state,
@@ -46,6 +46,8 @@ class TrustService {
       request_type,
       offset,
       limit,
+      sort_by,
+      order
     });
   }
 
