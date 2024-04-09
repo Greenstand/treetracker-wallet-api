@@ -1,3 +1,14 @@
+# [1.35.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.34.0...v1.35.0) (2024-03-21)
+
+
+### Features
+
+* enable pagination in trustGet through limit and offset query params ([7e9b69b](https://github.com/Greenstand/treetracker-wallet-api/commit/7e9b69bdc610b57d860be38b7943fad91fcb8626))
+* **package.json:** add server-debug script ([512f50f](https://github.com/Greenstand/treetracker-wallet-api/commit/512f50fd033e14e1f935f9de7084b289a48989b5))
+* **trust.js:** add getAllTrustRelationships function ([e40ba05](https://github.com/Greenstand/treetracker-wallet-api/commit/e40ba054b316fd1a1febaf5d2daa7965c4e097b8))
+* **trustrepository.js:** add getAllByFilter function ([8b24f35](https://github.com/Greenstand/treetracker-wallet-api/commit/8b24f35658b831f9f92e5d5a72f4a21e0021701a))
+* **trustservice.js:** update getAllTrustRelationships ([27b478c](https://github.com/Greenstand/treetracker-wallet-api/commit/27b478c8a4119929a64ac67231a1744a93400a8e))
+
 # [1.34.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.33.0...v1.34.0) (2024-01-24)
 
 

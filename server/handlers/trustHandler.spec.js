@@ -193,11 +193,17 @@ describe('trustRouter', () => {
     });
 
     it('successfully', async () => {
+      const limit = 10;
+      const offset = 0;
+      const count = 1;
       const getAllTrustRelationshipsStub = sinon
         .stub(TrustService.prototype, 'getAllTrustRelationships')
-        .resolves([{ id: trustId }]);
+        .resolves({
+          result: [{ id: trustId }],
+          count
+        });
       const res = await request(app).get(
-        `/trust_relationships?type=${TrustRelationshipEnums.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted}`,
+        `/trust_relationships?type=${TrustRelationshipEnums.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted}&limit=${limit}&offset=${offset}`,
       );
       expect(res).property('statusCode').eq(200);
       expect(res.body.trust_relationships).lengthOf(1);
@@ -206,6 +212,8 @@ describe('trustRouter', () => {
         state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
         type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
+        limit,
+        offset,
         walletId: authenticatedWalletId,
       });
     });
