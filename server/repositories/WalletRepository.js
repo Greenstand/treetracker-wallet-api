@@ -152,6 +152,38 @@ class WalletRepository extends BaseRepository {
 
     return { wallets };
   }
+
+  async patchWallet(id, about, logo_url, cover_url) {
+    const updates = {};
+    if (about !== undefined) {
+      updates.about = about;
+    }
+    if (logo_url !== undefined) {
+      updates.logo_url = logo_url;
+    }
+    if (cover_url !== undefined) {
+      updates.cover_url = cover_url;
+    }
+
+    // Check if there are any fields to update
+    if (Object.keys(updates).length === 0) {
+      throw new Error('No fields provided for update.');
+    }
+
+    // Perform the update operation
+    const updatedRows = await this._session
+      .getDB()
+      .table(this._tableName)
+      .where('id', id)
+      .update(updates);
+
+    if (updatedRows === 0) {
+      // If no rows were updated, it means the wallet with the given ID was not found
+      throw new HttpError(404, `Could not find wallet by id: ${id}`);
+    }
+
+    return updatedRows;
+  }
 }
 
 module.exports = WalletRepository;

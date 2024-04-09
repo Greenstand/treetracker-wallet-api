@@ -8,6 +8,7 @@ const {
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
+  walletPatchSchema,
   walletBatchCreateBodySchema,
   csvValidationSchema,
   walletBatchTransferBodySchema,
@@ -105,6 +106,23 @@ const walletPost = async (req, res) => {
   res.status(201).json(returnedWallet);
 };
 
+const walletPatch = async (req, res) => {
+  const validatedBody = await walletPatchSchema.validateAsync(req.body, {
+    abortEarly: false,
+  });
+
+  const { id, about, logo_url, cover_url } = validatedBody;
+  const walletService = new WalletService();
+  const returnedWallet = await walletService.updateWallet(
+    id,
+    about,
+    logo_url,
+    cover_url,
+  );
+
+  res.status(200).json(returnedWallet);
+};
+
 const walletBatchCreate = async (req, res) => {
   const validatedBody = await walletBatchCreateBodySchema.validateAsync(
     req.body,
@@ -164,6 +182,7 @@ const walletBatchTransfer = async (req, res) => {
 
 module.exports = {
   walletPost,
+  walletPatch,
   walletGetTrustRelationships,
   walletGet,
   walletSingleGet,

@@ -46,6 +46,10 @@ class Wallet {
     return newWallet;
   }
 
+  async updateWallet(id, about, logo_url, cover_url) {
+    return this._walletRepository.patchWallet(id, about, logo_url, cover_url);
+  }
+
   async getById(id) {
     return this._walletRepository.getById(id);
   }

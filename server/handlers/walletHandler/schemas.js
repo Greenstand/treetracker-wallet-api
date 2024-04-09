@@ -49,6 +49,14 @@ const walletPostSchema = Joi.object({
   about: Joi.string(),
 });
 
+const walletPatchSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+  name: Joi.string().required(),
+  logo_url: Joi.string(),
+  cover_url: Joi.string(),
+  about: Joi.string(),
+});
+
 const walletBatchCreateBodySchema = Joi.object({
   sender_wallet: Joi.string(),
   token_transfer_amount_default: Joi.number().integer(),
@@ -93,6 +101,7 @@ module.exports = {
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
+  walletPatchSchema,
   walletBatchCreateBodySchema,
   csvValidationSchema,
   csvValidationSchemaTransfer,

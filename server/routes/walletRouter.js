@@ -26,6 +26,7 @@ const {
   walletGet,
   walletGetTrustRelationships,
   walletPost,
+  walletPatch,
   walletSingleGet,
   walletBatchCreate,
   walletBatchTransfer,
@@ -40,6 +41,8 @@ router.get(
 );
 
 router.post('/', handlerWrapper(walletPost));
+
+router.patch('/', handlerWrapper(walletPatch));
 
 router.post(
   '/batch-create-wallet',

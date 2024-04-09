@@ -89,6 +89,10 @@ class WalletService {
     }
   }
 
+  async updateWallet(id, about, logo_url, cover_url) {
+    return this._wallet.updateWallet(id, about, logo_url, cover_url);
+  }
+
   async getAllWallets(
     id,
     limitOptions,
