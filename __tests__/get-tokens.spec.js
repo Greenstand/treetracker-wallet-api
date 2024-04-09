@@ -103,6 +103,17 @@ describe('GET tokens', () => {
     expect(res.body.tokens[0].id).eq(seed.token.id);
   });
 
+  it(`GET /tokens/ should return correct limit on large limit`, async () => {
+    await seed.addMultipleTokensToWallet(seed.wallet.id,3000);
+    const res = await request(server)
+      .get(`/tokens?limit=3000`)
+      .set('treetracker-api-key', seed.apiKey)
+      .set('Authorization', `Bearer ${bearerToken}`);
+
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body.tokens.length).to.eq(3000);
+  });
+
   it(`GET /tokens/ should return correct offset`, async () => {
     const insertedId = (await seed.addTokenToWallet(seed.wallet.id))[0].id;
     const res = await request(server)

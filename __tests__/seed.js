@@ -97,7 +97,6 @@ async function seed() {
     salt: 'test',
     name: 'test',
   });
-
   // wallet
   await knex('wallet').insert({
     id: wallet.id,
@@ -154,6 +153,19 @@ async function addTokenToWallet(walletId) {
   );
 }
 
+async function addMultipleTokensToWallet(walletId, numberOfTokens) {
+  const tokens = [];
+
+  for (let i = 0; i < numberOfTokens; i=i+1) {
+    tokens.push({
+      id: uuid.v4(),
+      capture_id: uuid.v4(),
+      wallet_id: walletId,
+    });
+  }
+  await knex.batchInsert('token', tokens);
+}
+
 async function clear() {
   log.debug('clear tables');
   await knex('api_key').del();
@@ -176,4 +188,5 @@ module.exports = {
   tokenB,
   captureB,
   addTokenToWallet,
+  addMultipleTokensToWallet,
 };

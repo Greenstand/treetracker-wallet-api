@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const tokenGetSchema = Joi.object({
-  limit: Joi.number().integer().min(1).max(2000).default(2000),
+  limit: Joi.number().integer().min(1).default(2000),
   offset: Joi.number().integer().min(0).default(0),
   wallet: Joi.string(),
 });
