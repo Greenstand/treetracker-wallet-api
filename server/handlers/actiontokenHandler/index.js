@@ -28,7 +28,7 @@ const transfer = async ( req,res ) => {
   const actionTokenService = new ActionTokenService();
 
   // verfiy actionToken 
-  const tokens =  ActionTokenService.verify(actionToken);
+  const tokens =  await ActionTokenService.verify(actionToken);
   
 
   const result = await actionTokenService.transferTokens( tokens , wallet_id  )
