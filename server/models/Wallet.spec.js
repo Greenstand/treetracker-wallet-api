@@ -17,6 +17,7 @@ describe('Wallet Model', () => {
   let walletModel;
   let walletRepositoryStub;
   let trustRepositoryStub;
+  const authenticatedWalletId = uuid();
 
   beforeEach(() => {
     const session = new Session();
@@ -108,7 +109,10 @@ describe('Wallet Model', () => {
     const tokenRepositoryStub = sinon
       .stub(TokenRepository.prototype, 'countByFilter')
       .resolves(20);
-    const result = await walletModel.getWallet(walletId);
+    const hasControlOverStub = sinon
+      .stub(Wallet.prototype, 'hasControlOver')
+      .resolves(true);
+    const result = await walletModel.getWallet(authenticatedWalletId, walletId);
 
     expect(result).eql({
       id: walletId,
@@ -116,6 +120,10 @@ describe('Wallet Model', () => {
       tokens_in_wallet: 20,
     });
     expect(walletRepositoryStub.getById).calledOnceWithExactly(walletId);
+    expect(hasControlOverStub).calledOnceWithExactly(
+      authenticatedWalletId,
+      walletId,
+    );
     expect(tokenRepositoryStub).calledOnceWithExactly({ wallet_id: walletId });
   });
 

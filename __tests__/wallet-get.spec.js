@@ -152,7 +152,7 @@ describe('Wallet: Get wallets of an account', () => {
       .get(`/wallets/${seed.walletC.id}`)
       .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
-      .set('Authorization', `Bearer ${bearerTokenA}`);
+      .set('Authorization', `Bearer ${bearerTokenB}`);
 
     expect(res).property('statusCode').to.eq(200);
   });
