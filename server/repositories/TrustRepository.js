@@ -93,7 +93,7 @@ class TrustRepository extends BaseRepository {
   }
 
 async getAllByFilter(filter, limitOptions) {
-  let subquery = this._session.getDB()
+  const subquery = this._session.getDB()
     .select(
       'wallet_trust.id',
       'wallet_trust.actor_wallet_id',
@@ -142,15 +142,7 @@ async getAllByFilter(filter, limitOptions) {
 
   const result = await derivedTable;
 
-  const countResult = await this._session.getDB()
-    .from('wallet_trust')
-    .leftJoin('wallet as originator_wallet', 'wallet_trust.originator_wallet_id', '=', 'originator_wallet.id')
-    .leftJoin('wallet as actor_wallet', 'wallet_trust.actor_wallet_id', '=', 'actor_wallet.id')
-    .leftJoin('wallet as target_wallet', 'wallet_trust.target_wallet_id', '=', 'target_wallet.id')
-    .where((builder) => this.whereBuilder(filter, builder))
-    .countDistinct('wallet_trust.id as count');
-
-  const count = countResult[0].count;
+  const {count} = result[0];
 
   return { result, count: +count };
 }
