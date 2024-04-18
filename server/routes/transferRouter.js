@@ -2,11 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 const routerWrapper = express.Router();
-const {
-  handlerWrapper,
-  verifyJWTHandler,
-  apiKeyHandler,
-} = require('../utils/utils');
+
+const { authenticateToken } = require('../middleware/tokenAuthValidation');
+
+const { handlerWrapper, apiKeyHandler } = require('../utils/utils');
 const {
   transferGet,
   transferIdAcceptPost,
@@ -27,5 +26,5 @@ router.get('/', handlerWrapper(transferGet));
 router.get('/:transfer_id', handlerWrapper(transferIdGet));
 router.get('/:transfer_id/tokens', handlerWrapper(transferIdTokenGet));
 
-routerWrapper.use('/transfers', apiKeyHandler, verifyJWTHandler, router);
+routerWrapper.use('/transfers', apiKeyHandler, authenticateToken, router);
 module.exports = routerWrapper;

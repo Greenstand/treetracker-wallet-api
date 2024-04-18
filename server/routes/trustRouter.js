@@ -2,11 +2,10 @@ const express = require('express');
 
 const router = express.Router();
 const routerWrapper = express.Router();
-const {
-  verifyJWTHandler,
-  handlerWrapper,
-  apiKeyHandler,
-} = require('../utils/utils');
+
+const { authenticateToken } = require('../middleware/tokenAuthValidation');
+
+const { handlerWrapper, apiKeyHandler } = require('../utils/utils');
 
 const {
   trustGet,
@@ -28,12 +27,12 @@ router.post(
   handlerWrapper(trustRelationshipDecline),
 );
 router.delete('/:trustRelationshipId', handlerWrapper(trustRelationshipDelete));
-router.get('/:trustRelationshipId', handlerWrapper(trustRelationshipGetById))
+router.get('/:trustRelationshipId', handlerWrapper(trustRelationshipGetById));
 
 routerWrapper.use(
   '/trust_relationships',
   apiKeyHandler,
-  verifyJWTHandler,
+  authenticateToken,
   router,
 );
 module.exports = routerWrapper;
