@@ -1,5 +1,6 @@
 const sinon = require('sinon');
 const chai = require('chai');
+const uuid = require('uuid');
 const TrustService = require('./TrustService');
 const WalletService = require('./WalletService');
 const Trust = require('../models/Trust');
@@ -9,6 +10,7 @@ const { expect } = chai;
 
 describe('TrustService', () => {
   let trustService;
+  const authenticatedWalletId = uuid.v4();
 
   beforeEach(() => {
     trustService = new TrustService();
@@ -27,14 +29,17 @@ describe('TrustService', () => {
       .stub(WalletService.prototype, 'getWallet')
       .resolves({ id: 'walletId' });
 
-    const trustRelationship = await trustService.getTrustRelationships({
-      walletId: 'walletId',
-      state: 'state',
-      type: 'type',
-      request_type: 'request_type',
-      limit: 1,
-      offset: 0,
-    });
+    const trustRelationship = await trustService.getTrustRelationships(
+      authenticatedWalletId,
+      {
+        walletId: 'walletId',
+        state: 'state',
+        type: 'type',
+        request_type: 'request_type',
+        limit: 1,
+        offset: 0,
+      },
+    );
 
     expect(trustRelationship).eql(['trustRelationships']);
     expect(
@@ -180,7 +185,6 @@ describe('TrustService', () => {
   });
 
   it('getAllTrustRelationships', async () => {
-    
     const data = {
       result: [
         { id: 'trustId1' },
@@ -189,14 +193,13 @@ describe('TrustService', () => {
         { id: 'trustId4' },
       ],
       count: 4,
-    }
-   
+    };
+
     const getAllTrustRelationshipsStub = sinon.stub(
       TrustService.prototype,
       'getAllTrustRelationships',
     );
-    getAllTrustRelationshipsStub
-      .resolves(data);
+    getAllTrustRelationshipsStub.resolves(data);
 
     const trustRelationships = await trustService.getAllTrustRelationships({
       state: 'requested',
@@ -205,9 +208,9 @@ describe('TrustService', () => {
       limit: 10,
       offset: 0,
     });
-    
+
     expect(trustRelationships).eql(data);
-    
+
     expect(
       getAllTrustRelationshipsStub.calledWithExactly({
         state: 'requested',
