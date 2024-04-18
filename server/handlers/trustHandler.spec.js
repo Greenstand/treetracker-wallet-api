@@ -197,7 +197,6 @@ describe('trustRouter', () => {
     const limit = 10;
     const offset = 0;
     const count = 1;
-    // const walletId = '809f2192-4bb6-4ff0-b943-f4c2b6a8d5e9';
     const orderBy = 'created_at'; 
     const order = 'desc'; 
   

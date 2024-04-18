@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const Joi = require('joi');
 const log = require('loglevel');
 const TrustRepository = require('../repositories/TrustRepository');
