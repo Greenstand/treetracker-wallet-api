@@ -111,10 +111,11 @@ const walletPatch = async (req, res) => {
     abortEarly: false,
   });
 
-  const { id, about, logo_url, cover_url } = validatedBody;
+  const { wallet_id } = req;
+  const { about, logo_url, cover_url } = validatedBody;
   const walletService = new WalletService();
   const returnedWallet = await walletService.updateWallet(
-    id,
+    wallet_id,
     about,
     logo_url,
     cover_url,

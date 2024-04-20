@@ -50,8 +50,6 @@ const walletPostSchema = Joi.object({
 });
 
 const walletPatchSchema = Joi.object({
-  id: Joi.string().uuid().required(),
-  name: Joi.string().required(),
   logo_url: Joi.string(),
   cover_url: Joi.string(),
   about: Joi.string(),
