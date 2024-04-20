@@ -58,9 +58,13 @@ const walletSingleGet = async (req, res) => {
     abortEarly: false,
   });
 
-  const { wallet_id } = validatedParams;
+  const { wallet_id: requestedWalletId } = validatedParams;
+  const { wallet_id: loggedInWalletId } = req;
   const walletService = new WalletService();
-  const wallet = await walletService.getWallet(wallet_id);
+  const wallet = await walletService.getWallet(
+    loggedInWalletId,
+    requestedWalletId,
+  );
   res.status(200).send(wallet);
 };
 
@@ -75,15 +79,19 @@ const walletGetTrustRelationships = async (req, res) => {
     },
   );
 
-  const { wallet_id } = validatedParams;
+  const { wallet_id: walletId } = validatedParams;
+  const { wallet_id: loggedInWalletId } = req;
   const { state, type, request_type } = validatedQuery;
   const trustService = new TrustService();
-  const trust_relationships = await trustService.getTrustRelationships({
-    walletId: wallet_id,
-    state,
-    type,
-    request_type,
-  });
+  const trust_relationships = await trustService.getTrustRelationships(
+    loggedInWalletId,
+    {
+      walletId,
+      state,
+      type,
+      request_type,
+    },
+  );
   res.status(200).json({
     trust_relationships,
   });
