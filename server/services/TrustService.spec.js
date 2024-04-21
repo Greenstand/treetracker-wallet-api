@@ -34,6 +34,8 @@ describe('TrustService', () => {
       request_type: 'request_type',
       limit: 1,
       offset: 0,
+      sort_by: 'sort_by',
+      order: 'order'
     });
 
     expect(trustRelationship).eql(['trustRelationships']);
@@ -50,6 +52,8 @@ describe('TrustService', () => {
         request_type: 'request_type',
         limit: 1,
         offset: 0,
+        sort_by: 'sort_by',
+        order: 'order'
       }),
     ).eql(true);
   });
