@@ -30,8 +30,8 @@ class WalletService {
     return this._wallet.getByName(name);
   }
 
-  async getWallet(walletId) {
-    return this._wallet.getWallet(walletId);
+  async getWallet(loggedInWalletId, walletId) {
+    return this._wallet.getWallet(loggedInWalletId, walletId);
   }
 
   async getByIdOrName(idOrName) {

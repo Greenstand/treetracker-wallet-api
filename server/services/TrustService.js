@@ -11,20 +11,14 @@ class TrustService {
     this._eventService = new EventService();
   }
 
-  async getTrustRelationships({
-    walletId,
-    state,
-    type,
-    request_type,
-    offset,
-    limit,
-    sort_by,
-    order
-  }) {
+  async getTrustRelationships(
+    loggedInWalletId,
+    { walletId, state, type, request_type, offset, limit,sort_by, order },
+  ) {
     // check if wallet exists first
     // throws error if no wallet matching walletId exists
     const walletService = new WalletService();
-    await walletService.getWallet(walletId);
+    await walletService.getWallet(loggedInWalletId, walletId);
 
     return this._trust.getTrustRelationships({
       walletId,
@@ -38,7 +32,17 @@ class TrustService {
     });
   }
 
-  async getAllTrustRelationships({ walletId, state, type, request_type, offset, limit, sort_by, order}) {
+  async getAllTrustRelationships({
+    walletId,
+    state,
+    type,
+    request_type,
+    offset,
+    limit,
+    sort_by,
+    order,
+    
+  }) {
     return this._trust.getAllTrustRelationships({
       walletId,
       state,
