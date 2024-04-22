@@ -14,6 +14,7 @@ const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 
+
 describe('trustRouter', () => {
   let app;
   const authenticatedWalletId = uuid.v4();
@@ -192,32 +193,43 @@ describe('trustRouter', () => {
       expect(res.body.message).match(/request_type.*one.*of/);
     });
 
-    it('successfully', async () => {
-      const limit = 10;
-      const offset = 0;
-      const count = 1;
-      const getAllTrustRelationshipsStub = sinon
-        .stub(TrustService.prototype, 'getAllTrustRelationships')
-        .resolves({
-          result: [{ id: trustId }],
-          count
-        });
-      const res = await request(app).get(
-        `/trust_relationships?type=${TrustRelationshipEnums.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted}&limit=${limit}&offset=${offset}`,
-      );
-      expect(res).property('statusCode').eq(200);
-      expect(res.body.trust_relationships).lengthOf(1);
-      expect(res.body.trust_relationships[0]).eql({ id: trustId });
-      expect(getAllTrustRelationshipsStub).calledWith({
-        state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-        type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
-        request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
-        limit,
-        offset,
-        walletId: authenticatedWalletId,
+  it('successfully', async () => {
+    const limit = 10;
+    const offset = 0;
+    const count = 1;
+    const orderBy = 'created_at'; 
+    const order = 'desc'; 
+  
+    const getAllTrustRelationshipsStub = sinon
+      .stub(TrustService.prototype, 'getAllTrustRelationships')
+      .resolves({
+        result: [{ id: trustId }],
+        count
       });
+  
+    const res = await request(app).get(
+      `/trust_relationships?type=${TrustRelationshipEnums.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted}&limit=${limit}&offset=${offset}&order=${order}&sort_by=${orderBy}`,
+    );
+  
+    expect(res).property('statusCode').eq(200);
+    expect(res.body.trust_relationships).to.have.lengthOf(1);
+    expect(res.body.trust_relationships[0]).to.eql({ id: trustId });
+  
+    expect(getAllTrustRelationshipsStub).to.have.been.calledWith({
+      state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+      type: TrustRelationshipEnums.ENTITY_TRUST_TYPE.send,
+      request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
+      limit,
+      offset,
+      order,
+      sort_by: orderBy,
+      walletId: authenticatedWalletId,
     });
   });
+});
+  
+
+
 
   describe('get /trust_relationships/:id', () => {
     it('missed parameters -- relationshipId must be a guid', async () => {

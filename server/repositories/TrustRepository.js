@@ -76,64 +76,76 @@ class TrustRepository extends BaseRepository {
       promise = promise.offset(limitOptions.offset);
     }
 
+    let order = 'desc';
+    let column = 'wallet_trust.created_at';
+
+    if (limitOptions) {
+      if (limitOptions.order) {
+        order = limitOptions.order;
+      }
+      if (limitOptions.sort_by) {
+        column = limitOptions.sort_by;
+      }
+    }
+    promise = promise.orderBy(column, order);
+
     return promise;
   }
 
-  async getAllByFilter(filter, limitOptions) {
-    let promise = this._session
-      .getDB()
-      .select(
-        'wallet_trust.id',
-        'wallet_trust.actor_wallet_id',
-        'wallet_trust.target_wallet_id',
-        'wallet_trust.type',
-        'wallet_trust.originator_wallet_id',
-        'wallet_trust.request_type',
-        'wallet_trust.state',
-        'wallet_trust.created_at',
-        'wallet_trust.updated_at',
-        'wallet_trust.active',
-        'originator_wallet.name as originating_wallet',
-        'actor_wallet.name as actor_wallet',
-        'target_wallet.name as target_wallet',
-      )
-      .from('wallet_trust')
-      .leftJoin(
-        'wallet as originator_wallet',
-        'wallet_trust.originator_wallet_id',
-        '=',
-        'originator_wallet.id',
-      )
-      .leftJoin(
-        'wallet as actor_wallet',
-        'wallet_trust.actor_wallet_id',
-        '=',
-        'actor_wallet.id',
-      )
-      .leftJoin(
-        'wallet as target_wallet',
-        'wallet_trust.target_wallet_id',
-        '=',
-        'target_wallet.id',
-      )
-      .where((builder) => this.whereBuilder(filter, builder))
-      .distinctOn('wallet_trust.id'); // distinct on id to avoid duplicates
+async getAllByFilter(filter, limitOptions) {
+  const subquery = this._session.getDB()
+    .select(
+      'wallet_trust.id',
+      'wallet_trust.actor_wallet_id',
+      'wallet_trust.target_wallet_id',
+      'wallet_trust.type',
+      'wallet_trust.originator_wallet_id',
+      'wallet_trust.request_type',
+      'wallet_trust.state',
+      'wallet_trust.created_at',
+      'wallet_trust.updated_at',
+      'wallet_trust.active',
+      'originator_wallet.name as originating_wallet',
+      'actor_wallet.name as actor_wallet',
+      'target_wallet.name as target_wallet',
+    )
+    .from('wallet_trust')
+    .leftJoin('wallet as originator_wallet', 'wallet_trust.originator_wallet_id', '=', 'originator_wallet.id')
+    .leftJoin('wallet as actor_wallet', 'wallet_trust.actor_wallet_id', '=', 'actor_wallet.id')
+    .leftJoin('wallet as target_wallet', 'wallet_trust.target_wallet_id', '=', 'target_wallet.id')
+    .where((builder) => this.whereBuilder(filter, builder))
+    .distinctOn('wallet_trust.id')
+    .orderBy('wallet_trust.id', 'asc'); 
 
-    // get the total count (before applying limit and offset options)
-    const count = await this._session.getDB().from(promise.as('p')).count('*');
+  let derivedTable = this._session.getDB().select('*').from(subquery.as('subquery'));
 
-    if (limitOptions && limitOptions.limit) {
-      promise = promise.limit(limitOptions.limit);
+  let order = 'desc';
+  let column = 'created_at';
+
+  if (limitOptions) {
+    if (limitOptions.order) {
+      order = limitOptions.order;
     }
-
-    if (limitOptions && limitOptions.offset) {
-      promise = promise.offset(limitOptions.offset);
+    if (limitOptions.sort_by) {
+      column = limitOptions.sort_by;
     }
-
-    const result = await promise;
-
-    return { result, count: +count[0].count };
   }
+
+  derivedTable = derivedTable.orderBy(column, order);
+
+  if (limitOptions && limitOptions.limit) {
+    derivedTable = derivedTable.limit(limitOptions.limit);
+  }
+  if (limitOptions && limitOptions.offset) {
+    derivedTable = derivedTable.offset(limitOptions.offset);
+  }
+
+  const result = await derivedTable;
+
+  const {count} = result[0];
+
+  return { result, count: +count };
+}
 }
 
 module.exports = TrustRepository;

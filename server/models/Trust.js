@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const Joi = require('joi');
 const log = require('loglevel');
 const TrustRepository = require('../repositories/TrustRepository');
@@ -25,6 +26,8 @@ class Trust {
     request_type,
     offset,
     limit,
+    sort_by,
+    order
   }) {
     const filter = {
       and: [
@@ -52,7 +55,7 @@ class Trust {
   /*
    * Get all trust relationships by filters, setting filter to undefined to allow all data
    */
-  async getAllTrustRelationships({ walletId, state, type, request_type, offset, limit }) {
+  async getAllTrustRelationships({ walletId, state, type, request_type, offset, limit, sort_by, order }) {
     
     const filter = {
       and: [
@@ -68,7 +71,7 @@ class Trust {
     if (request_type) {
       filter.and.push({ request_type });
     }
-    return this._trustRepository.getAllByFilter(filter, { offset, limit });
+    return this._trustRepository.getAllByFilter(filter, { offset, limit, sort_by, order });
   }
 
   /*

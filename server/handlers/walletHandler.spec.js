@@ -38,8 +38,8 @@ describe('walletRouter', () => {
   describe('get /wallets', () => {
     it('no limit parameter(1000 as default)', async () => {
       const res = await request(app).get('/wallets');
-      expect(res).property('statusCode').eq(200);
-    });
+            expect(res).property('statusCode').eq(200);
+          });
 
     it('successfully', async () => {
       const walletId = uuid.v4();
