@@ -77,7 +77,7 @@ class TrustRepository extends BaseRepository {
     }
 
     let order = 'desc';
-    let column = 'trust.created_at';
+    let column = 'wallet_trust.created_at';
 
     if (limitOptions) {
       if (limitOptions.order) {
