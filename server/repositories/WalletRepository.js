@@ -143,7 +143,6 @@ class WalletRepository extends BaseRepository {
       query = query.offset(limitOptions.offset);
     }
 
-   try{
     const wallets = await query;
     if (getCount) {
       const count = await countQuery;
@@ -151,12 +150,6 @@ class WalletRepository extends BaseRepository {
     }
 
     return { wallets };
-   }catch(err){
-    console.log(err);
-    throw err;
-   }
-
-    
   }
 }
 
