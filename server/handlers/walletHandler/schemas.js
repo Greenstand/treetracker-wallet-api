@@ -50,9 +50,9 @@ const walletPostSchema = Joi.object({
 });
 
 const walletPatchSchema = Joi.object({
-  logo_url: Joi.string(),
-  cover_url: Joi.string(),
-  about: Joi.string(),
+  display_name: Joi.string().trim().min(2).max(30),
+  about: Joi.string().min(5).max(250),
+  add_to_web_map: Joi.boolean().default(false),
 });
 
 const walletBatchCreateBodySchema = Joi.object({

@@ -119,17 +119,27 @@ const walletPatch = async (req, res) => {
     abortEarly: false,
   });
 
-  const { wallet_id } = req;
-  const { about, logo_url, cover_url } = validatedBody;
-  const walletService = new WalletService();
-  const returnedWallet = await walletService.updateWallet(
-    wallet_id,
-    about,
-    logo_url,
-    cover_url,
-  );
+  const validatedParams = await walletIdParamSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
 
-  res.status(200).json(returnedWallet);
+  const { wallet_id } = validatedParams;
+  const { wallet_id: loggedInWalletId } = req;
+  const { display_name, about, add_to_web_map } = validatedBody;
+  const { cover_image, logo_image } = req.files;
+
+  const walletService = new WalletService();
+  const updatedWallet = await walletService.updateWallet({
+    loggedInWalletId,
+    display_name,
+    about,
+    add_to_web_map,
+    cover_image,
+    logo_image,
+    wallet_id,
+  });
+
+  res.json(updatedWallet);
 };
 
 const walletBatchCreate = async (req, res) => {
