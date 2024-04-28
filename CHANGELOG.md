@@ -1,3 +1,15 @@
+# [1.37.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.36.0...v1.37.0) (2024-04-22)
+
+
+### Bug Fixes
+
+* removed debugging lines of code ([2591ee0](https://github.com/Greenstand/treetracker-wallet-api/commit/2591ee0ef6d40a2b68e534821ecec48766f48e64))
+
+
+### Features
+
+* created sortable trusts ([fd52be1](https://github.com/Greenstand/treetracker-wallet-api/commit/fd52be15f256cf8f570eb0f723b1506d1ce6f87e))
+
 # [1.36.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.35.0...v1.36.0) (2024-04-18)
 
 
