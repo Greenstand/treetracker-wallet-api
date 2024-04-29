@@ -1,0 +1,1 @@
+ALTER TABLE wallet DROP COLUMN cover_url;

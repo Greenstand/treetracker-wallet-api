@@ -46,6 +46,10 @@ class Wallet {
     return newWallet;
   }
 
+  async updateWallet(walletObject) {
+    return this._walletRepository.update(walletObject);
+  }
+
   async getById(id) {
     return this._walletRepository.getById(id);
   }

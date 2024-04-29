@@ -1,0 +1,1 @@
+ALTER TABLE wallet ADD COLUMN cover_url varchar;
