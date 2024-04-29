@@ -118,6 +118,7 @@ async getAllByFilter(filter, limitOptions) {
     .orderBy('wallet_trust.id', 'asc'); 
 
   let derivedTable = this._session.getDB().select('*').from(subquery.as('subquery'));
+  
 
   let order = 'desc';
   let column = 'created_at';
@@ -133,6 +134,9 @@ async getAllByFilter(filter, limitOptions) {
 
   derivedTable = derivedTable.orderBy(column, order);
 
+  const count = await this._session.getDB().from(derivedTable.as('p')).count('*');
+
+
   if (limitOptions && limitOptions.limit) {
     derivedTable = derivedTable.limit(limitOptions.limit);
   }
@@ -142,9 +146,8 @@ async getAllByFilter(filter, limitOptions) {
 
   const result = await derivedTable;
 
-  const {count} = result[0];
+  return { result, count: +count[0].count };
 
-  return { result, count: +count };
 }
 }
 
