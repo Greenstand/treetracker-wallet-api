@@ -1,3 +1,17 @@
+# [1.38.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.37.0...v1.38.0) (2024-04-29)
+
+
+### Bug Fixes
+
+* update patch endpoint ([1c6e69d](https://github.com/Greenstand/treetracker-wallet-api/commit/1c6e69d56b6d0226b184c2d1b02cd0bbb06dce01))
+
+
+### Features
+
+* add cover URL to wallet table ([3ae0efa](https://github.com/Greenstand/treetracker-wallet-api/commit/3ae0efa5ffc9a06a489e96c6f5d3cbd83ecff020))
+* customize wallet ([3bed228](https://github.com/Greenstand/treetracker-wallet-api/commit/3bed228f7b16273592569512011952404a10a6d6))
+* customize wallet ([c1ae9be](https://github.com/Greenstand/treetracker-wallet-api/commit/c1ae9bec65ce678567a041d438113f664c66679a))
+
 # [1.37.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.36.0...v1.37.0) (2024-04-22)
 
 
