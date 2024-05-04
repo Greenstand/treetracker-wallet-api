@@ -17,9 +17,10 @@ app.use(
   // eslint-disable-next-line consistent-return
   handlerWrapper(async (req, res, next) => {
     if (
-      (req.path === '/wallets/batch-create-wallet' ||
+      ((req.path === '/wallets/batch-create-wallet' ||
         req.path === '/wallets/batch-transfer') &&
-      req.method === 'POST'
+        req.method === 'POST') ||
+      (req.path.includes('/wallets/') && req.method === 'PATCH')
     ) {
       if (
         !req.headers['content-type'] ||

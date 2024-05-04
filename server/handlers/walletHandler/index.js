@@ -8,6 +8,7 @@ const {
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
+  walletPatchSchema,
   walletBatchCreateBodySchema,
   csvValidationSchema,
   walletBatchTransferBodySchema,
@@ -113,6 +114,34 @@ const walletPost = async (req, res) => {
   res.status(201).json(returnedWallet);
 };
 
+const walletPatch = async (req, res) => {
+  const validatedBody = await walletPatchSchema.validateAsync(req.body, {
+    abortEarly: false,
+  });
+
+  const validatedParams = await walletIdParamSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+
+  const { wallet_id } = validatedParams;
+  const { wallet_id: loggedInWalletId } = req;
+  const { display_name, about, add_to_web_map } = validatedBody;
+  const { cover_image, logo_image } = req.files;
+
+  const walletService = new WalletService();
+  const updatedWallet = await walletService.updateWallet({
+    loggedInWalletId,
+    display_name,
+    about,
+    add_to_web_map,
+    cover_image,
+    logo_image,
+    wallet_id,
+  });
+
+  res.json(updatedWallet);
+};
+
 const walletBatchCreate = async (req, res) => {
   const validatedBody = await walletBatchCreateBodySchema.validateAsync(
     req.body,
@@ -172,6 +201,7 @@ const walletBatchTransfer = async (req, res) => {
 
 module.exports = {
   walletPost,
+  walletPatch,
   walletGetTrustRelationships,
   walletGet,
   walletSingleGet,
