@@ -38,7 +38,7 @@ const trustGet = async (req, res) => {
 
   res.status(200).json({
     trust_relationships,
-    query: { limit, offset, sort_by, order },
+    query: { limit, offset, sort_by, order, state, type, request_type },
     total,
   });
 };
