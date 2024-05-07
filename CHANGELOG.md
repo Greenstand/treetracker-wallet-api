@@ -1,3 +1,18 @@
+## [1.38.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.0...v1.38.1) (2024-05-07)
+
+
+### Bug Fixes
+
+* fix count in get trust relationships ([b347e2f](https://github.com/Greenstand/treetracker-wallet-api/commit/b347e2f72a825bec6231adccf6229f924d387f82))
+* install missing dependences ([b7c6e0d](https://github.com/Greenstand/treetracker-wallet-api/commit/b7c6e0dc41f2ea5d30e3ed30978f8eee8979dcb1))
+* resolve merge conflicts ([e5e0766](https://github.com/Greenstand/treetracker-wallet-api/commit/e5e07664b76b923f8c0aac2ef503bbb4f8e2dd99))
+* revert package version change ([580e352](https://github.com/Greenstand/treetracker-wallet-api/commit/580e35212586cf8580457ec5f3e2cc48128f5cb1))
+
+
+### Reverts
+
+* Revert "fix: revert dependences changes" ([80989f0](https://github.com/Greenstand/treetracker-wallet-api/commit/80989f02e64f1ff14b8079649574d0402e9a21aa))
+
 # [1.38.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.37.0...v1.38.0) (2024-04-29)
 
 
