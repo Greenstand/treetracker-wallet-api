@@ -6,8 +6,17 @@ const { errorHandler, handlerWrapper } = require('./utils/utils');
 
 const app = express();
 
+const corsOptions = {
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
 if (process.env.NODE_ENV === 'development') {
   app.use(cors());
+} else {
+  app.use(cors(corsOptions));
 }
 
 /*
