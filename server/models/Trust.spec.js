@@ -192,8 +192,80 @@ describe('Trust Model', () => {
       expect(trustRepositoryStub.create).not.called;
     });
 
-    it('should request trust', async () => {
+    it('should error out -- The requesting wallet already manages the target wallet', async () => {
+      // originator wallet same as actor wallet
+      const originatorActorWallet = {
+        id: requesterWallet.id,
+        name: 'requester',
+      };
+
+      // originator has control over both actor and target
       hasControlStub.resolves(true);
+
+      let error;
+      try {
+        await trustModel.requestTrustFromAWallet({
+          trustRequestType,
+          requesteeWallet,
+          requesterWallet,
+          originatorWallet: originatorActorWallet,
+        });
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(409);
+      expect(error.message).eql(
+        'The requesting wallet already manages the target wallet',
+      );
+      expect(hasControlStub.getCall(0)).calledWithExactly(
+        originatorActorWallet.id,
+        requesterWallet.id,
+      );
+      expect(hasControlStub.getCall(1)).calledWithExactly(
+        originatorActorWallet.id,
+        requesteeWallet.id,
+      );
+      expect(checkDuplicateStub).not.called;
+      expect(trustRepositoryStub.create).not.called;
+    });
+
+    it('should error out -- sub wallet cannot send trust request to another sub wallet', async () => {
+      // originator has control over both actor and target
+      hasControlStub.resolves(true);
+      let error;
+      try {
+        await trustModel.requestTrustFromAWallet({
+          trustRequestType,
+          requesteeWallet,
+          requesterWallet,
+          originatorWallet,
+        });
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(409);
+      expect(error.message).eql(
+        'Cannot send trust relationship request to a sub wallet with the same parent',
+      );
+      expect(hasControlStub.getCall(0)).calledWithExactly(
+        originatorWallet.id,
+        requesterWallet.id,
+      );
+      expect(hasControlStub.getCall(1)).calledWithExactly(
+        originatorWallet.id,
+        requesteeWallet.id,
+      );
+      expect(checkDuplicateStub).not.called;
+      expect(trustRepositoryStub.create).not.called;
+    });
+
+    it('should request trust', async () => {
+      // originator has control over actor
+      hasControlStub.onCall(0).resolves(true);
+      // originator doesn't have control over target
+      hasControlStub.onCall(1).resolves(false);
       const resultObject = {
         id: uuid(),
         type: 'type',
@@ -227,9 +299,13 @@ describe('Trust Model', () => {
         originator_wallet_id: originatorWallet.id,
         target_wallet_id: requesteeWallet.id,
       });
-      expect(hasControlStub).calledOnceWithExactly(
+      expect(hasControlStub.getCall(0)).calledWithExactly(
         originatorWallet.id,
         requesterWallet.id,
+      );
+      expect(hasControlStub.getCall(1)).calledWithExactly(
+        originatorWallet.id,
+        requesteeWallet.id,
       );
       expect(checkDuplicateStub).calledOnceWithExactly({
         walletId: originatorWallet.id,
