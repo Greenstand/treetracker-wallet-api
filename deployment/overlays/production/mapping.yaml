@@ -5,7 +5,7 @@ metadata:
 spec:
   cors:
     origins: 'https://prod-wallet-admin.treetracker.org'
-    methods: GET, POST, PATCH, OPTIONS
+    methods: GET, POST, PATCH, DELETE, OPTIONS
     headers:
       - content-type
       - authorization
