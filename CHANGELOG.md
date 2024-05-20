@@ -1,3 +1,11 @@
+## [1.38.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.2...v1.38.3) (2024-05-20)
+
+
+### Bug Fixes
+
+* add delete endpoint to cors ([1784882](https://github.com/Greenstand/treetracker-wallet-api/commit/178488236f850862ee1f249e5d4791e64344ce05))
+* lock files ([17d87b0](https://github.com/Greenstand/treetracker-wallet-api/commit/17d87b0bd057f7043e5a86260cf062c6c736fb96))
+
 ## [1.38.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.1...v1.38.2) (2024-05-20)
 
 
