@@ -50,6 +50,8 @@ describe('Trust Model', () => {
       expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(filter, {
         limit: 10,
         offset: 1,
+        sort_by: undefined,
+        order: undefined,
       });
     });
 
@@ -69,6 +71,8 @@ describe('Trust Model', () => {
         {
           limit: 10,
           offset: 1,
+          sort_by: undefined,
+          order: undefined,
         },
       );
     });
@@ -89,6 +93,8 @@ describe('Trust Model', () => {
         {
           limit: 10,
           offset: 11,
+          sort_by: undefined,
+          order: undefined,
         },
       );
     });
@@ -109,6 +115,8 @@ describe('Trust Model', () => {
         {
           limit: 101,
           offset: 1,
+          sort_by: undefined,
+          order: undefined,
         },
       );
     });
@@ -133,6 +141,8 @@ describe('Trust Model', () => {
         {
           limit: 100,
           offset: 0,
+          sort_by: undefined,
+          order: undefined,
         },
       );
     });
