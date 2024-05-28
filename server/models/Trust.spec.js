@@ -50,6 +50,8 @@ describe('Trust Model', () => {
       expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(filter, {
         limit: 10,
         offset: 1,
+        order: undefined,
+        sort_by: undefined
       });
     });
 
@@ -69,6 +71,8 @@ describe('Trust Model', () => {
         {
           limit: 10,
           offset: 1,
+          order: undefined,
+          sort_by: undefined
         },
       );
     });
@@ -89,6 +93,8 @@ describe('Trust Model', () => {
         {
           limit: 10,
           offset: 11,
+          order: undefined,
+          sort_by: undefined
         },
       );
     });
@@ -109,6 +115,8 @@ describe('Trust Model', () => {
         {
           limit: 101,
           offset: 1,
+          order: undefined,
+          sort_by: undefined
         },
       );
     });
@@ -133,6 +141,8 @@ describe('Trust Model', () => {
         {
           limit: 100,
           offset: 0,
+          order: undefined,
+          sort_by: undefined
         },
       );
     });
@@ -268,7 +278,15 @@ describe('Trust Model', () => {
     });
 
     it('should error out -- Not supported type', async () => {
-      getTrustRelationshipStub.resolves();
+      // getTrustRelationshipStub.resolves();
+      getTrustRelationshipStub.resolves([
+        {
+          request_type: 'request_type',
+          actor_wallet_id: 'actor_wallet_id',
+          target_wallet_id: 'target_wallet_id',
+          state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
+        },
+      ]);
       const walletId = uuid();
       let error;
       try {
@@ -746,7 +764,7 @@ describe('Trust Model', () => {
     });
 
     it('should error out -- no permission to accept', async () => {
-      trustRepositoryStub.getByFilter.resolves([]);
+      trustRepositoryStub.getByFilter.resolves({count: 0, result: []});
       const trustRelationshipId = uuid();
       const walletId = uuid();
 
@@ -774,9 +792,9 @@ describe('Trust Model', () => {
       const trustRelationshipId = uuid();
       const walletId = uuid();
 
-      trustRepositoryStub.getByFilter.resolves([
+      trustRepositoryStub.getByFilter.resolves({count: 1, result:[
         { originator_wallet_id: walletId, id: trustRelationshipId },
-      ]);
+      ]});
       updateTrustStateStub.resolves('state cancelled');
       const result = await trustModel.cancelTrustRequest({
         trustRelationshipId,

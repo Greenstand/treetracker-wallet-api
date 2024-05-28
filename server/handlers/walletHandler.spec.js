@@ -105,7 +105,7 @@ describe('walletRouter', () => {
     it('successfully', async () => {
       const getTrustRelationshipsStub = sinon
         .stub(TrustService.prototype, 'getTrustRelationships')
-        .resolves([{ id: trustRelationshipId }]);
+        .resolves({result:[{ id: trustRelationshipId }], count: 1});
       const res = await request(app).get(
         `/wallets/${walletId}/trust_relationships?state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested}`,
       );
@@ -118,6 +118,10 @@ describe('walletRouter', () => {
           state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
           type: undefined,
           request_type: undefined,
+          limit: 500, 
+          offset: 0, 
+          sort_by: 'created_at', 
+          order: 'desc' 
         }),
       ).eql(true);
     });
