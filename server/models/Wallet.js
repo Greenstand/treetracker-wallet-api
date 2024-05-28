@@ -98,7 +98,10 @@ class Wallet {
       return true;
     }
     // check sub wallet
-    const result = await this.getSubWallets(parentId, childId);
+    let result = await this.getSubWallets(parentId, childId);
+    if(result.result){
+      result = result.result;
+    }
 
     if (result.length) {
       return true;

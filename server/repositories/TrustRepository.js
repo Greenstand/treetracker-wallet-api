@@ -68,6 +68,8 @@ class TrustRepository extends BaseRepository {
       )
       .where((builder) => this.whereBuilder(filter, builder));
 
+  const count = await this._session.getDB().from(promise.as('p')).count('*');
+
     if (limitOptions && limitOptions.limit) {
       promise = promise.limit(limitOptions.limit);
     }
@@ -77,7 +79,7 @@ class TrustRepository extends BaseRepository {
     }
 
     let order = 'desc';
-    let column = 'wallet_trust.created_at';
+    let column = 'created_at';
 
     if (limitOptions) {
       if (limitOptions.order) {
@@ -89,7 +91,9 @@ class TrustRepository extends BaseRepository {
     }
     promise = promise.orderBy(column, order);
 
-    return promise;
+    const result = await promise;
+
+    return { result, count: +count[0].count };
   }
 
 async getAllByFilter(filter, limitOptions) {
