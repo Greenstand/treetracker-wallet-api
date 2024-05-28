@@ -26,7 +26,7 @@ class Trust {
     offset,
     limit,
     sort_by,
-    order
+    order,
   }) {
     const filter = {
       and: [
@@ -54,12 +54,18 @@ class Trust {
   /*
    * Get all trust relationships by filters, setting filter to undefined to allow all data
    */
-  async getAllTrustRelationships({ walletId, state, type, request_type, offset, limit, sort_by, order }) {
-    
+  async getAllTrustRelationships({
+    walletId,
+    state,
+    type,
+    request_type,
+    offset,
+    limit,
+    sort_by,
+    order,
+  }) {
     const filter = {
-      and: [
-        {'originator_wallet.id': walletId},
-      ],
+      and: [{ 'originator_wallet.id': walletId }],
     };
     if (state) {
       filter.and.push({ state });
@@ -70,7 +76,12 @@ class Trust {
     if (request_type) {
       filter.and.push({ request_type });
     }
-    return this._trustRepository.getAllByFilter(filter, { offset, limit, sort_by, order });
+    return this._trustRepository.getAllByFilter(filter, {
+      offset,
+      limit,
+      sort_by,
+      order,
+    });
   }
 
   /*
@@ -109,13 +120,41 @@ class Trust {
     //    }
 
     // check if the orginator can control the actor
-    const hasControl = await walletModel.hasControlOver(
+    const hasControlOverActor = await walletModel.hasControlOver(
       originatorWallet.id,
       actorWallet.id,
     );
 
-    if (!hasControl) {
+    // originating wallet has no permission to send request from actor wallet
+    if (!hasControlOverActor) {
       throw new HttpError(403, 'Have no permission to deal with this actor');
+    }
+
+    // check if originator can control the target
+    const hasControlOverTarget = await walletModel.hasControlOver(
+      originatorWallet.id,
+      targetWallet.id,
+    );
+
+    // cannot send trust relationship requests from one sub wallet to another
+    if (
+      originatorWallet.id !== actorWallet.id &&
+      originatorWallet.id !== targetWallet.id &&
+      hasControlOverActor &&
+      hasControlOverTarget
+    ) {
+      throw new HttpError(
+        409,
+        'Cannot send trust relationship request to a sub wallet with the same parent',
+      );
+    }
+
+    // originating wallet doesn't need to send requests to a sub wallet it manages
+    if (hasControlOverTarget) {
+      throw new HttpError(
+        409,
+        'The requesting wallet already manages the target wallet',
+      );
     }
 
     // check if the target wallet can accept the request
