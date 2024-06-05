@@ -15,7 +15,7 @@ const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 
-describe.only('walletRouter', () => {
+describe('walletRouter', () => {
   let app;
   const authenticatedWalletId = uuid.v4();
 
@@ -105,12 +105,13 @@ describe.only('walletRouter', () => {
     it('successfully', async () => {
       const getTrustRelationshipsStub = sinon
         .stub(TrustService.prototype, 'getTrustRelationships')
-        .resolves([{ id: trustRelationshipId }]);
+        .resolves({ result: [{ id: trustRelationshipId }], count: 1 });
       const res = await request(app).get(
         `/wallets/${walletId}/trust_relationships?state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested}`,
       );
       expect(res).property('statusCode').eq(200);
       expect(res.body.trust_relationships).lengthOf(1);
+      expect(res.body.total).eql(1);
       expect(res.body.trust_relationships[0].id).eql(trustRelationshipId);
       expect(
         getTrustRelationshipsStub.calledOnceWithExactly(authenticatedWalletId, {
@@ -118,6 +119,10 @@ describe.only('walletRouter', () => {
           state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
           type: undefined,
           request_type: undefined,
+          limit: 500,
+          offset: 0,
+          sort_by: 'created_at',
+          order: 'desc',
         }),
       ).eql(true);
     });

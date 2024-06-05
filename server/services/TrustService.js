@@ -69,7 +69,7 @@ class TrustService {
 
     await Promise.all(
       wallets.map(async (w) => {
-        const trustRelationships = await this.getTrustRelationships(walletId,{
+        const trustRelationships = await this.getTrustRelationships(walletId, {
           walletId: w.id,
           state,
           type,

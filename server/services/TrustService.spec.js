@@ -26,6 +26,10 @@ describe('TrustService', () => {
       .stub(Trust.prototype, 'getTrustRelationships')
       .resolves(['trustRelationships']);
 
+    const getTrustRelationshipsCountStub = sinon
+      .stub(Trust.prototype, 'getTrustRelationshipsCount')
+      .resolves(1);
+
     const getWalletStub = sinon
       .stub(WalletService.prototype, 'getWallet')
       .resolves({ id: 'walletId' });
@@ -48,7 +52,8 @@ describe('TrustService', () => {
       },
     );
 
-    expect(trustRelationship).eql(['trustRelationships']);
+    expect(trustRelationship.result).eql(['trustRelationships']);
+    expect(trustRelationship.count).eql(1);
     expect(
       getWalletStub.calledOnceWithExactly({
         walletId: 'walletId',
@@ -64,6 +69,14 @@ describe('TrustService', () => {
         offset: 0,
         sort_by: 'sort_by',
         order: 'order',
+      }),
+    ).eql(true);
+    expect(
+      getTrustRelationshipsCountStub.calledOnceWithExactly({
+        walletId: 'walletId',
+        state: 'state',
+        type: 'type',
+        request_type: 'request_type',
       }),
     ).eql(true);
     expect(
@@ -207,22 +220,22 @@ describe('TrustService', () => {
       TrustService.prototype,
       'getTrustRelationships',
     );
-    getTrustRelationshipsStub
-      .onFirstCall()
-      .resolves([
+    getTrustRelationshipsStub.onFirstCall().resolves({
+      result: [
         { id: 'trustId1' },
         { id: 'trustId2' },
         { id: 'trustId3' },
         { id: 'trustId4' },
-      ]);
-    getTrustRelationshipsStub
-      .onSecondCall()
-      .resolves([
+      ],
+    });
+    getTrustRelationshipsStub.onSecondCall().resolves({
+      result: [
         { id: 'trustId1' },
         { id: 'trustId2' },
         { id: 'trustId5' },
         { id: 'trustId6' },
-      ]);
+      ],
+    });
 
     const trustRelationships = await trustService.getAllTrustRelationships({
       walletId: 'walletId',
@@ -248,7 +261,7 @@ describe('TrustService', () => {
       ),
     ).eql(true);
     expect(
-      getTrustRelationshipsStub.getCall(0).calledWithExactly({
+      getTrustRelationshipsStub.getCall(0).calledWithExactly('walletId', {
         walletId: 'id1',
         state: 'state',
         type: 'type',
@@ -256,7 +269,7 @@ describe('TrustService', () => {
       }),
     ).eql(true);
     expect(
-      getTrustRelationshipsStub.getCall(1).calledWithExactly({
+      getTrustRelationshipsStub.getCall(1).calledWithExactly('walletId', {
         walletId: 'id2',
         state: 'state',
         type: 'type',

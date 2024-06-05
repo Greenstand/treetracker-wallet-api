@@ -89,7 +89,6 @@ const walletGetTrustRelationships = async (req, res) => {
     order,
   } = validatedQuery;
 
-
   const trustService = new TrustService();
   const trust_relationships = await trustService.getTrustRelationships(
     loggedInWalletId,
