@@ -36,6 +36,12 @@ const walletGetTrustRelationshipsSchema = Joi.object({
   request_type: Joi.string().valid(
     ...Object.values(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
   ),
+  offset: Joi.number().integer().min(0).default(0),
+  limit: Joi.number().integer().min(1).max(2000).default(500),
+  sort_by: Joi.string()
+    .valid('state', 'created_at', 'updated_at')
+    .default('created_at'),
+  order: Joi.string().valid('asc', 'desc').default('desc'),
 });
 
 const walletPostSchema = Joi.object({

@@ -32,7 +32,7 @@ class TrustService {
       );
     }
 
-    return this._trust.getTrustRelationships({
+    const result = await this._trust.getTrustRelationships({
       walletId,
       state,
       type,
@@ -42,6 +42,15 @@ class TrustService {
       sort_by,
       order,
     });
+
+    const count = await this._trust.getTrustRelationshipsCount({
+      walletId,
+      state,
+      type,
+      request_type,
+    });
+
+    return { result, count };
   }
 
   // limit and offset not feasible using the current implementation
@@ -60,13 +69,13 @@ class TrustService {
 
     await Promise.all(
       wallets.map(async (w) => {
-        const trustRelationships = await this.getTrustRelationships({
+        const trustRelationships = await this.getTrustRelationships(walletId,{
           walletId: w.id,
           state,
           type,
           request_type,
         });
-        alltrustRelationships.push(...trustRelationships);
+        alltrustRelationships.push(...trustRelationships.result);
       }),
     );
 

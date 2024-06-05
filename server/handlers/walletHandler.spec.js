@@ -15,7 +15,7 @@ const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 
-describe('walletRouter', () => {
+describe.only('walletRouter', () => {
   let app;
   const authenticatedWalletId = uuid.v4();
 
@@ -38,8 +38,8 @@ describe('walletRouter', () => {
   describe('get /wallets', () => {
     it('no limit parameter(1000 as default)', async () => {
       const res = await request(app).get('/wallets');
-            expect(res).property('statusCode').eq(200);
-          });
+      expect(res).property('statusCode').eq(200);
+    });
 
     it('successfully', async () => {
       const walletId = uuid.v4();

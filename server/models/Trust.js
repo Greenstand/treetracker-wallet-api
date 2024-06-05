@@ -15,19 +15,7 @@ class Trust {
     return this._trustRepository.getById(id);
   }
 
-  /*
-   * Get trust relationships by filters, setting filter to undefined to allow all data
-   */
-  async getTrustRelationships({
-    walletId,
-    state,
-    type,
-    request_type,
-    offset,
-    limit,
-    sort_by,
-    order,
-  }) {
+  static getTrustRelationshipFilter({ walletId, state, type, request_type }) {
     const filter = {
       and: [
         {
@@ -48,12 +36,47 @@ class Trust {
     if (request_type) {
       filter.and.push({ request_type });
     }
+
+    return filter;
+  }
+
+  /*
+   * Get trust relationships by filters, setting filter to undefined to allow all data
+   */
+  async getTrustRelationships({
+    walletId,
+    state,
+    type,
+    request_type,
+    offset,
+    limit,
+    sort_by,
+    order,
+  }) {
+    const filter = Trust.getTrustRelationshipFilter({
+      walletId,
+      state,
+      type,
+      request_type,
+    });
+
     return this._trustRepository.getByFilter(filter, {
       offset,
       limit,
       sort_by,
       order,
     });
+  }
+
+  async getTrustRelationshipsCount({ walletId, state, type, request_type }) {
+    const filter = Trust.getTrustRelationshipFilter({
+      walletId,
+      state,
+      type,
+      request_type,
+    });
+
+    return this._trustRepository.countByFilter(filter);
   }
 
   /*
