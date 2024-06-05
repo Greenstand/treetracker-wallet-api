@@ -1,3 +1,13 @@
+## [1.38.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.3...v1.38.4) (2024-06-05)
+
+
+### Bug Fixes
+
+* get trust relationships issue ([585b2be](https://github.com/Greenstand/treetracker-wallet-api/commit/585b2be0c298f0532768e96e7fdb1a5f3c29ecc0))
+* tests ([dfd41c8](https://github.com/Greenstand/treetracker-wallet-api/commit/dfd41c885ed91016f0324e805501bc1220d05028))
+* tests ([c3ac5fd](https://github.com/Greenstand/treetracker-wallet-api/commit/c3ac5fda54bd862c467e1d6efe897131de375671))
+* unit test ([2901ee9](https://github.com/Greenstand/treetracker-wallet-api/commit/2901ee957664f937ffcbe418e510680a6eb4cf6b))
+
 ## [1.38.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.2...v1.38.3) (2024-05-20)
 
 
