@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 const Joi = require('joi');
 const log = require('loglevel');
 const TrustRepository = require('../repositories/TrustRepository');
@@ -16,19 +15,7 @@ class Trust {
     return this._trustRepository.getById(id);
   }
 
-  /*
-   * Get trust relationships by filters, setting filter to undefined to allow all data
-   */
-  async getTrustRelationships({
-    walletId,
-    state,
-    type,
-    request_type,
-    offset,
-    limit,
-    sort_by,
-    order,
-  }) {
+  static getTrustRelationshipFilter({ walletId, state, type, request_type }) {
     const filter = {
       and: [
         {
@@ -49,13 +36,14 @@ class Trust {
     if (request_type) {
       filter.and.push({ request_type });
     }
-    return this._trustRepository.getByFilter(filter, { offset, limit });
+
+    return filter;
   }
 
   /*
-   * Get all trust relationships by filters, setting filter to undefined to allow all data
+   * Get trust relationships by filters, setting filter to undefined to allow all data
    */
-  async getAllTrustRelationships({
+  async getTrustRelationships({
     walletId,
     state,
     type,
@@ -65,24 +53,30 @@ class Trust {
     sort_by,
     order,
   }) {
-    const filter = {
-      and: [{ 'originator_wallet.id': walletId }],
-    };
-    if (state) {
-      filter.and.push({ state });
-    }
-    if (type) {
-      filter.and.push({ type });
-    }
-    if (request_type) {
-      filter.and.push({ request_type });
-    }
-    return this._trustRepository.getAllByFilter(filter, {
+    const filter = Trust.getTrustRelationshipFilter({
+      walletId,
+      state,
+      type,
+      request_type,
+    });
+
+    return this._trustRepository.getByFilter(filter, {
       offset,
       limit,
       sort_by,
       order,
     });
+  }
+
+  async getTrustRelationshipsCount({ walletId, state, type, request_type }) {
+    const filter = Trust.getTrustRelationshipFilter({
+      walletId,
+      state,
+      type,
+      request_type,
+    });
+
+    return this._trustRepository.countByFilter(filter);
   }
 
   /*

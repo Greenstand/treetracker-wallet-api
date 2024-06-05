@@ -74,14 +74,21 @@ const walletGetTrustRelationships = async (req, res) => {
   });
   const validatedQuery = await walletGetTrustRelationshipsSchema.validateAsync(
     req.query,
-    {
-      abortEarly: false,
-    },
+    { abortEarly: false },
   );
 
   const { wallet_id: walletId } = validatedParams;
   const { wallet_id: loggedInWalletId } = req;
-  const { state, type, request_type } = validatedQuery;
+  const {
+    state,
+    type,
+    request_type,
+    limit,
+    offset,
+    sort_by,
+    order,
+  } = validatedQuery;
+
   const trustService = new TrustService();
   const trust_relationships = await trustService.getTrustRelationships(
     loggedInWalletId,
@@ -90,10 +97,16 @@ const walletGetTrustRelationships = async (req, res) => {
       state,
       type,
       request_type,
+      limit,
+      offset,
+      sort_by,
+      order,
     },
   );
   res.status(200).json({
-    trust_relationships,
+    trust_relationships: trust_relationships.result,
+    query: { limit, offset, sort_by, order, state, type, request_type },
+    total: trust_relationships.count,
   });
 };
 

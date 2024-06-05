@@ -64,7 +64,7 @@ class WalletRepository extends BaseRepository {
     created_at_end_date,
     getCount,
   ) {
-        let query = this._session
+    let query = this._session
       .getDB()
       .select('id', 'name', 'about', 'logo_url', 'created_at')
       .table('wallet')
