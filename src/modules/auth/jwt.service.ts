@@ -11,12 +11,21 @@ export class JWTService {
   private readonly verifyOptions: jwt.VerifyOptions;
 
   constructor(private configService: ConfigService) {
-    this.privateKEY = this.configService
-      .get<string>('PRIVATE_KEY')
-      .replace(/\\n/g, '\n');
-    this.publicKEY = this.configService
-      .get<string>('PUBLIC_KEY')
-      .replace(/\\n/g, '\n');
+    const privateKey = this.configService.get<string>('PRIVATE_KEY');
+    const publicKey = this.configService.get<string>('PUBLIC_KEY');
+
+    if (!privateKey || !publicKey) {
+      console.error(
+        'Environment variables PRIVATE_KEY and PUBLIC_KEY must be set',
+      );
+      throw new Error(
+        'Environment variables PRIVATE_KEY and PUBLIC_KEY must be set',
+      );
+    }
+
+    this.privateKEY = privateKey.replace(/\\n/g, '\n');
+    this.publicKEY = publicKey.replace(/\\n/g, '\n');
+
     this.signingOptions = {
       issuer: 'greenstand',
       expiresIn: '365d',

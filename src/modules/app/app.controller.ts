@@ -12,8 +12,6 @@ export class AppController {
 
   @Get()
   async getHello() {
-    console.log(this.knex('wallet.wallet'));
-
-    return await this.knex('wallet.wallet');
+    return this.appService.getHello();
   }
 }
