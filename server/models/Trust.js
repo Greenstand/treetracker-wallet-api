@@ -20,6 +20,7 @@ class Trust {
    */
   async getTrustRelationships({
     walletId,
+    managedWallets,
     state,
     type,
     request_type,
@@ -28,14 +29,22 @@ class Trust {
     sort_by,
     order,
   }) {
+    const managedWalletIds = managedWallets.map(wallet => wallet.id);
+    const orConditions = [
+      { actor_wallet_id: walletId },
+      { target_wallet_id: walletId },
+      { originator_wallet_id: walletId },
+    ];
+  
+    managedWalletIds.forEach((managedWalletId) => {
+      orConditions.push({ actor_wallet_id: managedWalletId });
+      orConditions.push({ target_wallet_id: managedWalletId });
+      orConditions.push({ originator_wallet_id: managedWalletId });
+    });
     const filter = {
       and: [
         {
-          or: [
-            { actor_wallet_id: walletId },
-            { target_wallet_id: walletId },
-            { originator_wallet_id: walletId },
-          ],
+          or: orConditions,
         },
       ],
     };

@@ -13,6 +13,7 @@ class TrustService {
 
   async getTrustRelationships(
     loggedInWalletId,
+    managedWallets,
     { walletId, state, type, request_type, offset, limit,sort_by, order },
   ) {
     // check if wallet exists first
@@ -22,6 +23,7 @@ class TrustService {
 
     return this._trust.getTrustRelationships({
       walletId,
+      managedWallets,
       state,
       type,
       request_type,

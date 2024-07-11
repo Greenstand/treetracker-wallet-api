@@ -78,13 +78,30 @@ const walletGetTrustRelationships = async (req, res) => {
       abortEarly: false,
     },
   );
+  const walletService = new WalletService();
 
   const { wallet_id: walletId } = validatedParams;
   const { wallet_id: loggedInWalletId } = req;
+    const sortBy = 'created_at';
+    const orderBy = 'desc';
   const { state, type, request_type, limit, offset, sort_by, order  } = validatedQuery;
+
+  const { wallets:managedWallets } = await walletService.getAllWallets(
+    loggedInWalletId,
+    {
+      limit:'10',
+      offset:'0',
+    },
+    null,
+    sortBy,
+    orderBy,
+    null,
+    null
+  );
   const trustService = new TrustService();
   const {result: trust_relationships, count: total} = await trustService.getTrustRelationships(
     loggedInWalletId,
+    managedWallets,
     {
       walletId,
       state,
