@@ -12,11 +12,6 @@ export class ApiKeyRepository extends Repository<ApiKey> {
 
   async getByApiKey(apiKey: string): Promise<ApiKey | undefined> {
     const result = await this.findOne({ where: { key: apiKey } });
-
-    if (!result) {
-      this.logger.error(`API key not found: ${apiKey}`);
-    }
-
     return result;
   }
 }

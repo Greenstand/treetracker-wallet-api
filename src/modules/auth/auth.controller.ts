@@ -22,9 +22,6 @@ export class AuthController {
     @Body() signInDto: SignInDto,
     @Headers('treetracker-api-key') apiKey: string,
   ): Promise<{ token: string }> {
-    this.logger.debug(
-      `Received request to signIn with wallet: ${signInDto.wallet} and apiKey: ${apiKey}`,
-    );
     const token = await this.authService.signIn(
       signInDto.wallet,
       signInDto.password,
