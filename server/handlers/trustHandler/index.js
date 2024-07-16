@@ -14,18 +14,15 @@ const trustGet = async (req, res) => {
     state,
     type,
     request_type,
-    limit, 
+    limit,
     offset,
     sort_by,
-    order
+    order,
   } = validatedQuery;
 
   const { wallet_id } = req;
   const trustService = new TrustService();
-  const {
-    result: trust_relationships,
-    count: total,
-  } = await trustService.getAllTrustRelationships({
+  const trust_relationships = await trustService.getAllTrustRelationships({
     walletId: wallet_id,
     state,
     type,
@@ -33,13 +30,12 @@ const trustGet = async (req, res) => {
     offset,
     limit,
     sort_by,
-    order
+    order,
   });
 
   res.status(200).json({
     trust_relationships,
     query: { limit, offset, sort_by, order, state, type, request_type },
-    total,
   });
 };
 

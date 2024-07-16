@@ -38,8 +38,8 @@ describe('walletRouter', () => {
   describe('get /wallets', () => {
     it('no limit parameter(1000 as default)', async () => {
       const res = await request(app).get('/wallets');
-            expect(res).property('statusCode').eq(200);
-          });
+      expect(res).property('statusCode').eq(200);
+    });
 
     it('successfully', async () => {
       const walletId = uuid.v4();
@@ -111,6 +111,7 @@ describe('walletRouter', () => {
       );
       expect(res).property('statusCode').eq(200);
       expect(res.body.trust_relationships).lengthOf(1);
+      expect(res.body.total).eql(1);
       expect(res.body.trust_relationships[0].id).eql(trustRelationshipId);
       expect(
         getTrustRelationshipsStub.calledOnceWithExactly(authenticatedWalletId, {

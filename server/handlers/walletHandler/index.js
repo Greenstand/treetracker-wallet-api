@@ -74,9 +74,7 @@ const walletGetTrustRelationships = async (req, res) => {
   });
   const validatedQuery = await walletGetTrustRelationshipsSchema.validateAsync(
     req.query,
-    {
-      abortEarly: false,
-    },
+    { abortEarly: false },
   );
   const walletService = new WalletService();
 
