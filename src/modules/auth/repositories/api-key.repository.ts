@@ -1,11 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { ApiKey } from '../entity/api-key.entity';
 
 @Injectable()
 export class ApiKeyRepository extends Repository<ApiKey> {
-  private readonly logger = new Logger(ApiKeyRepository.name);
-
   constructor(dataSource: DataSource) {
     super(ApiKey, dataSource.createEntityManager());
   }
