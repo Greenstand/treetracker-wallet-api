@@ -27,21 +27,32 @@ describe('Trust Model', () => {
 
   describe('getTrustRelationships', () => {
     const walletId = uuid();
+    const managedWallets = [{id: '90f8b2ab-c101-405d-922a-0a64dbe64ab6'}];
+    const managedWalletIds = managedWallets.map(wallet => wallet.id);
+  const orConditions = [
+    { actor_wallet_id: walletId },
+    { target_wallet_id: walletId },
+    { originator_wallet_id: walletId },
+  ];
+
+  managedWalletIds.forEach((managedWalletId) => {
+    orConditions.push({ actor_wallet_id: managedWalletId });
+    orConditions.push({ target_wallet_id: managedWalletId });
+    orConditions.push({ originator_wallet_id: managedWalletId });
+  });
     const filter = {
       and: [
         {
-          or: [
-            { actor_wallet_id: walletId },
-            { target_wallet_id: walletId },
-            { originator_wallet_id: walletId },
-          ],
+          or: orConditions,
         },
       ],
     };
 
     it('should get relationships', async () => {
       trustRepositoryStub.getByFilter.resolves(['relationship1']);
+    
       const result = await trustModel.getTrustRelationships({
+        managedWallets,
         walletId,
         limit: 10,
         offset: 1,
@@ -59,6 +70,7 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves(['relationship2']);
       const result = await trustModel.getTrustRelationships({
         walletId,
+        managedWallets,
         limit: 10,
         offset: 1,
         state: 'state',
@@ -81,6 +93,7 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves(['relationship3']);
       const result = await trustModel.getTrustRelationships({
         walletId,
+        managedWallets,
         limit: 10,
         offset: 11,
         type: 'type',
@@ -103,6 +116,7 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves(['relationship4']);
       const result = await trustModel.getTrustRelationships({
         walletId,
+        managedWallets,
         limit: 101,
         offset: 1,
         request_type: 'request_type',
@@ -125,6 +139,7 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves(['relationship1']);
       const result = await trustModel.getTrustRelationships({
         walletId,
+        managedWallets,
         limit: 100,
         offset: 0,
         state: 'state',

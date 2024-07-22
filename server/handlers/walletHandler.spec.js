@@ -109,12 +109,13 @@ describe('walletRouter', () => {
       const res = await request(app).get(
         `/wallets/${walletId}/trust_relationships?state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested}`,
       );
+      const managedWallets = [];
       expect(res).property('statusCode').eq(200);
       expect(res.body.trust_relationships).lengthOf(1);
       expect(res.body.total).eql(1);
       expect(res.body.trust_relationships[0].id).eql(trustRelationshipId);
       expect(
-        getTrustRelationshipsStub.calledOnceWithExactly(authenticatedWalletId, {
+        getTrustRelationshipsStub.calledOnceWithExactly(authenticatedWalletId, managedWallets, {
           walletId,
           state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
           type: undefined,

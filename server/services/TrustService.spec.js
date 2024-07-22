@@ -25,6 +25,7 @@ describe('TrustService', () => {
     const getTrustRelationshipsStub = sinon
       .stub(Trust.prototype, 'getTrustRelationships')
       .resolves(['trustRelationships']);
+    const managedWallets = [{id: '90f8b2ab-c101-405d-922a-0a64dbe64ab6'}];
 
     const getTrustRelationshipsCountStub = sinon
       .stub(Trust.prototype, 'getTrustRelationshipsCount')
@@ -40,6 +41,7 @@ describe('TrustService', () => {
 
     const trustRelationship = await trustService.getTrustRelationships(
       authenticatedWalletId,
+      managedWallets,
       {
         walletId: 'walletId',
         state: 'state',
@@ -62,6 +64,7 @@ describe('TrustService', () => {
     expect(
       getTrustRelationshipsStub.calledOnceWithExactly({
         walletId: 'walletId',
+        managedWallets,
         state: 'state',
         type: 'type',
         request_type: 'request_type',
