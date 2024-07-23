@@ -4,7 +4,7 @@ import { EventService } from '../event/event.service';
 import { JWTService } from './jwt.service';
 import { HashService } from './hash.service';
 import { ApiKeyService } from './api-key.service';
-import { AUTH_EVENTS } from '../utils/event-enum';
+import { AUTH_EVENTS } from '../event/event-enum';
 
 @Injectable()
 export class AuthService {
