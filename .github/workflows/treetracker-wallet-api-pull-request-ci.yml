@@ -6,8 +6,7 @@ name: Wallet API CI for New Pull Requests
 on:
   pull_request:
     branches:
-      - master
-      - 'v1.10'
+      - typescript-branch
 
 env:
   project-directory: ./
@@ -55,7 +54,7 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
 
       - name: run test
-        run: npm run test
+        run: npm test
         working-directory: ${{ env.project-directory }}
         env:
           DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
