@@ -45,7 +45,7 @@ class Trust {
    */
   async getTrustRelationships({
     walletId,
-    managedWallets,
+    managedWallets=[],
     state,
     type,
     request_type,

@@ -223,6 +223,7 @@ describe('TrustService', () => {
       TrustService.prototype,
       'getTrustRelationships',
     );
+    const managedWallets = []
     getTrustRelationshipsStub.onFirstCall().resolves({
       result: [
         { id: 'trustId1' },
@@ -264,7 +265,7 @@ describe('TrustService', () => {
       ),
     ).eql(true);
     expect(
-      getTrustRelationshipsStub.getCall(0).calledWithExactly('walletId', {
+      getTrustRelationshipsStub.getCall(0).calledWithExactly('walletId', managedWallets, {
         walletId: 'id1',
         state: 'state',
         type: 'type',
@@ -272,7 +273,7 @@ describe('TrustService', () => {
       }),
     ).eql(true);
     expect(
-      getTrustRelationshipsStub.getCall(1).calledWithExactly('walletId', {
+      getTrustRelationshipsStub.getCall(1).calledWithExactly('walletId', managedWallets,{
         walletId: 'id2',
         state: 'state',
         type: 'type',
