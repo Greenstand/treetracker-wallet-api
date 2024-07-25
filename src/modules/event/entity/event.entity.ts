@@ -7,7 +7,7 @@ export class Event {
   id: number;
 
   @Column()
-  wallet_id: number;
+  wallet_id: string;
 
   @Column()
   type: string;

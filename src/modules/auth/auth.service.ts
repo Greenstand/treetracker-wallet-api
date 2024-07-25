@@ -27,9 +27,9 @@ export class AuthService {
     if (!walletObject) {
       throw new UnauthorizedException('Invalid Credentials');
     }
-    const hash = this.hashService.sha512(password, walletObject.salt);
+    const hashedPassword = this.hashService.sha512(password, walletObject.salt);
 
-    if (hash === walletObject.password) {
+    if (hashedPassword === walletObject.password) {
       const token = this.jwtService.sign({
         id: walletObject.id,
         name: walletObject.name,

@@ -7,8 +7,8 @@ import {
 
 @Entity({ schema: 'wallet', name: 'wallet' })
 export class Wallet {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ unique: true })
   name: string;

@@ -8,6 +8,14 @@ export class WalletRepository extends Repository<Wallet> {
     super(Wallet, dataSource.createEntityManager());
   }
 
+  async getById(id: string): Promise<Wallet> {
+    const wallet = await this.findOne({ where: { id } });
+    if (!wallet) {
+      throw new Error(`Could not find entity by wallet id: ${id}`);
+    }
+    return wallet;
+  }
+
   async getByName(name: string): Promise<Wallet> {
     const wallet = await this.findOne({ where: { name } });
     if (!wallet) {
@@ -15,4 +23,6 @@ export class WalletRepository extends Repository<Wallet> {
     }
     return wallet;
   }
+
+  // todo: getAllWallets()
 }

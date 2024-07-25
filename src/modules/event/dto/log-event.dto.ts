@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class LogEventDto {
-  @IsNumber()
-  wallet_id: number;
+  @IsUUID()
+  wallet_id: string;
 
   @IsString()
   type: string;
