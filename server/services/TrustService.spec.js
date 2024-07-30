@@ -24,7 +24,7 @@ describe('TrustService', () => {
   it('getTrustRelationships', async () => {
     const getTrustRelationshipsStub = sinon
       .stub(Trust.prototype, 'getTrustRelationships')
-      .resolves(['trustRelationships']);
+      .resolves({result: ['trustRelationships'], count: 1});
     const managedWallets = [{id: '90f8b2ab-c101-405d-922a-0a64dbe64ab6'}];
 
     // const getTrustRelationshipsCountStub = sinon
