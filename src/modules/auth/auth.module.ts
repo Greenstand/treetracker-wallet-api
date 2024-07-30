@@ -11,6 +11,8 @@ import { ApiKeyService } from './api-key.service';
 import { ApiKey } from './entity/api-key.entity';
 import { WalletModule } from '../wallet/wallet.module';
 import { EventModule } from '../event/event.module';
+import { TrustModule } from '../trust/trust.module';
+import { TokenModule } from '../token/token.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { EventModule } from '../event/event.module';
     TypeOrmModule.forFeature([ApiKey]),
     WalletModule,
     EventModule,
+    TokenModule,
+    TrustModule,
   ],
   controllers: [AuthController],
   providers: [

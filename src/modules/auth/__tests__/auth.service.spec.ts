@@ -12,6 +12,8 @@ import * as sinon from 'sinon';
 import { Wallet } from 'src/modules/wallet/entity/wallet.entity';
 import { EventRepository } from '../../event/event.repository';
 import { DataSource } from 'typeorm';
+import { TrustRepository } from '../../trust/trust.repository';
+import { TokenRepository } from '../../token/token.repository';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -58,6 +60,18 @@ describe('AuthService', () => {
           },
         },
         {
+          provide: getRepositoryToken(TokenRepository),
+          useValue: {
+            // Mock TokenRepository methods if necessary
+          },
+        },
+        {
+          provide: getRepositoryToken(TrustRepository),
+          useValue: {
+            // Mock TrustRepository methods if necessary
+          },
+        },
+        {
           provide: DataSource,
           useValue: dataSourceMock,
         },
@@ -95,8 +109,6 @@ describe('AuthService', () => {
     const password = 'password';
     const apiKey = 'apiKey';
     const token = await authService.signIn(wallet, password, apiKey);
-
-    console.log('JWT Sign Arguments:', jwtSignStub.getCall(0).args[0]); // Print the arguments passed to jwtSign
 
     expect(getByNameStub.calledOnceWithExactly(wallet)).toBe(true);
     expect(sha512Stub.calledOnceWithExactly(password, 'salt')).toBe(true);
