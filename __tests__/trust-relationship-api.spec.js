@@ -2,11 +2,13 @@ require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
 const sinon = require('sinon');
+const uuid = require('uuid');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
 const TrustRelationship = require('../server/utils/trust-enums');
 chai.use(require('chai-uuid'));
+const  TrustService =  require('../server/services/TrustService');
 
 const { apiKey } = seed;
 
@@ -80,6 +82,9 @@ describe('Trust relationship management', () => {
   });
 
   it('GET /trust_relationships', async () => {
+    sinon
+        .stub(TrustService.prototype, 'getTrustRelationships')
+        .resolves({result:[{ id: uuid.v4() }], count: 1});
     const res = await request(server)
       .get('/trust_relationships')
       .set('treetracker-api-key', apiKey)

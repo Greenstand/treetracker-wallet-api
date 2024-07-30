@@ -33,7 +33,7 @@ class TrustService {
       );
     }
 
-    const result = await this._trust.getTrustRelationships({
+    return this._trust.getTrustRelationships({
       walletId,
       managedWallets,
       state,
@@ -45,14 +45,13 @@ class TrustService {
       order,
     });
 
-    const count = await this._trust.getTrustRelationshipsCount({
-      walletId,
-      state,
-      type,
-      request_type,
-    });
+    // const count = await this._trust.getTrustRelationshipsCount({
+    //   walletId,
+    //   state,
+    //   type,
+    //   request_type,
+    // });
 
-    return { result, count };
   }
 
   // limit and offset not feasible using the current implementation

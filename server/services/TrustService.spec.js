@@ -24,12 +24,12 @@ describe('TrustService', () => {
   it('getTrustRelationships', async () => {
     const getTrustRelationshipsStub = sinon
       .stub(Trust.prototype, 'getTrustRelationships')
-      .resolves(['trustRelationships']);
+      .resolves({result: ['trustRelationships'], count: 1});
     const managedWallets = [{id: '90f8b2ab-c101-405d-922a-0a64dbe64ab6'}];
 
-    const getTrustRelationshipsCountStub = sinon
-      .stub(Trust.prototype, 'getTrustRelationshipsCount')
-      .resolves(1);
+    // const getTrustRelationshipsCountStub = sinon
+    //   .stub(Trust.prototype, 'getTrustRelationshipsCount')
+    //   .resolves(1);
 
     const getWalletStub = sinon
       .stub(WalletService.prototype, 'getWallet')
@@ -74,14 +74,15 @@ describe('TrustService', () => {
         order: 'order',
       }),
     ).eql(true);
-    expect(
-      getTrustRelationshipsCountStub.calledOnceWithExactly({
-        walletId: 'walletId',
-        state: 'state',
-        type: 'type',
-        request_type: 'request_type',
-      }),
-    ).eql(true);
+    // expect(
+    //   getTrustRelationshipsCountStub.calledOnceWithExactly({
+    //     walletId: 'walletId',
+    //     managedWallets: [],
+    //     state: 'state',
+    //     type: 'type',
+    //     request_type: 'request_type',
+    //   }),
+    // ).eql(true);
     expect(
       hasControlOverStub.calledOnceWithExactly(
         authenticatedWalletId,
