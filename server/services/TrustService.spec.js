@@ -54,7 +54,7 @@ describe('TrustService', () => {
       },
     );
 
-    expect(trustRelationship).eql(['trustRelationships']);
+    expect(trustRelationship.result).eql(['trustRelationships']);
     // expect(trustRelationship.count).eql(1);
     expect(
       getWalletStub.calledOnceWithExactly({
