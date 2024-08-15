@@ -8,12 +8,12 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventService } from '../../event/event.service';
 import { ApiKeyService } from '../api-key.service';
 import { ConfigService } from '@nestjs/config';
-import * as sinon from 'sinon';
 import { Wallet } from 'src/modules/wallet/entity/wallet.entity';
 import { EventRepository } from '../../event/event.repository';
 import { DataSource } from 'typeorm';
 import { TrustRepository } from '../../trust/trust.repository';
 import { TokenRepository } from '../../token/token.repository';
+import { Event } from '../../event/entity/event.entity';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -87,7 +87,7 @@ describe('AuthService', () => {
   });
 
   afterEach(() => {
-    sinon.restore();
+    jest.clearAllMocks();
   });
 
   it('signin', async () => {
@@ -97,50 +97,38 @@ describe('AuthService', () => {
       salt: 'salt',
       password: 'hash',
     } as Wallet;
-    const getByNameStub = sinon
-      .stub(walletService, 'getByName')
-      .resolves(walletObject);
-    const logEventStub = sinon.stub(eventService, 'logEvent');
-    const sha512Stub = sinon.stub(hashService, 'sha512').returns('hash');
-    const jwtSignStub = sinon.stub(jwtService, 'sign').resolves('token');
-    const checkApiKeyStub = sinon.stub(apiKeyService, 'check').resolves();
+
+    jest.spyOn(walletService, 'getByName').mockResolvedValue(walletObject);
+    jest.spyOn(eventService, 'logEvent').mockResolvedValue(new Event());
+    jest.spyOn(hashService, 'sha512').mockReturnValue('hash');
+    jest.spyOn(jwtService, 'sign').mockReturnValue('token');
+    jest.spyOn(apiKeyService, 'check').mockResolvedValue();
 
     const wallet = 'wallet';
     const password = 'password';
     const apiKey = 'apiKey';
     const token = await authService.signIn(wallet, password, apiKey);
 
-    expect(getByNameStub.calledOnceWithExactly(wallet)).toBe(true);
-    expect(sha512Stub.calledOnceWithExactly(password, 'salt')).toBe(true);
-    expect(
-      jwtSignStub.calledOnceWithExactly(
-        sinon.match({ id: '1', name: 'wallet1' }),
-      ),
-    ).toBe(true);
+    expect(walletService.getByName).toHaveBeenCalledWith(wallet);
+    expect(hashService.sha512).toHaveBeenCalledWith(password, 'salt');
+    expect(jwtService.sign).toHaveBeenCalledWith(
+      expect.objectContaining({ id: '1', name: 'wallet1' }),
+    );
     expect(token).toBe('token');
-
-    getByNameStub.restore();
-    sha512Stub.restore();
-    jwtSignStub.restore();
-    logEventStub.restore();
-    checkApiKeyStub.restore();
   });
 
   it('failed signin', async () => {
     const walletObject = { salt: 'salt', password: 'password' } as Wallet;
-    const getByNameStub = sinon
-      .stub(walletService, 'getByName')
-      .resolves(walletObject);
-    const logEventStub = sinon.stub(eventService, 'logEvent');
-    const sha512Stub = sinon.stub(hashService, 'sha512').returns('hash');
-    const jwtSignStub = sinon.stub(jwtService, 'sign').resolves('token');
-    const checkApiKeyStub = sinon.stub(apiKeyService, 'check').resolves();
+
+    jest.spyOn(walletService, 'getByName').mockResolvedValue(walletObject);
+    jest.spyOn(eventService, 'logEvent').mockResolvedValue(new Event());
+    jest.spyOn(hashService, 'sha512').mockReturnValue('hash');
+    jest.spyOn(jwtService, 'sign').mockReturnValue('token');
+    jest.spyOn(apiKeyService, 'check').mockResolvedValue();
 
     const wallet = 'wallet';
     const password = 'password';
     const apiKey = 'apiKey';
-
-    getByNameStub.resolves(walletObject); // Mock the getByName to return the wallet object
 
     try {
       await authService.signIn(wallet, password, apiKey);
@@ -148,14 +136,8 @@ describe('AuthService', () => {
       expect(e.message).toBe('Invalid Credentials');
     }
 
-    expect(getByNameStub.calledOnceWithExactly(wallet)).toBe(true);
-    expect(sha512Stub.calledOnceWithExactly(password, 'salt')).toBe(true);
-    expect(jwtSignStub.notCalled).toBe(true);
-
-    getByNameStub.restore();
-    sha512Stub.restore();
-    jwtSignStub.restore();
-    logEventStub.restore();
-    checkApiKeyStub.restore();
+    expect(walletService.getByName).toHaveBeenCalledWith(wallet);
+    expect(hashService.sha512).toHaveBeenCalledWith(password, 'salt');
+    expect(jwtService.sign).not.toHaveBeenCalled();
   });
 });

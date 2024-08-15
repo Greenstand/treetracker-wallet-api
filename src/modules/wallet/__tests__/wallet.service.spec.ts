@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WalletService } from '../wallet.service';
 import { WalletRepository } from '../wallet.repository';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import * as sinon from 'sinon';
 import * as uuid from 'uuid';
 import { Wallet } from '../entity/wallet.entity';
 import { TrustRepository } from '../../trust/trust.repository';
@@ -14,11 +13,6 @@ describe('WalletService', () => {
   let walletRepository: WalletRepository;
   let tokenRepository: TokenRepository;
 
-  let getByIdStub: sinon.SinonStub;
-  let getByNameStub: sinon.SinonStub;
-  let countByFilterStub: sinon.SinonStub;
-  let hasControlOverStub: sinon.SinonStub;
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -26,15 +20,14 @@ describe('WalletService', () => {
         {
           provide: getRepositoryToken(WalletRepository),
           useValue: {
-            getById: sinon.stub(),
-            getByName: sinon.stub(),
-            // getAllWallets: sinon.stub(),
+            getById: jest.fn(),
+            getByName: jest.fn(),
           },
         },
         {
           provide: getRepositoryToken(TokenRepository),
           useValue: {
-            countByFilter: sinon.stub(),
+            countByFilter: jest.fn(),
           },
         },
         {
@@ -53,35 +46,32 @@ describe('WalletService', () => {
     tokenRepository = module.get<TokenRepository>(
       getRepositoryToken(TokenRepository),
     );
-
-    // Initialize stubs
-    getByIdStub = walletRepository.getById as sinon.SinonStub;
-    getByNameStub = walletRepository.getByName as sinon.SinonStub;
-    countByFilterStub = tokenRepository.countByFilter as sinon.SinonStub;
-    hasControlOverStub = sinon.stub(walletService, 'hasControlOver');
   });
 
   afterEach(() => {
-    sinon.restore();
+    jest.clearAllMocks();
   });
 
   it('getById', async () => {
     const walletId1 = uuid.v4();
     const walletStub = { id: walletId1, name: 'walletId1' } as Wallet;
-    getByIdStub.resolves(walletStub);
+    jest.spyOn(walletRepository, 'getById').mockResolvedValue(walletStub);
 
     const wallet = await walletService.getById(walletId1);
     expect(wallet.id).toBe(walletId1);
     expect(wallet.name).toBe('walletId1');
+    expect(walletRepository.getById).toHaveBeenCalledWith(walletId1);
   });
 
   it('getWallet', async () => {
     const authenticatedWalletId = uuid.v4();
     const walletId = uuid.v4();
 
-    getByIdStub.resolves({ id: walletId, name: 'wallet' } as Wallet);
-    countByFilterStub.resolves(20);
-    hasControlOverStub.resolves(true);
+    jest
+      .spyOn(walletRepository, 'getById')
+      .mockResolvedValue({ id: walletId, name: 'wallet' } as Wallet);
+    jest.spyOn(tokenRepository, 'countByFilter').mockResolvedValue(20);
+    jest.spyOn(walletService, 'hasControlOver').mockResolvedValue(true);
 
     const result = await walletService.getWallet(
       authenticatedWalletId,
@@ -93,28 +83,27 @@ describe('WalletService', () => {
       wallet: 'wallet',
       tokens_in_wallet: 20,
     });
-    expect(getByIdStub.calledOnceWithExactly(walletId)).toBe(true);
-    expect(
-      hasControlOverStub.calledOnceWithExactly(authenticatedWalletId, walletId),
-    ).toBe(true);
-    expect(
-      countByFilterStub.calledOnceWithExactly({ wallet_id: walletId }),
-    ).toBe(true);
+    expect(walletRepository.getById).toHaveBeenCalledWith(walletId);
+    expect(walletService.hasControlOver).toHaveBeenCalledWith(
+      authenticatedWalletId,
+      walletId,
+    );
+    expect(tokenRepository.countByFilter).toHaveBeenCalledWith({
+      wallet_id: walletId,
+    });
   });
 
   it('getByName', async () => {
     const walletName = 'walletName';
     const walletId1 = uuid.v4();
     const walletStub = { id: walletId1, name: walletName } as Wallet;
-    getByNameStub.resolves(walletStub);
+    jest.spyOn(walletRepository, 'getByName').mockResolvedValue(walletStub);
 
     const wallet = await walletService.getByName(walletName);
     expect(wallet.id).toBe(walletId1);
     expect(wallet.name).toBe(walletName);
+    expect(walletRepository.getByName).toHaveBeenCalledWith(walletName);
   });
-
-  // todo: hasControlOver
-  // it('hasControlOver', async () => {})
 
   it('getSubWallets', async () => {
     const walletId1 = uuid.v4();
@@ -131,15 +120,13 @@ describe('WalletService', () => {
       active: false,
     };
 
-    const getSubWalletsStub = sinon
-      .stub(walletService, 'getSubWallets')
-      .resolves([trustStub, trustStub]);
+    jest
+      .spyOn(walletService, 'getSubWallets')
+      .mockResolvedValue([trustStub, trustStub]);
 
-    expect(walletService).toBeInstanceOf(WalletService);
     const subWallets = await walletService.getSubWallets(walletId1);
     expect(subWallets).toEqual([trustStub, trustStub]);
-    expect(getSubWalletsStub.calledOnceWithExactly(walletId1)).toBe(true);
-    getSubWalletsStub.restore();
+    expect(walletService.getSubWallets).toHaveBeenCalledWith(walletId1);
   });
 
   describe('getByIdOrName', () => {
@@ -147,35 +134,28 @@ describe('WalletService', () => {
     const walletName = 'walletName';
 
     beforeEach(() => {
-      // Reset stubs before each test
-      getByIdStub.reset();
-      getByNameStub.reset();
-
-      // Setup the stubs with specific behavior for the tests
-      getByIdStub.resolves({ id: walletId, name: walletName } as Wallet);
-      getByNameStub.resolves({ id: walletId, name: walletName } as Wallet);
+      jest
+        .spyOn(walletRepository, 'getById')
+        .mockResolvedValue({ id: walletId, name: walletName } as Wallet);
+      jest
+        .spyOn(walletRepository, 'getByName')
+        .mockResolvedValue({ id: walletId, name: walletName } as Wallet);
     });
 
     it('sending a name as the parameter', async () => {
       const wallet = await walletService.getByIdOrName(walletName);
-      expect(getByNameStub.calledOnceWithExactly(walletName)).toBe(true);
-      expect(getByIdStub.notCalled).toBe(true);
+      expect(walletRepository.getByName).toHaveBeenCalledWith(walletName);
+      expect(walletRepository.getById).not.toHaveBeenCalled();
       expect(wallet.name).toBe(walletName);
       expect(wallet.id).toBe(walletId);
     });
 
     it('sending an id as the parameter', async () => {
       const wallet = await walletService.getByIdOrName(walletId);
-      expect(getByIdStub.calledOnceWithExactly(walletId)).toBe(true);
-      expect(getByNameStub.notCalled).toBe(true);
+      expect(walletRepository.getById).toHaveBeenCalledWith(walletId);
+      expect(walletRepository.getByName).not.toHaveBeenCalled();
       expect(wallet.name).toBe(walletName);
       expect(wallet.id).toBe(walletId);
     });
   });
-
-  // todo
-  // describe('createWallet', () => {})
-
-  // todo
-  // describe('getAllWallets', () => {})
 });
