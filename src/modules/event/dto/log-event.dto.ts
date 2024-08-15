@@ -1,12 +1,10 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsUUID } from 'class-validator';
+import { EVENT_TYPES } from '../event-enum';
 
 export class LogEventDto {
   @IsUUID()
   wallet_id: string;
 
-  @IsString()
-  type: string;
-
-  @IsNotEmpty()
-  payload: any;
+  @IsEnum(EVENT_TYPES)
+  type: EVENT_TYPES;
 }

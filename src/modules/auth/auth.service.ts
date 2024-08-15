@@ -4,7 +4,7 @@ import { EventService } from '../event/event.service';
 import { JWTService } from './jwt.service';
 import { HashService } from './hash.service';
 import { ApiKeyService } from './api-key.service';
-import { AUTH_EVENTS } from '../event/event-enum';
+import { EVENT_TYPES } from '../event/event-enum';
 
 @Injectable()
 export class AuthService {
@@ -38,8 +38,7 @@ export class AuthService {
       // todo: event not logged into db yet. investigating
       await this.eventService.logEvent({
         wallet_id: walletObject.id,
-        type: AUTH_EVENTS.login,
-        payload: {},
+        type: EVENT_TYPES.login,
       });
 
       return token;

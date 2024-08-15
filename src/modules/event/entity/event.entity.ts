@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { EVENT_TYPES } from '../event-enum';
 
-@Entity()
-// @Entity({ schema: 'wallet', name: 'wallet_event' })
+@Entity({ schema: 'wallet', name: 'wallet_event' })
 export class Event {
   @PrimaryGeneratedColumn()
   id: number;
@@ -9,11 +9,11 @@ export class Event {
   @Column()
   wallet_id: string;
 
-  @Column()
-  type: string;
-
-  @Column('json')
-  payload: any;
+  @Column({
+    type: 'enum',
+    enum: EVENT_TYPES,
+  })
+  type: EVENT_TYPES;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

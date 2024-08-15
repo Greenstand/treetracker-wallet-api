@@ -13,7 +13,6 @@ export class EventRepository extends Repository<Event> {
     const event = this.create({
       wallet_id: dto.wallet_id,
       type: dto.type,
-      payload: dto.payload,
     });
 
     return await this.save(event);
