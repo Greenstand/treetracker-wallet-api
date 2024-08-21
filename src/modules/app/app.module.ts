@@ -21,6 +21,7 @@ import { SeedService } from '../seed/seed.service';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
+      schema: process.env.DATABASE_SCHEMA || 'wallet',
       entities: [ApiKey, Wallet, Event],
       synchronize: true, // set to false in production
     }),

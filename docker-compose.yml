@@ -17,6 +17,7 @@ services:
     restart: always
     environment:
       - DATABASE_URL=postgresql://wallet_user:secret@db:5432/wallet_user
+      - DATABASE_URL=wallet
       - NODE_ENV=development
     ports:
       - '3006:3006'
