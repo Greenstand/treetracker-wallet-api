@@ -8,4 +8,14 @@ export class TokenService {
     @InjectRepository(TokenRepository)
     private tokenRepository: TokenRepository,
   ) {}
+
+  /*
+   * Count how many tokens a wallet has
+   */
+  async countTokenByWallet(wallet_id) {
+    const result = await this.tokenRepository.countByFilter({
+      wallet_id,
+    });
+    return result;
+  }
 }

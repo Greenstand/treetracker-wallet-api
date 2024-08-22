@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Wallet } from './entity/wallet.entity';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   ENTITY_TRUST_REQUEST_TYPE,
   ENTITY_TRUST_STATE_TYPE,
@@ -10,6 +10,8 @@ import { BaseRepository } from '../../common/repositories/base.repository';
 
 @Injectable()
 export class WalletRepository extends BaseRepository<Wallet> {
+  private readonly logger = new Logger(WalletRepository.name);
+
   constructor(dataSource: DataSource) {
     super(Wallet, dataSource);
   }
@@ -26,22 +28,23 @@ export class WalletRepository extends BaseRepository<Wallet> {
     return wallet;
   }
 
-  // Get a wallet itself including its sub wallets
+  /*
+  Get a wallet itself including its sub wallets
+  */
   async getAllWallets(
     id: string,
     limitOptions: LimitOptions,
     name: string,
     sort_by: string,
-    order: 'ASC' | 'DESC',
-    created_at_start_date?: string,
-    created_at_end_date?: string,
+    order: string,
+    created_at_start_date?: Date,
+    created_at_end_date?: Date,
     getCount = false,
-  ): Promise<{ wallets: Wallet[]; count?: number }> {
+  ): Promise<{ wallets: Wallet[]; count: number }> {
     let query = this.createQueryBuilder('wallet')
       .select([
         'wallet.id',
         'wallet.name',
-        'wallet.about',
         'wallet.logo_url',
         'wallet.created_at',
       ])
@@ -51,7 +54,6 @@ export class WalletRepository extends BaseRepository<Wallet> {
       .select([
         'wallet.id',
         'wallet.name',
-        'wallet.about',
         'wallet.logo_url',
         'wallet.created_at',
       ])
@@ -72,7 +74,6 @@ export class WalletRepository extends BaseRepository<Wallet> {
       .select([
         'wallet.id',
         'wallet.name',
-        'wallet.about',
         'wallet.logo_url',
         'wallet.created_at',
       ])
@@ -122,12 +123,9 @@ export class WalletRepository extends BaseRepository<Wallet> {
       query = query.offset(limitOptions.offset);
     }
 
-    const wallets = await query.getRawMany();
-    if (getCount) {
-      const count = await countQuery.getRawOne();
-      return { wallets, count: +count.count };
-    }
+    const wallets = (await query.getRawMany()) || [];
+    const count = getCount ? +(await countQuery.getRawOne())?.count || 0 : 0;
 
-    return { wallets };
+    return { wallets, count };
   }
 }

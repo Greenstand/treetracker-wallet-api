@@ -14,6 +14,7 @@ import { DataSource } from 'typeorm';
 import { TrustRepository } from '../../trust/trust.repository';
 import { TokenRepository } from '../../token/token.repository';
 import { Event } from '../../event/entity/event.entity';
+import { TokenService } from '../../token/token.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -40,6 +41,7 @@ describe('AuthService', () => {
         JWTService,
         EventService,
         ApiKeyService,
+        TokenService,
         {
           provide: ConfigService, // Mock ConfigService
           useValue: {

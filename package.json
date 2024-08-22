@@ -30,7 +30,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint --report-unused-disable-directives --fix .",
-    "test": "NODE_ENV=development jest -c jest.config.ts",
+    "test": "NODE_ENV=development jest -c jest.config.ts --verbose",
     "test:watch": "NODE_ENV=development jest -c jest.config.ts --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",

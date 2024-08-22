@@ -5,23 +5,31 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import * as uuid from 'uuid';
 import { Wallet } from '../entity/wallet.entity';
 import { TrustRepository } from '../../trust/trust.repository';
-import { Trust } from '../../trust/entity/trust.entity';
 import { TokenRepository } from '../../token/token.repository';
+import {
+  ENTITY_TRUST_REQUEST_TYPE,
+  ENTITY_TRUST_STATE_TYPE,
+} from '../../trust/trust-enum';
+import { TokenService } from '../../token/token.service';
 
 describe('WalletService', () => {
   let walletService: WalletService;
+  let tokenService: TokenService;
   let walletRepository: WalletRepository;
   let tokenRepository: TokenRepository;
+  let trustRepository: TrustRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WalletService,
+        TokenService,
         {
           provide: getRepositoryToken(WalletRepository),
           useValue: {
             getById: jest.fn(),
             getByName: jest.fn(),
+            getAllWallets: jest.fn(),
           },
         },
         {
@@ -40,11 +48,15 @@ describe('WalletService', () => {
     }).compile();
 
     walletService = module.get<WalletService>(WalletService);
+    tokenService = module.get<TokenService>(TokenService);
     walletRepository = module.get<WalletRepository>(
       getRepositoryToken(WalletRepository),
     );
     tokenRepository = module.get<TokenRepository>(
       getRepositoryToken(TokenRepository),
+    );
+    trustRepository = module.get<TrustRepository>(
+      getRepositoryToken(TrustRepository),
     );
   });
 
@@ -105,28 +117,113 @@ describe('WalletService', () => {
     expect(walletRepository.getByName).toHaveBeenCalledWith(walletName);
   });
 
-  it('getSubWallets', async () => {
+  describe('hasControlOver', () => {
+    let getSubWalletsSpy;
+
     const walletId1 = uuid.v4();
-    const trustStub: Trust = {
-      id: uuid.v4(),
-      actor_wallet_id: 'actor_wallet_id',
-      originator_wallet_id: 'originator_wallet_id',
-      target_wallet_id: 'target_wallet_id',
-      request_type: 'manage',
-      state: 'trusted',
-      created_at: new Date(),
-      updated_at: new Date(),
-      type: '',
-      active: false,
-    };
+    const walletId2 = uuid.v4();
 
-    jest
-      .spyOn(walletService, 'getSubWallets')
-      .mockResolvedValue([trustStub, trustStub]);
+    beforeEach(() => {
+      getSubWalletsSpy = jest.spyOn(walletService, 'getSubWallets');
+    });
 
-    const subWallets = await walletService.getSubWallets(walletId1);
-    expect(subWallets).toEqual([trustStub, trustStub]);
-    expect(walletService.getSubWallets).toHaveBeenCalledWith(walletId1);
+    it('should return true — my wallet', async () => {
+      const result = await walletService.hasControlOver(walletId1, walletId1);
+
+      expect(result).toEqual(true);
+      expect(getSubWalletsSpy).not.toHaveBeenCalled();
+    });
+
+    it('should return true — subwallet', async () => {
+      getSubWalletsSpy.mockResolvedValue([1]);
+
+      const result = await walletService.hasControlOver(walletId1, walletId2);
+
+      expect(result).toEqual(true);
+      expect(getSubWalletsSpy).toHaveBeenCalledTimes(1);
+      expect(getSubWalletsSpy).toHaveBeenCalledWith(walletId1, walletId2);
+    });
+
+    it('should return false when no control is present', async () => {
+      getSubWalletsSpy.mockResolvedValue([]);
+
+      const result = await walletService.hasControlOver(walletId1, walletId2);
+
+      expect(result).toEqual(false);
+      expect(getSubWalletsSpy).toHaveBeenCalledTimes(1);
+      expect(getSubWalletsSpy).toHaveBeenCalledWith(walletId1, walletId2);
+    });
+  });
+
+  describe('getSubWallets', () => {
+    let trustRepositoryStub;
+
+    const walletId1 = uuid.v4();
+    const walletId2 = uuid.v4();
+
+    beforeEach(() => {
+      trustRepositoryStub = jest.spyOn(trustRepository, 'getByFilter');
+    });
+
+    it('should get sub wallets without specific childId', async () => {
+      trustRepositoryStub.mockResolvedValue(['wallet1']);
+
+      const result = await walletService.getSubWallets(walletId1);
+
+      expect(result).toEqual(['wallet1']);
+      expect(trustRepositoryStub).toHaveBeenCalledTimes(1);
+      expect(trustRepositoryStub).toHaveBeenCalledWith({
+        or: [
+          {
+            and: [
+              { actor_wallet_id: walletId1 },
+              {
+                request_type: ENTITY_TRUST_REQUEST_TYPE.manage,
+              },
+              { state: ENTITY_TRUST_STATE_TYPE.trusted },
+            ],
+          },
+          {
+            and: [
+              {
+                request_type: ENTITY_TRUST_REQUEST_TYPE.yield,
+              },
+              { target_wallet_id: walletId1 },
+              { state: ENTITY_TRUST_STATE_TYPE.trusted },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('should get sub wallets with specific childId', async () => {
+      trustRepositoryStub.mockResolvedValue(['wallet2']);
+
+      const result = await walletService.getSubWallets(walletId1, walletId2);
+
+      expect(result).toEqual(['wallet2']);
+      expect(trustRepositoryStub).toHaveBeenCalledTimes(1);
+      expect(trustRepositoryStub).toHaveBeenCalledWith({
+        or: [
+          {
+            and: [
+              { actor_wallet_id: walletId1 },
+              { request_type: ENTITY_TRUST_REQUEST_TYPE.manage },
+              { state: ENTITY_TRUST_STATE_TYPE.trusted },
+              { target_wallet_id: walletId2 },
+            ],
+          },
+          {
+            and: [
+              { request_type: ENTITY_TRUST_REQUEST_TYPE.yield },
+              { target_wallet_id: walletId1 },
+              { state: ENTITY_TRUST_STATE_TYPE.trusted },
+              { actor_wallet_id: walletId2 },
+            ],
+          },
+        ],
+      });
+    });
   });
 
   describe('getByIdOrName', () => {
@@ -157,5 +254,81 @@ describe('WalletService', () => {
       expect(wallet.name).toBe(walletName);
       expect(wallet.id).toBe(walletId);
     });
+  });
+
+  describe('getAllWallets', () => {
+    let getAllWalletsSpy;
+    let countTokenByWalletSpy;
+
+    const walletId1 = uuid.v4();
+    const walletId2 = uuid.v4();
+    const limitOptions = {
+      limit: 10,
+      offset: 0,
+    };
+    const resultWithoutTokens = [
+      {
+        id: walletId1,
+        name: 'walletName',
+        logo_url: 'http://test.com/logo1.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      },
+      {
+        id: walletId2,
+        name: 'walletName2',
+        logo_url: 'http://test.com/logo2.png',
+        password: 'mockPassword2',
+        salt: 'mockSalt2',
+        created_at: new Date(),
+      },
+    ];
+
+    const count = 2;
+
+    beforeEach(() => {
+      getAllWalletsSpy = jest
+        .spyOn(walletRepository, 'getAllWallets')
+        .mockResolvedValue({
+          wallets: resultWithoutTokens,
+          count,
+        });
+      countTokenByWalletSpy = jest.spyOn(tokenService, 'countTokenByWallet');
+    });
+
+    it('should get all wallets without getTokenCount', async () => {
+      const id = uuid.v4();
+
+      const allWallets = await walletService.getAllWallets(
+        id,
+        limitOptions,
+        'name',
+        'created_at',
+        'ASC',
+        undefined,
+        undefined,
+        false, // getTokenCount = false
+        true, // getWalletCount = true
+      );
+
+      expect(getAllWalletsSpy).toHaveBeenCalledTimes(1);
+      expect(getAllWalletsSpy).toHaveBeenCalledWith(
+        id,
+        limitOptions,
+        'name',
+        'created_at',
+        'ASC',
+        undefined,
+        undefined,
+        true, // getWalletCount = true
+      );
+
+      // Adjusting the expected result to exclude tokens_in_wallet
+      expect(allWallets).toEqual({ wallets: resultWithoutTokens, count });
+      expect(countTokenByWalletSpy).not.toHaveBeenCalled();
+    });
+
+    it('should get all wallets with getTokenCount', async () => {});
   });
 });

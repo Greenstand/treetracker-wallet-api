@@ -1,10 +1,8 @@
 import { Repository, SelectQueryBuilder, DataSource } from 'typeorm';
-import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class BaseRepository<Entity> extends Repository<Entity> {
-  private readonly logger = new Logger(BaseRepository.name);
-
   constructor(entity: new () => Entity, dataSource: DataSource) {
     super(entity, dataSource.createEntityManager());
   }

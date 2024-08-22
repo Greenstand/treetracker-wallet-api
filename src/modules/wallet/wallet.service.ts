@@ -9,6 +9,8 @@ import {
 } from '../trust/trust-enum';
 import { TrustRepository } from '../trust/trust.repository';
 import { Trust } from '../trust/entity/trust.entity';
+import { Wallet } from './entity/wallet.entity';
+import { TokenService } from '../token/token.service';
 // import { LimitOptions } from 'src/common/interfaces/limit-options.interface';
 
 interface FilterCondition {
@@ -27,6 +29,7 @@ export class WalletService {
     private walletRepository: WalletRepository,
     private trustRepository: TrustRepository,
     private tokenRepository: TokenRepository,
+    private tokenService: TokenService,
   ) {}
 
   async getById(id: string) {
@@ -72,11 +75,9 @@ export class WalletService {
     if (childId) {
       filter.or[0].and.push({
         target_wallet_id: childId,
-        state: ENTITY_TRUST_STATE_TYPE.trusted,
       });
       filter.or[1].and.push({
         actor_wallet_id: childId,
-        state: ENTITY_TRUST_STATE_TYPE.trusted,
       });
     }
 
@@ -103,56 +104,6 @@ export class WalletService {
     return { id: walletId, wallet: walletName, tokens_in_wallet: tokenCount };
   }
 
-  // todo: createWallet()
-  // todo: updateWallet()
-
-  // async getAllWallets(
-  //   id: string,
-  //   limitOptions: LimitOptions,
-  //   name: string,
-  //   sort_by: string,
-  //   order: 'ASC' | 'DESC',
-  //   created_at_start_date?: string,
-  //   created_at_end_date?: string,
-  //   getTokenCount = true,
-  //   getWalletCount = true,
-  // ): Promise<{ wallets: any[]; count?: number }> {
-  //   if (getTokenCount) {
-  //     const { wallets, count } = await this.walletRepository.getAllWallets(
-  //       id,
-  //       limitOptions,
-  //       name,
-  //       sort_by,
-  //       order,
-  //       created_at_start_date,
-  //       created_at_end_date,
-  //       getWalletCount,
-  //     );
-
-  //     const walletsWithTokens = await Promise.all(
-  //       wallets.map(async (wallet: Wallet) => {
-  //         const tokensInWallet = await this.tokenService.countTokenByWallet(
-  //           wallet.id,
-  //         );
-  //         return { ...wallet, tokens_in_wallet: tokensInWallet };
-  //       }),
-  //     );
-
-  //     return { wallets: walletsWithTokens, count };
-  //   }
-
-  //   return this.walletRepository.getAllWallets(
-  //     id,
-  //     limitOptions,
-  //     name,
-  //     sort_by,
-  //     order,
-  //     created_at_start_date,
-  //     created_at_end_date,
-  //     getWalletCount,
-  //   );
-  // }
-
   async hasControlOver(parentId: string, childId: string): Promise<boolean> {
     if (parentId === childId) {
       this.logger.debug('The same wallet');
@@ -162,8 +113,65 @@ export class WalletService {
     const result = await this.getSubWallets(parentId, childId);
     return result.length > 0;
   }
-  // todo: batchCreateWallet()
-  // todo: addWalletToMapConfig()
-  // todo: batchTransferWallet()
-  // todo: hasControlOverByName()
+
+  async hasControlOverByName(
+    parentId: string,
+    childName: string,
+  ): Promise<Wallet> {
+    const walletInstance = await this.getByName(childName);
+    if (!walletInstance) {
+      throw new HttpException('Wallet not found', HttpStatus.NOT_FOUND);
+    }
+
+    const isSub = await this.hasControlOver(parentId, walletInstance.id);
+    if (!isSub) {
+      throw new HttpException(
+        'Wallet does not belong to the logged in wallet',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return walletInstance;
+  }
+
+  async getAllWallets(
+    id: string,
+    limitOptions: any,
+    name: string,
+    sortBy: string,
+    order: string,
+    createdAtStartDate: Date,
+    createdAtEndDate: Date,
+    getTokenCount = true,
+    getWalletCount = true,
+  ): Promise<{ wallets: Wallet[]; count: number }> {
+    const { wallets, count } = await this.walletRepository.getAllWallets(
+      id,
+      limitOptions,
+      name,
+      sortBy,
+      order,
+      createdAtStartDate,
+      createdAtEndDate,
+      getWalletCount,
+    );
+
+    if (getTokenCount) {
+      const walletsWithTokens = await Promise.all(
+        wallets.map(async (wallet) => {
+          const tokensInWallet = await this.tokenService.countTokenByWallet(
+            wallet.id,
+          );
+          return { ...wallet, tokens_in_wallet: tokensInWallet };
+        }),
+      );
+
+      return {
+        wallets: walletsWithTokens,
+        count: count,
+      };
+    }
+
+    return { wallets, count };
+  }
 }
