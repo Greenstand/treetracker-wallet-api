@@ -5,25 +5,29 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import * as uuid from 'uuid';
 import { Wallet } from '../entity/wallet.entity';
 import { TrustRepository } from '../../trust/trust.repository';
-import { TokenRepository } from '../../token/token.repository';
 import {
   ENTITY_TRUST_REQUEST_TYPE,
   ENTITY_TRUST_STATE_TYPE,
 } from '../../trust/trust-enum';
 import { TokenService } from '../../token/token.service';
+import { EventService } from '../../event/event.service';
+import { TrustService } from '../../trust/trust.service';
+import { EventRepository } from '../../event/event.repository';
+import { TokenRepository } from '../../token/token.repository';
 
 describe('WalletService', () => {
   let walletService: WalletService;
   let tokenService: TokenService;
+  let trustService: TrustService;
   let walletRepository: WalletRepository;
-  let tokenRepository: TokenRepository;
-  let trustRepository: TrustRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WalletService,
         TokenService,
+        EventService,
+        TrustService,
         {
           provide: getRepositoryToken(WalletRepository),
           useValue: {
@@ -39,6 +43,12 @@ describe('WalletService', () => {
           },
         },
         {
+          provide: getRepositoryToken(EventRepository),
+          useValue: {
+            logEvent: jest.fn(),
+          },
+        },
+        {
           provide: getRepositoryToken(TrustRepository),
           useValue: {
             getByFilter: jest.fn(),
@@ -49,14 +59,9 @@ describe('WalletService', () => {
 
     walletService = module.get<WalletService>(WalletService);
     tokenService = module.get<TokenService>(TokenService);
+    trustService = module.get<TrustService>(TrustService);
     walletRepository = module.get<WalletRepository>(
       getRepositoryToken(WalletRepository),
-    );
-    tokenRepository = module.get<TokenRepository>(
-      getRepositoryToken(TokenRepository),
-    );
-    trustRepository = module.get<TrustRepository>(
-      getRepositoryToken(TrustRepository),
     );
   });
 
@@ -82,7 +87,7 @@ describe('WalletService', () => {
     jest
       .spyOn(walletRepository, 'getById')
       .mockResolvedValue({ id: walletId, name: 'wallet' } as Wallet);
-    jest.spyOn(tokenRepository, 'countByFilter').mockResolvedValue(20);
+    jest.spyOn(tokenService, 'countByFilter').mockResolvedValue(20);
     jest.spyOn(walletService, 'hasControlOver').mockResolvedValue(true);
 
     const result = await walletService.getWallet(
@@ -100,7 +105,7 @@ describe('WalletService', () => {
       authenticatedWalletId,
       walletId,
     );
-    expect(tokenRepository.countByFilter).toHaveBeenCalledWith({
+    expect(tokenService.countByFilter).toHaveBeenCalledWith({
       wallet_id: walletId,
     });
   });
@@ -156,23 +161,23 @@ describe('WalletService', () => {
   });
 
   describe('getSubWallets', () => {
-    let trustRepositoryStub;
+    let trustServiceStub;
 
     const walletId1 = uuid.v4();
     const walletId2 = uuid.v4();
 
     beforeEach(() => {
-      trustRepositoryStub = jest.spyOn(trustRepository, 'getByFilter');
+      trustServiceStub = jest.spyOn(trustService, 'getByFilter');
     });
 
     it('should get sub wallets without specific childId', async () => {
-      trustRepositoryStub.mockResolvedValue(['wallet1']);
+      trustServiceStub.mockResolvedValue(['wallet1']);
 
       const result = await walletService.getSubWallets(walletId1);
 
       expect(result).toEqual(['wallet1']);
-      expect(trustRepositoryStub).toHaveBeenCalledTimes(1);
-      expect(trustRepositoryStub).toHaveBeenCalledWith({
+      expect(trustServiceStub).toHaveBeenCalledTimes(1);
+      expect(trustServiceStub).toHaveBeenCalledWith({
         or: [
           {
             and: [
@@ -197,13 +202,13 @@ describe('WalletService', () => {
     });
 
     it('should get sub wallets with specific childId', async () => {
-      trustRepositoryStub.mockResolvedValue(['wallet2']);
+      trustServiceStub.mockResolvedValue(['wallet2']);
 
       const result = await walletService.getSubWallets(walletId1, walletId2);
 
       expect(result).toEqual(['wallet2']);
-      expect(trustRepositoryStub).toHaveBeenCalledTimes(1);
-      expect(trustRepositoryStub).toHaveBeenCalledWith({
+      expect(trustServiceStub).toHaveBeenCalledTimes(1);
+      expect(trustServiceStub).toHaveBeenCalledWith({
         or: [
           {
             and: [

@@ -1,17 +1,18 @@
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WalletRepository } from './wallet.repository';
-import { TokenRepository } from '../token/token.repository';
 import { validate as uuidValidate } from 'uuid';
 import {
   ENTITY_TRUST_REQUEST_TYPE,
   ENTITY_TRUST_STATE_TYPE,
+  ENTITY_TRUST_TYPE,
 } from '../trust/trust-enum';
-import { TrustRepository } from '../trust/trust.repository';
 import { Trust } from '../trust/entity/trust.entity';
 import { Wallet } from './entity/wallet.entity';
 import { TokenService } from '../token/token.service';
-// import { LimitOptions } from 'src/common/interfaces/limit-options.interface';
+import { EventService } from '../event/event.service';
+import { EVENT_TYPES } from '../event/event-enum';
+import { TrustService } from '../trust/trust.service';
 
 interface FilterCondition {
   actor_wallet_id?: string;
@@ -27,9 +28,9 @@ export class WalletService {
   constructor(
     @InjectRepository(WalletRepository)
     private walletRepository: WalletRepository,
-    private trustRepository: TrustRepository,
-    private tokenRepository: TokenRepository,
+    private trustService: TrustService,
     private tokenService: TokenService,
+    private eventService: EventService,
   ) {}
 
   async getById(id: string) {
@@ -81,7 +82,7 @@ export class WalletService {
       });
     }
 
-    const result = await this.trustRepository.getByFilter(filter);
+    const result = await this.trustService.getByFilter(filter);
 
     return result;
   }
@@ -96,7 +97,7 @@ export class WalletService {
       );
     }
 
-    const tokenCount = await this.tokenRepository.countByFilter({
+    const tokenCount = await this.tokenService.countByFilter({
       wallet_id: walletId,
     });
 
@@ -173,5 +174,47 @@ export class WalletService {
     }
 
     return { wallets, count };
+  }
+
+  async createWallet(
+    loggedInWalletId: string,
+    walletName: string,
+  ): Promise<Wallet> {
+    // create the wallet entity
+    const addedWallet = await this.walletRepository.createWallet(walletName);
+
+    // log event for the newly created wallet
+    await this.eventService.logEvent({
+      wallet_id: addedWallet.id,
+      type: EVENT_TYPES.wallet_created,
+      // TODO: add payload back to eventService.logEvent()
+      // payload: {
+      //   parentWallet: loggedInWalletId,
+      //   childWallet: addedWallet.name,
+      // },
+    });
+
+    // log event for the parent wallet
+    await this.eventService.logEvent({
+      wallet_id: loggedInWalletId,
+      type: EVENT_TYPES.wallet_created,
+      // TODO: add payload back to eventService.logEvent()
+      // payload: {
+      //   parentWallet: loggedInWalletId,
+      //   childWallet: addedWallet.name,
+      // },
+    });
+
+    // create the trust relationship
+    await this.trustService.createTrust({
+      actor_wallet_id: loggedInWalletId,
+      originator_wallet_id: loggedInWalletId,
+      target_wallet_id: addedWallet.id,
+      request_type: ENTITY_TRUST_TYPE.manage,
+      type: ENTITY_TRUST_TYPE.manage,
+      state: ENTITY_TRUST_STATE_TYPE.trusted,
+    });
+
+    return addedWallet;
   }
 }

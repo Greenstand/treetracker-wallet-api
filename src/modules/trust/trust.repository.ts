@@ -1,25 +1,13 @@
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { Trust } from './entity/trust.entity';
 import { Injectable } from '@nestjs/common';
-import { LimitOptions } from 'src/common/interfaces/limit-options.interface';
+import { LimitOptions } from '../../common/interfaces/limit-options.interface';
+import { BaseRepository } from '../../common/repositories/base.repository';
 
 @Injectable()
-export class TrustRepository extends Repository<Trust> {
+export class TrustRepository extends BaseRepository<Trust> {
   constructor(dataSource: DataSource) {
-    super(Trust, dataSource.createEntityManager());
-  }
-
-  private whereBuilder(filter: any, builder: SelectQueryBuilder<Trust>): void {
-    if (filter.and) {
-      filter.and.forEach((condition: any) => {
-        builder.andWhere(condition);
-      });
-    }
-    if (filter.or) {
-      filter.or.forEach((condition: any) => {
-        builder.orWhere(condition);
-      });
-    }
+    super(Trust, dataSource);
   }
 
   async getByFilter(

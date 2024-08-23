@@ -1,4 +1,9 @@
-import { Repository, SelectQueryBuilder, DataSource } from 'typeorm';
+import {
+  Repository,
+  SelectQueryBuilder,
+  DataSource,
+  DeepPartial,
+} from 'typeorm';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
@@ -64,6 +69,12 @@ export class BaseRepository<Entity> extends Repository<Entity> {
 
   // todo: async update(object)
   // todo: async updateByIds(object, ids)
-  // todo: async create(object)
+
+  async createEntity(object: DeepPartial<Entity>): Promise<Entity> {
+    const entity = this.create(object);
+    const savedEntity = await this.save(entity);
+    return savedEntity;
+  }
+
   // todo: async batchCreate(objects)
 }

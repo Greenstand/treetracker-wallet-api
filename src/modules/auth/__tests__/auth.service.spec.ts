@@ -8,20 +8,21 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { EventService } from '../../event/event.service';
 import { ApiKeyService } from '../api-key.service';
 import { ConfigService } from '@nestjs/config';
-import { Wallet } from 'src/modules/wallet/entity/wallet.entity';
+import { Wallet } from '../../wallet/entity/wallet.entity';
 import { EventRepository } from '../../event/event.repository';
 import { DataSource } from 'typeorm';
+import { Event } from '../../event/entity/event.entity';
+import { TrustService } from '../../trust/trust.service';
+import { TokenService } from '../../token/token.service';
 import { TrustRepository } from '../../trust/trust.repository';
 import { TokenRepository } from '../../token/token.repository';
-import { Event } from '../../event/entity/event.entity';
-import { TokenService } from '../../token/token.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let walletService: WalletService;
+  let eventService: EventService;
   let hashService: HashService;
   let jwtService: JWTService;
-  let eventService: EventService;
   let apiKeyService: ApiKeyService;
 
   beforeEach(async () => {
@@ -30,47 +31,38 @@ describe('AuthService', () => {
         findOne: jest.fn(),
         save: jest.fn(),
         remove: jest.fn(),
-        // Add any other methods that the repositories might use
       }),
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        WalletService,
         HashService,
         JWTService,
-        EventService,
         ApiKeyService,
+        WalletService,
+        EventService,
+        TrustService,
         TokenService,
         {
-          provide: ConfigService, // Mock ConfigService
-          useValue: {
-            get: jest.fn().mockReturnValue('some-value'), // Mock implementation of get method
-          },
-        },
-        {
           provide: getRepositoryToken(WalletRepository),
-          useValue: {
-            getById: jest.fn(),
-            getByName: jest.fn(),
-          },
+          useValue: {},
         },
         {
           provide: getRepositoryToken(EventRepository),
-          useValue: {
-            // Mock EventRepository methods if necessary
-          },
-        },
-        {
-          provide: getRepositoryToken(TokenRepository),
-          useValue: {
-            // Mock TokenRepository methods if necessary
-          },
+          useValue: {},
         },
         {
           provide: getRepositoryToken(TrustRepository),
+          useValue: {},
+        },
+        {
+          provide: getRepositoryToken(TokenRepository),
+          useValue: {},
+        },
+        {
+          provide: ConfigService,
           useValue: {
-            // Mock TrustRepository methods if necessary
+            get: jest.fn().mockReturnValue('some-value'),
           },
         },
         {

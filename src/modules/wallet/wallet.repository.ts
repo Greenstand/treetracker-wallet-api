@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Wallet } from './entity/wallet.entity';
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   ENTITY_TRUST_REQUEST_TYPE,
   ENTITY_TRUST_STATE_TYPE,
@@ -10,8 +10,6 @@ import { BaseRepository } from '../../common/repositories/base.repository';
 
 @Injectable()
 export class WalletRepository extends BaseRepository<Wallet> {
-  private readonly logger = new Logger(WalletRepository.name);
-
   constructor(dataSource: DataSource) {
     super(Wallet, dataSource);
   }
@@ -26,6 +24,32 @@ export class WalletRepository extends BaseRepository<Wallet> {
       throw new Error(`Could not find entity by wallet name: ${name}`);
     }
     return wallet;
+  }
+
+  async createWallet(name: string): Promise<Wallet> {
+    try {
+      // Check if the wallet name already exists
+      const existingWallet = await this.getByName(name);
+      if (existingWallet) {
+        throw new HttpException(
+          `The wallet "${name}" already exists`,
+          HttpStatus.CONFLICT,
+        );
+      }
+    } catch (e) {
+      if (
+        e instanceof HttpException &&
+        e.getStatus() !== HttpStatus.NOT_FOUND
+      ) {
+        throw e;
+      }
+    }
+
+    // Create and save the new wallet
+    const newWallet = await this.createEntity({
+      name,
+    });
+    return newWallet;
   }
 
   /*

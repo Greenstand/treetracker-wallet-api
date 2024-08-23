@@ -18,4 +18,8 @@ export class TokenService {
     });
     return result;
   }
+
+  async countByFilter(filter: any): Promise<number> {
+    return this.tokenRepository.countByFilter(filter);
+  }
 }
