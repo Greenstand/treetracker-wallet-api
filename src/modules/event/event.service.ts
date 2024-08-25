@@ -12,6 +12,6 @@ export class EventService {
   ) {}
 
   async logEvent(dto: LogEventDto): Promise<Event> {
-    return this.eventRepository.logEvent(dto);
+    return await this.eventRepository.logEvent(dto);
   }
 }

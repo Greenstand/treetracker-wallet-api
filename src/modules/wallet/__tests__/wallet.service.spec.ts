@@ -8,17 +8,20 @@ import { TrustRepository } from '../../trust/trust.repository';
 import {
   ENTITY_TRUST_REQUEST_TYPE,
   ENTITY_TRUST_STATE_TYPE,
+  ENTITY_TRUST_TYPE,
 } from '../../trust/trust-enum';
 import { TokenService } from '../../token/token.service';
 import { EventService } from '../../event/event.service';
 import { TrustService } from '../../trust/trust.service';
 import { EventRepository } from '../../event/event.repository';
 import { TokenRepository } from '../../token/token.repository';
+import { EVENT_TYPES } from '../../event/event-enum';
 
 describe('WalletService', () => {
   let walletService: WalletService;
   let tokenService: TokenService;
   let trustService: TrustService;
+  let eventService: EventService;
   let walletRepository: WalletRepository;
 
   beforeEach(async () => {
@@ -34,6 +37,7 @@ describe('WalletService', () => {
             getById: jest.fn(),
             getByName: jest.fn(),
             getAllWallets: jest.fn(),
+            createWallet: jest.fn(),
           },
         },
         {
@@ -60,6 +64,7 @@ describe('WalletService', () => {
     walletService = module.get<WalletService>(WalletService);
     tokenService = module.get<TokenService>(TokenService);
     trustService = module.get<TrustService>(TrustService);
+    eventService = module.get<EventService>(EventService);
     walletRepository = module.get<WalletRepository>(
       getRepositoryToken(WalletRepository),
     );
@@ -258,6 +263,92 @@ describe('WalletService', () => {
       expect(walletRepository.getByName).not.toHaveBeenCalled();
       expect(wallet.name).toBe(walletName);
       expect(wallet.id).toBe(walletId);
+    });
+  });
+
+  describe('createWallet', () => {
+    let createWalletSpy;
+    let logEventSpy;
+    let createTrustSpy;
+
+    const loggedInWalletId = uuid.v4();
+    const walletName = 'walletName';
+    const createdWalletId = uuid.v4();
+
+    const createdWallet = {
+      id: createdWalletId,
+      name: walletName,
+      password: 'mockPassword',
+      salt: 'mockSalt',
+      created_at: new Date(),
+    };
+
+    beforeEach(() => {
+      createWalletSpy = jest
+        .spyOn(walletRepository, 'createWallet')
+        .mockResolvedValue(createdWallet);
+      logEventSpy = jest
+        .spyOn(eventService, 'logEvent')
+        .mockImplementation(async () => ({}) as any);
+      createTrustSpy = jest
+        .spyOn(trustService, 'createTrust')
+        .mockImplementation(async () => ({}) as any);
+    });
+
+    it('should create wallet and log events', async () => {
+      const result = await walletService.createWallet(
+        loggedInWalletId,
+        walletName,
+      );
+
+      // ensure the createWallet method is called once with the correct arguments
+      expect(createWalletSpy).toHaveBeenCalledTimes(1);
+      expect(createWalletSpy).toHaveBeenCalledWith(walletName);
+
+      // ensure the wallet is returned as expected
+      expect(result).toEqual(createdWallet);
+
+      // ensure the logEvent method is called twice with the correct arguments
+      expect(logEventSpy).toHaveBeenCalledTimes(2);
+      expect(logEventSpy).toHaveBeenNthCalledWith(1, {
+        wallet_id: createdWalletId,
+        type: EVENT_TYPES.wallet_created,
+      });
+      expect(logEventSpy).toHaveBeenNthCalledWith(2, {
+        wallet_id: loggedInWalletId,
+        type: EVENT_TYPES.wallet_created,
+      });
+
+      // ensure the createTrust method is called with the correct arguments
+      expect(createTrustSpy).toHaveBeenCalledTimes(1);
+      expect(createTrustSpy).toHaveBeenCalledWith({
+        actor_wallet_id: loggedInWalletId,
+        originator_wallet_id: loggedInWalletId,
+        target_wallet_id: createdWalletId,
+        request_type: ENTITY_TRUST_TYPE.manage,
+        type: ENTITY_TRUST_TYPE.manage,
+        state: ENTITY_TRUST_STATE_TYPE.trusted,
+      });
+    });
+
+    it('should rollback transaction if it errors out', async () => {
+      createWalletSpy.mockRejectedValue(new Error('Test Error'));
+
+      const loggedInWalletId = uuid.v4();
+      const walletName = 'walletName';
+
+      try {
+        await walletService.createWallet(loggedInWalletId, walletName);
+      } catch (e) {
+        // Expected error, so do nothing here
+      }
+
+      // ensure createWallet was called once with the correct arguments
+      expect(createWalletSpy).toHaveBeenCalledTimes(1);
+      expect(createWalletSpy).toHaveBeenCalledWith(walletName);
+
+      // ensure logEvent was not called due to the error
+      expect(logEventSpy).not.toHaveBeenCalled();
     });
   });
 

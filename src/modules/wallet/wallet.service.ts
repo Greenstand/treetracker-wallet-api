@@ -187,7 +187,6 @@ export class WalletService {
     await this.eventService.logEvent({
       wallet_id: addedWallet.id,
       type: EVENT_TYPES.wallet_created,
-      // TODO: add payload back to eventService.logEvent()
       // payload: {
       //   parentWallet: loggedInWalletId,
       //   childWallet: addedWallet.name,
@@ -198,7 +197,6 @@ export class WalletService {
     await this.eventService.logEvent({
       wallet_id: loggedInWalletId,
       type: EVENT_TYPES.wallet_created,
-      // TODO: add payload back to eventService.logEvent()
       // payload: {
       //   parentWallet: loggedInWalletId,
       //   childWallet: addedWallet.name,
