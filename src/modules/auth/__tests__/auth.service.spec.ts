@@ -16,6 +16,7 @@ import { TrustService } from '../../trust/trust.service';
 import { TokenService } from '../../token/token.service';
 import { TrustRepository } from '../../trust/trust.repository';
 import { TokenRepository } from '../../token/token.repository';
+import { S3Service } from '../../../common/services/s3.service';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -43,6 +44,7 @@ describe('AuthService', () => {
         EventService,
         TrustService,
         TokenService,
+        S3Service,
         {
           provide: getRepositoryToken(WalletRepository),
           useValue: {},

@@ -13,6 +13,9 @@ import { TokenService } from '../token/token.service';
 import { EventService } from '../event/event.service';
 import { EVENT_TYPES } from '../event/event-enum';
 import { TrustService } from '../trust/trust.service';
+import { S3Service } from '../../common/services/s3.service';
+import axios, { AxiosResponse } from 'axios';
+import { UpdateWalletDto } from './dto/update-wallet.dto';
 
 interface FilterCondition {
   actor_wallet_id?: string;
@@ -31,6 +34,7 @@ export class WalletService {
     private trustService: TrustService,
     private tokenService: TokenService,
     private eventService: EventService,
+    private s3Service: S3Service,
   ) {}
 
   async getById(id: string) {
@@ -215,4 +219,107 @@ export class WalletService {
 
     return addedWallet;
   }
+
+  async addWalletToMapConfig({
+    walletId,
+    walletLogoUrl,
+    walletCoverUrl,
+    name,
+  }: {
+    walletId: string;
+    walletLogoUrl?: string;
+    walletCoverUrl?: string;
+    name?: string;
+  }): Promise<any> {
+    const MAP_CONFIG_API_URL =
+      process.env.MAP_CONFIG_API_URL ||
+      'http://treetracker-map-config-api.webmap-config';
+
+    try {
+      const response: AxiosResponse<any> = await axios.post(
+        `${MAP_CONFIG_API_URL}/config`,
+        {
+          name: 'extra-wallet',
+          ref_uuid: walletId,
+          ref_id: walletId,
+          data: {
+            ...(walletLogoUrl && {
+              logo_url: walletLogoUrl,
+            }),
+            ...(walletCoverUrl && {
+              cover_url: walletCoverUrl,
+            }),
+          },
+        },
+      );
+
+      return response.data;
+    } catch (e) {
+      this.logger.debug('Map config API error:', e);
+      throw new HttpException(
+        `${name} webmap config addition failed, ${e.toString()}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateWallet(
+    updateWalletDto: UpdateWalletDto,
+    loggedInWalletId: string,
+  ): Promise<Wallet> {
+    const { display_name, add_to_web_map, logo_image, wallet_id } =
+      updateWalletDto;
+    const walletIdToUpdate = wallet_id;
+
+    // checked if logged in wallet has control over wallet to be updated
+    const hasControl = await this.hasControlOverByName(
+      loggedInWalletId,
+      walletIdToUpdate,
+    );
+    if (!hasControl) {
+      throw new HttpException(
+        'You do not have permission to update this wallet',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    // upload images if provided
+    // TODO: add the code for cover image
+    let logoImageUrl: string | undefined;
+    if (logo_image) {
+      logoImageUrl = await this.s3Service.upload(
+        logo_image.buffer,
+        `${walletIdToUpdate}_${new Date().toISOString()}`,
+        logo_image.mimetype || 'image/png',
+      );
+    }
+
+    // update data in the repository
+    const updateData: Partial<Wallet> = {
+      id: walletIdToUpdate,
+      name: display_name,
+      logo_url: logoImageUrl,
+    };
+    const updatedWallet = await this.walletRepository.updateWallet(updateData);
+
+    // if add_to_web_map is true, update the wallet's configuration in the map
+    if (add_to_web_map) {
+      await this.addWalletToMapConfig({
+        walletId: wallet_id,
+        walletLogoUrl: logoImageUrl,
+      });
+    }
+
+    // remove sensitive information before returning
+    delete updatedWallet.password;
+    delete updatedWallet.salt;
+
+    return updatedWallet;
+  }
+
+  // TODO
+  async batchCreateWallet() {}
+
+  // TODO
+  async batchTransferWallet() {}
 }

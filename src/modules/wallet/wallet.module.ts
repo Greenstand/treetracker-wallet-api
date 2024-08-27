@@ -6,6 +6,7 @@ import { Wallet } from './entity/wallet.entity';
 import { TokenModule } from '../token/token.module';
 import { TrustModule } from '../trust/trust.module';
 import { EventModule } from '../event/event.module';
+import { S3Service } from '../../common/services/s3.service';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { EventModule } from '../event/event.module';
     TokenModule,
     TrustModule,
   ],
-  providers: [WalletService, WalletRepository],
+  providers: [WalletService, WalletRepository, S3Service],
   exports: [WalletService, WalletRepository],
 })
 export class WalletModule {}

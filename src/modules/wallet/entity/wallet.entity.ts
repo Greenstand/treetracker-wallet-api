@@ -19,6 +19,9 @@ export class Wallet {
   @Column()
   salt: string; // salt used for hashing the password
 
+  @Column({ nullable: true })
+  logo_url: string;
+
   @CreateDateColumn()
   created_at: Date;
 }

@@ -16,12 +16,15 @@ import { TrustService } from '../../trust/trust.service';
 import { EventRepository } from '../../event/event.repository';
 import { TokenRepository } from '../../token/token.repository';
 import { EVENT_TYPES } from '../../event/event-enum';
+import { S3Service } from '../../../common/services/s3.service';
+import { UpdateWalletDto } from '../dto/update-wallet.dto';
 
 describe('WalletService', () => {
   let walletService: WalletService;
   let tokenService: TokenService;
   let trustService: TrustService;
   let eventService: EventService;
+  let s3Service: S3Service;
   let walletRepository: WalletRepository;
 
   beforeEach(async () => {
@@ -31,6 +34,7 @@ describe('WalletService', () => {
         TokenService,
         EventService,
         TrustService,
+        S3Service,
         {
           provide: getRepositoryToken(WalletRepository),
           useValue: {
@@ -38,6 +42,7 @@ describe('WalletService', () => {
             getByName: jest.fn(),
             getAllWallets: jest.fn(),
             createWallet: jest.fn(),
+            updateWallet: jest.fn(),
           },
         },
         {
@@ -65,6 +70,7 @@ describe('WalletService', () => {
     tokenService = module.get<TokenService>(TokenService);
     trustService = module.get<TrustService>(TrustService);
     eventService = module.get<EventService>(EventService);
+    s3Service = module.get<S3Service>(S3Service);
     walletRepository = module.get<WalletRepository>(
       getRepositoryToken(WalletRepository),
     );
@@ -280,6 +286,7 @@ describe('WalletService', () => {
       name: walletName,
       password: 'mockPassword',
       salt: 'mockSalt',
+      logo_url: 'http://test.com/logo.png',
       created_at: new Date(),
     };
 
@@ -340,7 +347,7 @@ describe('WalletService', () => {
       try {
         await walletService.createWallet(loggedInWalletId, walletName);
       } catch (e) {
-        // Expected error, so do nothing here
+        // expected error, so do nothing here
       }
 
       // ensure createWallet was called once with the correct arguments
@@ -366,17 +373,38 @@ describe('WalletService', () => {
       {
         id: walletId1,
         name: 'walletName',
-        logo_url: 'http://test.com/logo1.png',
         password: 'mockPassword',
         salt: 'mockSalt',
+        logo_url: 'http://test.com/logo1.png',
         created_at: new Date(),
       },
       {
         id: walletId2,
         name: 'walletName2',
-        logo_url: 'http://test.com/logo2.png',
         password: 'mockPassword2',
         salt: 'mockSalt2',
+        logo_url: 'http://test.com/logo2.png',
+        created_at: new Date(),
+      },
+    ];
+
+    const resultWithTokens = [
+      {
+        id: walletId1,
+        name: 'walletName',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        logo_url: 'http://test.com/logo1.png',
+        tokens_in_wallet: 2,
+        created_at: new Date(),
+      },
+      {
+        id: walletId2,
+        name: 'walletName2',
+        password: 'mockPassword2',
+        salt: 'mockSalt2',
+        logo_url: 'http://test.com/logo2.png',
+        tokens_in_wallet: 4,
         created_at: new Date(),
       },
     ];
@@ -390,7 +418,10 @@ describe('WalletService', () => {
           wallets: resultWithoutTokens,
           count,
         });
-      countTokenByWalletSpy = jest.spyOn(tokenService, 'countTokenByWallet');
+      countTokenByWalletSpy = jest
+        .spyOn(tokenService, 'countTokenByWallet')
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(4);
     });
 
     it('should get all wallets without getTokenCount', async () => {
@@ -425,6 +456,200 @@ describe('WalletService', () => {
       expect(countTokenByWalletSpy).not.toHaveBeenCalled();
     });
 
-    it('should get all wallets with getTokenCount', async () => {});
+    it('should get all wallets with getTokenCount', async () => {
+      const id = uuid.v4();
+
+      const allWallets = await walletService.getAllWallets(
+        id,
+        limitOptions,
+        'name',
+        'created_at',
+        'ASC',
+        undefined,
+        undefined,
+        true, // getTokenCount = true
+        true, // getWalletCount = true
+      );
+
+      expect(getAllWalletsSpy).toHaveBeenCalledTimes(1);
+      expect(getAllWalletsSpy).toHaveBeenCalledWith(
+        id,
+        limitOptions,
+        'name',
+        'created_at',
+        'ASC',
+        undefined,
+        undefined,
+        true, // getWalletCount = true
+      );
+
+      expect(countTokenByWalletSpy).toHaveBeenCalledTimes(2);
+      expect(countTokenByWalletSpy).toHaveBeenCalledWith(walletId1);
+      expect(countTokenByWalletSpy).toHaveBeenCalledWith(walletId2);
+
+      expect(allWallets).toEqual({
+        wallets: resultWithTokens,
+        count,
+      });
+    });
+  });
+
+  describe('updateWallet', () => {
+    let hasControlOverByNameSpy;
+    let updateWalletSpy;
+    let s3UploadSpy;
+    let addWalletToMapConfigSpy;
+
+    const walletIdToUpdate = uuid.v4();
+    const loggedInWalletId = uuid.v4();
+
+    const updateWalletDto: UpdateWalletDto = {
+      wallet_id: walletIdToUpdate,
+      display_name: 'Updated Wallet Name',
+      add_to_web_map: false,
+      logo_image: undefined,
+    };
+
+    const mockWallet: Wallet = {
+      id: walletIdToUpdate,
+      name: 'Mock Wallet Name',
+      logo_url: 'http://test.com/mock-logo.png',
+      password: 'mockPassword',
+      salt: 'mockSalt',
+      created_at: new Date(),
+    };
+
+    const updatedWallet = {
+      id: walletIdToUpdate,
+      name: 'Updated Wallet Name',
+      logo_url: 'http://test.com/logo.png',
+    };
+
+    beforeEach(() => {
+      hasControlOverByNameSpy = jest
+        .spyOn(walletService, 'hasControlOverByName')
+        .mockResolvedValue(mockWallet);
+      updateWalletSpy = jest
+        .spyOn(walletRepository, 'updateWallet')
+        .mockResolvedValue(updatedWallet as Wallet);
+      s3UploadSpy = jest
+        .spyOn(s3Service, 'upload')
+        .mockResolvedValue('http://test.com/logo.png');
+      addWalletToMapConfigSpy = jest
+        .spyOn(walletService, 'addWalletToMapConfig')
+        .mockResolvedValue(undefined);
+    });
+
+    it('should update the wallet successfully without uploading a logo', async () => {
+      const result = await walletService.updateWallet(
+        updateWalletDto,
+        loggedInWalletId,
+      );
+      expect(hasControlOverByNameSpy).toHaveBeenCalledTimes(1);
+      expect(hasControlOverByNameSpy).toHaveBeenCalledWith(
+        loggedInWalletId,
+        walletIdToUpdate,
+      );
+
+      expect(updateWalletSpy).toHaveBeenCalledTimes(1);
+      expect(updateWalletSpy).toHaveBeenCalledWith({
+        id: walletIdToUpdate,
+        name: 'Updated Wallet Name',
+        logo_url: undefined,
+      });
+
+      expect(s3UploadSpy).not.toHaveBeenCalled();
+      expect(addWalletToMapConfigSpy).not.toHaveBeenCalled();
+      expect(result).toEqual(updatedWallet);
+    });
+
+    it('should update the wallet and upload the logo image', async () => {
+      const updateWalletDtoWithLogo = {
+        ...updateWalletDto,
+        logo_image: {
+          buffer: Buffer.from('some_image_data'),
+          mimetype: 'image/png',
+        },
+      };
+
+      const result = await walletService.updateWallet(
+        updateWalletDtoWithLogo,
+        loggedInWalletId,
+      );
+
+      expect(hasControlOverByNameSpy).toHaveBeenCalledTimes(1);
+      expect(hasControlOverByNameSpy).toHaveBeenCalledWith(
+        loggedInWalletId,
+        walletIdToUpdate,
+      );
+
+      expect(s3UploadSpy).toHaveBeenCalledTimes(1);
+      expect(s3UploadSpy).toHaveBeenCalledWith(
+        updateWalletDtoWithLogo.logo_image.buffer,
+        expect.stringContaining(walletIdToUpdate),
+        'image/png',
+      );
+
+      expect(updateWalletSpy).toHaveBeenCalledTimes(1);
+      expect(updateWalletSpy).toHaveBeenCalledWith({
+        id: walletIdToUpdate,
+        name: 'Updated Wallet Name',
+        logo_url: 'http://test.com/logo.png',
+      });
+
+      expect(addWalletToMapConfigSpy).not.toHaveBeenCalled();
+      expect(result).toEqual(updatedWallet);
+    });
+
+    it('should throw an error if the logged-in wallet does not have control', async () => {
+      hasControlOverByNameSpy.mockResolvedValueOnce(false);
+
+      await expect(
+        walletService.updateWallet(updateWalletDto, loggedInWalletId),
+      ).rejects.toThrow('You do not have permission to update this wallet');
+
+      expect(hasControlOverByNameSpy).toHaveBeenCalledTimes(1);
+      expect(hasControlOverByNameSpy).toHaveBeenCalledWith(
+        loggedInWalletId,
+        walletIdToUpdate,
+      );
+
+      expect(updateWalletSpy).not.toHaveBeenCalled();
+      expect(s3UploadSpy).not.toHaveBeenCalled();
+      expect(addWalletToMapConfigSpy).not.toHaveBeenCalled();
+    });
+
+    it('should update the wallet and add it to the map config if add_to_web_map is true', async () => {
+      const updateWalletDtoWithMapConfig = {
+        ...updateWalletDto,
+        add_to_web_map: true,
+      };
+
+      const result = await walletService.updateWallet(
+        updateWalletDtoWithMapConfig,
+        loggedInWalletId,
+      );
+
+      expect(hasControlOverByNameSpy).toHaveBeenCalledTimes(1);
+      expect(hasControlOverByNameSpy).toHaveBeenCalledWith(
+        loggedInWalletId,
+        walletIdToUpdate,
+      );
+
+      expect(updateWalletSpy).toHaveBeenCalledTimes(1);
+      expect(updateWalletSpy).toHaveBeenCalledWith({
+        id: walletIdToUpdate,
+        name: 'Updated Wallet Name',
+        logo_url: undefined,
+      });
+
+      expect(addWalletToMapConfigSpy).toHaveBeenCalledTimes(1);
+      expect(addWalletToMapConfigSpy).toHaveBeenCalledWith({
+        walletId: walletIdToUpdate,
+        walletLogoUrl: undefined,
+      });
+
+      expect(result).toEqual(updatedWallet);
+    });
   });
 });

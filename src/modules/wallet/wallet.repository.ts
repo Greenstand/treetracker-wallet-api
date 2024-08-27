@@ -45,11 +45,16 @@ export class WalletRepository extends BaseRepository<Wallet> {
       }
     }
 
-    // Create and save the new wallet
+    // create and save the new wallet
     const newWallet = await this.createEntity({
       name,
     });
     return newWallet;
+  }
+
+  async updateWallet(updateData: Partial<Wallet>): Promise<Wallet> {
+    await this.update({ id: updateData.id }, updateData);
+    return this.findOne({ where: { id: updateData.id } });
   }
 
   /*
