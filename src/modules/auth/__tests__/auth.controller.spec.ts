@@ -4,10 +4,25 @@ import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../../app/app.module';
 import { SeedService } from '../../seed/seed.service';
 import { ConfigModule } from '@nestjs/config';
+import { WalletRepository } from '../../wallet/wallet.repository';
+import { HashService } from '../hash.service';
 
 describe('Authentication', () => {
   let app: INestApplication;
   let seedService: SeedService;
+
+  const mockWalletRepository = {
+    getByName: jest.fn().mockResolvedValue({
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      name: 'walletA',
+      password: 'hashedPassword',
+      salt: 'randomSalt',
+    }),
+  };
+
+  const mockHashService = {
+    sha512: jest.fn().mockReturnValue('hashedPassword'),
+  };
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -17,7 +32,12 @@ describe('Authentication', () => {
           envFilePath: `.env.${process.env.NODE_ENV}`,
         }),
       ],
-    }).compile();
+    })
+      .overrideProvider(WalletRepository)
+      .useValue(mockWalletRepository)
+      .overrideProvider(HashService)
+      .useValue(mockHashService)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -44,5 +64,10 @@ describe('Authentication', () => {
       .expect(200);
 
     expect(response.body).toHaveProperty('token');
+    expect(mockWalletRepository.getByName).toHaveBeenCalledWith('walletA');
+    expect(mockHashService.sha512).toHaveBeenCalledWith(
+      'test1234',
+      'randomSalt',
+    );
   });
 });

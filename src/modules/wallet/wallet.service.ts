@@ -1,4 +1,11 @@
-import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  Logger,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WalletRepository } from './wallet.repository';
 import { validate as uuidValidate } from 'uuid';
@@ -16,6 +23,8 @@ import { TrustService } from '../trust/trust.service';
 import { S3Service } from '../../common/services/s3.service';
 import axios, { AxiosResponse } from 'axios';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
+import { TransferService } from '../transfer/transfer.service';
+import * as fs from 'fs/promises';
 
 interface FilterCondition {
   actor_wallet_id?: string;
@@ -34,6 +43,8 @@ export class WalletService {
     private trustService: TrustService,
     private tokenService: TokenService,
     private eventService: EventService,
+    @Inject(forwardRef(() => TransferService))
+    private transferService: TransferService,
     private s3Service: S3Service,
   ) {}
 
@@ -320,6 +331,66 @@ export class WalletService {
   // TODO
   async batchCreateWallet() {}
 
-  // TODO
-  async batchTransferWallet() {}
+  async batchTransferWallet(
+    sender_wallet: string,
+    token_transfer_amount_default: number,
+    wallet_id: string,
+    csvJson: {
+      wallet_name: string;
+      token_transfer_amount_overwrite?: number;
+    }[],
+    filePath: string,
+  ): Promise<{ message: string }> {
+    try {
+      const senderWallet = await this.getByName(sender_wallet);
+      const recipientWallets: { amount: number; walletDetails: any }[] = [];
+      let totalAmountToTransfer = 0;
+
+      for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
+        const amount =
+          token_transfer_amount_overwrite || token_transfer_amount_default;
+        if (amount && !sender_wallet) {
+          throw new HttpException(
+            'sender_wallet is required for transfer.',
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+        if (amount) {
+          totalAmountToTransfer += +amount;
+        }
+        const walletDetails = await this.getByName(wallet_name);
+        recipientWallets.push({ amount, walletDetails });
+      }
+
+      const tokenCount = await this.tokenService.countTokenByWallet(
+        senderWallet.id,
+      );
+      if (totalAmountToTransfer > tokenCount) {
+        throw new HttpException(
+          'sender does not have enough tokens.',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+
+      for (const { walletDetails, amount } of recipientWallets) {
+        if (amount) {
+          await this.transferService.transferBundle(
+            wallet_id,
+            senderWallet,
+            walletDetails,
+            amount,
+            false,
+          );
+        }
+      }
+      await fs.unlink(filePath);
+
+      return {
+        message: 'Batch transfer successful',
+      };
+    } catch (e) {
+      await fs.unlink(filePath);
+      throw e;
+    }
+  }
 }

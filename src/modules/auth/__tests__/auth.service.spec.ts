@@ -17,6 +17,9 @@ import { TokenService } from '../../token/token.service';
 import { TrustRepository } from '../../trust/trust.repository';
 import { TokenRepository } from '../../token/token.repository';
 import { S3Service } from '../../../common/services/s3.service';
+import { TransferService } from '../../transfer/transfer.service';
+import { TransferRepository } from '../../transfer/transfer.repository';
+import { TransactionRepository } from '../../transaction/transaction.repository';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -44,22 +47,45 @@ describe('AuthService', () => {
         EventService,
         TrustService,
         TokenService,
+        TransferService,
         S3Service,
         {
           provide: getRepositoryToken(WalletRepository),
-          useValue: {},
+          useValue: {
+            getByName: jest.fn(),
+          },
         },
         {
           provide: getRepositoryToken(EventRepository),
-          useValue: {},
+          useValue: {
+            logEvent: jest.fn(),
+          },
         },
         {
           provide: getRepositoryToken(TrustRepository),
-          useValue: {},
+          useValue: {
+            getByFilter: jest.fn(),
+          },
         },
         {
           provide: getRepositoryToken(TokenRepository),
-          useValue: {},
+          useValue: {
+            countByFilter: jest.fn(),
+            countNotClaimedTokenByWallet: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(TransferRepository),
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(TransactionRepository),
+          useValue: {
+            batchCreate: jest.fn(),
+          },
         },
         {
           provide: ConfigService,

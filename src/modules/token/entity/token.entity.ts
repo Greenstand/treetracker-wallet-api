@@ -8,14 +8,14 @@ import {
 
 @Entity('token')
 export class Token {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   capture_id: number;
 
   @Column()
-  wallet_id: number;
+  wallet_id: string;
 
   @Column({ default: false })
   transfer_pending: boolean;
@@ -30,5 +30,5 @@ export class Token {
   updated_at: Date;
 
   @Column({ nullable: true })
-  claim: string;
+  claim: boolean;
 }

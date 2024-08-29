@@ -18,6 +18,9 @@ import { TokenRepository } from '../../token/token.repository';
 import { EVENT_TYPES } from '../../event/event-enum';
 import { S3Service } from '../../../common/services/s3.service';
 import { UpdateWalletDto } from '../dto/update-wallet.dto';
+import { TransferService } from '../../transfer/transfer.service';
+import { TransferRepository } from '../../transfer/transfer.repository';
+import { TransactionRepository } from '../../transaction/transaction.repository';
 
 describe('WalletService', () => {
   let walletService: WalletService;
@@ -34,6 +37,7 @@ describe('WalletService', () => {
         TokenService,
         EventService,
         TrustService,
+        TransferService,
         S3Service,
         {
           provide: getRepositoryToken(WalletRepository),
@@ -62,6 +66,14 @@ describe('WalletService', () => {
           useValue: {
             getByFilter: jest.fn(),
           },
+        },
+        {
+          provide: getRepositoryToken(TransferRepository),
+          useValue: {},
+        },
+        {
+          provide: getRepositoryToken(TransactionRepository),
+          useValue: {},
         },
       ],
     }).compile();

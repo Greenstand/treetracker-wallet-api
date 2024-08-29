@@ -15,6 +15,10 @@ import { Trust } from '../trust/entity/trust.entity';
 import { TrustModule } from '../trust/trust.module';
 import { TokenModule } from '../token/token.module';
 import { Token } from '../token/entity/token.entity';
+import { TransferModule } from '../transfer/transfer.module';
+import { TransactionModule } from '../transaction/transaction.module';
+import { Transfer } from '../transfer/entity/transfer.entity';
+import { Transaction } from '../transaction/entity/transaction.entity';
 
 @Module({
   imports: [
@@ -25,7 +29,7 @@ import { Token } from '../token/entity/token.entity';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      entities: [ApiKey, Wallet, Event, Token, Trust],
+      entities: [ApiKey, Wallet, Event, Token, Trust, Transfer, Transaction],
       synchronize: false,
     }),
     TypeOrmModule.forFeature([ApiKey, Wallet]), // ensure the entities are added here for SeedService
@@ -34,6 +38,8 @@ import { Token } from '../token/entity/token.entity';
     EventModule,
     TokenModule,
     TrustModule,
+    TransferModule,
+    TransactionModule,
   ],
   controllers: [AppController],
   providers: [AppService, SeedService],

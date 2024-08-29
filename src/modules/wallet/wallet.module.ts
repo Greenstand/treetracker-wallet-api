@@ -1,21 +1,22 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WalletService } from './wallet.service';
 import { WalletRepository } from './wallet.repository';
-import { Wallet } from './entity/wallet.entity';
 import { TokenModule } from '../token/token.module';
 import { TrustModule } from '../trust/trust.module';
 import { EventModule } from '../event/event.module';
 import { S3Service } from '../../common/services/s3.service';
+import { TransferModule } from '../transfer/transfer.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Wallet]),
+    TypeOrmModule.forFeature([WalletRepository]),
+    forwardRef(() => TransferModule),
     EventModule,
     TokenModule,
     TrustModule,
   ],
-  providers: [WalletService, WalletRepository, S3Service],
-  exports: [WalletService, WalletRepository],
+  providers: [WalletService, S3Service],
+  exports: [WalletService],
 })
 export class WalletModule {}

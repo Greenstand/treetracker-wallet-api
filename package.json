@@ -53,6 +53,7 @@
     "db-migrate-pg": "^1.5.2",
     "dotenv": "^16.4.5",
     "generate-password": "^1.7.1",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.0.1",
     "loglevel": "^1.9.1",

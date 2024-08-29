@@ -8,4 +8,14 @@ export class TokenRepository extends BaseRepository<Token> {
   constructor(dataSource: DataSource) {
     super(Token, dataSource);
   }
+
+  async countNotClaimedTokenByWallet(walletId: string): Promise<number> {
+    const result = await this.count({
+      where: {
+        wallet_id: walletId,
+        claim: false,
+      },
+    });
+    return result;
+  }
 }
