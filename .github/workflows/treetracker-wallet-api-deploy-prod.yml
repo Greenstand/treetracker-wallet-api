@@ -18,7 +18,7 @@ jobs:
     if: |
       github.repository == 'Greenstand/treetracker-wallet-api'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.git-tag }}
       - name: get-npm-version

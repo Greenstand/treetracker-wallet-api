@@ -1,3 +1,50 @@
+## [1.38.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.4...v1.38.5) (2024-09-03)
+
+
+### Bug Fixes
+
+* github actions ([879ccc6](https://github.com/Greenstand/treetracker-wallet-api/commit/879ccc65bf52553ca639afafe9eb7adbabdb9f17))
+
+## [1.38.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.3...v1.38.4) (2024-06-05)
+
+
+### Bug Fixes
+
+* get trust relationships issue ([585b2be](https://github.com/Greenstand/treetracker-wallet-api/commit/585b2be0c298f0532768e96e7fdb1a5f3c29ecc0))
+* tests ([dfd41c8](https://github.com/Greenstand/treetracker-wallet-api/commit/dfd41c885ed91016f0324e805501bc1220d05028))
+* tests ([c3ac5fd](https://github.com/Greenstand/treetracker-wallet-api/commit/c3ac5fda54bd862c467e1d6efe897131de375671))
+* unit test ([2901ee9](https://github.com/Greenstand/treetracker-wallet-api/commit/2901ee957664f937ffcbe418e510680a6eb4cf6b))
+
+## [1.38.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.2...v1.38.3) (2024-05-20)
+
+
+### Bug Fixes
+
+* add delete endpoint to cors ([1784882](https://github.com/Greenstand/treetracker-wallet-api/commit/178488236f850862ee1f249e5d4791e64344ce05))
+* lock files ([17d87b0](https://github.com/Greenstand/treetracker-wallet-api/commit/17d87b0bd057f7043e5a86260cf062c6c736fb96))
+
+## [1.38.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.1...v1.38.2) (2024-05-20)
+
+
+### Bug Fixes
+
+* subwallets trust relationship validation ([f87c84a](https://github.com/Greenstand/treetracker-wallet-api/commit/f87c84ab4f13e6cd254aac458654dbcabd665f73))
+
+## [1.38.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.0...v1.38.1) (2024-05-07)
+
+
+### Bug Fixes
+
+* fix count in get trust relationships ([b347e2f](https://github.com/Greenstand/treetracker-wallet-api/commit/b347e2f72a825bec6231adccf6229f924d387f82))
+* install missing dependences ([b7c6e0d](https://github.com/Greenstand/treetracker-wallet-api/commit/b7c6e0dc41f2ea5d30e3ed30978f8eee8979dcb1))
+* resolve merge conflicts ([e5e0766](https://github.com/Greenstand/treetracker-wallet-api/commit/e5e07664b76b923f8c0aac2ef503bbb4f8e2dd99))
+* revert package version change ([580e352](https://github.com/Greenstand/treetracker-wallet-api/commit/580e35212586cf8580457ec5f3e2cc48128f5cb1))
+
+
+### Reverts
+
+* Revert "fix: revert dependences changes" ([80989f0](https://github.com/Greenstand/treetracker-wallet-api/commit/80989f02e64f1ff14b8079649574d0402e9a21aa))
+
 # [1.38.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.37.0...v1.38.0) (2024-04-29)
 
 
