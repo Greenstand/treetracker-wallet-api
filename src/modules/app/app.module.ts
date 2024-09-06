@@ -20,12 +20,6 @@ import { SeedService } from '../seed/seed.service';
     }),
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
-        // Log the schema being used
-        console.log(
-          'Database schema:',
-          process.env.DATABASE_SCHEMA || 'defaulting to public schema',
-        );
-
         return {
           type: 'postgres',
           url: process.env.DATABASE_URL,
