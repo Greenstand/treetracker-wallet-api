@@ -18,12 +18,22 @@ import { SeedService } from '../seed/seed.service';
       envFilePath: `.env.${process.env.NODE_ENV}`,
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      schema: process.env.DATABASE_SCHEMA || undefined,
-      entities: [ApiKey, Wallet, Event],
-      synchronize: true, // set to false in production
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => {
+        // Log the schema being used
+        console.log(
+          'Database schema:',
+          process.env.DATABASE_SCHEMA || 'defaulting to public schema',
+        );
+
+        return {
+          type: 'postgres',
+          url: process.env.DATABASE_URL,
+          schema: process.env.DATABASE_SCHEMA || undefined,
+          entities: [ApiKey, Wallet, Event],
+          synchronize: true, // Disable in production
+        };
+      },
     }),
     TypeOrmModule.forFeature([ApiKey, Wallet]), // ensure the entities are added here for SeedService
     AuthModule,
