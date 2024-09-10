@@ -1,3 +1,28 @@
+# [1.39.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.5...v1.39.0) (2024-09-10)
+
+
+### Bug Fixes
+
+* fix commit error ([ed7557b](https://github.com/Greenstand/treetracker-wallet-api/commit/ed7557b226adb5c350b49cdc011a49bc2e6e13b2))
+* fix cors in delete in the production ([32294f9](https://github.com/Greenstand/treetracker-wallet-api/commit/32294f9e8d08e4306889e36e517003542cbe60b3))
+* fix get trusts for managed wallets ([3eac2df](https://github.com/Greenstand/treetracker-wallet-api/commit/3eac2df7ece9d1391d14e8264e4af3ef84972590))
+* fix merge conflicts ([0cd39dd](https://github.com/Greenstand/treetracker-wallet-api/commit/0cd39dda9a903ebc411777e7eb42b6249f24034d))
+* fix tests ([01b99aa](https://github.com/Greenstand/treetracker-wallet-api/commit/01b99aa712be7bdbc7abf0485fc35a3f8cea5830))
+* fix tests ([5ebf6eb](https://github.com/Greenstand/treetracker-wallet-api/commit/5ebf6ebea0830400b4ade855788142b88056ecb4))
+* fix tests ([82bfd74](https://github.com/Greenstand/treetracker-wallet-api/commit/82bfd745c71ce436d483456639b384f451da0a0c))
+* fix tests ([bc67ab4](https://github.com/Greenstand/treetracker-wallet-api/commit/bc67ab44715ccd7278920833a8772c141733dcd7))
+* fix tests by removing redundant trust count logic ([d015018](https://github.com/Greenstand/treetracker-wallet-api/commit/d0150189fc9e837369af5c36822fa4254b0381df))
+* fix typo ([102e231](https://github.com/Greenstand/treetracker-wallet-api/commit/102e23119eb46dc61f494497e553f584afca0a8b))
+* fix typos ([9683518](https://github.com/Greenstand/treetracker-wallet-api/commit/9683518dfaae96a687dc6a7251913dddda48cba3))
+* fix typos ([e394fa0](https://github.com/Greenstand/treetracker-wallet-api/commit/e394fa0a679ec4a4c6109512ace2656b5f076940))
+* remove unwanted logic ([55e815b](https://github.com/Greenstand/treetracker-wallet-api/commit/55e815b49ac2993b5b5a38ab5e654d62e841851e))
+* resolve conflicts ([81fc709](https://github.com/Greenstand/treetracker-wallet-api/commit/81fc7098c9700ff5bd2106c05bc6cfd6a18fcd65))
+
+
+### Features
+
+* implement pagination and sort in get /wallet/trusts ([f1eb0b4](https://github.com/Greenstand/treetracker-wallet-api/commit/f1eb0b468d276e2d68614cb2b8d4f514c290825b))
+
 ## [1.38.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.4...v1.38.5) (2024-09-03)
 
 
