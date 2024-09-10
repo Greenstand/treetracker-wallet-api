@@ -45,6 +45,7 @@ class Trust {
    */
   async getTrustRelationships({
     walletId,
+    managedWallets=[],
     state,
     type,
     request_type,
@@ -53,21 +54,37 @@ class Trust {
     sort_by,
     order,
   }) {
-    const filter = Trust.getTrustRelationshipFilter({
-      walletId,
-      state,
-      type,
-      request_type,
+    const managedWalletIds = managedWallets.map(wallet => wallet.id);
+    const orConditions = [
+      { actor_wallet_id: walletId },
+      { target_wallet_id: walletId },
+      { originator_wallet_id: walletId },
+    ];
+  
+    managedWalletIds.forEach((managedWalletId) => {
+      orConditions.push({ actor_wallet_id: managedWalletId });
+      orConditions.push({ target_wallet_id: managedWalletId });
+      orConditions.push({ originator_wallet_id: managedWalletId });
     });
-
-    return this._trustRepository.getByFilter(filter, {
-      offset,
-      limit,
-      sort_by,
-      order,
-    });
+    const filter = {
+      and: [
+        {
+          or: orConditions,
+        },
+      ],
+    };
+    if (state) {
+      filter.and.push({ state });
+    }
+    if (type) {
+      filter.and.push({ type });
+    }
+    if (request_type) {
+      filter.and.push({ request_type });
+    }
+    return this._trustRepository.getByFilter(filter, { offset, limit, sort_by, order });
   }
-
+  
   async getTrustRelationshipsCount({ walletId, state, type, request_type }) {
     const filter = Trust.getTrustRelationshipFilter({
       walletId,
@@ -194,7 +211,10 @@ class Trust {
 
   // check if I (current wallet) can add a new trust like this
   async checkDuplicateRequest({ walletId, trustRelationship }) {
-    const trustRelationships = await this.getTrustRelationships({ walletId });
+    let trustRelationships = await this.getTrustRelationships({ walletId });
+       if (trustRelationships.result) {
+        trustRelationships = trustRelationships.result;
+    }
     if (
       trustRelationship.type ===
         TrustRelationshipEnums.ENTITY_TRUST_TYPE.send ||
@@ -236,9 +256,12 @@ class Trust {
   }
 
   async checkManageCircle({ walletId, trustRelationship }) {
-    const trustRelationshipTrusted = await this.getTrustRelationshipsTrusted(
+    let trustRelationshipTrusted = await this.getTrustRelationshipsTrusted(
       walletId,
     );
+    if (trustRelationshipTrusted.result) {
+      trustRelationshipTrusted = trustRelationshipTrusted.result;
+    }
     // just manage type of trust relationship
     if (
       trustRelationship.type === TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage
@@ -319,7 +342,10 @@ class Trust {
     const allTrustRelationships = [];
     await Promise.all(
       allWallets.map(async (wallet) => {
-        const list = await this.getTrustRelationships({ walletId: wallet.id });
+        let list = await this.getTrustRelationships({ walletId: wallet.id });
+        if (list.result) {
+          list = list.result;
+        }
         allTrustRelationships.push(...list);
       }),
     );
@@ -348,9 +374,12 @@ class Trust {
    * Accept a trust relationship request
    */
   async acceptTrustRequestSentToMe({ trustRelationshipId, walletId }) {
-    const trustRelationships = await this.getTrustRelationshipsRequestedToMe(
+    let trustRelationships = await this.getTrustRelationshipsRequestedToMe(
       walletId,
     );
+    if (trustRelationships.result) {
+      trustRelationships = trustRelationships.result;
+    }
     const trustRelationship = trustRelationships.reduce((a, c) => {
       if (c.id === trustRelationshipId) {
         return c;
@@ -376,9 +405,12 @@ class Trust {
    * Decline a trust relationship request
    */
   async declineTrustRequestSentToMe({ walletId, trustRelationshipId }) {
-    const trustRelationships = await this.getTrustRelationshipsRequestedToMe(
+    let trustRelationships = await this.getTrustRelationshipsRequestedToMe(
       walletId,
     );
+    if (trustRelationships.result) {
+      trustRelationships = trustRelationships.result;
+    }
     const trustRelationship = trustRelationships.reduce((a, c) => {
       if (c.id === trustRelationshipId) {
         return c;
@@ -406,7 +438,7 @@ class Trust {
     const trustRelationships = await this._trustRepository.getByFilter({
       'wallet_trust.id': trustRelationshipId,
     });
-    const [trustRelationship] = trustRelationships;
+    const [trustRelationship] = trustRelationships.result;
 
     if (!trustRelationship) {
       throw new HttpError(
@@ -440,9 +472,12 @@ class Trust {
       ),
     );
 
-    const trustRelationships = await this.getTrustRelationshipsTrusted(
+    let trustRelationships = await this.getTrustRelationshipsTrusted(
       walletLoginId,
     );
+    if (trustRelationships.result) {
+      trustRelationships = trustRelationships.result;
+    }
     // check if the trust exist
     if (
       trustRelationships.some((trustRelationship) => {
