@@ -27,7 +27,7 @@ describe('Authentication', () => {
     // clear and seed the database before running the tests
     await seedService.clear();
     await seedService.seed();
-  });
+  }, 30000);
 
   afterAll(async () => {
     await app.close();

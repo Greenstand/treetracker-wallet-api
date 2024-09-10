@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({ schema: 'wallet', name: 'api_key' })
+@Entity({ name: 'api_key' })
 export class ApiKey {
   @PrimaryGeneratedColumn('uuid')
   id: string;

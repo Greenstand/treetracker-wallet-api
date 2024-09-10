@@ -6,8 +6,7 @@ name: Wallet API CI for New Pull Requests
 on:
   pull_request:
     branches:
-      - master
-      - 'v1.10'
+      - typescript-branch
 
 env:
   project-directory: ./
@@ -16,30 +15,33 @@ jobs:
   build:
     name: Run all tests
     runs-on: ubuntu-latest
-    container: node:10.18-jessie
+    container:
+      image: node:18-buster
 
-    # Service containers to run with `container-job`
     services:
-      # Label used to access the service container
       postgres:
-        # Docker Hub image
         image: postgres
-        # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    env:
+      project-directory: ./
+      DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
+      CI: true
+      PUBLIC_KEY: "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAraUisitXSviWFBIMNgBsNny12Qy0Me2OUpmpozWHh3JUFCjm9yxFNHpvPl60Wq+rspI+JxNMmvqsm/qCuav8hd7POyW/t0drflwtfEXSYlmMqlVo564/oJ996I1VaHMkxFAMNitf8RX7TbK3rrijvcFzd+dfmOfT2qDpcfN5rtn4F7XL//uNJfhh9TdDuwWXtL2zsxlLivelgR/r2JINJOm1636l0meo9n7r8ST59GWI3bGf7i+x6/+mKUQA8HQFXSdJutvxoqnBrsfdRYb3LI8V8DVCnVCv01N1Vca3qufL1zkkEL4SLnS6s1uu1S8BEq31ek6TiSqkhX+ZNx9tLE2Q1XKcby/xZBbGLi9AXR8sRDtvhy3xg45j02+9ffj2jjIUn/CTfOgYFC20/Djjy7Vrv0MVLqXoZee6Ikw0D3qZt/jTWh8cxfcsT1KmPYw6NkMcFS92wZnnn+AhaPlFVKywF5hOKnkw/C9QntFlt9g73oCaRwDhzc1kNmaVi3w2cKVWs/lRyVaQfMKeZh1ZY0lS3Crl96JRWGWST6waQlqrmVnhaLHv/GBlmUWcGYekz9bma1nLYlObBpljDUrTYL6y+pt7GEOonJhGtM53YfanDoz1YPQWPqk2hdU9Ps/sUuZjLLAQYQ24E8JRVtombYCVHcIgI1KappRBZx/okLUCAwEAAQ==\n-----END PUBLIC KEY-----"
+      PRIVATE_KEY: "-----BEGIN RSA PRIVATE KEY-----\n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\n-----END RSA PRIVATE KEY-----"
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
+          node-version: '18.x'
       - name: npm clean install
         run: npm ci
         working-directory: ${{ env.project-directory }}
@@ -51,12 +53,7 @@ jobs:
       - name: run db-migrate
         run: npm run db-migrate-ci
         working-directory: ${{ env.project-directory }}
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
 
       - name: run test
-        run: npm run test
+        run: npm test
         working-directory: ${{ env.project-directory }}
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
-          CI: true
