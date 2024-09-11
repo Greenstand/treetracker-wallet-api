@@ -26,11 +26,24 @@ import { Transaction } from '../transaction/entity/transaction.entity';
       envFilePath: `.env.${process.env.NODE_ENV}`,
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      entities: [ApiKey, Wallet, Event, Token, Trust, Transfer, Transaction],
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => {
+        return {
+          type: 'postgres',
+          url: process.env.DATABASE_URL,
+          schema: process.env.DATABASE_SCHEMA || undefined,
+          entities: [
+            ApiKey,
+            Wallet,
+            Event,
+            Token,
+            Trust,
+            Transfer,
+            Transaction,
+          ],
+          synchronize: true,
+        };
+      },
     }),
     TypeOrmModule.forFeature([ApiKey, Wallet]), // ensure the entities are added here for SeedService
     AuthModule,
