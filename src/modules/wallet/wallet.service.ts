@@ -329,7 +329,7 @@ export class WalletService {
   }
 
   // TODO
-  async batchCreateWallet() {}
+  // async batchCreateWallet() {}
 
   async batchTransferWallet(
     sender_wallet: string,

@@ -74,7 +74,9 @@ export class SeedService {
 
   async clear() {
     this.logger.debug('clearing tables');
-    await this.apiKeyRepository.clear();
-    await this.walletRepository.clear();
+
+    // delete all records from wallet and api_key tables
+    await this.walletRepository.delete({});
+    await this.apiKeyRepository.delete({});
   }
 }

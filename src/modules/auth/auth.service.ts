@@ -35,7 +35,6 @@ export class AuthService {
         name: walletObject.name,
       });
 
-      // todo: event not logged into db yet. investigating
       await this.eventService.logEvent({
         wallet_id: walletObject.id,
         type: EVENT_TYPES.login,
