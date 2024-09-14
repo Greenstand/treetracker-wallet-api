@@ -3,6 +3,8 @@ const Session = require('../infra/database/Session');
 const WalletService = require('./WalletService');
 const EventService = require('./EventService');
 const EventEnums = require('../utils/event-enum');
+const HttpError = require('../utils/HttpError');
+const Wallet = require('../models/Wallet');
 
 class TrustService {
   constructor() {
@@ -13,46 +15,84 @@ class TrustService {
 
   async getTrustRelationships(
     loggedInWalletId,
+    managedWallets,
     { walletId, state, type, request_type, offset, limit,sort_by, order },
   ) {
     // check if wallet exists first
     // throws error if no wallet matching walletId exists
     const walletService = new WalletService();
-    await walletService.getWallet(loggedInWalletId, walletId);
+    const hasControl = await walletService.hasControlOver(
+      loggedInWalletId,
+      walletId,
+    );
+
+    if (!hasControl) {
+      throw new HttpError(
+        422,
+        'You do not have permission to update this wallet',
+      );
+    }
 
     return this._trust.getTrustRelationships({
       walletId,
+      managedWallets,
       state,
       type,
       request_type,
       offset,
       limit,
       sort_by,
-      order
+      order,
     });
+
+    // const count = await this._trust.getTrustRelationshipsCount({
+    //   walletId,
+    //   state,
+    //   type,
+    //   request_type,
+    // });
+
+    // return { result, count };
   }
 
-  async getAllTrustRelationships({
-    walletId,
-    state,
-    type,
-    request_type,
-    offset,
-    limit,
-    sort_by,
-    order,
-    
-  }) {
-    return this._trust.getAllTrustRelationships({
+  // limit and offset not feasible using the current implementation
+  // except if done manually or coming up with a single query
+  async getAllTrustRelationships({ walletId, state, type, request_type }) {
+    const walletModel = new Wallet(this._session);
+    const { wallets } = await walletModel.getAllWallets(
       walletId,
-      state,
-      type,
-      request_type,
-      offset,
-      limit,
-      sort_by,
-      order
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
+
+    const alltrustRelationships = [];
+    const managedWallets = [];
+    await Promise.all(
+      wallets.map(async (w) => {
+        const trustRelationships = await this.getTrustRelationships(walletId, managedWallets,{
+          walletId: w.id,
+          state,
+          type,
+          request_type,
+        });
+        alltrustRelationships.push(...trustRelationships.result);
+      }),
+    );
+
+    // remove possible duplicates
+    const ids = {};
+    const finalTrustRelationships = [];
+
+    alltrustRelationships.forEach((tr) => {
+      if (!ids[tr.id]) {
+        finalTrustRelationships.push(tr);
+        ids[tr.id] = 1;
+      }
     });
+
+    return finalTrustRelationships;
   }
 
   async createTrustRelationship({
