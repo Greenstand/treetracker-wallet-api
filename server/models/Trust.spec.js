@@ -251,6 +251,10 @@ describe('Trust Model', () => {
         originatorActorWallet.id,
         requesteeWallet.id,
       );
+      expect(hasControlStub.getCall(2)).calledWithExactly(
+        requesterWallet.id,
+        requesteeWallet.id,
+      );
       expect(checkDuplicateStub).not.called;
       expect(trustRepositoryStub.create).not.called;
     });
@@ -281,6 +285,45 @@ describe('Trust Model', () => {
       expect(hasControlStub.getCall(1)).calledWithExactly(
         originatorWallet.id,
         requesteeWallet.id,
+      );
+      expect(checkDuplicateStub).not.called;
+      expect(trustRepositoryStub.create).not.called;
+    });
+
+    it('should error out -- The requesting wallet is managed by the target wallet', async () => {
+      // originator has control over both actor and target
+      hasControlStub.onCall(0).resolves(true);
+      hasControlStub.onCall(1).resolves(true);
+      // actor does not have control over target
+      hasControlStub.onCall(2).resolves(false);
+
+      let error;
+      try {
+        await trustModel.requestTrustFromAWallet({
+          trustRequestType,
+          requesteeWallet: originatorWallet,
+          requesterWallet,
+          originatorWallet,
+        });
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(409);
+      expect(error.message).eql(
+        'The requesting wallet is managed by the target wallet',
+      );
+      expect(hasControlStub.getCall(0)).calledWithExactly(
+        originatorWallet.id,
+        requesterWallet.id,
+      );
+      expect(hasControlStub.getCall(1)).calledWithExactly(
+        originatorWallet.id,
+        originatorWallet.id,
+      );
+      expect(hasControlStub.getCall(2)).calledWithExactly(
+        requesterWallet.id,
+        originatorWallet.id,
       );
       expect(checkDuplicateStub).not.called;
       expect(trustRepositoryStub.create).not.called;

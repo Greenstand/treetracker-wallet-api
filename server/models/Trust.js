@@ -131,19 +131,19 @@ class Trust {
     //      targetWallet = requesterWallet;
     //    }
 
-    // check if the orginator can control the actor
-    const hasControlOverActor = await walletModel.hasControlOver(
+    // check if the originator can control the actor
+    const origHasControlOverActor = await walletModel.hasControlOver(
       originatorWallet.id,
       actorWallet.id,
     );
 
     // originating wallet has no permission to send request from actor wallet
-    if (!hasControlOverActor) {
+    if (!origHasControlOverActor) {
       throw new HttpError(403, 'Have no permission to deal with this actor');
     }
 
-    // check if originator can control the target
-    const hasControlOverTarget = await walletModel.hasControlOver(
+    // check if the originator can control the target
+    const origHasControlOverTarget = await walletModel.hasControlOver(
       originatorWallet.id,
       targetWallet.id,
     );
@@ -152,8 +152,8 @@ class Trust {
     if (
       originatorWallet.id !== actorWallet.id &&
       originatorWallet.id !== targetWallet.id &&
-      hasControlOverActor &&
-      hasControlOverTarget
+      origHasControlOverActor &&
+      origHasControlOverTarget
     ) {
       throw new HttpError(
         409,
@@ -161,11 +161,24 @@ class Trust {
       );
     }
 
+    // check if actor can control the target
+    const actorHasControlOverTarget = await walletModel.hasControlOver(
+      actorWallet.id,
+      targetWallet.id,
+    );
+
     // originating wallet doesn't need to send requests to a sub wallet it manages
-    if (hasControlOverTarget) {
+    if (actorHasControlOverTarget) {
       throw new HttpError(
         409,
         'The requesting wallet already manages the target wallet',
+      );
+    }
+
+    if (originatorWallet.id === targetWallet.id && origHasControlOverActor) {
+      throw new HttpError(
+        409,
+        'The requesting wallet is managed by the target wallet',
       );
     }
 
