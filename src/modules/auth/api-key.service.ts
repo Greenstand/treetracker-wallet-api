@@ -23,7 +23,7 @@ export class ApiKeyService {
       );
     }
 
-    // todo: add url back to apiKeyService.check()
+    // TODO: add url back to apiKeyService.check()
     // if (url.includes('batch-create-wallet')) {
     //   throw new UnauthorizedException(
     //     'Invalid API access, no permission to access this endpoint',

@@ -4,7 +4,7 @@ import { EventService } from '../event/event.service';
 import { JWTService } from './jwt.service';
 import { HashService } from './hash.service';
 import { ApiKeyService } from './api-key.service';
-import { AUTH_EVENTS } from '../event/event-enum';
+import { EVENT_TYPES } from '../event/event-enum';
 
 @Injectable()
 export class AuthService {
@@ -27,19 +27,17 @@ export class AuthService {
     if (!walletObject) {
       throw new UnauthorizedException('Invalid Credentials');
     }
-    const hash = this.hashService.sha512(password, walletObject.salt);
+    const hashedPassword = this.hashService.sha512(password, walletObject.salt);
 
-    if (hash === walletObject.password) {
+    if (hashedPassword === walletObject.password) {
       const token = this.jwtService.sign({
         id: walletObject.id,
         name: walletObject.name,
       });
 
-      // todo: event not logged into db yet. investigating
       await this.eventService.logEvent({
         wallet_id: walletObject.id,
-        type: AUTH_EVENTS.login,
-        payload: {},
+        type: EVENT_TYPES.login,
       });
 
       return token;
