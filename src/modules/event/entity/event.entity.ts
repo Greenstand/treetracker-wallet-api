@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { EVENT_TYPES } from '../event-enum';
 
-@Entity({ schema: 'wallet', name: 'wallet_event' })
+@Entity({ name: 'wallet_event' })
 export class Event {
   @PrimaryGeneratedColumn()
   id: number;

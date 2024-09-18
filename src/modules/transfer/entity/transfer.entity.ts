@@ -2,7 +2,7 @@ import { Wallet } from '../../wallet/entity/wallet.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TRANSFER_STATES } from '../transfer-enums';
 
-@Entity({ schema: 'wallet', name: 'transfer' })
+@Entity({ name: 'transfer' })
 export class Transfer {
   @PrimaryGeneratedColumn('uuid')
   id: string;
