@@ -30,6 +30,10 @@ describe('AuthService', () => {
   let apiKeyService: ApiKeyService;
 
   beforeEach(async () => {
+    // mock environment variables
+    process.env.S3_BUCKET = 'mock-bucket';
+    process.env.S3_REGION = 'mock-region';
+
     const dataSourceMock = {
       createEntityManager: jest.fn().mockReturnValue({
         findOne: jest.fn(),

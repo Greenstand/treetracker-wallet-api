@@ -31,6 +31,10 @@ describe('WalletService', () => {
   let walletRepository: WalletRepository;
 
   beforeEach(async () => {
+    // mock environment variables
+    process.env.S3_BUCKET = 'mock-bucket';
+    process.env.S3_REGION = 'mock-region';
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WalletService,
