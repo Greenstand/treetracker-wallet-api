@@ -381,7 +381,7 @@ describe('WalletService', () => {
 
     const walletId1 = uuid.v4();
     const walletId2 = uuid.v4();
-    const limitOptions = {
+    const paginationOptions = {
       limit: 10,
       offset: 0,
     };
@@ -445,7 +445,7 @@ describe('WalletService', () => {
 
       const allWallets = await walletService.getAllWallets(
         id,
-        limitOptions,
+        paginationOptions,
         'name',
         'created_at',
         'ASC',
@@ -458,7 +458,7 @@ describe('WalletService', () => {
       expect(getAllWalletsSpy).toHaveBeenCalledTimes(1);
       expect(getAllWalletsSpy).toHaveBeenCalledWith(
         id,
-        limitOptions,
+        paginationOptions,
         'name',
         'created_at',
         'ASC',
@@ -477,7 +477,7 @@ describe('WalletService', () => {
 
       const allWallets = await walletService.getAllWallets(
         id,
-        limitOptions,
+        paginationOptions,
         'name',
         'created_at',
         'ASC',
@@ -490,7 +490,7 @@ describe('WalletService', () => {
       expect(getAllWalletsSpy).toHaveBeenCalledTimes(1);
       expect(getAllWalletsSpy).toHaveBeenCalledWith(
         id,
-        limitOptions,
+        paginationOptions,
         'name',
         'created_at',
         'ASC',

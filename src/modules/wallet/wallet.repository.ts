@@ -5,7 +5,7 @@ import {
   ENTITY_TRUST_REQUEST_TYPE,
   ENTITY_TRUST_STATE_TYPE,
 } from '../trust/trust-enum';
-import { LimitOptions } from '../../common/interfaces/limit-options.interface';
+import { PaginationOptions } from '../../common/interfaces/pagination-options.interface';
 import { BaseRepository } from '../../common/repositories/base.repository';
 
 @Injectable()
@@ -62,7 +62,7 @@ export class WalletRepository extends BaseRepository<Wallet> {
   */
   async getAllWallets(
     id: string,
-    limitOptions: LimitOptions,
+    paginationOptions: PaginationOptions,
     name: string,
     sort_by: string,
     order: string,
@@ -144,12 +144,12 @@ export class WalletRepository extends BaseRepository<Wallet> {
 
     const countQuery = query.clone().select('COUNT(*)', 'count');
 
-    if (limitOptions?.limit) {
-      query = query.limit(limitOptions.limit);
+    if (paginationOptions?.limit) {
+      query = query.limit(paginationOptions.limit);
     }
 
-    if (limitOptions?.offset) {
-      query = query.offset(limitOptions.offset);
+    if (paginationOptions?.offset) {
+      query = query.offset(paginationOptions.offset);
     }
 
     const wallets = (await query.getRawMany()) || [];

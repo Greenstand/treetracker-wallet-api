@@ -152,7 +152,7 @@ export class WalletService {
 
   async getAllWallets(
     id: string,
-    limitOptions: any,
+    paginationOptions: any,
     name: string,
     sortBy: string,
     order: string,
@@ -163,7 +163,7 @@ export class WalletService {
   ): Promise<{ wallets: Wallet[]; count: number }> {
     const { wallets, count } = await this.walletRepository.getAllWallets(
       id,
-      limitOptions,
+      paginationOptions,
       name,
       sortBy,
       order,
