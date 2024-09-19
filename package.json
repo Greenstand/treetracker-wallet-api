@@ -58,7 +58,7 @@
     "knex": "^3.0.1",
     "loglevel": "^1.9.1",
     "nestjs-knex": "^2.0.0",
-    "pg": "^8.12.0",
+    "pg": "^8.13.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.20"
