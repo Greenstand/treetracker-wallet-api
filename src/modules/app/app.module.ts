@@ -41,7 +41,7 @@ import { Transaction } from '../transaction/entity/transaction.entity';
             Transfer,
             Transaction,
           ],
-          synchronize: true,
+          synchronize: false,
         };
       },
     }),

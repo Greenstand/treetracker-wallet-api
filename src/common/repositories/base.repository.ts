@@ -5,7 +5,7 @@ import {
   DeepPartial,
 } from 'typeorm';
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import { LimitOptions } from '../interfaces/limit-options.interface';
+import { PaginationOptions } from '../interfaces/pagination-options.interface';
 import * as Joi from 'joi';
 
 interface BaseEntity {
@@ -75,7 +75,7 @@ export class BaseRepository<
    */
   async getByFilter(
     filter: any,
-    limitOptions?: LimitOptions,
+    paginationOptions?: PaginationOptions,
   ): Promise<Entity[]> {
     let queryBuilder = this.createQueryBuilder('entity').where(
       (qb: SelectQueryBuilder<Entity>) => {
@@ -86,21 +86,21 @@ export class BaseRepository<
     let order: 'ASC' | 'DESC' = 'DESC';
     let column = 'entity.created_at'; // default sorting by creation date
 
-    if (limitOptions) {
-      if (limitOptions.order) {
-        order = limitOptions.order.toUpperCase() as 'ASC' | 'DESC';
+    if (paginationOptions) {
+      if (paginationOptions.order) {
+        order = paginationOptions.order.toUpperCase() as 'ASC' | 'DESC';
       }
 
-      if (limitOptions.sort_by) {
-        column = `entity.${limitOptions.sort_by}`;
+      if (paginationOptions.sort_by) {
+        column = `entity.${paginationOptions.sort_by}`;
       }
 
-      if (limitOptions.limit) {
-        queryBuilder = queryBuilder.limit(limitOptions.limit);
+      if (paginationOptions.limit) {
+        queryBuilder = queryBuilder.limit(paginationOptions.limit);
       }
 
-      if (limitOptions.offset) {
-        queryBuilder = queryBuilder.offset(limitOptions.offset);
+      if (paginationOptions.offset) {
+        queryBuilder = queryBuilder.offset(paginationOptions.offset);
       }
     }
 

@@ -12,8 +12,15 @@ export class S3Service {
   private readonly region: string;
 
   constructor() {
-    this.bucket = process.env.S3_BUCKET || 'bucket'; // TODO: confirm this
-    this.region = process.env.S3_REGION || 'us-west-1'; // TODO: confirm this
+    if (!process.env.S3_BUCKET) {
+      throw new Error('S3_BUCKET environment variable is not set');
+    }
+    if (!process.env.S3_REGION) {
+      throw new Error('S3_REGION environment variable is not set');
+    }
+
+    this.bucket = process.env.S3_BUCKET;
+    this.region = process.env.S3_REGION;
     this.s3Client = new S3Client({ region: this.region });
   }
 

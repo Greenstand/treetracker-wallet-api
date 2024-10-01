@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TrustRepository } from './trust.repository';
-import { LimitOptions } from '../../common/interfaces/limit-options.interface';
+import { PaginationOptions } from '../../common/interfaces/pagination-options.interface';
 import { Trust } from './entity/trust.entity';
 import { DeepPartial } from 'typeorm';
 import { Wallet } from '../wallet/entity/wallet.entity';
@@ -23,9 +23,9 @@ export class TrustService {
 
   async getByFilter(
     filter: any,
-    limitOptions?: LimitOptions,
+    paginationOptions?: PaginationOptions,
   ): Promise<Trust[]> {
-    return this.trustRepository.getByFilter(filter, limitOptions);
+    return this.trustRepository.getByFilter(filter, paginationOptions);
   }
 
   async createTrust(trustData: DeepPartial<Trust>): Promise<Trust> {

@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { ENTITY_TRUST_STATE_TYPE, ENTITY_TRUST_TYPE } from '../trust-enum';
 
-@Entity({ schema: 'wallet', name: 'wallet_trust' })
+@Entity({ name: 'wallet_trust' })
 export class Trust {
   @PrimaryGeneratedColumn('uuid')
   id: string;

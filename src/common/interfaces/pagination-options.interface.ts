@@ -1,4 +1,4 @@
-export interface LimitOptions {
+export interface PaginationOptions {
   limit?: number;
   offset?: number;
   sort_by?: string;

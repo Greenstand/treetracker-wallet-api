@@ -25,6 +25,10 @@ describe('Authentication', () => {
   };
 
   beforeAll(async () => {
+    // mock environment variables
+    process.env.S3_BUCKET = 'mock-bucket';
+    process.env.S3_REGION = 'mock-region';
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         AppModule,
