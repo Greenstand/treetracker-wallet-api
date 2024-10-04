@@ -1,11 +1,14 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const uuid = require('uuid');
+const fs = require('fs').promises;
 const WalletService = require('./WalletService');
 const Wallet = require('../models/Wallet');
 const Session = require('../infra/database/Session');
 const Token = require('../models/Token');
 const Event = require('../models/Event');
+const Transfer = require('../models/Transfer');
+const HttpError = require('../utils/HttpError');
 
 describe('WalletService', () => {
   let walletService;
@@ -298,4 +301,492 @@ describe('WalletService', () => {
       });
     });
   });
+
+  describe('batchCreateWallet', () => {
+    
+    let sessionBeginTransactionStub;
+    let sessionCommitTransactionStub;
+    let sessionRollbackTransactionStub;
+    let sessionIsTransactionInProgressStub;
+
+    let getByNameStub;
+    let createWalletStub;
+    let addWalletToMapConfigStub;
+    let transferBundleStub;
+
+    const loggedInWalletId = uuid.v4();
+    const wallet1Id = uuid.v4();
+    const wallet2Id = uuid.v4();
+
+    const mockSenderWallet = { 
+      id: loggedInWalletId, 
+      name: 'wallet' 
+    };
+
+    const mockFilePath = 'path/to/csv';
+    const tokenTransferAmountDefault = 10;
+
+    beforeEach(() => {
+      
+      sessionIsTransactionInProgressStub = sinon.stub(
+        Session.prototype,
+        'isTransactionInProgress',
+      );
+
+      sessionBeginTransactionStub = sinon
+        .stub(Session.prototype, 'beginTransaction')
+        .callsFake(async () =>
+          sessionIsTransactionInProgressStub.returns(true),
+        );
+
+      sessionCommitTransactionStub = sinon.stub(
+        Session.prototype,
+        'commitTransaction',
+      );
+
+      sessionRollbackTransactionStub = sinon.stub(
+        Session.prototype,
+        'rollbackTransaction',
+      );
+
+      getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
+      createWalletStub = sinon.stub(WalletService.prototype, 'createWallet');
+      addWalletToMapConfigStub = sinon.stub(WalletService.prototype, 'addWalletToMapConfig');
+      transferBundleStub = sinon.stub(Transfer.prototype, 'transferBundle');
+
+      sinon.stub(Token.prototype, 'countTokenByWallet').resolves(20);
+      sinon.stub(fs, 'unlink').resolves();
+      
+    });
+
+    it('should successfully create wallets and transfer tokens without errors', async() => {
+      
+      const csvJson = [
+        { wallet_name: "wallet1", 
+          token_transfer_amount_overwrite: 5, 
+          extra_wallet_data_about: "about wallet1",
+          extra_wallet_data_cover_url: '',
+          extra_wallet_data_logo_url: '' },
+
+        { wallet_name: "wallet2", 
+          token_transfer_amount_overwrite: '', 
+          extra_wallet_data_about: "about wallet2",
+          extra_wallet_data_cover_url: "wallet2 cover url",
+          extra_wallet_data_logo_url: "wallet2 logo url" },
+      ];
+
+      const wallet1 = { id: wallet1Id, 
+                        name: csvJson[0].wallet_name, 
+                        about: csvJson[0].extra_wallet_data_about };
+      const wallet2 = { id: wallet2Id, 
+                        name: csvJson[1].wallet_name, 
+                        about: csvJson[1].extra_wallet_data_about };
+
+      expect(walletService).instanceOf(WalletService);
+      getByNameStub.onCall(0).resolves(mockSenderWallet);
+      getByNameStub.onCall(1).resolves(wallet1);
+      getByNameStub.onCall(2).resolves(wallet2);
+
+      // Check wallet creation
+      createWalletStub.onCall(0).resolves(wallet1);
+      createWalletStub.onCall(1).resolves(wallet2);
+      const wallets = await walletService.batchCreateWallet(mockSenderWallet.name, 
+        tokenTransferAmountDefault, mockSenderWallet.id, csvJson, mockFilePath);
+      
+      expect(createWalletStub.calledTwice).eql(true);
+      expect(createWalletStub.firstCall.args).eql(
+        [loggedInWalletId, csvJson[0].wallet_name, csvJson[0].extra_wallet_data_about]);
+      expect(createWalletStub.secondCall.args).eql(
+        [loggedInWalletId, csvJson[1].wallet_name, csvJson[1].extra_wallet_data_about]);
+
+      
+      // check token transfer
+      expect(transferBundleStub.calledTwice).eql(true);
+      expect(transferBundleStub.firstCall.args).eql(
+        [loggedInWalletId, mockSenderWallet,
+          wallet1, 5, false]);
+      expect(transferBundleStub.secondCall.args).eql(
+        [loggedInWalletId, mockSenderWallet,
+          wallet2, 10, false]);
+
+
+      // check extra wallet info
+      expect(addWalletToMapConfigStub.calledOnceWithExactly({
+        walletId: wallet2.id,
+        walletLogoUrl: csvJson[1].extra_wallet_data_logo_url, 
+        walletCoverUrl: csvJson[1].extra_wallet_data_cover_url,
+        name: wallet2.name,
+      })).eql(true);
+      
+      expect(wallets).eql({
+        wallets_created: 2,
+        wallets_already_exists: [],
+        wallet_other_failure_count: 0,
+        extra_wallet_information_saved: 1,
+        extra_wallet_information_not_saved: [],
+      });
+
+      expect(sessionBeginTransactionStub.calledTwice).eql(true);
+      expect(sessionCommitTransactionStub.calledTwice).eql(true);
+      expect(sessionRollbackTransactionStub.notCalled).eql(true);
+
+    });
+
+    it('should rollback transaction if transfer failed', async() => {
+
+
+      const csvJson = [
+        { wallet_name: "wallet1", 
+          token_transfer_amount_overwrite: 5, 
+          extra_wallet_data_about: "about wallet1" },
+        { wallet_name: "wallet2", 
+          token_transfer_amount_overwrite: 5, 
+          extra_wallet_data_about: "about wallet2" },
+      ];
+
+      const wallet1 = { id: wallet1Id, 
+                        name: csvJson[0].wallet_name, 
+                        about: csvJson[0].extra_wallet_data_about };
+      const wallet2 = { id: wallet2Id, 
+                        name: csvJson[1].wallet_name, 
+                        about: csvJson[1].extra_wallet_data_about };
+
+      
+      expect(walletService).instanceOf(WalletService);
+      getByNameStub.resolves(mockSenderWallet);
+
+      createWalletStub.onCall(0).resolves(wallet1);
+      createWalletStub.onCall(1).resolves(wallet2);
+      transferBundleStub.onCall(0).resolves();
+      transferBundleStub.onCall(1).rejects();
+      
+      try {
+        await walletService.batchCreateWallet(mockSenderWallet.name, 10, loggedInWalletId, csvJson, mockFilePath);
+      } catch (e) {}
+      
+      expect(sessionBeginTransactionStub.calledTwice).eql(true);
+      expect(sessionCommitTransactionStub.calledOnce).eql(true);
+      expect(sessionRollbackTransactionStub.calledOnce).eql(true);
+    });
+
+    it('should catches error count and reason if wallet creation fails', async() => {
+
+
+      const csvJson = [
+        { wallet_name: "wallet1", 
+          token_transfer_amount_overwrite: 1, 
+          extra_wallet_data_about: "about wallet1" },
+        { wallet_name: "wallet2", 
+          token_transfer_amount_overwrite: 1, 
+          extra_wallet_data_about: "about wallet2" },
+        { wallet_name: "wallet3", 
+          token_transfer_amount_overwrite: '', 
+          extra_wallet_data_about: "about wallet3" }
+      ];
+
+      const wallet1 = { id: wallet1Id, 
+                        name: csvJson[0].wallet_name, 
+                        about: csvJson[0].extra_wallet_data_about };
+      const wallet2 = { id: wallet2Id, 
+                        name: csvJson[1].wallet_name, 
+                        about: csvJson[1].extra_wallet_data_about };
+
+      
+      expect(walletService).instanceOf(WalletService);
+      getByNameStub.resolves(mockSenderWallet);
+
+      createWalletStub.onCall(0).resolves(wallet1);
+      createWalletStub.onCall(1).rejects(
+        new HttpError(409, `The wallet "${wallet2.name}" already exists`));
+      createWalletStub.onCall(2).rejects();
+      
+
+      const wallets = await walletService.batchCreateWallet(mockSenderWallet.name, 
+        10, loggedInWalletId, csvJson, mockFilePath);
+      
+      expect(createWalletStub.firstCall.args).eql(
+        [loggedInWalletId, csvJson[0].wallet_name, csvJson[0].extra_wallet_data_about]);
+      expect(createWalletStub.secondCall.args).eql(
+        [loggedInWalletId, csvJson[1].wallet_name, csvJson[1].extra_wallet_data_about]);
+      expect(createWalletStub.getCall(2).args).eql(
+        [loggedInWalletId, csvJson[2].wallet_name, csvJson[2].extra_wallet_data_about]);
+
+      expect(wallets).eql({
+        wallets_created: 1,
+        wallets_already_exists: [`The wallet "${wallet2.name}" already exists`],
+        wallet_other_failure_count: 1,
+        extra_wallet_information_saved: 0,
+        extra_wallet_information_not_saved: [],
+      });
+
+      expect(sessionBeginTransactionStub.calledOnce).eql(true);
+      expect(sessionCommitTransactionStub.calledOnce).eql(true);
+      expect(sessionRollbackTransactionStub.notCalled).eql(true);
+
+    })
+    
+
+    it('should catches error count and reason if extra infomation addition fails', async() => {
+
+
+      const csvJson = [
+        { wallet_name: "wallet1", 
+          token_transfer_amount_overwrite: 1, 
+          extra_wallet_data_about: "about wallet1",
+          extra_wallet_data_cover_url: "wallet1 cover url",
+          extra_wallet_data_logo_url: "wallet1 logo url"  },
+        { wallet_name: "wallet2", 
+          token_transfer_amount_overwrite: 1, 
+          extra_wallet_data_about: "about wallet2",
+          extra_wallet_data_cover_url: "wallet2 cover url",
+          extra_wallet_data_logo_url: "wallet2 logo url"  },
+      ];
+
+      const wallet1 = { id: wallet1Id, 
+                        name: csvJson[0].wallet_name, 
+                        about: csvJson[0].extra_wallet_data_about };
+      const wallet2 = { id: wallet2Id, 
+                        name: csvJson[1].wallet_name, 
+                        about: csvJson[1].extra_wallet_data_about };
+
+      
+      expect(walletService).instanceOf(WalletService);
+      getByNameStub.resolves(mockSenderWallet);
+
+      createWalletStub.onCall(0).resolves(wallet1);
+      createWalletStub.onCall(1).resolves(wallet2);
+      addWalletToMapConfigStub.onCall(0).resolves();
+      addWalletToMapConfigStub.onCall(1).rejects(new Error(`webmap config addition failed`));
+      
+      const wallets = await walletService.batchCreateWallet(mockSenderWallet.name, 
+        10, loggedInWalletId, csvJson, mockFilePath);
+      
+      expect(createWalletStub.firstCall.args).eql(
+        [loggedInWalletId, csvJson[0].wallet_name, csvJson[0].extra_wallet_data_about]);
+      expect(createWalletStub.secondCall.args).eql(
+        [loggedInWalletId, csvJson[1].wallet_name, csvJson[1].extra_wallet_data_about]);
+
+
+      
+      expect(addWalletToMapConfigStub.calledTwice).eql(true);
+      expect(addWalletToMapConfigStub.firstCall.args[0]).eql({
+        walletId: wallet1.id, 
+        walletLogoUrl: csvJson[0].extra_wallet_data_logo_url, 
+        walletCoverUrl: csvJson[0].extra_wallet_data_cover_url,
+        name: wallet1.name,
+      });
+    
+      expect(addWalletToMapConfigStub.secondCall.args[0]).eql({
+        walletId: wallet2.id, 
+        walletLogoUrl: csvJson[1].extra_wallet_data_logo_url, 
+        walletCoverUrl: csvJson[1].extra_wallet_data_cover_url,
+        name: wallet2.name,
+      });
+      
+      expect(wallets).eql({
+        wallets_created: 2,
+        wallets_already_exists: [],
+        wallet_other_failure_count: 0,
+        extra_wallet_information_saved: 1,
+        extra_wallet_information_not_saved: ['webmap config addition failed'],
+      });
+
+      expect(sessionBeginTransactionStub.calledTwice).eql(true);
+      expect(sessionCommitTransactionStub.calledTwice).eql(true);
+      expect(sessionRollbackTransactionStub.notCalled).eql(true);
+
+    });
+
+
+  });
+
+  describe('batchTransferWallet', () => {
+    let sessionBeginTransactionStub;
+    let sessionCommitTransactionStub;
+    let sessionRollbackTransactionStub;
+    let sessionIsTransactionInProgressStub;
+
+    let getByNameStub;
+    let transferBundleStub;
+
+    const tokenTransferAmountDefault = 10;
+    const loggedInWalletId = uuid.v4();
+    const wallet1Id = uuid.v4();
+    const wallet2Id = uuid.v4();
+
+    const senderWallet = { id: loggedInWalletId, name: 'wallet' };
+    const filePath = 'path/to/csv';
+
+    const csvJson = [
+      { wallet_name: "wallet1", 
+        token_transfer_amount_overwrite: 5, 
+      },
+      { wallet_name: "wallet2", 
+        token_transfer_amount_overwrite: '', 
+      },
+    ];
+
+    const wallet1 = { 
+      id: wallet1Id, 
+      name: csvJson[0].wallet_name, 
+      about: csvJson[0].extra_wallet_data_about 
+    };
+
+    const wallet2 = { 
+      id: wallet2Id, 
+      name: csvJson[1].wallet_name, 
+      about: csvJson[1].extra_wallet_data_about 
+    };
+
+    beforeEach(() => {
+      
+      sessionIsTransactionInProgressStub = sinon.stub(
+        Session.prototype,
+        'isTransactionInProgress',
+      );
+
+      sessionBeginTransactionStub = sinon
+        .stub(Session.prototype, 'beginTransaction')
+        .callsFake(async () =>
+          sessionIsTransactionInProgressStub.returns(true),
+        );
+
+      sessionCommitTransactionStub = sinon.stub(
+        Session.prototype,
+        'commitTransaction',
+      );
+
+      sessionRollbackTransactionStub = sinon.stub(
+        Session.prototype,
+        'rollbackTransaction',
+      );
+
+      getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
+      transferBundleStub = sinon.stub(Transfer.prototype, 'transferBundle');
+
+      sinon.stub(Token.prototype, 'countTokenByWallet').resolves(20);
+      sinon.stub(fs, 'unlink').resolves();
+      
+    });
+    
+
+    it('should rollback if one of transactions fails', async() => {
+      
+      expect(walletService).instanceOf(WalletService);
+      getByNameStub.onCall(0).resolves(senderWallet);
+      getByNameStub.onCall(1).resolves(wallet1);
+      getByNameStub.onCall(2).resolves(wallet2);
+
+      transferBundleStub.onCall(0).resolves();
+      transferBundleStub.onCall(1).rejects();
+
+      try {
+        await walletService.batchTransferWallet(
+          senderWallet.name, tokenTransferAmountDefault, loggedInWalletId, csvJson, filePath);
+      } catch (e) {}
+
+      expect(transferBundleStub.calledTwice).eql(true);
+      expect(transferBundleStub.firstCall.args).eql([
+        loggedInWalletId, senderWallet, wallet1, 5, false
+      ]);
+      expect(transferBundleStub.secondCall.args).eql([
+        loggedInWalletId, senderWallet, wallet2, 10, false
+      ]);
+
+      expect(sessionBeginTransactionStub.calledOnce).eql(true);
+      expect(sessionCommitTransactionStub.notCalled).eql(true);
+      expect(sessionRollbackTransactionStub.calledOnce).eql(true);
+
+    });
+
+    it('all transactions success', async() => {
+      
+      expect(walletService).instanceOf(WalletService);
+      getByNameStub.onCall(0).resolves(senderWallet);
+      getByNameStub.onCall(1).resolves(wallet1);
+      getByNameStub.onCall(2).resolves(wallet2);
+
+      transferBundleStub.onCall(0).resolves();
+      transferBundleStub.onCall(1).resolves();
+
+      const result = await walletService.batchTransferWallet(
+        senderWallet.name, tokenTransferAmountDefault, loggedInWalletId, csvJson, filePath);
+
+      expect(transferBundleStub.calledTwice).eql(true);
+      expect(transferBundleStub.firstCall.args).eql([
+        loggedInWalletId, senderWallet, wallet1, 5, false
+      ]);
+      expect(transferBundleStub.secondCall.args).eql([
+        loggedInWalletId, senderWallet, wallet2, 10, false
+      ]);
+
+      expect(sessionBeginTransactionStub.calledOnce).eql(true);
+      expect(sessionCommitTransactionStub.calledOnce).eql(true);
+      expect(sessionRollbackTransactionStub.notCalled).eql(true);
+
+      expect(result.message).eql('Batch transfer successful');
+    });
+
+
+  });
+
+
+  describe('hasControlOverByName', () => {
+    let getByNameStub;
+    let hasControlOverStub;
+
+
+    const parentId = uuid.v4();
+    const childId = uuid.v4();
+    const childName = 'childWallet';
+
+    const walletInstance = {
+        id: childId, 
+        name: childName
+    };
+  
+
+    beforeEach(() => {
+
+      getByNameStub = sinon.stub(WalletService.prototype, 'getByName');
+      hasControlOverStub = sinon.stub(WalletService.prototype, 'hasControlOver');
+
+    });
+
+    it('should error out -- wallet does not belong to the logged in wallet', async () => {
+
+      expect(walletService).instanceOf(WalletService);
+      getByNameStub.resolves(walletInstance);
+      hasControlOverStub.resolves(false);
+      
+      try {
+        await walletService.hasControlOverByName(parentId, childName);
+      } catch (error) {
+        expect(error).instanceOf(HttpError);
+        expect(error.message).eql('Wallet does not belong to the logged in wallet');
+      }
+    
+      
+      expect(getByNameStub.calledOnceWithExactly(walletInstance.name)).eql(true);
+      expect(hasControlOverStub.calledOnceWithExactly(parentId, childId)).eql(true);
+
+    });
+
+    it('successful', async() => {
+
+      expect(walletService).instanceOf(WalletService);
+      getByNameStub.resolves(walletInstance);
+      hasControlOverStub.resolves(true);
+      
+      const result = await walletService.hasControlOverByName(parentId, childName);
+      
+      expect(getByNameStub.calledOnceWithExactly(walletInstance.name)).eql(true);
+      expect(hasControlOverStub.calledOnceWithExactly(parentId, childId)).eql(true);
+      expect(result).eql(walletInstance);
+
+
+    });
+
+  });
+
 });
