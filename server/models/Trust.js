@@ -52,6 +52,7 @@ class Trust {
     offset,
     limit,
     sort_by,
+    search,
     order,
   }) {
     const managedWalletIds = managedWallets.map(wallet => wallet.id);
@@ -81,6 +82,15 @@ class Trust {
     }
     if (request_type) {
       filter.and.push({ request_type });
+    }
+    if (search) {
+      filter.and.push({
+        or: [
+          { 'originator_wallet.name': { ilike: `%${search}%` } },
+          { 'actor_wallet.name': { ilike: `%${search}%` } },
+          { 'target_wallet.name': { ilike: `%${search}%` } },
+        ],
+      });
     }
     return this._trustRepository.getByFilter(filter, { offset, limit, sort_by, order });
   }

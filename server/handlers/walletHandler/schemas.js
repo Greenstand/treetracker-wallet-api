@@ -40,6 +40,7 @@ const walletGetTrustRelationshipsSchema = Joi.object({
   limit: Joi.number().integer().min(1).max(2000).default(500),
   sort_by: Joi.string().valid( 'state', 'created_at', 'updated_at').default('created_at'),
   order: Joi.string().valid('asc', 'desc').default('desc'),
+  search: Joi.string().optional(),
 });
 
 const walletPostSchema = Joi.object({

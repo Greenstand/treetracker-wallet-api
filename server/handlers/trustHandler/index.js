@@ -18,6 +18,7 @@ const trustGet = async (req, res) => {
     offset,
     sort_by,
     order,
+    search,
   } = validatedQuery;
 
   const { wallet_id } = req;
@@ -31,11 +32,12 @@ const trustGet = async (req, res) => {
     limit,
     sort_by,
     order,
+    search,
   });
 
   res.status(200).json({
     trust_relationships,
-    query: { limit, offset, sort_by, order, state, type, request_type },
+    query: { limit, offset, sort_by, order, state, type, request_type, search },
   });
 };
 
