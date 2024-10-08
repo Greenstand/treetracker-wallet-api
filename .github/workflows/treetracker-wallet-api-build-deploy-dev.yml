@@ -96,7 +96,7 @@ jobs:
       - name: Set image tag name
         id: image-tag-name
         run: |
-          value=`cat image-tag-${{github.sha}}/image-tag`
+          value=`cat image-tag`
           echo "::set-output name=image-tag-name::$value"
 
       - name: Install kustomize
