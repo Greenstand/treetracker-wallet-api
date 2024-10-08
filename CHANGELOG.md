@@ -1,3 +1,10 @@
+## [1.40.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.1...v1.40.2) (2024-10-08)
+
+
+### Bug Fixes
+
+* actions artifact ([1ecb598](https://github.com/Greenstand/treetracker-wallet-api/commit/1ecb598e2465a7767735f15a62553ae061c573e0))
+
 ## [1.40.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.0...v1.40.1) (2024-10-08)
 
 
