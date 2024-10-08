@@ -49,5 +49,25 @@ spec:
                 secretKeyRef:
                   name: treetracker-api-database-connection
                   key: schema
+            - name: S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: aws-s3
+                  key: s3_bucket
+            - name: S3_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: aws-s3
+                  key: s3_region
+            - name: S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-s3
+                  key: s3_secret_access_key
+            - name: S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-s3
+                  key: s3_access_key_id
             - name: NODE_LOG_LEVEL
               value: debug
