@@ -9,7 +9,6 @@ const upload = async (file, key, mimetype) => {
     ContentType: mimetype,
     Key: key,
     Body: file,
-    ACL: 'public-read',
   };
 
   const command = new PutObjectCommand(params);
