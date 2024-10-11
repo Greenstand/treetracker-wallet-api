@@ -1,3 +1,31 @@
+## [1.40.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.1...v1.40.2) (2024-10-08)
+
+
+### Bug Fixes
+
+* actions artifact ([1ecb598](https://github.com/Greenstand/treetracker-wallet-api/commit/1ecb598e2465a7767735f15a62553ae061c573e0))
+
+## [1.40.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.0...v1.40.1) (2024-10-08)
+
+
+### Bug Fixes
+
+* trigger deployment ([21388b9](https://github.com/Greenstand/treetracker-wallet-api/commit/21388b9f3ce5fbba68977b04cbc1b1f6c393a78d))
+
+# [1.40.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.39.0...v1.40.0) (2024-10-08)
+
+
+### Bug Fixes
+
+*  correct validation for trust relationship request ([c8fd5e8](https://github.com/Greenstand/treetracker-wallet-api/commit/c8fd5e89b201ed73210f5c2e6c8c1a680f781126))
+* debugging s3 ([63ece9a](https://github.com/Greenstand/treetracker-wallet-api/commit/63ece9ac3bdce258ccac1c770fe96278149f2c8a))
+* deployment update actions version ([0a6fc99](https://github.com/Greenstand/treetracker-wallet-api/commit/0a6fc99655ace02b2a1ae0e43832c7149deb4625))
+
+
+### Features
+
+* add s3 secrets env variables ([f785d73](https://github.com/Greenstand/treetracker-wallet-api/commit/f785d739a9631bd7358bd067386a2f5ad44eefd2))
+
 # [1.39.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.38.5...v1.39.0) (2024-09-10)
 
 
