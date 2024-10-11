@@ -54,6 +54,7 @@ describe('Trust Model', () => {
       const result = await trustModel.getTrustRelationships({
         managedWallets,
         walletId,
+        search: undefined,
         limit: 10,
         offset: 1,
       });
@@ -95,6 +96,7 @@ describe('Trust Model', () => {
         walletId,
         managedWallets,
         limit: 10,
+        search: undefined,
         offset: 11,
         type: 'type',
       });
@@ -118,6 +120,7 @@ describe('Trust Model', () => {
         walletId,
         managedWallets,
         limit: 101,
+        search: undefined,
         offset: 1,
         request_type: 'request_type',
       });
@@ -142,6 +145,7 @@ describe('Trust Model', () => {
         managedWallets,
         limit: 100,
         offset: 0,
+        search: undefined,
         state: 'state',
         request_type: 'request_type',
         type: 'type',

@@ -120,6 +120,7 @@ describe('walletRouter', () => {
           state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
           type: undefined,
           request_type: undefined,
+          search: undefined,
           limit: 500, 
           offset: 0, 
           sort_by: 'created_at', 

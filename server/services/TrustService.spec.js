@@ -48,6 +48,7 @@ describe('TrustService', () => {
         type: 'type',
         request_type: 'request_type',
         limit: 1,
+        search: 'search',
         offset: 0,
         sort_by: 'sort_by',
         order: 'order',
@@ -69,6 +70,7 @@ describe('TrustService', () => {
         type: 'type',
         request_type: 'request_type',
         limit: 1,
+        search: 'search',
         offset: 0,
         sort_by: 'sort_by',
         order: 'order',
@@ -268,6 +270,7 @@ describe('TrustService', () => {
       getTrustRelationshipsStub.getCall(0).calledWithExactly('walletId', managedWallets, {
         walletId: 'id1',
         state: 'state',
+        search: undefined,
         type: 'type',
         request_type: 'request_type',
       }),
@@ -276,6 +279,7 @@ describe('TrustService', () => {
       getTrustRelationshipsStub.getCall(1).calledWithExactly('walletId', managedWallets,{
         walletId: 'id2',
         state: 'state',
+        search: undefined,
         type: 'type',
         request_type: 'request_type',
       }),
