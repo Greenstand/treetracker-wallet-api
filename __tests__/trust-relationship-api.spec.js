@@ -89,7 +89,7 @@ describe('Trust relationship management', () => {
     expect(res.body.trust_relationships[0]).property('id').to.be.a.uuid('v4'); // Unit test, or use Joi to evaluate entire payload
   });
 
-  it.only('GET /trust_relationships with search parameter', async () => {
+  it('GET /trust_relationships with search parameter', async () => {
 
     const createRes = await request(server)
       .post('/trust_relationships')
