@@ -380,8 +380,14 @@ class Trust {
 
   async updateTrustState(trustRelationship, state) {
     const trustRelationshipToUpdate = { ...trustRelationship };
+    const now = new Date(); 
+    const formattedDate = `${(now.getMonth() + 1).toString().padStart(2, '0')}/${now
+      .getDate()
+      .toString()
+      .padStart(2, '0')}/${now.getFullYear()}`;
 
     trustRelationshipToUpdate.state = state;
+    trustRelationshipToUpdate.updated_at = formattedDate;
     delete trustRelationshipToUpdate.originating_wallet;
     delete trustRelationshipToUpdate.actor_wallet;
     delete trustRelationshipToUpdate.target_wallet;
