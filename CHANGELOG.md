@@ -1,3 +1,10 @@
+## [1.40.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.3...v1.40.4) (2024-10-29)
+
+
+### Bug Fixes
+
+* fix updated_at on trust relationship change ([2f6fbb9](https://github.com/Greenstand/treetracker-wallet-api/commit/2f6fbb97776644bc98576aa73df3c82ce480073b))
+
 ## [1.40.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.2...v1.40.3) (2024-10-29)
 
 
