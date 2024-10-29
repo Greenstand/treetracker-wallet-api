@@ -739,6 +739,13 @@ describe('Trust Model', () => {
   it('updateTrustState', async () => {
     trustRepositoryStub.update.resolves({ status: 'updated' });
 
+    const now = new Date(); 
+    const formattedDate = `${(now.getMonth() + 1).toString().padStart(2, '0')}/${now
+      .getDate()
+      .toString()
+      .padStart(2, '0')}/${now.getFullYear()}`;
+
+
     const result = await trustModel.updateTrustState(
       {
         id: 'trustId',
@@ -760,6 +767,7 @@ describe('Trust Model', () => {
     expect(trustRepositoryStub.update).calledOnceWithExactly({
       id: 'trustId',
       state: 'new state',
+      updated_at: formattedDate
     });
   });
 
