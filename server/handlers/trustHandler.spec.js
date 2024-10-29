@@ -216,6 +216,7 @@ describe('trustRouter', () => {
         request_type: TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send,
         limit,
         offset,
+        search: undefined,
         order,
         sort_by: orderBy,
         walletId: authenticatedWalletId,

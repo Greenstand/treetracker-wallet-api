@@ -82,7 +82,7 @@ const walletGetTrustRelationships = async (req, res) => {
   const { wallet_id: loggedInWalletId } = req;
     const sortBy = 'created_at';
     const orderBy = 'desc';
-  const { state, type, request_type, limit, offset, sort_by, order  } = validatedQuery;
+  const { state, type, request_type, limit, offset, sort_by, order, search  } = validatedQuery;
 
   const { wallets:managedWallets } = await walletService.getAllWallets(
     loggedInWalletId,
@@ -108,12 +108,13 @@ const walletGetTrustRelationships = async (req, res) => {
       limit, 
       offset, 
       sort_by, 
-      order 
+      order,
+      search 
     },
   );
   res.status(200).json({
     trust_relationships,
-    query: { limit, offset, sort_by, order, state, type, request_type },
+    query: { limit, offset, sort_by, order, state, type, request_type, search },
     total,
   });
 };

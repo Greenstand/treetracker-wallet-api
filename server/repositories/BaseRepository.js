@@ -65,7 +65,13 @@ class BaseRepository {
         );
         delete filterObjectCopy.after;
       }
-      result.where(filterObjectCopy);
+      Object.entries(filterObjectCopy).forEach(([key, value]) => {
+        if (value.ilike) {
+          result.where(key, 'ilike', value.ilike);
+        } else {
+          result.where(key, value);
+        }
+      });
     }
     return result;
   }

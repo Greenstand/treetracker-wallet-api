@@ -15,6 +15,7 @@ const trustGetQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(2000).default(500),
   sort_by: Joi.string().valid( 'state', 'created_at', 'updated_at').default('created_at'),
   order: Joi.string().valid('asc', 'desc').default('desc'),
+  search: Joi.string().optional(),
 });
 
 const trustPostSchema = Joi.object({
@@ -27,6 +28,7 @@ const trustPostSchema = Joi.object({
         'any.invalid': 'Requester and requestee cannot be same.'
       }),
   requester_wallet: Joi.string(),
+  search: Joi.string().optional(),
 });
 
 const trustRelationshipIdSchema = Joi.object({
