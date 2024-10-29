@@ -1,3 +1,13 @@
+## [1.40.3](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.2...v1.40.3) (2024-10-29)
+
+
+### Bug Fixes
+
+* enable backend search functionality ([f551bcd](https://github.com/Greenstand/treetracker-wallet-api/commit/f551bcdc05a7ea1f77b20e0965a51a7d14e7e887))
+* fix post and search trust relationships int tests ([24b7e75](https://github.com/Greenstand/treetracker-wallet-api/commit/24b7e75a806af96b6212ff45760280e652c788f1))
+* fix tests on search functionality ([3ba053c](https://github.com/Greenstand/treetracker-wallet-api/commit/3ba053c60d7923893072e31929ac41bfae5d74cd))
+* fix typos ([1cbd5a6](https://github.com/Greenstand/treetracker-wallet-api/commit/1cbd5a63c72cb312b2471c010f9b11fc37f152b3))
+
 ## [1.40.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.1...v1.40.2) (2024-10-08)
 
 
