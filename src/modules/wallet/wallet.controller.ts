@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { TrustService } from '../trust/trust.service';
 import { TrustFilterDto } from '../trust/dto/trust-filter.dto';
@@ -28,5 +37,31 @@ export class WalletController {
 
   // todo: post batch-create-wallet
 
-  // todo: post batch-transfer
+  @Post('batch-transfer')
+  async batchTransfer(
+    @Body('sender_wallet') senderWallet: string,
+    @Body('token_transfer_amount_default') tokenTransferAmountDefault: number,
+    @Body('wallet_id') walletId: string,
+    @Body('csvJson')
+    csvJson: {
+      wallet_name: string;
+      token_transfer_amount_overwrite?: number;
+    }[],
+    @Body('filePath') filePath: string,
+  ) {
+    try {
+      return await this.walletService.batchTransferWallet(
+        senderWallet,
+        tokenTransferAmountDefault,
+        walletId,
+        csvJson,
+        filePath,
+      );
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'Failed to process batch transfer',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
