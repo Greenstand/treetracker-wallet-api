@@ -303,6 +303,7 @@ describe('WalletService', () => {
       password: 'mockPassword',
       salt: 'mockSalt',
       logo_url: 'http://test.com/logo.png',
+      cover_url: 'http://test.com/cover.png',
       created_at: new Date(),
     };
 
@@ -392,6 +393,7 @@ describe('WalletService', () => {
         password: 'mockPassword',
         salt: 'mockSalt',
         logo_url: 'http://test.com/logo1.png',
+        cover_url: 'http://test.com/cover1.png',
         created_at: new Date(),
       },
       {
@@ -400,6 +402,7 @@ describe('WalletService', () => {
         password: 'mockPassword2',
         salt: 'mockSalt2',
         logo_url: 'http://test.com/logo2.png',
+        cover_url: 'http://test.com/cover2.png',
         created_at: new Date(),
       },
     ];
@@ -411,6 +414,7 @@ describe('WalletService', () => {
         password: 'mockPassword',
         salt: 'mockSalt',
         logo_url: 'http://test.com/logo1.png',
+        cover_url: 'http://test.com/cover1.png',
         tokens_in_wallet: 2,
         created_at: new Date(),
       },
@@ -420,6 +424,7 @@ describe('WalletService', () => {
         password: 'mockPassword2',
         salt: 'mockSalt2',
         logo_url: 'http://test.com/logo2.png',
+        cover_url: 'http://test.com/cover2.png',
         tokens_in_wallet: 4,
         created_at: new Date(),
       },
@@ -513,7 +518,8 @@ describe('WalletService', () => {
   describe('updateWallet', () => {
     let hasControlOverByNameSpy;
     let updateWalletSpy;
-    let s3UploadSpy;
+    let s3UploadLogoSpy;
+    let s3UploadCoverSpy;
     let addWalletToMapConfigSpy;
 
     const walletIdToUpdate = uuid.v4();
@@ -524,12 +530,14 @@ describe('WalletService', () => {
       display_name: 'Updated Wallet Name',
       add_to_web_map: false,
       logo_image: undefined,
+      cover_image: undefined,
     };
 
     const mockWallet: Wallet = {
       id: walletIdToUpdate,
       name: 'Mock Wallet Name',
       logo_url: 'http://test.com/mock-logo.png',
+      cover_url: 'http://test.com/mock-cover.png',
       password: 'mockPassword',
       salt: 'mockSalt',
       created_at: new Date(),
@@ -538,7 +546,8 @@ describe('WalletService', () => {
     const updatedWallet = {
       id: walletIdToUpdate,
       name: 'Updated Wallet Name',
-      logo_url: 'http://test.com/logo.png',
+      logo_url: null, // empty logo_url as expected in test 1
+      cover_url: 'http://test.com/cover.png', // original cover_url prepared for test 2
     };
 
     beforeEach(() => {
@@ -548,19 +557,28 @@ describe('WalletService', () => {
       updateWalletSpy = jest
         .spyOn(walletRepository, 'updateWallet')
         .mockResolvedValue(updatedWallet as Wallet);
-      s3UploadSpy = jest
+      s3UploadLogoSpy = jest
         .spyOn(s3Service, 'upload')
-        .mockResolvedValue('http://test.com/logo.png');
+        .mockResolvedValue('http://test.com/logo.png'); // URL for logo image upload
+      s3UploadCoverSpy = jest
+        .spyOn(s3Service, 'upload')
+        .mockResolvedValue('http://test.com/cover.png'); // URL for cover image upload
       addWalletToMapConfigSpy = jest
         .spyOn(walletService, 'addWalletToMapConfig')
         .mockResolvedValue(undefined);
     });
 
-    it('should update the wallet successfully without uploading a logo', async () => {
+    it('should update the wallet successfully with an empty logo_url', async () => {
+      const updateWalletDtoWithEmptyLogo = {
+        ...updateWalletDto,
+        logo_image: undefined, // no logo_image provided
+      };
+
       const result = await walletService.updateWallet(
-        updateWalletDto,
+        updateWalletDtoWithEmptyLogo,
         loggedInWalletId,
       );
+
       expect(hasControlOverByNameSpy).toHaveBeenCalledTimes(1);
       expect(hasControlOverByNameSpy).toHaveBeenCalledWith(
         loggedInWalletId,
@@ -571,25 +589,26 @@ describe('WalletService', () => {
       expect(updateWalletSpy).toHaveBeenCalledWith({
         id: walletIdToUpdate,
         name: 'Updated Wallet Name',
-        logo_url: undefined,
+        logo_url: undefined, // expecting undefined for logo_url
+        cover_url: undefined, // expecting undefined for cover_url
       });
 
-      expect(s3UploadSpy).not.toHaveBeenCalled();
+      expect(s3UploadLogoSpy).not.toHaveBeenCalled(); // no logo upload
       expect(addWalletToMapConfigSpy).not.toHaveBeenCalled();
       expect(result).toEqual(updatedWallet);
     });
 
-    it('should update the wallet and upload the logo image', async () => {
-      const updateWalletDtoWithLogo = {
+    it('should update the wallet and upload the cover image', async () => {
+      const updateWalletDtoWithCover = {
         ...updateWalletDto,
-        logo_image: {
+        cover_image: {
           buffer: Buffer.from('some_image_data'),
           mimetype: 'image/png',
         },
       };
 
       const result = await walletService.updateWallet(
-        updateWalletDtoWithLogo,
+        updateWalletDtoWithCover,
         loggedInWalletId,
       );
 
@@ -599,9 +618,9 @@ describe('WalletService', () => {
         walletIdToUpdate,
       );
 
-      expect(s3UploadSpy).toHaveBeenCalledTimes(1);
-      expect(s3UploadSpy).toHaveBeenCalledWith(
-        updateWalletDtoWithLogo.logo_image.buffer,
+      expect(s3UploadCoverSpy).toHaveBeenCalledTimes(1);
+      expect(s3UploadCoverSpy).toHaveBeenCalledWith(
+        updateWalletDtoWithCover.cover_image.buffer,
         expect.stringContaining(walletIdToUpdate),
         'image/png',
       );
@@ -610,7 +629,7 @@ describe('WalletService', () => {
       expect(updateWalletSpy).toHaveBeenCalledWith({
         id: walletIdToUpdate,
         name: 'Updated Wallet Name',
-        logo_url: 'http://test.com/logo.png',
+        cover_url: 'http://test.com/cover.png', // new cover_url as expected
       });
 
       expect(addWalletToMapConfigSpy).not.toHaveBeenCalled();
@@ -631,7 +650,7 @@ describe('WalletService', () => {
       );
 
       expect(updateWalletSpy).not.toHaveBeenCalled();
-      expect(s3UploadSpy).not.toHaveBeenCalled();
+      expect(s3UploadLogoSpy).not.toHaveBeenCalled();
       expect(addWalletToMapConfigSpy).not.toHaveBeenCalled();
     });
 

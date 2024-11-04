@@ -20,6 +20,9 @@ export class Wallet {
   salt: string; // salt used for hashing the password
 
   @Column({ nullable: true })
+  cover_url: string;
+
+  @Column({ nullable: true })
   logo_url: string;
 
   @CreateDateColumn()
