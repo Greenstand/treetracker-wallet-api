@@ -278,7 +278,7 @@ export class WalletService {
     updateWalletDto: UpdateWalletDto,
     loggedInWalletId: string,
   ): Promise<Wallet> {
-    const { display_name, add_to_web_map, logo_image, wallet_id } =
+    const { display_name, add_to_web_map, logo_image, cover_image, wallet_id } =
       updateWalletDto;
     const walletIdToUpdate = wallet_id;
 
@@ -296,7 +296,15 @@ export class WalletService {
 
     // upload images if provided
     // TODO: add the code for cover image
+    let coverImageUrl: string | undefined;
     let logoImageUrl: string | undefined;
+    if (cover_image) {
+      coverImageUrl = await this.s3Service.upload(
+        cover_image.buffer,
+        `${walletIdToUpdate}_${new Date().toISOString()}`,
+        cover_image.mimetype || 'image/png',
+      );
+    }
     if (logo_image) {
       logoImageUrl = await this.s3Service.upload(
         logo_image.buffer,
@@ -310,6 +318,7 @@ export class WalletService {
       id: walletIdToUpdate,
       name: display_name,
       logo_url: logoImageUrl,
+      cover_url: coverImageUrl,
     };
     const updatedWallet = await this.walletRepository.updateWallet(updateData);
 
@@ -318,6 +327,7 @@ export class WalletService {
       await this.addWalletToMapConfig({
         walletId: wallet_id,
         walletLogoUrl: logoImageUrl,
+        walletCoverUrl: coverImageUrl,
       });
     }
 

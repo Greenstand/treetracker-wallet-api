@@ -3,6 +3,7 @@ import { WalletController } from '../wallet.controller';
 import { WalletService } from '../wallet.service';
 import { TrustService } from '../../trust/trust.service';
 import * as uuid from 'uuid';
+import { Readable } from 'stream';
 import { Wallet } from '../entity/wallet.entity';
 import { TrustFilterDto } from '../../trust/dto/trust-filter.dto';
 import { Trust } from '../../trust/entity/trust.entity';
@@ -12,6 +13,7 @@ import {
   ENTITY_TRUST_TYPE,
 } from '../../trust/trust-enum';
 import { HttpStatus, HttpException } from '@nestjs/common';
+import { UpdateWalletDto } from '../dto/update-wallet.dto';
 
 describe('WalletController', () => {
   let walletController: WalletController;
@@ -26,6 +28,7 @@ describe('WalletController', () => {
           provide: WalletService,
           useValue: {
             getById: jest.fn(),
+            updateWallet: jest.fn(),
             batchTransferWallet: jest.fn(),
           },
         },
@@ -176,6 +179,78 @@ describe('WalletController', () => {
       transferData.wallet_id,
       transferData.csvJson,
       transferData.filePath,
+    );
+  });
+
+  it('updateWallet - success', async () => {
+    const walletId = uuid.v4();
+    const updateWalletDto: UpdateWalletDto = {
+      wallet_id: walletId,
+      display_name: 'Updated Wallet Name',
+      about: 'This is an updated wallet description.',
+      add_to_web_map: true,
+      logo_image: { buffer: Buffer.from('mockBuffer'), mimetype: 'image/png' },
+      cover_image: {
+        buffer: Buffer.from('mockBuffer'),
+        mimetype: 'image/jpeg',
+      },
+    };
+
+    // Full mock wallet object to meet the type requirements of Wallet
+    const updatedWalletResponse = {
+      id: walletId,
+      name: 'Updated Wallet Name',
+      logo_url: 'https://s3.amazonaws.com/mock/logo.png',
+      cover_url: 'https://s3.amazonaws.com/mock/cover.jpg',
+      password: 'mockPasswordHash',
+      salt: 'mockSalt',
+      created_at: new Date(),
+    };
+
+    const logoImageMock = {
+      fieldname: 'logo_image',
+      originalname: 'logo.png',
+      encoding: '7bit',
+      mimetype: 'image/png',
+      size: 1024,
+      buffer: Buffer.from('mockBuffer'),
+      stream: new Readable(), // Mock stream object
+      destination: '/mock/path',
+      filename: 'logo.png',
+      path: '/mock/path/logo.png',
+    };
+
+    const coverImageMock = {
+      fieldname: 'cover_image',
+      originalname: 'cover.jpg',
+      encoding: '7bit',
+      mimetype: 'image/jpeg',
+      size: 2048,
+      buffer: Buffer.from('mockBuffer'),
+      stream: new Readable(), // Mock stream object
+      destination: '/mock/path',
+      filename: 'cover.jpg',
+      path: '/mock/path/cover.jpg',
+    };
+
+    jest
+      .spyOn(walletService, 'updateWallet')
+      .mockResolvedValue(updatedWalletResponse);
+
+    const result = await walletController.updateWallet(
+      walletId,
+      updateWalletDto,
+      {
+        cover_image: [coverImageMock],
+        logo_image: [logoImageMock],
+      },
+      { user: { walletId } }, // Mocked request with user ID
+    );
+
+    expect(result).toEqual(updatedWalletResponse);
+    expect(walletService.updateWallet).toHaveBeenCalledWith(
+      updateWalletDto,
+      walletId,
     );
   });
 });

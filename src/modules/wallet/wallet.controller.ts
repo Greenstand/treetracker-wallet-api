@@ -5,12 +5,31 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
+  Request,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { TrustService } from '../trust/trust.service';
 import { TrustFilterDto } from '../trust/dto/trust-filter.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { UpdateWalletDto } from './dto/update-wallet.dto';
+import * as multer from 'multer';
+
+export const imageUpload = multer({
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png/;
+    const isMimeTypeAllowed = allowedTypes.test(file.mimetype);
+    if (!isMimeTypeAllowed) {
+      return cb(<any>new Error('Only image files are supported.'), false);
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: 1000000 }, // 1 MB
+});
 
 @Controller('wallets')
 export class WalletController {
@@ -24,7 +43,35 @@ export class WalletController {
     return await this.walletService.getById(walletId);
   }
 
-  // todo: patch by wallet id
+  @Patch(':wallet_id')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'cover_image', maxCount: 1 },
+      { name: 'logo_image', maxCount: 1 },
+    ]),
+  )
+  async updateWallet(
+    @Param('wallet_id') walletId: string,
+    @Body() updateWalletDto: UpdateWalletDto,
+    @UploadedFiles()
+    files: {
+      cover_image?: Express.Multer.File[];
+      logo_image?: Express.Multer.File[];
+    },
+    @Request() req,
+  ) {
+    // extract images if uploaded
+    const logoImage = files.logo_image ? files.logo_image[0] : null;
+    const coverImage = files.cover_image ? files.cover_image[0] : null;
+
+    // add uploaded images to the DTO
+    updateWalletDto.logo_image = logoImage;
+    updateWalletDto.cover_image = coverImage;
+    return await this.walletService.updateWallet(
+      updateWalletDto,
+      req.user.walletId,
+    );
+  }
 
   @Get(':wallet_id/trust_relationships')
   async getTrustRelationships(
