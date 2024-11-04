@@ -196,7 +196,7 @@ describe('WalletController', () => {
       },
     };
 
-    // Full mock wallet object to meet the type requirements of Wallet
+    // full mock wallet object to meet the type requirements of Wallet
     const updatedWalletResponse = {
       id: walletId,
       name: 'Updated Wallet Name',
@@ -214,7 +214,7 @@ describe('WalletController', () => {
       mimetype: 'image/png',
       size: 1024,
       buffer: Buffer.from('mockBuffer'),
-      stream: new Readable(), // Mock stream object
+      stream: new Readable(), // mock stream object
       destination: '/mock/path',
       filename: 'logo.png',
       path: '/mock/path/logo.png',
@@ -227,7 +227,7 @@ describe('WalletController', () => {
       mimetype: 'image/jpeg',
       size: 2048,
       buffer: Buffer.from('mockBuffer'),
-      stream: new Readable(), // Mock stream object
+      stream: new Readable(), // mock stream object
       destination: '/mock/path',
       filename: 'cover.jpg',
       path: '/mock/path/cover.jpg',
@@ -244,7 +244,7 @@ describe('WalletController', () => {
         cover_image: [coverImageMock],
         logo_image: [logoImageMock],
       },
-      { user: { walletId } }, // Mocked request with user ID
+      { user: { walletId } }, // mocked request with user ID
     );
 
     expect(result).toEqual(updatedWalletResponse);

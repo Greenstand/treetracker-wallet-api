@@ -295,7 +295,6 @@ export class WalletService {
     }
 
     // upload images if provided
-    // TODO: add the code for cover image
     let coverImageUrl: string | undefined;
     let logoImageUrl: string | undefined;
     if (cover_image) {
