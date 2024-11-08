@@ -337,8 +337,109 @@ export class WalletService {
     return updatedWallet;
   }
 
-  // TODO
-  // async batchCreateWallet() {}
+  async batchCreateWallet(
+    sender_wallet: string,
+    token_transfer_amount_default: number,
+    wallet_id: string,
+    csvJson: {
+      wallet_name: string;
+      token_transfer_amount_overwrite?: number;
+      extra_wallet_data_logo_url?: string;
+      extra_wallet_data_cover_url?: string;
+    }[],
+    filePath: string,
+  ): Promise<{ message: string }> {
+    try {
+      let senderWallet;
+      if (sender_wallet) {
+        senderWallet = await this.getByName(sender_wallet);
+      }
+
+      const walletsToCreate: {
+        amount: number;
+        walletName: string;
+        extra_wallet_data_logo_url?: string;
+        extra_wallet_data_cover_url?: string;
+      }[] = [];
+      let totalAmountToTransfer = 0;
+
+      for (const {
+        wallet_name,
+        token_transfer_amount_overwrite,
+        extra_wallet_data_logo_url,
+        extra_wallet_data_cover_url,
+      } of csvJson) {
+        const amount =
+          token_transfer_amount_overwrite || token_transfer_amount_default;
+        if (amount && !sender_wallet) {
+          throw new HttpException(
+            'sender_wallet is required for transfer.',
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+        if (amount) {
+          totalAmountToTransfer += +amount;
+        }
+        walletsToCreate.push({
+          amount,
+          walletName: wallet_name,
+          extra_wallet_data_logo_url,
+          extra_wallet_data_cover_url,
+        });
+      }
+
+      if (senderWallet) {
+        const tokenCount = await this.tokenService.countTokenByWallet(
+          senderWallet.id,
+        );
+        if (totalAmountToTransfer > tokenCount) {
+          throw new HttpException(
+            'Sender does not have enough tokens.',
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+      }
+
+      const createdWallets = [];
+      for (const {
+        walletName,
+        amount,
+        extra_wallet_data_logo_url,
+        extra_wallet_data_cover_url,
+      } of walletsToCreate) {
+        const newWallet = await this.createWallet(wallet_id, walletName);
+
+        if (amount && senderWallet) {
+          await this.transferService.transferBundle(
+            wallet_id,
+            senderWallet,
+            newWallet,
+            amount,
+            false,
+          );
+        }
+
+        if (extra_wallet_data_logo_url || extra_wallet_data_cover_url) {
+          await this.addWalletToMapConfig({
+            walletId: newWallet.id,
+            name: newWallet.name,
+            walletLogoUrl: extra_wallet_data_logo_url,
+            walletCoverUrl: extra_wallet_data_cover_url,
+          });
+        }
+        createdWallets.push(newWallet);
+      }
+
+      await fs.unlink(filePath);
+
+      return {
+        message: 'Batch wallet creation successful',
+      };
+    } catch (e) {
+      await fs.unlink(filePath);
+      throw e;
+    }
+  }
 
   async batchTransferWallet(
     sender_wallet: string,

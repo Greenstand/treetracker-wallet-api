@@ -49,6 +49,7 @@
     "axios": "^1.7.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "csvtojson": "^2.0.10",
     "db-migrate": "^0.11.14",
     "db-migrate-pg": "^1.5.2",
     "dotenv": "^16.4.5",

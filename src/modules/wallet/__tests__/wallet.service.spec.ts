@@ -21,10 +21,18 @@ import { UpdateWalletDto } from '../dto/update-wallet.dto';
 import { TransferService } from '../../transfer/transfer.service';
 import { TransferRepository } from '../../transfer/transfer.repository';
 import { TransactionRepository } from '../../transaction/transaction.repository';
+import * as fs from 'fs';
+
+jest.mock('fs', () => ({
+  promises: {
+    unlink: jest.fn(),
+  },
+}));
 
 describe('WalletService', () => {
   let walletService: WalletService;
   let tokenService: TokenService;
+  let transferService: TransferService;
   let trustService: TrustService;
   let eventService: EventService;
   let s3Service: S3Service;
@@ -84,6 +92,7 @@ describe('WalletService', () => {
 
     walletService = module.get<WalletService>(WalletService);
     tokenService = module.get<TokenService>(TokenService);
+    transferService = module.get<TransferService>(TransferService);
     trustService = module.get<TrustService>(TrustService);
     eventService = module.get<EventService>(EventService);
     s3Service = module.get<S3Service>(S3Service);
@@ -685,6 +694,70 @@ describe('WalletService', () => {
       });
 
       expect(result).toEqual(updatedWallet);
+    });
+  });
+
+  describe('batchCreateWallet', () => {
+    it('should successfully create wallets and transfer tokens', async () => {
+      const mockSenderWallet: Wallet = {
+        id: uuid.v4(),
+        name: 'Mock Wallet Name',
+        logo_url: 'http://test.com/mock-logo.png',
+        cover_url: 'http://test.com/mock-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+      const mockCreatedWallet: Wallet = {
+        id: uuid.v4(),
+        name: 'Mock Created Wallet Name',
+        logo_url: 'http://test.com/mock-logo.png',
+        cover_url: 'http://test.com/mock-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet);
+      jest
+        .spyOn(walletService, 'createWallet')
+        .mockResolvedValue(mockCreatedWallet);
+      jest
+        .spyOn(tokenService, 'countTokenByWallet')
+        .mockResolvedValueOnce(1000);
+      jest
+        .spyOn(transferService, 'transferBundle')
+        .mockResolvedValue(undefined);
+      jest
+        .spyOn(walletService, 'addWalletToMapConfig')
+        .mockResolvedValue(undefined);
+
+      const senderWallet = 'sender_wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'parent_wallet_id';
+      const csvJson = [
+        { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
+        { wallet_name: 'wallet2' },
+      ];
+      const filePath = '/path/to/file.csv';
+
+      const result = await walletService.batchCreateWallet(
+        senderWallet,
+        tokenTransferAmountDefault,
+        walletId,
+        csvJson,
+        filePath,
+      );
+
+      expect(result).toEqual({
+        message: 'Batch wallet creation successful',
+      });
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(walletService.createWallet).toHaveBeenCalledTimes(2);
+      expect(transferService.transferBundle).toHaveBeenCalledTimes(2);
+      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
     });
   });
 });

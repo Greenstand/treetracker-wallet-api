@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   Request,
+  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,6 +19,9 @@ import { TrustFilterDto } from '../trust/dto/trust-filter.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import * as multer from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as csvtojson from 'csvtojson';
+import { diskStorage } from 'multer';
 
 export const imageUpload = multer({
   fileFilter: (req, file, cb) => {
@@ -82,7 +86,48 @@ export class WalletController {
     return await this.trustService.getTrustRelationships(filterDto);
   }
 
-  // todo: post batch-create-wallet
+  @Post('batch-create-wallet')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          callback(
+            null,
+            `${file.fieldname}-${uniqueSuffix}-${file.originalname}`,
+          );
+        },
+      }),
+    }),
+  )
+  async batchCreateWallet(
+    @Body('sender_wallet') senderWallet: string,
+    @Body('token_transfer_amount_default') tokenTransferAmountDefault: number,
+    @Body('wallet_id') walletId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    try {
+      // Convert the uploaded CSV file to JSON
+      const csvJson = await csvtojson().fromFile(file.path);
+
+      // Call the batchCreateWallet service method
+      return await this.walletService.batchCreateWallet(
+        senderWallet,
+        tokenTransferAmountDefault,
+        walletId,
+        csvJson,
+        file.path,
+      );
+    } catch (error) {
+      // Handle any error and return an appropriate HTTP status code and message
+      throw new HttpException(
+        error.message || 'Failed to process batch create wallet',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   @Post('batch-transfer')
   async batchTransfer(
