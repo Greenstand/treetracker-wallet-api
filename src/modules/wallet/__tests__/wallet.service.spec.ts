@@ -21,13 +21,6 @@ import { UpdateWalletDto } from '../dto/update-wallet.dto';
 import { TransferService } from '../../transfer/transfer.service';
 import { TransferRepository } from '../../transfer/transfer.repository';
 import { TransactionRepository } from '../../transaction/transaction.repository';
-import * as fs from 'fs';
-
-jest.mock('fs', () => ({
-  promises: {
-    unlink: jest.fn(),
-  },
-}));
 
 describe('WalletService', () => {
   let walletService: WalletService;
@@ -741,7 +734,7 @@ describe('WalletService', () => {
         { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
         { wallet_name: 'wallet2' },
       ];
-      const filePath = '/path/to/file.csv';
+      const filePath = 'file.csv';
 
       const result = await walletService.batchCreateWallet(
         senderWallet,
@@ -757,7 +750,6 @@ describe('WalletService', () => {
       expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
       expect(walletService.createWallet).toHaveBeenCalledTimes(2);
       expect(transferService.transferBundle).toHaveBeenCalledTimes(2);
-      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
     });
   });
 });

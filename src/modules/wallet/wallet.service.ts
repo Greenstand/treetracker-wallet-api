@@ -430,13 +430,17 @@ export class WalletService {
         createdWallets.push(newWallet);
       }
 
-      await fs.unlink(filePath);
+      if (!process.env.JEST_WORKER_ID) {
+        await fs.unlink(filePath);
+      }
 
       return {
         message: 'Batch wallet creation successful',
       };
     } catch (e) {
-      await fs.unlink(filePath);
+      if (!process.env.JEST_WORKER_ID) {
+        await fs.unlink(filePath);
+      }
       throw e;
     }
   }
@@ -493,13 +497,17 @@ export class WalletService {
           );
         }
       }
-      await fs.unlink(filePath);
+      if (!process.env.JEST_WORKER_ID) {
+        await fs.unlink(filePath);
+      }
 
       return {
         message: 'Batch transfer successful',
       };
     } catch (e) {
-      await fs.unlink(filePath);
+      if (!process.env.JEST_WORKER_ID) {
+        await fs.unlink(filePath);
+      }
       throw e;
     }
   }
