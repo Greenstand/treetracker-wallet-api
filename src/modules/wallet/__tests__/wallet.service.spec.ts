@@ -21,6 +21,7 @@ import { UpdateWalletDto } from '../dto/update-wallet.dto';
 import { TransferService } from '../../transfer/transfer.service';
 import { TransferRepository } from '../../transfer/transfer.repository';
 import { TransactionRepository } from '../../transaction/transaction.repository';
+import { HttpException } from '@nestjs/common';
 
 describe('WalletService', () => {
   let walletService: WalletService;
@@ -750,6 +751,147 @@ describe('WalletService', () => {
       expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
       expect(walletService.createWallet).toHaveBeenCalledTimes(2);
       expect(transferService.transferBundle).toHaveBeenCalledTimes(2);
+    });
+
+    // TODO: fail to process batch create wallet
+  });
+
+  describe('batchTransferWallet', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    const mockSenderWallet: Wallet = {
+      id: uuid.v4(),
+      name: 'Mock Sender Wallet',
+      logo_url: 'http://test.com/mock-sender-logo.png',
+      cover_url: 'http://test.com/mock-sender-cover.png',
+      password: 'mockPassword',
+      salt: 'mockSalt',
+      created_at: new Date(),
+    };
+
+    const mockRecipientWallet1: Wallet = {
+      id: uuid.v4(),
+      name: 'Recipient Wallet 1',
+      logo_url: 'http://test.com/mock-recipient1-logo.png',
+      cover_url: 'http://test.com/mock-recipient1-cover.png',
+      password: 'mockPassword',
+      salt: 'mockSalt',
+      created_at: new Date(),
+    };
+
+    const mockRecipientWallet2: Wallet = {
+      id: uuid.v4(),
+      name: 'Recipient Wallet 2',
+      logo_url: 'http://test.com/mock-recipient2-logo.png',
+      cover_url: 'http://test.com/mock-recipient2-cover.png',
+      password: 'mockPassword',
+      salt: 'mockSalt',
+      created_at: new Date(),
+    };
+
+    it('should successfully transfer tokens to multiple recipient wallets', async () => {
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet)
+        .mockResolvedValueOnce(mockRecipientWallet1)
+        .mockResolvedValueOnce(mockRecipientWallet2);
+
+      jest
+        .spyOn(tokenService, 'countTokenByWallet')
+        .mockResolvedValueOnce(1000);
+
+      jest
+        .spyOn(transferService, 'transferBundle')
+        .mockResolvedValue(undefined);
+
+      const senderWallet = 'Mock Sender Wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'Mock Parent Wallet ID';
+      const csvJson = [
+        {
+          wallet_name: 'Recipient Wallet 1',
+          token_transfer_amount_overwrite: 50,
+        },
+        { wallet_name: 'Recipient Wallet 2' },
+      ];
+      const filePath = 'file.csv';
+
+      const result = await walletService.batchTransferWallet(
+        senderWallet,
+        tokenTransferAmountDefault,
+        walletId,
+        csvJson,
+        filePath,
+      );
+
+      expect(result).toEqual({
+        message: 'Batch transfer successful',
+      });
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(walletService.getByName).toHaveBeenCalledWith(
+        'Recipient Wallet 1',
+      );
+      expect(walletService.getByName).toHaveBeenCalledWith(
+        'Recipient Wallet 2',
+      );
+      expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(
+        mockSenderWallet.id,
+      );
+      expect(transferService.transferBundle).toHaveBeenCalledTimes(2);
+      expect(transferService.transferBundle).toHaveBeenCalledWith(
+        walletId,
+        mockSenderWallet,
+        mockRecipientWallet1,
+        50,
+        false,
+      );
+      expect(transferService.transferBundle).toHaveBeenCalledWith(
+        walletId,
+        mockSenderWallet,
+        mockRecipientWallet2,
+        100,
+        false,
+      );
+    });
+
+    it('should throw an error if sender wallet has insufficient tokens', async () => {
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet);
+      jest.spyOn(tokenService, 'countTokenByWallet').mockResolvedValueOnce(50); // Insufficient tokens
+      jest
+        .spyOn(transferService, 'transferBundle')
+        .mockImplementation(jest.fn());
+
+      const senderWallet = 'Mock Sender Wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'Mock Parent Wallet ID';
+      const csvJson = [
+        {
+          wallet_name: 'Recipient Wallet 1',
+          token_transfer_amount_overwrite: 50,
+        },
+        { wallet_name: 'Recipient Wallet 2' },
+      ];
+      const filePath = 'file.csv';
+
+      await expect(
+        walletService.batchTransferWallet(
+          senderWallet,
+          tokenTransferAmountDefault,
+          walletId,
+          csvJson,
+          filePath,
+        ),
+      ).rejects.toThrow(HttpException);
+
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(
+        mockSenderWallet.id,
+      );
+      expect(transferService.transferBundle).not.toHaveBeenCalled();
     });
   });
 });

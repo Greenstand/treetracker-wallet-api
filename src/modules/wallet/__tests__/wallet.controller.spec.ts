@@ -174,8 +174,11 @@ describe('WalletController', () => {
     );
   });
 
-  describe('batchTransfer', () => {
-    it('should return batch transfer successful', async () => {
+  // TODO: batchCreateWallet
+  // describe('batchCreateWallet', () => {});
+
+  describe('batchTransferWallet', () => {
+    it('should return batch transfer wallet successful', async () => {
       const transferData = {
         sender_wallet: 'sender_wallet_name',
         token_transfer_amount_default: 100,
@@ -206,7 +209,7 @@ describe('WalletController', () => {
       );
     });
 
-    it('should return batch transfer failure', async () => {
+    it('should return batch transfer wallet failure', async () => {
       const transferData = {
         sender_wallet: 'sender_wallet_name',
         token_transfer_amount_default: 100,
