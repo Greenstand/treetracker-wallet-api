@@ -22,6 +22,7 @@ import * as multer from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as csvtojson from 'csvtojson';
 import { diskStorage } from 'multer';
+import * as uuid from 'uuid';
 
 export const imageUpload = multer({
   fileFilter: (req, file, cb) => {
@@ -92,12 +93,8 @@ export class WalletController {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          callback(
-            null,
-            `${file.fieldname}-${uniqueSuffix}-${file.originalname}`,
-          );
+          const uniqueFilename = `${file.fieldname}-${uuid.v4()}-${file.originalname}`;
+          callback(null, uniqueFilename);
         },
       }),
     }),
