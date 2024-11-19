@@ -353,6 +353,12 @@ export class WalletService {
       let senderWallet;
       if (sender_wallet) {
         senderWallet = await this.getByName(sender_wallet);
+        if (!senderWallet) {
+          throw new HttpException(
+            'Sender wallet does not exist',
+            HttpStatus.NOT_FOUND,
+          );
+        }
       }
 
       const walletsToCreate: {

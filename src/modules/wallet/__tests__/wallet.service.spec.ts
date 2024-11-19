@@ -753,7 +753,172 @@ describe('WalletService', () => {
       expect(transferService.transferBundle).toHaveBeenCalledTimes(2);
     });
 
-    // TODO: fail to process batch create wallet
+    it('should fail when sender wallet does not exist', async () => {
+      jest.spyOn(walletService, 'getByName').mockResolvedValueOnce(null);
+      jest.spyOn(walletService, 'createWallet').mockImplementation(() => {
+        throw new Error('This should not be called');
+      });
+      jest.spyOn(transferService, 'transferBundle').mockImplementation(() => {
+        throw new Error('This should not be called');
+      });
+
+      const senderWallet = 'nonexistent_wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'parent_wallet_id';
+      const csvJson = [
+        { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
+      ];
+      const filePath = 'file.csv';
+
+      await expect(
+        walletService.batchCreateWallet(
+          senderWallet,
+          tokenTransferAmountDefault,
+          walletId,
+          csvJson,
+          filePath,
+        ),
+      ).rejects.toThrowError('Sender wallet does not exist');
+
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(walletService.createWallet).not.toHaveBeenCalled();
+      expect(transferService.transferBundle).not.toHaveBeenCalled();
+    });
+
+    it('should fail when total token transfer exceeds sender wallet balance', async () => {
+      const mockSenderWallet: Wallet = {
+        id: uuid.v4(),
+        name: 'Mock Wallet Name',
+        logo_url: 'http://test.com/mock-logo.png',
+        cover_url: 'http://test.com/mock-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet);
+      jest.spyOn(tokenService, 'countTokenByWallet').mockResolvedValueOnce(50); // Insufficient balance
+      jest.spyOn(walletService, 'createWallet').mockImplementation(() => {
+        throw new Error('This should not be called');
+      });
+      jest.spyOn(transferService, 'transferBundle').mockImplementation(() => {
+        throw new Error('This should not be called');
+      });
+
+      const senderWallet = 'sender_wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'parent_wallet_id';
+      const csvJson = [
+        { wallet_name: 'wallet1', token_transfer_amount_overwrite: 60 },
+        { wallet_name: 'wallet2', token_transfer_amount_overwrite: 50 },
+      ];
+      const filePath = 'file.csv';
+
+      await expect(
+        walletService.batchCreateWallet(
+          senderWallet,
+          tokenTransferAmountDefault,
+          walletId,
+          csvJson,
+          filePath,
+        ),
+      ).rejects.toThrowError('Sender does not have enough tokens.');
+
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(
+        mockSenderWallet.id,
+      );
+      expect(walletService.createWallet).not.toHaveBeenCalled(); // Ensure not called
+      expect(transferService.transferBundle).not.toHaveBeenCalled(); // Ensure not called
+    });
+
+    it('should fail when wallet creation fails', async () => {
+      const mockSenderWallet: Wallet = {
+        id: uuid.v4(),
+        name: 'Mock Wallet Name',
+        logo_url: 'http://test.com/mock-logo.png',
+        cover_url: 'http://test.com/mock-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet);
+      jest
+        .spyOn(tokenService, 'countTokenByWallet')
+        .mockResolvedValueOnce(1000);
+      jest
+        .spyOn(walletService, 'createWallet')
+        .mockRejectedValueOnce(new Error('Wallet creation failed'));
+      jest.spyOn(transferService, 'transferBundle').mockImplementation(() => {
+        throw new Error('This should not be called');
+      });
+
+      const senderWallet = 'sender_wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'parent_wallet_id';
+      const csvJson = [{ wallet_name: 'wallet1' }];
+      const filePath = 'file.csv';
+
+      await expect(
+        walletService.batchCreateWallet(
+          senderWallet,
+          tokenTransferAmountDefault,
+          walletId,
+          csvJson,
+          filePath,
+        ),
+      ).rejects.toThrowError('Wallet creation failed');
+
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(
+        mockSenderWallet.id,
+      );
+      expect(walletService.createWallet).toHaveBeenCalledTimes(1);
+      expect(transferService.transferBundle).not.toHaveBeenCalled();
+    });
+
+    it('should clean up file on failure', async () => {
+      const mockSenderWallet: Wallet = {
+        id: uuid.v4(),
+        name: 'Mock Wallet Name',
+        logo_url: 'http://test.com/mock-logo.png',
+        cover_url: 'http://test.com/mock-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet);
+      jest
+        .spyOn(tokenService, 'countTokenByWallet')
+        .mockResolvedValueOnce(1000);
+      jest
+        .spyOn(walletService, 'createWallet')
+        .mockRejectedValue(new Error('Failure'));
+
+      const senderWallet = 'sender_wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'parent_wallet_id';
+      const csvJson = [{ wallet_name: 'wallet1' }];
+      const filePath = 'file.csv';
+
+      await expect(
+        walletService.batchCreateWallet(
+          senderWallet,
+          tokenTransferAmountDefault,
+          walletId,
+          csvJson,
+          filePath,
+        ),
+      ).rejects.toThrowError('Failure');
+    });
   });
 
   describe('batchTransferWallet', () => {
