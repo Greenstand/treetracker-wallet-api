@@ -438,10 +438,17 @@ export class WalletService {
         message: 'Batch wallet creation successful',
       };
     } catch (e) {
+      // Handle cleanup and rethrow the error
       if (!process.env.JEST_WORKER_ID) {
-        await fs.unlink(filePath);
+        await fs.unlink(filePath).catch(() => {
+          // Log if file cleanup fails, but do not overwrite original error
+          console.error(`Failed to delete file at path: ${filePath}`);
+        });
       }
-      throw e;
+      throw new HttpException(
+        e.message || 'Failed to process batch create wallet',
+        e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -498,17 +505,26 @@ export class WalletService {
         }
       }
       if (!process.env.JEST_WORKER_ID) {
-        await fs.unlink(filePath);
+        await fs.unlink(filePath).catch(() => {
+          console.error(`Failed to delete file at path: ${filePath}`);
+        });
       }
 
       return {
         message: 'Batch transfer successful',
       };
     } catch (e) {
+      // Cleanup file and rethrow error
       if (!process.env.JEST_WORKER_ID) {
-        await fs.unlink(filePath);
+        await fs.unlink(filePath).catch(() => {
+          console.error(`Failed to delete file at path: ${filePath}`);
+        });
       }
-      throw e;
+
+      throw new HttpException(
+        e.message || 'Failed to process batch transfer',
+        e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

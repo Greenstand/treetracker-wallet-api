@@ -2,8 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   Patch,
   Post,
@@ -24,6 +22,7 @@ import * as csvtojson from 'csvtojson';
 import { diskStorage } from 'multer';
 import * as uuid from 'uuid';
 import { BatchCreateWalletDto } from './dto/batch-create-wallet.dto';
+import { BatchTransferWalletDto } from './dto/batch-transfer-wallet.dto';
 
 export const imageUpload = multer({
   fileFilter: (req, file, cb) => {
@@ -106,52 +105,36 @@ export class WalletController {
   ) {
     const { sender_wallet, token_transfer_amount_default, wallet_id } =
       batchCreateWalletDto;
-    try {
-      // Convert the uploaded CSV file to JSON
-      const csvJson = await csvtojson().fromFile(file.path);
 
-      // Call the batchCreateWallet service method
-      return await this.walletService.batchCreateWallet(
-        sender_wallet,
-        token_transfer_amount_default,
-        wallet_id,
-        csvJson,
-        file.path,
-      );
-    } catch (error) {
-      // Handle any error and return an appropriate HTTP status code and message
-      throw new HttpException(
-        error.message || 'Failed to process batch create wallet',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    // Convert the uploaded CSV file to JSON
+    const csvJson = await csvtojson().fromFile(file.path);
+
+    // Call the batchCreateWallet service method
+    return this.walletService.batchCreateWallet(
+      sender_wallet,
+      token_transfer_amount_default,
+      wallet_id,
+      csvJson,
+      file.path,
+    );
   }
 
   @Post('batch-transfer')
-  async batchTransfer(
-    @Body('sender_wallet') senderWallet: string,
-    @Body('token_transfer_amount_default') tokenTransferAmountDefault: number,
-    @Body('wallet_id') walletId: string,
-    @Body('csvJson')
-    csvJson: {
-      wallet_name: string;
-      token_transfer_amount_overwrite?: number;
-    }[],
-    @Body('filePath') filePath: string,
-  ) {
-    try {
-      return await this.walletService.batchTransferWallet(
-        senderWallet,
-        tokenTransferAmountDefault,
-        walletId,
-        csvJson,
-        filePath,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.message || 'Failed to process batch transfer',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+  async batchTransfer(@Body() batchTransferWalletDto: BatchTransferWalletDto) {
+    const {
+      sender_wallet,
+      token_transfer_amount_default,
+      wallet_id,
+      csvJson,
+      filePath,
+    } = batchTransferWalletDto;
+
+    return this.walletService.batchTransferWallet(
+      sender_wallet,
+      token_transfer_amount_default,
+      wallet_id,
+      csvJson,
+      filePath,
+    );
   }
 }

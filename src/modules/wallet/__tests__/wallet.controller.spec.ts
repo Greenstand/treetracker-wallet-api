@@ -102,87 +102,6 @@ describe('WalletController', () => {
     expect(result).toEqual(trustRelationships);
   });
 
-  describe('batchTransfer', () => {
-    it('should return batch transfer successful', async () => {
-      const transferData = {
-        sender_wallet: 'sender_wallet_name',
-        token_transfer_amount_default: 100,
-        wallet_id: 'sender_wallet_id',
-        csvJson: [
-          {
-            wallet_name: 'recipient_wallet_1',
-            token_transfer_amount_overwrite: 50,
-          },
-          { wallet_name: 'recipient_wallet_2' },
-        ],
-        filePath: '/path/to/file.csv',
-      };
-
-      jest
-        .spyOn(walletService, 'batchTransferWallet')
-        .mockResolvedValue({ message: 'Batch transfer successful' });
-
-      const result = await walletController.batchTransfer(
-        transferData.sender_wallet,
-        transferData.token_transfer_amount_default,
-        transferData.wallet_id,
-        transferData.csvJson,
-        transferData.filePath,
-      );
-
-      expect(result).toEqual({ message: 'Batch transfer successful' });
-      expect(walletService.batchTransferWallet).toHaveBeenCalledWith(
-        transferData.sender_wallet,
-        transferData.token_transfer_amount_default,
-        transferData.wallet_id,
-        transferData.csvJson,
-        transferData.filePath,
-      );
-    });
-    it('should return batch transfer failure ', async () => {
-      const transferData = {
-        sender_wallet: 'sender_wallet_name',
-        token_transfer_amount_default: 100,
-        wallet_id: 'sender_wallet_id',
-        csvJson: [
-          {
-            wallet_name: 'recipient_wallet_1',
-            token_transfer_amount_overwrite: 50,
-          },
-          { wallet_name: 'recipient_wallet_2' },
-        ],
-        filePath: '/path/to/file.csv',
-      };
-
-      jest
-        .spyOn(walletService, 'batchTransferWallet')
-        .mockRejectedValue(
-          new HttpException(
-            'Failed to process batch transfer',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          ),
-        );
-
-      await expect(
-        walletController.batchTransfer(
-          transferData.sender_wallet,
-          transferData.token_transfer_amount_default,
-          transferData.wallet_id,
-          transferData.csvJson,
-          transferData.filePath,
-        ),
-      ).rejects.toThrow(HttpException);
-
-      expect(walletService.batchTransferWallet).toHaveBeenCalledWith(
-        transferData.sender_wallet,
-        transferData.token_transfer_amount_default,
-        transferData.wallet_id,
-        transferData.csvJson,
-        transferData.filePath,
-      );
-    });
-  });
-
   it('updateWallet', async () => {
     const walletId = uuid.v4();
     const updateWalletDto: UpdateWalletDto = {
@@ -253,5 +172,75 @@ describe('WalletController', () => {
       updateWalletDto,
       walletId,
     );
+  });
+
+  describe('batchTransfer', () => {
+    it('should return batch transfer successful', async () => {
+      const transferData = {
+        sender_wallet: 'sender_wallet_name',
+        token_transfer_amount_default: 100,
+        wallet_id: 'sender_wallet_id',
+        csvJson: [
+          {
+            wallet_name: 'recipient_wallet_1',
+            token_transfer_amount_overwrite: 50,
+          },
+          { wallet_name: 'recipient_wallet_2' },
+        ],
+        filePath: '/path/to/file.csv',
+      };
+
+      jest
+        .spyOn(walletService, 'batchTransferWallet')
+        .mockResolvedValue({ message: 'Batch transfer successful' });
+
+      const result = await walletController.batchTransfer(transferData);
+
+      expect(result).toEqual({ message: 'Batch transfer successful' });
+      expect(walletService.batchTransferWallet).toHaveBeenCalledWith(
+        transferData.sender_wallet,
+        transferData.token_transfer_amount_default,
+        transferData.wallet_id,
+        transferData.csvJson,
+        transferData.filePath,
+      );
+    });
+
+    it('should return batch transfer failure', async () => {
+      const transferData = {
+        sender_wallet: 'sender_wallet_name',
+        token_transfer_amount_default: 100,
+        wallet_id: 'sender_wallet_id',
+        csvJson: [
+          {
+            wallet_name: 'recipient_wallet_1',
+            token_transfer_amount_overwrite: 50,
+          },
+          { wallet_name: 'recipient_wallet_2' },
+        ],
+        filePath: '/path/to/file.csv',
+      };
+
+      jest
+        .spyOn(walletService, 'batchTransferWallet')
+        .mockRejectedValue(
+          new HttpException(
+            'Failed to process batch transfer',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          ),
+        );
+
+      await expect(
+        walletController.batchTransfer(transferData),
+      ).rejects.toThrow(HttpException);
+
+      expect(walletService.batchTransferWallet).toHaveBeenCalledWith(
+        transferData.sender_wallet,
+        transferData.token_transfer_amount_default,
+        transferData.wallet_id,
+        transferData.csvJson,
+        transferData.filePath,
+      );
+    });
   });
 });
