@@ -23,6 +23,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as csvtojson from 'csvtojson';
 import { diskStorage } from 'multer';
 import * as uuid from 'uuid';
+import { BatchCreateWalletDto } from './dto/batch-create-wallet.dto';
 
 export const imageUpload = multer({
   fileFilter: (req, file, cb) => {
@@ -100,20 +101,20 @@ export class WalletController {
     }),
   )
   async batchCreateWallet(
-    @Body('sender_wallet') senderWallet: string,
-    @Body('token_transfer_amount_default') tokenTransferAmountDefault: number,
-    @Body('wallet_id') walletId: string,
+    @Body() batchCreateWalletDto: BatchCreateWalletDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    const { sender_wallet, token_transfer_amount_default, wallet_id } =
+      batchCreateWalletDto;
     try {
       // Convert the uploaded CSV file to JSON
       const csvJson = await csvtojson().fromFile(file.path);
 
       // Call the batchCreateWallet service method
       return await this.walletService.batchCreateWallet(
-        senderWallet,
-        tokenTransferAmountDefault,
-        walletId,
+        sender_wallet,
+        token_transfer_amount_default,
+        wallet_id,
         csvJson,
         file.path,
       );
