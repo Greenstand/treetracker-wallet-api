@@ -22,6 +22,7 @@ import { TransferService } from '../../transfer/transfer.service';
 import { TransferRepository } from '../../transfer/transfer.repository';
 import { TransactionRepository } from '../../transaction/transaction.repository';
 import { HttpException } from '@nestjs/common';
+import * as fs from 'fs';
 
 describe('WalletService', () => {
   let walletService: WalletService;
@@ -692,6 +693,14 @@ describe('WalletService', () => {
   });
 
   describe('batchCreateWallet', () => {
+    beforeEach(() => {
+      jest.spyOn(fs.promises, 'unlink').mockResolvedValue(undefined); // Mock unlink in promises
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks(); // Clear all mocks after each test
+    });
+
     it('should successfully create wallets and transfer tokens', async () => {
       const mockSenderWallet: Wallet = {
         id: uuid.v4(),
@@ -751,6 +760,7 @@ describe('WalletService', () => {
       expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
       expect(walletService.createWallet).toHaveBeenCalledTimes(2);
       expect(transferService.transferBundle).toHaveBeenCalledTimes(2);
+      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
     });
 
     it('should fail when sender wallet does not exist', async () => {
@@ -783,6 +793,7 @@ describe('WalletService', () => {
       expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
       expect(walletService.createWallet).not.toHaveBeenCalled();
       expect(transferService.transferBundle).not.toHaveBeenCalled();
+      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
     });
 
     it('should fail when total token transfer exceeds sender wallet balance', async () => {
@@ -832,6 +843,7 @@ describe('WalletService', () => {
       );
       expect(walletService.createWallet).not.toHaveBeenCalled(); // Ensure not called
       expect(transferService.transferBundle).not.toHaveBeenCalled(); // Ensure not called
+      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
     });
 
     it('should fail when wallet creation fails', async () => {
@@ -880,6 +892,7 @@ describe('WalletService', () => {
       );
       expect(walletService.createWallet).toHaveBeenCalledTimes(1);
       expect(transferService.transferBundle).not.toHaveBeenCalled();
+      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
     });
 
     it('should clean up file on failure', async () => {
@@ -918,6 +931,7 @@ describe('WalletService', () => {
           filePath,
         ),
       ).rejects.toThrowError('Failure');
+      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
     });
   });
 
