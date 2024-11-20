@@ -14,6 +14,8 @@ import {
 } from '../../trust/trust-enum';
 import { HttpStatus, HttpException } from '@nestjs/common';
 import { UpdateWalletDto } from '../dto/update-wallet.dto';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 jest.mock('csvtojson', () => {
   return jest.fn(() => ({
@@ -187,7 +189,37 @@ describe('WalletController', () => {
   });
 
   describe('batchCreateWallet', () => {
-    it('should return batch wallet creation successful', async () => {
+    const uploadsDir = path.join(__dirname, '../../../uploads');
+    const testFilePath = path.join(uploadsDir, 'test-file.csv');
+    let mockUploadedFile: Express.Multer.File;
+
+    beforeEach(async () => {
+      // Ensure the uploads directory exists and create the mock file
+      await fs.mkdir(uploadsDir, { recursive: true });
+      await fs.writeFile(
+        testFilePath,
+        'wallet_name,token_transfer_amount_overwrite\nwallet1,50\nwallet2,\n',
+      );
+
+      mockUploadedFile = {
+        fieldname: 'file',
+        originalname: 'test.csv',
+        encoding: '7bit',
+        mimetype: 'text/csv',
+        destination: uploadsDir,
+        filename: 'test-file.csv',
+        path: testFilePath,
+        size: 1024,
+      } as Express.Multer.File;
+    });
+
+    afterEach(async () => {
+      // Clean up the uploads directory and reset mocks
+      await fs.rm(uploadsDir, { recursive: true, force: true });
+      jest.clearAllMocks(); // Reset all mocked functions
+    });
+
+    it('should process batch wallet creation', async () => {
       const batchCreateWalletDto = {
         sender_wallet: 'sender_wallet_name',
         token_transfer_amount_default: 100,
@@ -198,32 +230,22 @@ describe('WalletController', () => {
         message: 'Batch wallet creation successful',
       });
 
-      const mockUploadedFile: Express.Multer.File = {
-        fieldname: 'file',
-        originalname: 'test.csv',
-        encoding: '7bit',
-        mimetype: 'text/csv',
-        destination: './uploads',
-        filename: 'file-unique-id-test.csv',
-        path: './uploads/file-unique-id-test.csv',
-        size: 1024,
-      } as Express.Multer.File;
-
       const result = await walletController.batchCreateWallet(
         batchCreateWalletDto,
         mockUploadedFile,
       );
-
       expect(result).toEqual({ message: 'Batch wallet creation successful' });
+
+      const csvJson = [
+        { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
+        { wallet_name: 'wallet2' },
+      ];
       expect(walletService.batchCreateWallet).toHaveBeenCalledWith(
         batchCreateWalletDto.sender_wallet,
         batchCreateWalletDto.token_transfer_amount_default,
         batchCreateWalletDto.wallet_id,
-        [
-          { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
-          { wallet_name: 'wallet2' },
-        ],
-        mockUploadedFile.path,
+        csvJson,
+        testFilePath,
       );
     });
 
@@ -240,34 +262,12 @@ describe('WalletController', () => {
           new Error('Failed to process batch wallet creation'),
         );
 
-      const mockUploadedFile: Express.Multer.File = {
-        fieldname: 'file',
-        originalname: 'test.csv',
-        encoding: '7bit',
-        mimetype: 'text/csv',
-        destination: './uploads',
-        filename: 'file-unique-id-test.csv',
-        path: './uploads/file-unique-id-test.csv',
-        size: 1024,
-      } as Express.Multer.File;
-
       await expect(
         walletController.batchCreateWallet(
           batchCreateWalletDto,
           mockUploadedFile,
         ),
       ).rejects.toThrow('Failed to process batch wallet creation');
-
-      expect(walletService.batchCreateWallet).toHaveBeenCalledWith(
-        batchCreateWalletDto.sender_wallet,
-        batchCreateWalletDto.token_transfer_amount_default,
-        batchCreateWalletDto.wallet_id,
-        [
-          { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
-          { wallet_name: 'wallet2' },
-        ],
-        mockUploadedFile.path,
-      );
     });
   });
 

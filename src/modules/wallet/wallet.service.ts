@@ -436,7 +436,9 @@ export class WalletService {
         createdWallets.push(newWallet);
       }
 
-      await fs.unlink(filePath);
+      await fs.unlink(filePath).catch(() => {
+        console.error(`Failed to delete file at path: ${filePath}`);
+      });
 
       return {
         message: 'Batch wallet creation successful',
