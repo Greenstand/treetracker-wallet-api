@@ -15,6 +15,17 @@ import {
 import { HttpStatus, HttpException } from '@nestjs/common';
 import { UpdateWalletDto } from '../dto/update-wallet.dto';
 
+jest.mock('csvtojson', () => {
+  return jest.fn(() => ({
+    fromFile: jest.fn(() =>
+      Promise.resolve([
+        { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
+        { wallet_name: 'wallet2' },
+      ]),
+    ),
+  }));
+});
+
 describe('WalletController', () => {
   let walletController: WalletController;
   let walletService: WalletService;
@@ -29,6 +40,7 @@ describe('WalletController', () => {
           useValue: {
             getById: jest.fn(),
             updateWallet: jest.fn(),
+            batchCreateWallet: jest.fn(),
             batchTransferWallet: jest.fn(),
           },
         },
@@ -174,8 +186,90 @@ describe('WalletController', () => {
     );
   });
 
-  // TODO: batchCreateWallet
-  // describe('batchCreateWallet', () => {});
+  describe('batchCreateWallet', () => {
+    it('should return batch wallet creation successful', async () => {
+      const batchCreateWalletDto = {
+        sender_wallet: 'sender_wallet_name',
+        token_transfer_amount_default: 100,
+        wallet_id: 'parent_wallet_id',
+      };
+
+      jest.spyOn(walletService, 'batchCreateWallet').mockResolvedValue({
+        message: 'Batch wallet creation successful',
+      });
+
+      const mockUploadedFile: Express.Multer.File = {
+        fieldname: 'file',
+        originalname: 'test.csv',
+        encoding: '7bit',
+        mimetype: 'text/csv',
+        destination: './uploads',
+        filename: 'file-unique-id-test.csv',
+        path: './uploads/file-unique-id-test.csv',
+        size: 1024,
+      } as Express.Multer.File;
+
+      const result = await walletController.batchCreateWallet(
+        batchCreateWalletDto,
+        mockUploadedFile,
+      );
+
+      expect(result).toEqual({ message: 'Batch wallet creation successful' });
+      expect(walletService.batchCreateWallet).toHaveBeenCalledWith(
+        batchCreateWalletDto.sender_wallet,
+        batchCreateWalletDto.token_transfer_amount_default,
+        batchCreateWalletDto.wallet_id,
+        [
+          { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
+          { wallet_name: 'wallet2' },
+        ],
+        mockUploadedFile.path,
+      );
+    });
+
+    it('should return batch wallet creation failure', async () => {
+      const batchCreateWalletDto = {
+        sender_wallet: 'sender_wallet_name',
+        token_transfer_amount_default: 100,
+        wallet_id: 'parent_wallet_id',
+      };
+
+      jest
+        .spyOn(walletService, 'batchCreateWallet')
+        .mockRejectedValue(
+          new Error('Failed to process batch wallet creation'),
+        );
+
+      const mockUploadedFile: Express.Multer.File = {
+        fieldname: 'file',
+        originalname: 'test.csv',
+        encoding: '7bit',
+        mimetype: 'text/csv',
+        destination: './uploads',
+        filename: 'file-unique-id-test.csv',
+        path: './uploads/file-unique-id-test.csv',
+        size: 1024,
+      } as Express.Multer.File;
+
+      await expect(
+        walletController.batchCreateWallet(
+          batchCreateWalletDto,
+          mockUploadedFile,
+        ),
+      ).rejects.toThrow('Failed to process batch wallet creation');
+
+      expect(walletService.batchCreateWallet).toHaveBeenCalledWith(
+        batchCreateWalletDto.sender_wallet,
+        batchCreateWalletDto.token_transfer_amount_default,
+        batchCreateWalletDto.wallet_id,
+        [
+          { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
+          { wallet_name: 'wallet2' },
+        ],
+        mockUploadedFile.path,
+      );
+    });
+  });
 
   describe('batchTransferWallet', () => {
     it('should return batch transfer wallet successful', async () => {
