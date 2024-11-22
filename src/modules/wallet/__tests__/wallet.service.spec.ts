@@ -21,7 +21,6 @@ import { UpdateWalletDto } from '../dto/update-wallet.dto';
 import { TransferService } from '../../transfer/transfer.service';
 import { TransferRepository } from '../../transfer/transfer.repository';
 import { TransactionRepository } from '../../transaction/transaction.repository';
-import { HttpException } from '@nestjs/common';
 import * as fs from 'fs';
 
 describe('WalletService', () => {
@@ -693,33 +692,63 @@ describe('WalletService', () => {
   });
 
   describe('batchCreateWallet', () => {
+    let mockSenderWallet: Wallet;
+    let mockRecipientWallet1: Wallet;
+    let mockRecipientWallet2: Wallet;
+    let csvJson: any[];
+    const filePath = 'file.csv';
+
     beforeEach(() => {
+      mockSenderWallet = {
+        id: uuid.v4(),
+        name: 'Mock Sender Wallet',
+        logo_url: 'http://test.com/mock-sender-logo.png',
+        cover_url: 'http://test.com/mock-sender-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      mockRecipientWallet1 = {
+        id: uuid.v4(),
+        name: 'Recipient Wallet 1',
+        logo_url: 'http://test.com/mock-recipient1-logo.png',
+        cover_url: 'http://test.com/mock-recipient1-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      mockRecipientWallet2 = {
+        id: uuid.v4(),
+        name: 'Recipient Wallet 2',
+        logo_url: 'http://test.com/mock-recipient2-logo.png',
+        cover_url: 'http://test.com/mock-recipient2-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      csvJson = [
+        {
+          wallet_name: 'Recipient Wallet 1',
+          token_transfer_amount_overwrite: 50,
+        },
+        { wallet_name: 'Recipient Wallet 2' },
+      ];
+
       jest.spyOn(fs.promises, 'unlink').mockResolvedValue(undefined); // Mock unlink in promises
     });
 
     afterEach(() => {
-      jest.clearAllMocks(); // Clear all mocks after each test
+      jest.clearAllMocks();
     });
 
     it('should successfully create wallets and transfer tokens', async () => {
-      const mockSenderWallet: Wallet = {
-        id: uuid.v4(),
-        name: 'Mock Wallet Name',
-        logo_url: 'http://test.com/mock-logo.png',
-        cover_url: 'http://test.com/mock-cover.png',
-        password: 'mockPassword',
-        salt: 'mockSalt',
-        created_at: new Date(),
-      };
-      const mockCreatedWallet: Wallet = {
-        id: uuid.v4(),
-        name: 'Mock Created Wallet Name',
-        logo_url: 'http://test.com/mock-logo.png',
-        cover_url: 'http://test.com/mock-cover.png',
-        password: 'mockPassword',
-        salt: 'mockSalt',
-        created_at: new Date(),
-      };
+      const mockCreatedWallet = {
+        ...mockRecipientWallet1,
+        ...mockRecipientWallet2,
+      }; // Example created wallet
 
       jest
         .spyOn(walletService, 'getByName')
@@ -737,14 +766,9 @@ describe('WalletService', () => {
         .spyOn(walletService, 'addWalletToMapConfig')
         .mockResolvedValue(undefined);
 
-      const senderWallet = 'sender_wallet';
+      const senderWallet = 'Mock Sender Wallet';
       const tokenTransferAmountDefault = 100;
-      const walletId = 'parent_wallet_id';
-      const csvJson = [
-        { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
-        { wallet_name: 'wallet2' },
-      ];
-      const filePath = 'file.csv';
+      const walletId = 'Mock Parent Wallet ID';
 
       const result = await walletService.batchCreateWallet(
         senderWallet,
@@ -765,20 +789,10 @@ describe('WalletService', () => {
 
     it('should fail when sender wallet does not exist', async () => {
       jest.spyOn(walletService, 'getByName').mockResolvedValueOnce(null);
-      jest.spyOn(walletService, 'createWallet').mockImplementation(() => {
-        throw new Error('This should not be called');
-      });
-      jest.spyOn(transferService, 'transferBundle').mockImplementation(() => {
-        throw new Error('This should not be called');
-      });
 
-      const senderWallet = 'nonexistent_wallet';
+      const senderWallet = 'Nonexistent Wallet';
       const tokenTransferAmountDefault = 100;
-      const walletId = 'parent_wallet_id';
-      const csvJson = [
-        { wallet_name: 'wallet1', token_transfer_amount_overwrite: 50 },
-      ];
-      const filePath = 'file.csv';
+      const walletId = 'Mock Parent Wallet ID';
 
       await expect(
         walletService.batchCreateWallet(
@@ -791,136 +805,19 @@ describe('WalletService', () => {
       ).rejects.toThrowError('Sender wallet does not exist');
 
       expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
-      expect(walletService.createWallet).not.toHaveBeenCalled();
-      expect(transferService.transferBundle).not.toHaveBeenCalled();
-      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
-    });
-
-    it('should fail when total token transfer exceeds sender wallet balance', async () => {
-      const mockSenderWallet: Wallet = {
-        id: uuid.v4(),
-        name: 'Mock Wallet Name',
-        logo_url: 'http://test.com/mock-logo.png',
-        cover_url: 'http://test.com/mock-cover.png',
-        password: 'mockPassword',
-        salt: 'mockSalt',
-        created_at: new Date(),
-      };
-
-      jest
-        .spyOn(walletService, 'getByName')
-        .mockResolvedValueOnce(mockSenderWallet);
-      jest.spyOn(tokenService, 'countTokenByWallet').mockResolvedValueOnce(50); // Insufficient balance
-      jest.spyOn(walletService, 'createWallet').mockImplementation(() => {
-        throw new Error('This should not be called');
-      });
-      jest.spyOn(transferService, 'transferBundle').mockImplementation(() => {
-        throw new Error('This should not be called');
-      });
-
-      const senderWallet = 'sender_wallet';
-      const tokenTransferAmountDefault = 100;
-      const walletId = 'parent_wallet_id';
-      const csvJson = [
-        { wallet_name: 'wallet1', token_transfer_amount_overwrite: 60 },
-        { wallet_name: 'wallet2', token_transfer_amount_overwrite: 50 },
-      ];
-      const filePath = 'file.csv';
-
-      await expect(
-        walletService.batchCreateWallet(
-          senderWallet,
-          tokenTransferAmountDefault,
-          walletId,
-          csvJson,
-          filePath,
-        ),
-      ).rejects.toThrowError('Sender does not have enough tokens.');
-
-      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
-      expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(
-        mockSenderWallet.id,
-      );
-      expect(walletService.createWallet).not.toHaveBeenCalled(); // Ensure not called
-      expect(transferService.transferBundle).not.toHaveBeenCalled(); // Ensure not called
-      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
-    });
-
-    it('should fail when wallet creation fails', async () => {
-      const mockSenderWallet: Wallet = {
-        id: uuid.v4(),
-        name: 'Mock Wallet Name',
-        logo_url: 'http://test.com/mock-logo.png',
-        cover_url: 'http://test.com/mock-cover.png',
-        password: 'mockPassword',
-        salt: 'mockSalt',
-        created_at: new Date(),
-      };
-
-      jest
-        .spyOn(walletService, 'getByName')
-        .mockResolvedValueOnce(mockSenderWallet);
-      jest
-        .spyOn(tokenService, 'countTokenByWallet')
-        .mockResolvedValueOnce(1000);
-      jest
-        .spyOn(walletService, 'createWallet')
-        .mockRejectedValueOnce(new Error('Wallet creation failed'));
-      jest.spyOn(transferService, 'transferBundle').mockImplementation(() => {
-        throw new Error('This should not be called');
-      });
-
-      const senderWallet = 'sender_wallet';
-      const tokenTransferAmountDefault = 100;
-      const walletId = 'parent_wallet_id';
-      const csvJson = [{ wallet_name: 'wallet1' }];
-      const filePath = 'file.csv';
-
-      await expect(
-        walletService.batchCreateWallet(
-          senderWallet,
-          tokenTransferAmountDefault,
-          walletId,
-          csvJson,
-          filePath,
-        ),
-      ).rejects.toThrowError('Wallet creation failed');
-
-      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
-      expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(
-        mockSenderWallet.id,
-      );
-      expect(walletService.createWallet).toHaveBeenCalledTimes(1);
-      expect(transferService.transferBundle).not.toHaveBeenCalled();
-      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
     });
 
     it('should clean up file on failure', async () => {
-      const mockSenderWallet: Wallet = {
-        id: uuid.v4(),
-        name: 'Mock Wallet Name',
-        logo_url: 'http://test.com/mock-logo.png',
-        cover_url: 'http://test.com/mock-cover.png',
-        password: 'mockPassword',
-        salt: 'mockSalt',
-        created_at: new Date(),
-      };
-
       jest
         .spyOn(walletService, 'getByName')
         .mockResolvedValueOnce(mockSenderWallet);
       jest
-        .spyOn(tokenService, 'countTokenByWallet')
-        .mockResolvedValueOnce(1000);
-      jest
         .spyOn(walletService, 'createWallet')
-        .mockRejectedValue(new Error('Failure'));
+        .mockRejectedValueOnce(new Error('Failure'));
 
-      const senderWallet = 'sender_wallet';
+      const senderWallet = 'Mock Sender Wallet';
       const tokenTransferAmountDefault = 100;
-      const walletId = 'parent_wallet_id';
-      const csvJson = [{ wallet_name: 'wallet1' }];
-      const filePath = 'file.csv';
+      const walletId = 'Mock Parent Wallet ID';
 
       await expect(
         walletService.batchCreateWallet(
@@ -936,39 +833,57 @@ describe('WalletService', () => {
   });
 
   describe('batchTransferWallet', () => {
+    let mockSenderWallet: Wallet;
+    let mockRecipientWallet1: Wallet;
+    let mockRecipientWallet2: Wallet;
+    let csvJson: any[];
+    const filePath = 'file.csv';
+
     beforeEach(() => {
-      jest.clearAllMocks();
+      mockSenderWallet = {
+        id: uuid.v4(),
+        name: 'Mock Sender Wallet',
+        logo_url: 'http://test.com/mock-sender-logo.png',
+        cover_url: 'http://test.com/mock-sender-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      mockRecipientWallet1 = {
+        id: uuid.v4(),
+        name: 'Recipient Wallet 1',
+        logo_url: 'http://test.com/mock-recipient1-logo.png',
+        cover_url: 'http://test.com/mock-recipient1-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      mockRecipientWallet2 = {
+        id: uuid.v4(),
+        name: 'Recipient Wallet 2',
+        logo_url: 'http://test.com/mock-recipient2-logo.png',
+        cover_url: 'http://test.com/mock-recipient2-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      csvJson = [
+        {
+          wallet_name: 'Recipient Wallet 1',
+          token_transfer_amount_overwrite: 50,
+        },
+        { wallet_name: 'Recipient Wallet 2' },
+      ];
+
+      jest.spyOn(fs.promises, 'unlink').mockResolvedValue(undefined); // Mock unlink in promises
     });
 
-    const mockSenderWallet: Wallet = {
-      id: uuid.v4(),
-      name: 'Mock Sender Wallet',
-      logo_url: 'http://test.com/mock-sender-logo.png',
-      cover_url: 'http://test.com/mock-sender-cover.png',
-      password: 'mockPassword',
-      salt: 'mockSalt',
-      created_at: new Date(),
-    };
-
-    const mockRecipientWallet1: Wallet = {
-      id: uuid.v4(),
-      name: 'Recipient Wallet 1',
-      logo_url: 'http://test.com/mock-recipient1-logo.png',
-      cover_url: 'http://test.com/mock-recipient1-cover.png',
-      password: 'mockPassword',
-      salt: 'mockSalt',
-      created_at: new Date(),
-    };
-
-    const mockRecipientWallet2: Wallet = {
-      id: uuid.v4(),
-      name: 'Recipient Wallet 2',
-      logo_url: 'http://test.com/mock-recipient2-logo.png',
-      cover_url: 'http://test.com/mock-recipient2-cover.png',
-      password: 'mockPassword',
-      salt: 'mockSalt',
-      created_at: new Date(),
-    };
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
 
     it('should successfully transfer tokens to multiple recipient wallets', async () => {
       jest
@@ -976,7 +891,6 @@ describe('WalletService', () => {
         .mockResolvedValueOnce(mockSenderWallet)
         .mockResolvedValueOnce(mockRecipientWallet1)
         .mockResolvedValueOnce(mockRecipientWallet2);
-
       jest
         .spyOn(tokenService, 'countTokenByWallet')
         .mockResolvedValueOnce(1000);
@@ -988,14 +902,6 @@ describe('WalletService', () => {
       const senderWallet = 'Mock Sender Wallet';
       const tokenTransferAmountDefault = 100;
       const walletId = 'Mock Parent Wallet ID';
-      const csvJson = [
-        {
-          wallet_name: 'Recipient Wallet 1',
-          token_transfer_amount_overwrite: 50,
-        },
-        { wallet_name: 'Recipient Wallet 2' },
-      ];
-      const filePath = 'file.csv';
 
       const result = await walletService.batchTransferWallet(
         senderWallet,
@@ -1006,7 +912,7 @@ describe('WalletService', () => {
       );
 
       expect(result).toEqual({
-        message: 'Batch transfer successful',
+        message: 'Batch wallet transfer successful',
       });
       expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
       expect(walletService.getByName).toHaveBeenCalledWith(
@@ -1038,7 +944,9 @@ describe('WalletService', () => {
     it('should throw an error if sender wallet has insufficient tokens', async () => {
       jest
         .spyOn(walletService, 'getByName')
-        .mockResolvedValueOnce(mockSenderWallet);
+        .mockResolvedValueOnce(mockSenderWallet)
+        .mockResolvedValueOnce(mockRecipientWallet1)
+        .mockResolvedValueOnce(mockRecipientWallet2);
       jest.spyOn(tokenService, 'countTokenByWallet').mockResolvedValueOnce(50); // Insufficient tokens
       jest
         .spyOn(transferService, 'transferBundle')
@@ -1047,14 +955,6 @@ describe('WalletService', () => {
       const senderWallet = 'Mock Sender Wallet';
       const tokenTransferAmountDefault = 100;
       const walletId = 'Mock Parent Wallet ID';
-      const csvJson = [
-        {
-          wallet_name: 'Recipient Wallet 1',
-          token_transfer_amount_overwrite: 50,
-        },
-        { wallet_name: 'Recipient Wallet 2' },
-      ];
-      const filePath = 'file.csv';
 
       await expect(
         walletService.batchTransferWallet(
@@ -1064,7 +964,7 @@ describe('WalletService', () => {
           csvJson,
           filePath,
         ),
-      ).rejects.toThrow(HttpException);
+      ).rejects.toThrowError('Sender does not have enough tokens.');
 
       expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
       expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(

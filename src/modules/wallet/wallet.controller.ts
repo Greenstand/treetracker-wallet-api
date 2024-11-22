@@ -17,13 +17,10 @@ import { TrustFilterDto } from '../trust/dto/trust-filter.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import * as multer from 'multer';
-import { FileInterceptor } from '@nestjs/platform-express';
 import * as csvtojson from 'csvtojson';
-import { diskStorage } from 'multer';
-import * as uuid from 'uuid';
 import { BatchCreateWalletDto } from './dto/batch-create-wallet.dto';
 import { BatchTransferWalletDto } from './dto/batch-transfer-wallet.dto';
-import { csvFileFilter } from '../../common/utils/csvFileFilter';
+import { CsvFileUploadInterceptor } from '../../common/interceptors/csvFileUpload.interceptor';
 
 export const imageUpload = multer({
   fileFilter: (req, file, cb) => {
@@ -89,19 +86,7 @@ export class WalletController {
   }
 
   @Post('batch-create-wallet')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, callback) => {
-          const uniqueFilename = `${file.fieldname}-${uuid.v4()}-${file.originalname}`;
-          callback(null, uniqueFilename);
-        },
-      }),
-      fileFilter: csvFileFilter,
-      limits: { fileSize: 500000 }, // Set file size limit (500KB)
-    }),
-  )
+  @UseInterceptors(CsvFileUploadInterceptor())
   async batchCreateWallet(
     @Body() batchCreateWalletDto: BatchCreateWalletDto,
     @UploadedFile() file: Express.Multer.File,
@@ -109,7 +94,6 @@ export class WalletController {
     const { sender_wallet, token_transfer_amount_default, wallet_id } =
       batchCreateWalletDto;
 
-    // Convert the uploaded CSV file to JSON
     const csvJson = await csvtojson().fromFile(file.path);
     return this.walletService.batchCreateWallet(
       sender_wallet,
@@ -121,21 +105,21 @@ export class WalletController {
   }
 
   @Post('batch-transfer')
-  async batchTransfer(@Body() batchTransferWalletDto: BatchTransferWalletDto) {
-    const {
-      sender_wallet,
-      token_transfer_amount_default,
-      wallet_id,
-      csvJson,
-      filePath,
-    } = batchTransferWalletDto;
+  @UseInterceptors(CsvFileUploadInterceptor())
+  async batchTransfer(
+    @Body() batchTransferWalletDto: BatchTransferWalletDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const { sender_wallet, token_transfer_amount_default, wallet_id } =
+      batchTransferWalletDto;
 
+    const csvJson = await csvtojson().fromFile(file.path);
     return this.walletService.batchTransferWallet(
       sender_wallet,
       token_transfer_amount_default,
       wallet_id,
       csvJson,
-      filePath,
+      file.path,
     );
   }
 }

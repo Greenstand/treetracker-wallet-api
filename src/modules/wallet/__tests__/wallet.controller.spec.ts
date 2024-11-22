@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { WalletController } from '../wallet.controller';
 import { WalletService } from '../wallet.service';
 import { TrustService } from '../../trust/trust.service';
@@ -12,8 +13,9 @@ import {
   ENTITY_TRUST_STATE_TYPE,
   ENTITY_TRUST_TYPE,
 } from '../../trust/trust-enum';
-import { HttpStatus, HttpException } from '@nestjs/common';
 import { UpdateWalletDto } from '../dto/update-wallet.dto';
+import { BatchCreateWalletDto } from '../dto/batch-create-wallet.dto';
+import { BatchTransferWalletDto } from '../dto/batch-transfer-wallet.dto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -192,11 +194,7 @@ describe('WalletController', () => {
     const uploadsDir = path.join(__dirname, '../../../uploads');
     const testFilePath = path.join(uploadsDir, 'test-file.csv');
     let mockUploadedFile: Express.Multer.File;
-    let batchCreateWalletDto: {
-      sender_wallet: string;
-      token_transfer_amount_default: number;
-      wallet_id: string;
-    };
+    let batchCreateWalletDto: BatchCreateWalletDto;
 
     beforeEach(async () => {
       // Initialize DTO used in all tests
@@ -272,72 +270,97 @@ describe('WalletController', () => {
   });
 
   describe('batchTransferWallet', () => {
-    it('should return batch transfer wallet successful', async () => {
-      const transferData = {
+    const uploadsDir = path.join(__dirname, '../../../uploads');
+    const testFilePath = path.join(uploadsDir, 'test-file.csv');
+    let mockUploadedFile: Express.Multer.File;
+    let batchTransferWalletDto: BatchTransferWalletDto;
+
+    beforeEach(async () => {
+      // Initialize DTO
+      batchTransferWalletDto = {
         sender_wallet: 'sender_wallet_name',
         token_transfer_amount_default: 100,
         wallet_id: 'sender_wallet_id',
         csvJson: [
           {
-            wallet_name: 'recipient_wallet_1',
+            wallet_name: 'wallet1',
             token_transfer_amount_overwrite: 50,
           },
-          { wallet_name: 'recipient_wallet_2' },
+          { wallet_name: 'wallet2' },
         ],
-        filePath: '/path/to/file.csv',
+        filePath: testFilePath,
       };
 
+      // Ensure the uploads directory exists and create the mock file
+      await fs.mkdir(uploadsDir, { recursive: true });
+      await fs.writeFile(
+        testFilePath,
+        'wallet_name,token_transfer_amount_overwrite\nwallet1,50\nwallet2,\n',
+      );
+
+      mockUploadedFile = {
+        fieldname: 'file',
+        originalname: 'test.csv',
+        encoding: '7bit',
+        mimetype: 'text/csv',
+        destination: uploadsDir,
+        filename: 'test-file.csv',
+        path: testFilePath,
+        size: 1024,
+      } as Express.Multer.File;
+    });
+
+    afterEach(async () => {
+      // Clean up the uploads directory and reset mocks
+      await fs.rm(uploadsDir, { recursive: true, force: true });
+      jest.clearAllMocks(); // Reset all mocked functions
+    });
+
+    it('should return batch transfer wallet successful', async () => {
       jest
         .spyOn(walletService, 'batchTransferWallet')
-        .mockResolvedValue({ message: 'Batch transfer successful' });
+        .mockResolvedValue({ message: 'Batch wallet transfer successful' });
 
-      const result = await walletController.batchTransfer(transferData);
+      const result = await walletController.batchTransfer(
+        batchTransferWalletDto,
+        mockUploadedFile,
+      );
 
-      expect(result).toEqual({ message: 'Batch transfer successful' });
+      expect(result).toEqual({ message: 'Batch wallet transfer successful' });
+
+      const csvJson = [
+        {
+          wallet_name: 'wallet1',
+          token_transfer_amount_overwrite: 50,
+        },
+        { wallet_name: 'wallet2' },
+      ];
+
       expect(walletService.batchTransferWallet).toHaveBeenCalledWith(
-        transferData.sender_wallet,
-        transferData.token_transfer_amount_default,
-        transferData.wallet_id,
-        transferData.csvJson,
-        transferData.filePath,
+        batchTransferWalletDto.sender_wallet,
+        batchTransferWalletDto.token_transfer_amount_default,
+        batchTransferWalletDto.wallet_id,
+        csvJson,
+        testFilePath,
       );
     });
 
     it('should return batch transfer wallet failure', async () => {
-      const transferData = {
-        sender_wallet: 'sender_wallet_name',
-        token_transfer_amount_default: 100,
-        wallet_id: 'sender_wallet_id',
-        csvJson: [
-          {
-            wallet_name: 'recipient_wallet_1',
-            token_transfer_amount_overwrite: 50,
-          },
-          { wallet_name: 'recipient_wallet_2' },
-        ],
-        filePath: '/path/to/file.csv',
-      };
-
       jest
         .spyOn(walletService, 'batchTransferWallet')
         .mockRejectedValue(
           new HttpException(
-            'Failed to process batch transfer',
+            'Failed to process batch wallet transfer',
             HttpStatus.INTERNAL_SERVER_ERROR,
           ),
         );
 
       await expect(
-        walletController.batchTransfer(transferData),
-      ).rejects.toThrow(HttpException);
-
-      expect(walletService.batchTransferWallet).toHaveBeenCalledWith(
-        transferData.sender_wallet,
-        transferData.token_transfer_amount_default,
-        transferData.wallet_id,
-        transferData.csvJson,
-        transferData.filePath,
-      );
+        walletController.batchTransfer(
+          batchTransferWalletDto,
+          mockUploadedFile,
+        ),
+      ).rejects.toThrow('Failed to process batch wallet transfer');
     });
   });
 });

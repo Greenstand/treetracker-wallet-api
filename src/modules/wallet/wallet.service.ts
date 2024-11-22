@@ -466,55 +466,68 @@ export class WalletService {
     }[],
     filePath: string,
   ): Promise<{ message: string }> {
+    let senderWallet;
     try {
-      const senderWallet = await this.getByName(sender_wallet);
+      // Ensure sender_wallet exists
+      senderWallet = await this.getByName(sender_wallet);
+      if (!senderWallet) {
+        throw new HttpException(
+          'Sender wallet not found.',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
       const recipientWallets: { amount: number; walletDetails: any }[] = [];
       let totalAmountToTransfer = 0;
 
       for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
         const amount =
           token_transfer_amount_overwrite || token_transfer_amount_default;
-        if (amount && !sender_wallet) {
+
+        // Validate amount
+        if (amount <= 0) {
           throw new HttpException(
-            'sender_wallet is required for transfer.',
+            `Invalid transfer amount for wallet: ${wallet_name}`,
             HttpStatus.UNPROCESSABLE_ENTITY,
           );
         }
-        if (amount) {
-          totalAmountToTransfer += +amount;
-        }
+
+        // Fetch recipient wallet details
         const walletDetails = await this.getByName(wallet_name);
+        if (!walletDetails) {
+          throw new HttpException(
+            `Recipient wallet not found: ${wallet_name}`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
         recipientWallets.push({ amount, walletDetails });
+        totalAmountToTransfer += amount;
       }
 
+      // Validate sender wallet token balance
       const tokenCount = await this.tokenService.countTokenByWallet(
         senderWallet.id,
       );
       if (totalAmountToTransfer > tokenCount) {
         throw new HttpException(
-          'sender does not have enough tokens.',
+          'Sender does not have enough tokens.',
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
 
+      // Perform transfers
       for (const { walletDetails, amount } of recipientWallets) {
-        if (amount) {
-          await this.transferService.transferBundle(
-            wallet_id,
-            senderWallet,
-            walletDetails,
-            amount,
-            false,
-          );
-        }
+        await this.transferService.transferBundle(
+          wallet_id,
+          senderWallet,
+          walletDetails,
+          amount,
+          false,
+        );
       }
-      await fs.unlink(filePath).catch(() => {
-        console.error(`Failed to delete file at path: ${filePath}`);
-      });
 
-      return {
-        message: 'Batch transfer successful',
-      };
+      return { message: 'Batch wallet transfer successful' };
     } catch (e) {
       // Cleanup file and rethrow error
       await fs.unlink(filePath).catch(() => {
@@ -522,7 +535,7 @@ export class WalletService {
       });
 
       throw new HttpException(
-        e.message || 'Failed to process batch transfer',
+        e.message || 'Failed to process batch wallet transfer',
         e.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
