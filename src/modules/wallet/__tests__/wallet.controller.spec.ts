@@ -257,7 +257,10 @@ describe('WalletController', () => {
       jest
         .spyOn(walletService, 'batchCreateWallet')
         .mockRejectedValue(
-          new Error('Failed to process batch wallet creation'),
+          new HttpException(
+            'Failed to process batch wallet creation',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          ),
         );
 
       await expect(
@@ -325,7 +328,6 @@ describe('WalletController', () => {
         batchTransferWalletDto,
         mockUploadedFile,
       );
-
       expect(result).toEqual({ message: 'Batch wallet transfer successful' });
 
       const csvJson = [
