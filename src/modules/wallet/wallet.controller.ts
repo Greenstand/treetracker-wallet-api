@@ -23,6 +23,7 @@ import { diskStorage } from 'multer';
 import * as uuid from 'uuid';
 import { BatchCreateWalletDto } from './dto/batch-create-wallet.dto';
 import { BatchTransferWalletDto } from './dto/batch-transfer-wallet.dto';
+import { csvFileFilter } from '../../common/utils/csvFileFilter';
 
 export const imageUpload = multer({
   fileFilter: (req, file, cb) => {
@@ -97,6 +98,8 @@ export class WalletController {
           callback(null, uniqueFilename);
         },
       }),
+      fileFilter: csvFileFilter,
+      limits: { fileSize: 500000 }, // Set file size limit (500KB)
     }),
   )
   async batchCreateWallet(
@@ -108,8 +111,6 @@ export class WalletController {
 
     // Convert the uploaded CSV file to JSON
     const csvJson = await csvtojson().fromFile(file.path);
-
-    // Call the batchCreateWallet service method
     return this.walletService.batchCreateWallet(
       sender_wallet,
       token_transfer_amount_default,

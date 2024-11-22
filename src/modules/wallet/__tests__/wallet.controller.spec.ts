@@ -192,8 +192,20 @@ describe('WalletController', () => {
     const uploadsDir = path.join(__dirname, '../../../uploads');
     const testFilePath = path.join(uploadsDir, 'test-file.csv');
     let mockUploadedFile: Express.Multer.File;
+    let batchCreateWalletDto: {
+      sender_wallet: string;
+      token_transfer_amount_default: number;
+      wallet_id: string;
+    };
 
     beforeEach(async () => {
+      // Initialize DTO used in all tests
+      batchCreateWalletDto = {
+        sender_wallet: 'sender_wallet_name',
+        token_transfer_amount_default: 100,
+        wallet_id: 'parent_wallet_id',
+      };
+
       // Ensure the uploads directory exists and create the mock file
       await fs.mkdir(uploadsDir, { recursive: true });
       await fs.writeFile(
@@ -219,13 +231,7 @@ describe('WalletController', () => {
       jest.clearAllMocks(); // Reset all mocked functions
     });
 
-    it('should process batch wallet creation', async () => {
-      const batchCreateWalletDto = {
-        sender_wallet: 'sender_wallet_name',
-        token_transfer_amount_default: 100,
-        wallet_id: 'parent_wallet_id',
-      };
-
+    it('should return batch wallet creation successful', async () => {
       jest.spyOn(walletService, 'batchCreateWallet').mockResolvedValue({
         message: 'Batch wallet creation successful',
       });
@@ -250,12 +256,6 @@ describe('WalletController', () => {
     });
 
     it('should return batch wallet creation failure', async () => {
-      const batchCreateWalletDto = {
-        sender_wallet: 'sender_wallet_name',
-        token_transfer_amount_default: 100,
-        wallet_id: 'parent_wallet_id',
-      };
-
       jest
         .spyOn(walletService, 'batchCreateWallet')
         .mockRejectedValue(
