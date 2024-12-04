@@ -201,7 +201,15 @@ describe('WalletController', () => {
       batchCreateWalletDto = {
         sender_wallet: 'sender_wallet_name',
         token_transfer_amount_default: 100,
-        wallet_id: 'parent_wallet_id',
+        wallet_id: 'sender_wallet_id',
+        csvJson: [
+          {
+            wallet_name: 'wallet1',
+            token_transfer_amount_overwrite: 50,
+          },
+          { wallet_name: 'wallet2' },
+        ],
+        filePath: testFilePath,
       };
 
       // Ensure the uploads directory exists and create the mock file

@@ -1,4 +1,13 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  ValidateNested,
+  IsNumber,
+  Validate,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { UniqueWalletNameConstraint, CsvItemDto } from './csv-item.dto';
 
 export class BatchCreateWalletDto {
   @IsString()
@@ -12,4 +21,14 @@ export class BatchCreateWalletDto {
   @IsString()
   @IsOptional()
   wallet_id: string;
+
+  @IsArray()
+  @Validate(UniqueWalletNameConstraint)
+  @ValidateNested({ each: true })
+  @Type(() => CsvItemDto)
+  csvJson: CsvItemDto[];
+
+  @IsString()
+  @IsOptional()
+  filePath: string;
 }
