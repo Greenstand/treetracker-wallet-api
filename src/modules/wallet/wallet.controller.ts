@@ -118,6 +118,7 @@ export class WalletController {
 
   @Post('batch-transfer')
   @UseInterceptors(CsvFileUploadInterceptor())
+  @UsePipes(new ValidationPipe({ transform: true }))
   async batchTransfer(
     @Body() batchTransferWalletDto: BatchTransferWalletDto,
     @UploadedFile() file: Express.Multer.File,
