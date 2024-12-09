@@ -27,19 +27,19 @@ describe('Trust Model', () => {
 
   describe('getTrustRelationships', () => {
     const walletId = uuid();
-    const managedWallets = [{id: '90f8b2ab-c101-405d-922a-0a64dbe64ab6'}];
-    const managedWalletIds = managedWallets.map(wallet => wallet.id);
-  const orConditions = [
-    { actor_wallet_id: walletId },
-    { target_wallet_id: walletId },
-    { originator_wallet_id: walletId },
-  ];
+    const managedWallets = [{ id: '90f8b2ab-c101-405d-922a-0a64dbe64ab6' }];
+    const managedWalletIds = managedWallets.map((wallet) => wallet.id);
+    const orConditions = [
+      { actor_wallet_id: walletId },
+      { target_wallet_id: walletId },
+      { originator_wallet_id: walletId },
+    ];
 
-  managedWalletIds.forEach((managedWalletId) => {
-    orConditions.push({ actor_wallet_id: managedWalletId });
-    orConditions.push({ target_wallet_id: managedWalletId });
-    orConditions.push({ originator_wallet_id: managedWalletId });
-  });
+    managedWalletIds.forEach((managedWalletId) => {
+      orConditions.push({ actor_wallet_id: managedWalletId });
+      orConditions.push({ target_wallet_id: managedWalletId });
+      orConditions.push({ originator_wallet_id: managedWalletId });
+    });
     const filter = {
       and: [
         {
@@ -50,7 +50,7 @@ describe('Trust Model', () => {
 
     it('should get relationships', async () => {
       trustRepositoryStub.getByFilter.resolves(['relationship1']);
-    
+
       const result = await trustModel.getTrustRelationships({
         managedWallets,
         walletId,
@@ -59,12 +59,17 @@ describe('Trust Model', () => {
         offset: 1,
       });
       expect(result).eql(['relationship1']);
-      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(filter, {
-        limit: 10,
-        offset: 1,
-        order: undefined,
-        sort_by: undefined
-      });
+      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(
+        filter,
+        {
+          limit: 10,
+          offset: 1,
+          order: undefined,
+          sort_by: undefined,
+        },
+        walletId,
+        managedWalletIds,
+      );
     });
 
     it('should get relationships -- state', async () => {
@@ -85,8 +90,10 @@ describe('Trust Model', () => {
           limit: 10,
           offset: 1,
           order: undefined,
-          sort_by: undefined
+          sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -109,8 +116,10 @@ describe('Trust Model', () => {
           limit: 10,
           offset: 11,
           order: undefined,
-          sort_by: undefined
+          sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -133,8 +142,10 @@ describe('Trust Model', () => {
           limit: 101,
           offset: 1,
           order: undefined,
-          sort_by: undefined
+          sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -161,8 +172,10 @@ describe('Trust Model', () => {
           limit: 100,
           offset: 0,
           order: undefined,
-          sort_by: undefined
+          sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
   });
@@ -739,12 +752,13 @@ describe('Trust Model', () => {
   it('updateTrustState', async () => {
     trustRepositoryStub.update.resolves({ status: 'updated' });
 
-    const now = new Date(); 
-    const formattedDate = `${(now.getMonth() + 1).toString().padStart(2, '0')}/${now
+    const now = new Date();
+    const formattedDate = `${(now.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}/${now
       .getDate()
       .toString()
       .padStart(2, '0')}/${now.getFullYear()}`;
-
 
     const result = await trustModel.updateTrustState(
       {
@@ -767,7 +781,7 @@ describe('Trust Model', () => {
     expect(trustRepositoryStub.update).calledOnceWithExactly({
       id: 'trustId',
       state: 'new state',
-      updated_at: formattedDate
+      updated_at: formattedDate,
     });
   });
 
@@ -910,7 +924,7 @@ describe('Trust Model', () => {
     });
 
     it('should error out -- no permission to accept', async () => {
-      trustRepositoryStub.getByFilter.resolves({count: 0, result: []});
+      trustRepositoryStub.getByFilter.resolves({ count: 0, result: [] });
       const trustRelationshipId = uuid();
       const walletId = uuid();
 
@@ -938,9 +952,10 @@ describe('Trust Model', () => {
       const trustRelationshipId = uuid();
       const walletId = uuid();
 
-      trustRepositoryStub.getByFilter.resolves({count: 1, result:[
-        { originator_wallet_id: walletId, id: trustRelationshipId },
-      ]});
+      trustRepositoryStub.getByFilter.resolves({
+        count: 1,
+        result: [{ originator_wallet_id: walletId, id: trustRelationshipId }],
+      });
       updateTrustStateStub.resolves('state cancelled');
       const result = await trustModel.cancelTrustRequest({
         trustRelationshipId,
