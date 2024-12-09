@@ -45,7 +45,7 @@ class Trust {
    */
   async getTrustRelationships({
     walletId,
-    managedWallets=[],
+    managedWallets = [],
     state,
     type,
     request_type,
@@ -55,13 +55,14 @@ class Trust {
     search,
     order,
   }) {
-    const managedWalletIds = managedWallets.map(wallet => wallet.id);
+    const managedWalletIds = managedWallets.map((wallet) => wallet.id);
+
     const orConditions = [
       { actor_wallet_id: walletId },
       { target_wallet_id: walletId },
       { originator_wallet_id: walletId },
     ];
-  
+
     managedWalletIds.forEach((managedWalletId) => {
       orConditions.push({ actor_wallet_id: managedWalletId });
       orConditions.push({ target_wallet_id: managedWalletId });
@@ -92,9 +93,19 @@ class Trust {
         ],
       });
     }
-    return this._trustRepository.getByFilter(filter, { offset, limit, sort_by, order });
+    return this._trustRepository.getByFilter(
+      filter,
+      {
+        offset,
+        limit,
+        sort_by,
+        order,
+      },
+      walletId,
+      managedWalletIds,
+    );
   }
-  
+
   async getTrustRelationshipsCount({ walletId, state, type, request_type }) {
     const filter = Trust.getTrustRelationshipFilter({
       walletId,
@@ -235,8 +246,8 @@ class Trust {
   // check if I (current wallet) can add a new trust like this
   async checkDuplicateRequest({ walletId, trustRelationship }) {
     let trustRelationships = await this.getTrustRelationships({ walletId });
-       if (trustRelationships.result) {
-        trustRelationships = trustRelationships.result;
+    if (trustRelationships.result) {
+      trustRelationships = trustRelationships.result;
     }
     if (
       trustRelationship.type ===
@@ -380,8 +391,10 @@ class Trust {
 
   async updateTrustState(trustRelationship, state) {
     const trustRelationshipToUpdate = { ...trustRelationship };
-    const now = new Date(); 
-    const formattedDate = `${(now.getMonth() + 1).toString().padStart(2, '0')}/${now
+    const now = new Date();
+    const formattedDate = `${(now.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}/${now
       .getDate()
       .toString()
       .padStart(2, '0')}/${now.getFullYear()}`;
