@@ -7,6 +7,39 @@ class TrustRepository extends BaseRepository {
     this._session = session;
   }
 
+  async getById(id) {
+    const object = await this._session
+      .getDB()
+      .select(
+        'wallet_trust.*',
+        'originator_wallet.name as originating_wallet',
+        'actor_wallet.name as actor_wallet',
+        'target_wallet.name as target_wallet',
+      )
+      .table(this._tableName)
+      .leftJoin(
+        'wallet as originator_wallet',
+        'wallet_trust.originator_wallet_id',
+        '=',
+        'originator_wallet.id',
+      )
+      .leftJoin(
+        'wallet as actor_wallet',
+        'wallet_trust.actor_wallet_id',
+        '=',
+        'actor_wallet.id',
+      )
+      .leftJoin(
+        'wallet as target_wallet',
+        'wallet_trust.target_wallet_id',
+        '=',
+        'target_wallet.id',
+      )
+      .where('wallet_trust.id', id)
+      .first();
+    return object;
+  }
+
   async getByOriginatorId(id) {
     const list = await this._session
       .getDB()
@@ -89,7 +122,6 @@ class TrustRepository extends BaseRepository {
       if (limitOptions.sort_by) {
         column = limitOptions.sort_by;
       }
-
       if (limitOptions.limit) {
         promise = promise.limit(limitOptions.limit);
       }

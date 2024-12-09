@@ -472,7 +472,7 @@ class Trust {
     if (!trustRelationship) {
       throw new HttpError(
         404,
-        'No such trust relationship exists or it is not associated with the current wallet.',
+        `Cannot find trust relationship by id: ${trustRelationshipId}`,
       );
     }
 
@@ -539,28 +539,37 @@ class Trust {
   }
 
   async getTrustRelationshipById({ walletId, trustRelationshipId }) {
-    const filter = {
-      and: [
-        {
-          or: [
-            { actor_wallet_id: walletId },
-            { target_wallet_id: walletId },
-            { originator_wallet_id: walletId },
-          ],
-        },
-        {
-          'wallet_trust.id': trustRelationshipId,
-        },
-      ],
-    };
-
-    const [trustRelationship] = await this._trustRepository.getByFilter(filter);
+    const trustRelationship = await this._trustRepository.getById(
+      trustRelationshipId,
+    );
 
     if (!trustRelationship) {
       throw new HttpError(
         404,
-        'No such trust relationship exists or it is not associated with the current wallet.',
+        `Cannot find trust relationship by id: ${trustRelationshipId}`,
       );
+    }
+
+    const walletModel = new Wallet(this._session);
+    const hasControlOverActor = await walletModel.hasControlOver(
+      walletId,
+      trustRelationship.actor_wallet_id,
+    );
+    const hasControlOverTarget = await walletModel.hasControlOver(
+      walletId,
+      trustRelationship.target_wallet_id,
+    );
+    const hasControlOverOriginator = await walletModel.hasControlOver(
+      walletId,
+      trustRelationship.originator_wallet_id,
+    );
+
+    if (
+      !hasControlOverActor &&
+      !hasControlOverTarget &&
+      !hasControlOverOriginator
+    ) {
+      throw new HttpError(403, 'Have no permission to get this relationship');
     }
 
     return trustRelationship;
