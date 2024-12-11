@@ -940,7 +940,7 @@ describe('Trust Model', () => {
 
       expect(error.code).eql(404);
       expect(error.message).eql(
-        'No such trust relationship exists or it is not associated with the current wallet.',
+        `Cannot find trust relationship by id: ${trustRelationshipId}`,
       );
       expect(trustRepositoryStub.getByFilter).calledOnceWithExactly({
         'wallet_trust.id': trustRelationshipId,
@@ -1099,31 +1099,29 @@ describe('Trust Model', () => {
   describe('getTrustRelationshipById', () => {
     const walletId = uuid();
     const trustRelationshipId = uuid();
-    const filter = {
-      and: [
-        {
-          or: [
-            { actor_wallet_id: walletId },
-            { target_wallet_id: walletId },
-            { originator_wallet_id: walletId },
-          ],
-        },
-        {
-          'wallet_trust.id': trustRelationshipId,
-        },
-      ],
-    };
+    const hasControlStub = sinon.stub(Wallet.prototype, 'hasControlOver');
 
     it('should get relationship', async () => {
-      trustRepositoryStub.getByFilter.resolves(['trustRelationship']);
+      trustRepositoryStub.getById.resolves({
+        id: trustRelationshipId,
+        actor_wallet_id: walletId,
+        target_wallet_id: walletId,
+        originator_wallet_id: walletId,
+      });
+      hasControlStub.resolves(true);
       const result = await trustModel.getTrustRelationshipById({
         walletId,
         trustRelationshipId,
       });
-      expect(result).eql('trustRelationship');
-      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly({
-        ...filter,
+      expect(result).eql({
+        id: trustRelationshipId,
+        actor_wallet_id: walletId,
+        target_wallet_id: walletId,
+        originator_wallet_id: walletId,
       });
+      expect(trustRepositoryStub.getById).calledOnceWithExactly(
+        trustRelationshipId,
+      );
     });
   });
 });
