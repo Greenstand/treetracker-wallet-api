@@ -1,3 +1,11 @@
+## [1.40.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.4...v1.40.5) (2024-12-11)
+
+
+### Bug Fixes
+
+* rewrite function to get record correctly ([81c9493](https://github.com/Greenstand/treetracker-wallet-api/commit/81c9493077f2992cf86401717ae4f3650c6511b5))
+* update tests ([e561d42](https://github.com/Greenstand/treetracker-wallet-api/commit/e561d421c807a3a0fafb776e8d1d6d2addd59d80))
+
 ## [1.40.4](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.3...v1.40.4) (2024-10-29)
 
 
