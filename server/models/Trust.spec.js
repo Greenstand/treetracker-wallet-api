@@ -59,12 +59,17 @@ describe('Trust Model', () => {
         offset: 1,
       });
       expect(result).eql(['relationship1']);
-      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(filter, {
-        limit: 10,
-        offset: 1,
-        order: undefined,
-        sort_by: undefined,
-      });
+      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(
+        filter,
+        {
+          limit: 10,
+          offset: 1,
+          order: undefined,
+          sort_by: undefined,
+        },
+        walletId,
+        managedWalletIds,
+      );
     });
 
     it('should get relationships -- state', async () => {
@@ -87,6 +92,8 @@ describe('Trust Model', () => {
           order: undefined,
           sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -111,6 +118,8 @@ describe('Trust Model', () => {
           order: undefined,
           sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -135,6 +144,8 @@ describe('Trust Model', () => {
           order: undefined,
           sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -163,6 +174,8 @@ describe('Trust Model', () => {
           order: undefined,
           sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
   });

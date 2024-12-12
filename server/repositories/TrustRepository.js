@@ -70,7 +70,12 @@ class TrustRepository extends BaseRepository {
     return list;
   }
 
-  async getByFilter(filter, limitOptions) {
+  async getByFilter(
+    filter,
+    limitOptions = {},
+    loggedInWalletId = '',
+    managedWalletIds = [],
+  ) {
     let promise = this._session
       .getDB()
       .select(
@@ -101,15 +106,7 @@ class TrustRepository extends BaseRepository {
       )
       .where((builder) => this.whereBuilder(filter, builder));
 
-  const count = await this._session.getDB().from(promise.as('p')).count('*');
-
-    if (limitOptions && limitOptions.limit) {
-      promise = promise.limit(limitOptions.limit);
-    }
-
-    if (limitOptions && limitOptions.offset) {
-      promise = promise.offset(limitOptions.offset);
-    }
+    const count = await this._session.getDB().from(promise.as('p')).count('*');
 
     let order = 'desc';
     let column = 'created_at';
@@ -130,9 +127,38 @@ class TrustRepository extends BaseRepository {
         promise = promise.offset(limitOptions.offset);
       }
     }
-    promise = promise.orderBy(column, order);
 
-    const result = await promise;
+    // order by new column priority
+    // priority is 1 when state is requested and
+    // target is current wallet or one of its managed wallets
+    if (managedWalletIds.length > 0 && loggedInWalletId) {
+      promise = promise.select(
+        this._session.getDB().raw(
+          `CASE
+         WHEN wallet_trust.state = 'requested' AND
+              (wallet_trust.target_wallet_id = ? OR wallet_trust.target_wallet_id IN (${managedWalletIds
+                .map(() => '?')
+                .join(',')})) THEN 1
+         ELSE 0
+       END AS priority`,
+          [loggedInWalletId, ...managedWalletIds],
+        ),
+      );
+      promise = promise.orderBy([
+        { column: 'priority', order: 'desc' },
+        { column, order }, // secondary
+        { column: 'id', order }, // tertiary sort, prevent duplicate records among pages
+      ]);
+    } else {
+      // normal ordering for other endpoints
+      promise = promise.orderBy(column, order);
+    }
+
+    let result = await promise;
+
+    // remove priority column from result
+    // eslint-disable-next-line no-unused-vars
+    result = result.map(({ priority, ...rest }) => rest);
 
     return { result, count: +count[0].count };
   }

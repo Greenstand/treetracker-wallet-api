@@ -16,7 +16,17 @@ class TrustService {
   async getTrustRelationships(
     loggedInWalletId,
     managedWallets,
-    { walletId, state, type, request_type, offset, limit,sort_by, order, search },
+    {
+      walletId,
+      state,
+      type,
+      request_type,
+      offset,
+      limit,
+      sort_by,
+      order,
+      search,
+    },
   ) {
     // check if wallet exists first
     // throws error if no wallet matching walletId exists
@@ -43,7 +53,7 @@ class TrustService {
       limit,
       sort_by,
       order,
-      search
+      search,
     });
 
     // const count = await this._trust.getTrustRelationshipsCount({
@@ -58,7 +68,13 @@ class TrustService {
 
   // limit and offset not feasible using the current implementation
   // except if done manually or coming up with a single query
-  async getAllTrustRelationships({ walletId, state, type, request_type, search }) {
+  async getAllTrustRelationships({
+    walletId,
+    state,
+    type,
+    request_type,
+    search,
+  }) {
     const walletModel = new Wallet(this._session);
     const { wallets } = await walletModel.getAllWallets(
       walletId,
@@ -72,13 +88,17 @@ class TrustService {
     const managedWallets = [];
     await Promise.all(
       wallets.map(async (w) => {
-        const trustRelationships = await this.getTrustRelationships(walletId, managedWallets,{
-          walletId: w.id,
-          state,
-          type,
-          request_type,
-          search
-        });
+        const trustRelationships = await this.getTrustRelationships(
+          walletId,
+          managedWallets,
+          {
+            walletId: w.id,
+            state,
+            type,
+            request_type,
+            search,
+          },
+        );
         alltrustRelationships.push(...trustRelationships.result);
       }),
     );
