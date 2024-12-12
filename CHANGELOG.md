@@ -1,3 +1,16 @@
+# [1.41.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.5...v1.41.0) (2024-12-12)
+
+
+### Bug Fixes
+
+* record duplication issue, priority column ([c123015](https://github.com/Greenstand/treetracker-wallet-api/commit/c123015937e2df2ef7be65149dca49e45c78e799))
+* update tests ([3fadb95](https://github.com/Greenstand/treetracker-wallet-api/commit/3fadb9559755268f6d2c8ae1b6752dcf99a63247))
+
+
+### Features
+
+* update trust relationship ordering ([56a5984](https://github.com/Greenstand/treetracker-wallet-api/commit/56a5984038b195c928e78efe9ec8c373081e947c))
+
 ## [1.40.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.4...v1.40.5) (2024-12-11)
 
 
