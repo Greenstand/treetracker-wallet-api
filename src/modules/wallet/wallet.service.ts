@@ -415,6 +415,9 @@ export class WalletService {
       } of walletsToCreate) {
         const newWallet = await this.createWallet(wallet_id, walletName);
 
+        // debug
+        console.log('checkpoint 1');
+
         if (amount && senderWallet) {
           await this.transferService.transferBundle(
             wallet_id,
@@ -425,6 +428,9 @@ export class WalletService {
           );
         }
 
+        // debug
+        console.log('checkpoint 2');
+
         if (extra_wallet_data_logo_url || extra_wallet_data_cover_url) {
           await this.addWalletToMapConfig({
             walletId: newWallet.id,
@@ -433,6 +439,10 @@ export class WalletService {
             walletCoverUrl: extra_wallet_data_cover_url,
           });
         }
+
+        // debug
+        console.log('checkpoint 3');
+
         createdWallets.push(newWallet);
       }
 

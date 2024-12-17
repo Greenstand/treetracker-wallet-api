@@ -13,6 +13,9 @@ export class UniqueWalletNameConstraint
   implements ValidatorConstraintInterface
 {
   validate(csvJson: CsvItemDto[]): boolean {
+    if (!csvJson || !Array.isArray(csvJson)) {
+      return false;
+    }
     const walletNames = csvJson.map((item) => item.wallet_name);
     return walletNames.length === new Set(walletNames).size;
   }
@@ -33,5 +36,9 @@ export class CsvItemDto {
 
   @IsOptional()
   @IsString()
-  extra_wallet_data_about?: string;
+  extra_wallet_data_logo_url?: string;
+
+  @IsOptional()
+  @IsString()
+  extra_wallet_data_cover_url?: string;
 }

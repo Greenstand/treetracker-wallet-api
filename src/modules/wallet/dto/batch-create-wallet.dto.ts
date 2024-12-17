@@ -1,13 +1,6 @@
-import {
-  IsString,
-  IsArray,
-  IsOptional,
-  ValidateNested,
-  IsNumber,
-  Validate,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { UniqueWalletNameConstraint, CsvItemDto } from './csv-item.dto';
+import { IsString, IsOptional, IsNumber, ValidateIf } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { CsvItemDto } from './csv-item.dto';
 
 export class BatchCreateWalletDto {
   @IsString()
@@ -16,16 +9,22 @@ export class BatchCreateWalletDto {
 
   @IsNumber()
   @IsOptional()
+  @ValidateIf((o) => o.token_transfer_amount_default !== undefined)
+  @Transform(({ value }) => {
+    if (value === '') return undefined;
+    const num = Number(value);
+    return isNaN(num) ? value : num;
+  })
   token_transfer_amount_default: number;
 
   @IsString()
   @IsOptional()
   wallet_id: string;
 
-  @IsArray()
-  @Validate(UniqueWalletNameConstraint)
-  @ValidateNested({ each: true })
-  @Type(() => CsvItemDto)
+  // @IsArray()
+  // @Validate(UniqueWalletNameConstraint)
+  // @ValidateNested({ each: true })
+  // @Type(() => CsvItemDto)
   csvJson: CsvItemDto[];
 
   @IsString()

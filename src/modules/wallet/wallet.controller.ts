@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -23,6 +24,9 @@ import * as csvtojson from 'csvtojson';
 import { BatchCreateWalletDto } from './dto/batch-create-wallet.dto';
 import { BatchTransferWalletDto } from './dto/batch-transfer-wallet.dto';
 import { CsvFileUploadInterceptor } from '../../common/interceptors/csvFileUpload.interceptor';
+import { plainToClass } from 'class-transformer';
+import { CsvItemDto } from './dto/csv-item.dto';
+import { validate } from 'class-validator';
 
 export const imageUpload = multer({
   fileFilter: (req, file, cb) => {
@@ -94,26 +98,42 @@ export class WalletController {
     @Body() batchCreateWalletDto: BatchCreateWalletDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const { path } = file;
-    const csvJson = await csvtojson().fromFile(path);
-    batchCreateWalletDto.csvJson = csvJson;
-    batchCreateWalletDto.filePath = path;
+    if (!file) {
+      throw new BadRequestException('CSV file is required');
+    }
 
-    const {
-      sender_wallet,
-      token_transfer_amount_default,
-      wallet_id,
-      csvJson: validatedCsvJson,
-      filePath,
-    } = batchCreateWalletDto;
+    try {
+      const csvJson = await csvtojson().fromFile(file.path);
 
-    return await this.walletService.batchCreateWallet(
-      sender_wallet,
-      token_transfer_amount_default,
-      wallet_id,
-      validatedCsvJson,
-      filePath,
-    );
+      // Validate CSV data
+      const csvItems = csvJson.map((item) => plainToClass(CsvItemDto, item));
+      const errors = await validate(csvItems);
+      if (errors.length > 0) {
+        throw new BadRequestException(errors);
+      }
+
+      // Check for unique wallet names
+      const walletNames = csvItems.map((item) => item.wallet_name);
+      if (walletNames.length !== new Set(walletNames).size) {
+        throw new BadRequestException(
+          'Each wallet_name in csvJson must be unique.',
+        );
+      }
+
+      batchCreateWalletDto.csvJson = csvItems;
+      batchCreateWalletDto.filePath = file.path;
+
+      const result = await this.walletService.batchCreateWallet(
+        batchCreateWalletDto.sender_wallet,
+        batchCreateWalletDto.token_transfer_amount_default,
+        batchCreateWalletDto.wallet_id,
+        batchCreateWalletDto.csvJson,
+        batchCreateWalletDto.filePath,
+      );
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post('batch-transfer')
