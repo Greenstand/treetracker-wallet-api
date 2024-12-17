@@ -1,16 +1,18 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   Patch,
   Post,
   Query,
   Request,
+  UploadedFile,
   UploadedFiles,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { TrustService } from '../trust/trust.service';
@@ -18,6 +20,13 @@ import { TrustFilterDto } from '../trust/dto/trust-filter.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import * as multer from 'multer';
+import * as csvtojson from 'csvtojson';
+import { BatchCreateWalletDto } from './dto/batch-create-wallet.dto';
+import { BatchTransferWalletDto } from './dto/batch-transfer-wallet.dto';
+import { CsvFileUploadInterceptor } from '../../common/interceptors/csvFileUpload.interceptor';
+import { plainToClass } from 'class-transformer';
+import { CsvItemDto } from './dto/csv-item.dto';
+import { validate } from 'class-validator';
 
 export const imageUpload = multer({
   fileFilter: (req, file, cb) => {
@@ -82,33 +91,77 @@ export class WalletController {
     return await this.trustService.getTrustRelationships(filterDto);
   }
 
-  // todo: post batch-create-wallet
+  @Post('batch-create-wallet')
+  @UseInterceptors(CsvFileUploadInterceptor())
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async batchCreateWallet(
+    @Body() batchCreateWalletDto: BatchCreateWalletDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('CSV file is required');
+    }
+
+    try {
+      const csvJson = await csvtojson().fromFile(file.path);
+
+      // Validate CSV data
+      const csvItems = csvJson.map((item) => plainToClass(CsvItemDto, item));
+      const errors = await validate(csvItems);
+      if (errors.length > 0) {
+        throw new BadRequestException(errors);
+      }
+
+      // Check for unique wallet names
+      const walletNames = csvItems.map((item) => item.wallet_name);
+      if (walletNames.length !== new Set(walletNames).size) {
+        throw new BadRequestException(
+          'Each wallet_name in csvJson must be unique.',
+        );
+      }
+
+      batchCreateWalletDto.csvJson = csvItems;
+      batchCreateWalletDto.filePath = file.path;
+
+      const result = await this.walletService.batchCreateWallet(
+        batchCreateWalletDto.sender_wallet,
+        batchCreateWalletDto.token_transfer_amount_default,
+        batchCreateWalletDto.wallet_id,
+        batchCreateWalletDto.csvJson,
+        batchCreateWalletDto.filePath,
+      );
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Post('batch-transfer')
+  @UseInterceptors(CsvFileUploadInterceptor())
+  @UsePipes(new ValidationPipe({ transform: true }))
   async batchTransfer(
-    @Body('sender_wallet') senderWallet: string,
-    @Body('token_transfer_amount_default') tokenTransferAmountDefault: number,
-    @Body('wallet_id') walletId: string,
-    @Body('csvJson')
-    csvJson: {
-      wallet_name: string;
-      token_transfer_amount_overwrite?: number;
-    }[],
-    @Body('filePath') filePath: string,
+    @Body() batchTransferWalletDto: BatchTransferWalletDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    try {
-      return await this.walletService.batchTransferWallet(
-        senderWallet,
-        tokenTransferAmountDefault,
-        walletId,
-        csvJson,
-        filePath,
-      );
-    } catch (error) {
-      throw new HttpException(
-        error.message || 'Failed to process batch transfer',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    const { path } = file;
+    const csvJson = await csvtojson().fromFile(path);
+    batchTransferWalletDto.csvJson = csvJson;
+    batchTransferWalletDto.filePath = path;
+
+    const {
+      sender_wallet,
+      token_transfer_amount_default,
+      wallet_id,
+      csvJson: validatedCsvJson,
+      filePath,
+    } = batchTransferWalletDto;
+
+    return await this.walletService.batchTransferWallet(
+      sender_wallet,
+      token_transfer_amount_default,
+      wallet_id,
+      validatedCsvJson,
+      filePath,
+    );
   }
 }
