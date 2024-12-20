@@ -70,7 +70,6 @@ export class TransferService {
         HttpStatus.CONFLICT,
       );
     }
-
     const isDeduct = await this.isDeduct(walletLoginId, sender);
     const hasTrust = await this.trustService.hasTrust(
       walletLoginId,

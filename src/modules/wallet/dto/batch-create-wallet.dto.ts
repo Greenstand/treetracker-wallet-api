@@ -21,10 +21,6 @@ export class BatchCreateWalletDto {
   @IsOptional()
   wallet_id: string;
 
-  // @IsArray()
-  // @Validate(UniqueWalletNameConstraint)
-  // @ValidateNested({ each: true })
-  // @Type(() => CsvItemDto)
   csvJson: CsvItemDto[];
 
   @IsString()

@@ -107,9 +107,11 @@ export class WalletController {
 
       // Validate CSV data
       const csvItems = csvJson.map((item) => plainToClass(CsvItemDto, item));
-      const errors = await validate(csvItems);
-      if (errors.length > 0) {
-        throw new BadRequestException(errors);
+      for (const item of csvItems) {
+        const errors = await validate(item);
+        if (errors.length > 0) {
+          throw new BadRequestException(errors);
+        }
       }
 
       // Check for unique wallet names

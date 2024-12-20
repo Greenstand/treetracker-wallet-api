@@ -6,6 +6,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 // Custom validator to check for unique `wallet_name` values in the csvJson array
 @ValidatorConstraint({ async: false })
@@ -32,6 +33,8 @@ export class CsvItemDto {
 
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
+  @Transform(({ value }) => (value === '' ? undefined : Number(value)))
   token_transfer_amount_overwrite?: number;
 
   @IsOptional()
