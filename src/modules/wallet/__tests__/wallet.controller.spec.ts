@@ -14,7 +14,10 @@ import {
   ENTITY_TRUST_TYPE,
 } from '../../trust/trust-enum';
 import { UpdateWalletDto } from '../dto/update-wallet.dto';
-import { BatchWalletOperationDto } from '../dto/batch-wallet-operation.dto';
+import {
+  BatchCreateWalletDto,
+  BatchTransferWalletDto,
+} from '../dto/batch-wallet-operation.dto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -193,11 +196,11 @@ describe('WalletController', () => {
     const uploadsDir = path.join(__dirname, '../../../uploads');
     const testFilePath = path.join(uploadsDir, 'test-file.csv');
     let mockUploadedFile: Express.Multer.File;
-    let batchWalletOperationDto: BatchWalletOperationDto;
+    let batchCreateWalletDto: BatchCreateWalletDto;
 
     beforeEach(async () => {
       // Initialize DTO used in all tests
-      batchWalletOperationDto = {
+      batchCreateWalletDto = {
         sender_wallet: 'sender_wallet_name',
         token_transfer_amount_default: 100,
         wallet_id: 'sender_wallet_id',
@@ -242,7 +245,7 @@ describe('WalletController', () => {
       });
 
       const result = await walletController.batchCreateWallet(
-        batchWalletOperationDto,
+        batchCreateWalletDto,
         mockUploadedFile,
       );
       expect(result).toEqual({ message: 'Batch wallet creation successful' });
@@ -252,9 +255,9 @@ describe('WalletController', () => {
         { wallet_name: 'wallet2' },
       ];
       expect(walletService.batchCreateWallet).toHaveBeenCalledWith(
-        batchWalletOperationDto.sender_wallet,
-        batchWalletOperationDto.token_transfer_amount_default,
-        batchWalletOperationDto.wallet_id,
+        batchCreateWalletDto.sender_wallet,
+        batchCreateWalletDto.token_transfer_amount_default,
+        batchCreateWalletDto.wallet_id,
         csvJson,
         testFilePath,
       );
@@ -272,7 +275,7 @@ describe('WalletController', () => {
 
       await expect(
         walletController.batchCreateWallet(
-          batchWalletOperationDto,
+          batchCreateWalletDto,
           mockUploadedFile,
         ),
       ).rejects.toThrow('Failed to process batch wallet creation');
@@ -283,11 +286,11 @@ describe('WalletController', () => {
     const uploadsDir = path.join(__dirname, '../../../uploads');
     const testFilePath = path.join(uploadsDir, 'test-file.csv');
     let mockUploadedFile: Express.Multer.File;
-    let batchWalletOperationDto: BatchWalletOperationDto;
+    let batchTransferWalletDto: BatchTransferWalletDto;
 
     beforeEach(async () => {
       // Initialize DTO
-      batchWalletOperationDto = {
+      batchTransferWalletDto = {
         sender_wallet: 'sender_wallet_name',
         token_transfer_amount_default: 100,
         wallet_id: 'sender_wallet_id',
@@ -332,7 +335,7 @@ describe('WalletController', () => {
         .mockResolvedValue({ message: 'Batch wallet transfer successful' });
 
       const result = await walletController.batchTransfer(
-        batchWalletOperationDto,
+        batchTransferWalletDto,
         mockUploadedFile,
       );
       expect(result).toEqual({ message: 'Batch wallet transfer successful' });
@@ -346,9 +349,9 @@ describe('WalletController', () => {
       ];
 
       expect(walletService.batchTransferWallet).toHaveBeenCalledWith(
-        batchWalletOperationDto.sender_wallet,
-        batchWalletOperationDto.token_transfer_amount_default,
-        batchWalletOperationDto.wallet_id,
+        batchTransferWalletDto.sender_wallet,
+        batchTransferWalletDto.token_transfer_amount_default,
+        batchTransferWalletDto.wallet_id,
         csvJson,
         testFilePath,
       );
@@ -366,7 +369,7 @@ describe('WalletController', () => {
 
       await expect(
         walletController.batchTransfer(
-          batchWalletOperationDto,
+          batchTransferWalletDto,
           mockUploadedFile,
         ),
       ).rejects.toThrow('Failed to process batch wallet transfer');
