@@ -1,7 +1,9 @@
 import {
-  Repository,
   SelectQueryBuilder,
+  Brackets,
+  Repository,
   DataSource,
+  WhereExpressionBuilder,
   DeepPartial,
 } from 'typeorm';
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
@@ -36,33 +38,101 @@ export class BaseRepository<
 
   protected whereBuilder(
     filter: any,
-    builder: SelectQueryBuilder<Entity>,
-  ): SelectQueryBuilder<Entity> {
+    builder: SelectQueryBuilder<Entity> | WhereExpressionBuilder,
+  ): SelectQueryBuilder<Entity> | WhereExpressionBuilder {
     if (filter.and) {
       filter.and.forEach((condition: any) => {
         builder.andWhere(
-          new SelectQueryBuilder<Entity>(this.manager.connection),
-          (subBuilder) => {
-            this.whereBuilder(condition, subBuilder);
-            return '';
-          },
+          new Brackets((qb) => {
+            this.whereBuilder(condition, qb);
+          }),
         );
       });
     } else if (filter.or) {
-      filter.or.forEach((condition: any) => {
-        builder.orWhere(
-          new SelectQueryBuilder<Entity>(this.manager.connection),
-          (subBuilder) => {
-            this.whereBuilder(condition, subBuilder);
-            return '';
-          },
-        );
-      });
+      builder.andWhere(
+        new Brackets((qb) => {
+          filter.or.forEach((condition: any) => {
+            qb.orWhere(
+              new Brackets((subQb) => {
+                this.whereBuilder(condition, subQb);
+              }),
+            );
+          });
+        }),
+      );
     } else {
       Object.keys(filter).forEach((key) => {
-        builder.andWhere(`${builder.alias}.${key} = :${key}`, {
-          [key]: filter[key],
-        });
+        const value = filter[key];
+        if (typeof value === 'object' && value !== null) {
+          if (value.ilike) {
+            // Handle ILIKE operation
+            const relationPath = key.split('.');
+            if (relationPath.length > 1) {
+              // It's a relation, we need to join
+              if (builder instanceof SelectQueryBuilder) {
+                const relationAlias = relationPath.slice(0, -1).join('_');
+                const relationProperty = relationPath[relationPath.length - 1];
+                builder.leftJoinAndSelect(
+                  `${builder.alias}.${relationPath[0]}`,
+                  relationAlias,
+                );
+                builder.andWhere(
+                  `${relationAlias}.${relationProperty} ILIKE :${key}`,
+                  {
+                    [key]: value.ilike,
+                  },
+                );
+              }
+            } else {
+              builder.andWhere(
+                `${builder instanceof SelectQueryBuilder ? builder.alias + '.' : ''}${key} ILIKE :${key}`,
+                {
+                  [key]: value.ilike,
+                },
+              );
+            }
+          } else {
+            // Handle other object conditions (e.g., greater than, less than, etc.)
+            Object.keys(value).forEach((operator) => {
+              const operatorValue = value[operator];
+              switch (operator) {
+                case 'gt':
+                  builder.andWhere(
+                    `${builder instanceof SelectQueryBuilder ? builder.alias + '.' : ''}${key} > :${key}_${operator}`,
+                    { [`${key}_${operator}`]: operatorValue },
+                  );
+                  break;
+                case 'gte':
+                  builder.andWhere(
+                    `${builder instanceof SelectQueryBuilder ? builder.alias + '.' : ''}${key} >= :${key}_${operator}`,
+                    { [`${key}_${operator}`]: operatorValue },
+                  );
+                  break;
+                case 'lt':
+                  builder.andWhere(
+                    `${builder instanceof SelectQueryBuilder ? builder.alias + '.' : ''}${key} < :${key}_${operator}`,
+                    { [`${key}_${operator}`]: operatorValue },
+                  );
+                  break;
+                case 'lte':
+                  builder.andWhere(
+                    `${builder instanceof SelectQueryBuilder ? builder.alias + '.' : ''}${key} <= :${key}_${operator}`,
+                    { [`${key}_${operator}`]: operatorValue },
+                  );
+                  break;
+                // Add more operators as needed
+              }
+            });
+          }
+        } else {
+          // Handle simple equality
+          builder.andWhere(
+            `${builder instanceof SelectQueryBuilder ? builder.alias + '.' : ''}${key} = :${key}`,
+            {
+              [key]: value,
+            },
+          );
+        }
       });
     }
     return builder;
@@ -105,7 +175,6 @@ export class BaseRepository<
     }
 
     queryBuilder = queryBuilder.orderBy(column, order);
-
     return await queryBuilder.getMany();
   }
 
@@ -169,8 +238,10 @@ export class BaseRepository<
    * Return ids created
    */
   async batchCreate(objects: Partial<Entity>[]): Promise<string[]> {
-    // Log the batch of objects being inserted
-    this.logger.debug('Object batch:', objects);
+    // Log each object individually for inspection
+    objects.forEach((obj, index) => {
+      this.logger.debug(`Object ${index + 1}:`, obj);
+    });
 
     // Insert the batch of objects and get the result
     const result = await this.createQueryBuilder()

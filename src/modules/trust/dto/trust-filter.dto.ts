@@ -7,6 +7,10 @@ export class TrustFilterDto {
   walletId?: string;
 
   @IsOptional()
+  @IsString()
+  managedWallets?: { id: string }[];
+
+  @IsOptional()
   @IsEnum(ENTITY_TRUST_STATE_TYPE)
   state?: ENTITY_TRUST_STATE_TYPE;
 
@@ -34,4 +38,8 @@ export class TrustFilterDto {
   @IsOptional()
   @IsIn(['ASC', 'DESC'])
   order?: 'ASC' | 'DESC';
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

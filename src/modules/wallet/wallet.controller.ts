@@ -21,11 +21,16 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import * as multer from 'multer';
 import * as csvtojson from 'csvtojson';
-import { BatchCreateWalletDto } from './dto/batch-create-wallet.dto';
-import { BatchTransferWalletDto } from './dto/batch-transfer-wallet.dto';
+import {
+  BatchCreateWalletDto,
+  BatchTransferWalletDto,
+} from './dto/batch-wallet-operation.dto';
 import { CsvFileUploadInterceptor } from '../../common/interceptors/csvFileUpload.interceptor';
 import { plainToClass } from 'class-transformer';
-import { CsvItemDto } from './dto/csv-item.dto';
+import {
+  BatchCreateWalletCsvItemDto,
+  BatchTransferWalletCsvItemDto,
+} from './dto/csv-item.dto';
 import { validate } from 'class-validator';
 
 export const imageUpload = multer({
@@ -106,7 +111,9 @@ export class WalletController {
       const csvJson = await csvtojson().fromFile(file.path);
 
       // Validate CSV data
-      const csvItems = csvJson.map((item) => plainToClass(CsvItemDto, item));
+      const csvItems = csvJson.map((item) =>
+        plainToClass(BatchCreateWalletCsvItemDto, item),
+      );
       for (const item of csvItems) {
         const errors = await validate(item);
         if (errors.length > 0) {
@@ -145,25 +152,45 @@ export class WalletController {
     @Body() batchTransferWalletDto: BatchTransferWalletDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const { path } = file;
-    const csvJson = await csvtojson().fromFile(path);
-    batchTransferWalletDto.csvJson = csvJson;
-    batchTransferWalletDto.filePath = path;
+    if (!file) {
+      throw new BadRequestException('CSV file is required');
+    }
 
-    const {
-      sender_wallet,
-      token_transfer_amount_default,
-      wallet_id,
-      csvJson: validatedCsvJson,
-      filePath,
-    } = batchTransferWalletDto;
+    try {
+      const csvJson = await csvtojson().fromFile(file.path);
 
-    return await this.walletService.batchTransferWallet(
-      sender_wallet,
-      token_transfer_amount_default,
-      wallet_id,
-      validatedCsvJson,
-      filePath,
-    );
+      // Validate CSV data
+      const csvItems = csvJson.map((item) =>
+        plainToClass(BatchTransferWalletCsvItemDto, item),
+      );
+      for (const item of csvItems) {
+        const errors = await validate(item);
+        if (errors.length > 0) {
+          throw new BadRequestException(errors);
+        }
+      }
+
+      // Check for unique wallet names
+      const walletNames = csvItems.map((item) => item.wallet_name);
+      if (walletNames.length !== new Set(walletNames).size) {
+        throw new BadRequestException(
+          'Each wallet_name in csvJson must be unique.',
+        );
+      }
+
+      batchTransferWalletDto.csvJson = csvItems;
+      batchTransferWalletDto.filePath = file.path;
+
+      const result = await this.walletService.batchTransferWallet(
+        batchTransferWalletDto.sender_wallet,
+        batchTransferWalletDto.token_transfer_amount_default,
+        batchTransferWalletDto.wallet_id,
+        batchTransferWalletDto.csvJson,
+        batchTransferWalletDto.filePath,
+      );
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 }
