@@ -324,6 +324,15 @@ paths:
             type: string
             format: date
             example: 2023-09-20
+        - name: account_id
+          in: query
+          description: 'Filter wallets by account id'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
       responses:
         '200':
           description: 'Returns list of managed wallets'
