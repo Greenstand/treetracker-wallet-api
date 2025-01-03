@@ -6,7 +6,8 @@ import {
   forwardRef,
   Inject,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { WalletRepository } from './wallet.repository';
 import { validate as uuidValidate } from 'uuid';
 import {
@@ -46,6 +47,7 @@ export class WalletService {
     @Inject(forwardRef(() => TransferService))
     private transferService: TransferService,
     private s3Service: S3Service,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async getById(id: string) {
@@ -349,6 +351,11 @@ export class WalletService {
     }[],
     filePath: string,
   ): Promise<{ message: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       let senderWallet;
       if (sender_wallet) {
@@ -436,22 +443,23 @@ export class WalletService {
         createdWallets.push(newWallet);
       }
 
-      await fs.unlink(filePath).catch(() => {
-        console.error(`Failed to delete file at path: ${filePath}`);
-      });
-
+      await queryRunner.commitTransaction();
       return {
         message: 'Batch wallet creation successful',
       };
-    } catch (e) {
-      // Cleanup file and rethrow error
-      await fs.unlink(filePath).catch(() => {
-        console.error(`Failed to delete file at path: ${filePath}`);
-      });
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
       throw new HttpException(
-        e.message || 'Failed to process batch wallet creation',
-        e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Failed to process batch wallet creation',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    } finally {
+      await queryRunner.release();
+
+      // Cleanup file
+      await fs.unlink(filePath).catch(() => {
+        this.logger.error(`Failed to delete file at path: ${filePath}`);
+      });
     }
   }
 
@@ -465,6 +473,11 @@ export class WalletService {
     }[],
     filePath: string,
   ): Promise<{ message: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     let senderWallet;
     try {
       // Ensure sender_wallet exists
@@ -525,22 +538,21 @@ export class WalletService {
           false,
         );
       }
-
-      await fs.unlink(filePath).catch(() => {
-        console.error(`Failed to delete file at path: ${filePath}`);
-      });
-
+      await queryRunner.commitTransaction();
       return { message: 'Batch wallet transfer successful' };
-    } catch (e) {
-      // Cleanup file and rethrow error
-      await fs.unlink(filePath).catch(() => {
-        console.error(`Failed to delete file at path: ${filePath}`);
-      });
-
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
       throw new HttpException(
-        e.message || 'Failed to process batch wallet transfer',
-        e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        error.message || 'Failed to process batch wallet transfer',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    } finally {
+      await queryRunner.release();
+
+      // Cleanup file
+      await fs.unlink(filePath).catch(() => {
+        this.logger.error(`Failed to delete file at path: ${filePath}`);
+      });
     }
   }
 }

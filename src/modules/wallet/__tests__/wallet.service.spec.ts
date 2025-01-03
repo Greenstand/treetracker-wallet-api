@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WalletService } from '../wallet.service';
 import { WalletRepository } from '../wallet.repository';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import * as uuid from 'uuid';
 import { Wallet } from '../entity/wallet.entity';
 import { TrustRepository } from '../../trust/trust.repository';
@@ -31,11 +32,22 @@ describe('WalletService', () => {
   let eventService: EventService;
   let s3Service: S3Service;
   let walletRepository: WalletRepository;
+  let mockDataSource: Partial<DataSource>;
 
   beforeEach(async () => {
     // mock environment variables
     process.env.S3_BUCKET = 'mock-bucket';
     process.env.S3_REGION = 'mock-region';
+
+    mockDataSource = {
+      createQueryRunner: jest.fn().mockReturnValue({
+        connect: jest.fn(),
+        startTransaction: jest.fn(),
+        commitTransaction: jest.fn(),
+        rollbackTransaction: jest.fn(),
+        release: jest.fn(),
+      }),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -45,6 +57,10 @@ describe('WalletService', () => {
         TrustService,
         TransferService,
         S3Service,
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
+        },
         {
           provide: getRepositoryToken(WalletRepository),
           useValue: {
