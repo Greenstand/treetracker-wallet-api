@@ -1,7 +1,7 @@
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as uuid from 'uuid';
-import { csvFileFilter } from '../utils/csvFileFilter';
+import { csvFileFilter } from '../utils/csv-file-filter';
 
 export const CsvFileUploadInterceptor = () =>
   FileInterceptor('file', {

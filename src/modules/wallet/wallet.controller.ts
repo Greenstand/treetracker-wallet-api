@@ -25,7 +25,7 @@ import {
   BatchCreateWalletDto,
   BatchTransferWalletDto,
 } from './dto/batch-wallet-operation.dto';
-import { CsvFileUploadInterceptor } from '../../common/interceptors/csvFileUpload.interceptor';
+import { CsvFileUploadInterceptor } from '../../common/interceptors/csv-file-upload.interceptor';
 import { plainToClass } from 'class-transformer';
 import {
   BatchCreateWalletCsvItemDto,
