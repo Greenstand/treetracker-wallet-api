@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WalletService } from '../wallet.service';
 import { WalletRepository } from '../wallet.repository';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import * as uuid from 'uuid';
 import { Wallet } from '../entity/wallet.entity';
 import { TrustRepository } from '../../trust/trust.repository';
@@ -21,19 +22,32 @@ import { UpdateWalletDto } from '../dto/update-wallet.dto';
 import { TransferService } from '../../transfer/transfer.service';
 import { TransferRepository } from '../../transfer/transfer.repository';
 import { TransactionRepository } from '../../transaction/transaction.repository';
+import * as fs from 'fs';
 
 describe('WalletService', () => {
   let walletService: WalletService;
   let tokenService: TokenService;
+  let transferService: TransferService;
   let trustService: TrustService;
   let eventService: EventService;
   let s3Service: S3Service;
   let walletRepository: WalletRepository;
+  let mockDataSource: Partial<DataSource>;
 
   beforeEach(async () => {
     // mock environment variables
     process.env.S3_BUCKET = 'mock-bucket';
     process.env.S3_REGION = 'mock-region';
+
+    mockDataSource = {
+      createQueryRunner: jest.fn().mockReturnValue({
+        connect: jest.fn(),
+        startTransaction: jest.fn(),
+        commitTransaction: jest.fn(),
+        rollbackTransaction: jest.fn(),
+        release: jest.fn(),
+      }),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -43,6 +57,10 @@ describe('WalletService', () => {
         TrustService,
         TransferService,
         S3Service,
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
+        },
         {
           provide: getRepositoryToken(WalletRepository),
           useValue: {
@@ -84,6 +102,7 @@ describe('WalletService', () => {
 
     walletService = module.get<WalletService>(WalletService);
     tokenService = module.get<TokenService>(TokenService);
+    transferService = module.get<TransferService>(TransferService);
     trustService = module.get<TrustService>(TrustService);
     eventService = module.get<EventService>(EventService);
     s3Service = module.get<S3Service>(S3Service);
@@ -685,6 +704,289 @@ describe('WalletService', () => {
       });
 
       expect(result).toEqual(updatedWallet);
+    });
+  });
+
+  describe('batchCreateWallet', () => {
+    let mockSenderWallet: Wallet;
+    let mockRecipientWallet1: Wallet;
+    let mockRecipientWallet2: Wallet;
+    let csvJson: any[];
+    const filePath = 'file.csv';
+
+    beforeEach(() => {
+      mockSenderWallet = {
+        id: uuid.v4(),
+        name: 'Mock Sender Wallet',
+        logo_url: 'http://test.com/mock-sender-logo.png',
+        cover_url: 'http://test.com/mock-sender-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      mockRecipientWallet1 = {
+        id: uuid.v4(),
+        name: 'Recipient Wallet 1',
+        logo_url: 'http://test.com/mock-recipient1-logo.png',
+        cover_url: 'http://test.com/mock-recipient1-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      mockRecipientWallet2 = {
+        id: uuid.v4(),
+        name: 'Recipient Wallet 2',
+        logo_url: 'http://test.com/mock-recipient2-logo.png',
+        cover_url: 'http://test.com/mock-recipient2-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      csvJson = [
+        {
+          wallet_name: 'Recipient Wallet 1',
+          token_transfer_amount_overwrite: 50,
+        },
+        { wallet_name: 'Recipient Wallet 2' },
+      ];
+
+      jest.spyOn(fs.promises, 'unlink').mockResolvedValue(undefined); // Mock unlink in promises
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should successfully create wallets and transfer tokens', async () => {
+      const mockCreatedWallet = {
+        ...mockRecipientWallet1,
+        ...mockRecipientWallet2,
+      }; // Example created wallet
+
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet);
+      jest
+        .spyOn(walletService, 'createWallet')
+        .mockResolvedValue(mockCreatedWallet);
+      jest
+        .spyOn(tokenService, 'countTokenByWallet')
+        .mockResolvedValueOnce(1000);
+      jest
+        .spyOn(transferService, 'transferBundle')
+        .mockResolvedValue(undefined);
+      jest
+        .spyOn(walletService, 'addWalletToMapConfig')
+        .mockResolvedValue(undefined);
+
+      const senderWallet = 'Mock Sender Wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'Mock Parent Wallet ID';
+
+      const result = await walletService.batchCreateWallet(
+        senderWallet,
+        tokenTransferAmountDefault,
+        walletId,
+        csvJson,
+        filePath,
+      );
+
+      expect(result).toEqual({
+        message: 'Batch wallet creation successful',
+      });
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(walletService.createWallet).toHaveBeenCalledTimes(2);
+      expect(transferService.transferBundle).toHaveBeenCalledTimes(2);
+      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
+    });
+
+    it('should fail when sender wallet does not exist', async () => {
+      jest.spyOn(walletService, 'getByName').mockResolvedValueOnce(null);
+
+      const senderWallet = 'Nonexistent Wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'Mock Parent Wallet ID';
+
+      await expect(
+        walletService.batchCreateWallet(
+          senderWallet,
+          tokenTransferAmountDefault,
+          walletId,
+          csvJson,
+          filePath,
+        ),
+      ).rejects.toThrowError('Sender wallet does not exist');
+
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+    });
+
+    it('should clean up file on failure', async () => {
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet);
+      jest
+        .spyOn(walletService, 'createWallet')
+        .mockRejectedValueOnce(new Error('Failure'));
+
+      const senderWallet = 'Mock Sender Wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'Mock Parent Wallet ID';
+
+      await expect(
+        walletService.batchCreateWallet(
+          senderWallet,
+          tokenTransferAmountDefault,
+          walletId,
+          csvJson,
+          filePath,
+        ),
+      ).rejects.toThrowError('Failure');
+      expect(fs.promises.unlink).toHaveBeenCalledWith(filePath);
+    });
+  });
+
+  describe('batchTransferWallet', () => {
+    let mockSenderWallet: Wallet;
+    let mockRecipientWallet1: Wallet;
+    let mockRecipientWallet2: Wallet;
+    let csvJson: any[];
+    const filePath = 'file.csv';
+
+    beforeEach(() => {
+      mockSenderWallet = {
+        id: uuid.v4(),
+        name: 'Mock Sender Wallet',
+        logo_url: 'http://test.com/mock-sender-logo.png',
+        cover_url: 'http://test.com/mock-sender-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      mockRecipientWallet1 = {
+        id: uuid.v4(),
+        name: 'Recipient Wallet 1',
+        logo_url: 'http://test.com/mock-recipient1-logo.png',
+        cover_url: 'http://test.com/mock-recipient1-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      mockRecipientWallet2 = {
+        id: uuid.v4(),
+        name: 'Recipient Wallet 2',
+        logo_url: 'http://test.com/mock-recipient2-logo.png',
+        cover_url: 'http://test.com/mock-recipient2-cover.png',
+        password: 'mockPassword',
+        salt: 'mockSalt',
+        created_at: new Date(),
+      };
+
+      csvJson = [
+        {
+          wallet_name: 'Recipient Wallet 1',
+          token_transfer_amount_overwrite: 50,
+        },
+        { wallet_name: 'Recipient Wallet 2' },
+      ];
+
+      jest.spyOn(fs.promises, 'unlink').mockResolvedValue(undefined); // Mock unlink in promises
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should successfully transfer tokens to multiple recipient wallets', async () => {
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet)
+        .mockResolvedValueOnce(mockRecipientWallet1)
+        .mockResolvedValueOnce(mockRecipientWallet2);
+      jest
+        .spyOn(tokenService, 'countTokenByWallet')
+        .mockResolvedValueOnce(1000);
+
+      jest
+        .spyOn(transferService, 'transferBundle')
+        .mockResolvedValue(undefined);
+
+      const senderWallet = 'Mock Sender Wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'Mock Parent Wallet ID';
+
+      const result = await walletService.batchTransferWallet(
+        senderWallet,
+        tokenTransferAmountDefault,
+        walletId,
+        csvJson,
+        filePath,
+      );
+
+      expect(result).toEqual({
+        message: 'Batch wallet transfer successful',
+      });
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(walletService.getByName).toHaveBeenCalledWith(
+        'Recipient Wallet 1',
+      );
+      expect(walletService.getByName).toHaveBeenCalledWith(
+        'Recipient Wallet 2',
+      );
+      expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(
+        mockSenderWallet.id,
+      );
+      expect(transferService.transferBundle).toHaveBeenCalledTimes(2);
+      expect(transferService.transferBundle).toHaveBeenCalledWith(
+        walletId,
+        mockSenderWallet,
+        mockRecipientWallet1,
+        50,
+        false,
+      );
+      expect(transferService.transferBundle).toHaveBeenCalledWith(
+        walletId,
+        mockSenderWallet,
+        mockRecipientWallet2,
+        100,
+        false,
+      );
+    });
+
+    it('should throw an error if sender wallet has insufficient tokens', async () => {
+      jest
+        .spyOn(walletService, 'getByName')
+        .mockResolvedValueOnce(mockSenderWallet)
+        .mockResolvedValueOnce(mockRecipientWallet1)
+        .mockResolvedValueOnce(mockRecipientWallet2);
+      jest.spyOn(tokenService, 'countTokenByWallet').mockResolvedValueOnce(50); // Insufficient tokens
+      jest
+        .spyOn(transferService, 'transferBundle')
+        .mockImplementation(jest.fn());
+
+      const senderWallet = 'Mock Sender Wallet';
+      const tokenTransferAmountDefault = 100;
+      const walletId = 'Mock Parent Wallet ID';
+
+      await expect(
+        walletService.batchTransferWallet(
+          senderWallet,
+          tokenTransferAmountDefault,
+          walletId,
+          csvJson,
+          filePath,
+        ),
+      ).rejects.toThrowError('Sender does not have enough tokens.');
+
+      expect(walletService.getByName).toHaveBeenCalledWith(senderWallet);
+      expect(tokenService.countTokenByWallet).toHaveBeenCalledWith(
+        mockSenderWallet.id,
+      );
+      expect(transferService.transferBundle).not.toHaveBeenCalled();
     });
   });
 });

@@ -73,7 +73,7 @@ export class TokenService {
       {
         transfer_pending: false,
         transfer_pending_id: null,
-        wallet_id: transfer.destination_wallet_id,
+        wallet_id: transfer.destinationWalletId,
         claim: claimBoolean,
       },
       tokens.map((token) => token.id),
@@ -84,8 +84,8 @@ export class TokenService {
       tokens.map((token) => ({
         token_id: token.id,
         transfer_id: transfer.id,
-        source_wallet_id: transfer.source_wallet_id,
-        destination_wallet_id: transfer.destination_wallet_id,
+        source_wallet_id: transfer.sourceWalletId,
+        destination_wallet_id: transfer.destinationWalletId,
         claim: claimBoolean,
       })),
     );

@@ -12,7 +12,8 @@ import { TokenService } from '../token/token.service';
 import { WalletService } from '../wallet/wallet.service';
 import { TrustService } from '../trust/trust.service';
 import { Transfer } from './entity/transfer.entity';
-import { TRANSFER_STATES } from './transfer-enums';
+import { TRANSFER_STATES, TRANSFER_TYPES } from './transfer-enums';
+import { ENTITY_TRUST_REQUEST_TYPE } from '../trust/trust-enum';
 
 @Injectable()
 export class TransferService {
@@ -28,15 +29,7 @@ export class TransferService {
   ) {}
 
   static removeWalletIds(transfer: Transfer): Partial<Transfer> {
-    const {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      originator_wallet_id,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      source_wallet_id,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      destination_wallet_id,
-      ...transferWithoutWalletIds
-    } = transfer;
+    const { ...transferWithoutWalletIds } = transfer;
 
     return transferWithoutWalletIds;
   }
@@ -64,17 +57,17 @@ export class TransferService {
   ): Promise<Partial<Transfer>> {
     const notClaimedTokenCount =
       await this.tokenService.countNotClaimedTokenByWallet(sender.id);
+
     if (notClaimedTokenCount < bundleSize) {
       throw new HttpException(
         'do not have enough token to send.',
         HttpStatus.CONFLICT,
       );
     }
-
     const isDeduct = await this.isDeduct(walletLoginId, sender);
     const hasTrust = await this.trustService.hasTrust(
       walletLoginId,
-      'send',
+      ENTITY_TRUST_REQUEST_TYPE.send,
       sender,
       receiver,
     );
@@ -83,6 +76,7 @@ export class TransferService {
       walletLoginId,
       sender.id,
     );
+
     const hasControlOverReceiver = await this.walletService.hasControlOver(
       walletLoginId,
       receiver.id,
@@ -106,10 +100,11 @@ export class TransferService {
     }
 
     const transfer = this.transferRepository.create({
-      originator_wallet_id: { id: walletLoginId } as any,
-      source_wallet_id: { id: sender.id } as any,
-      destination_wallet_id: { id: receiver.id } as any,
+      originatorWalletId: { id: walletLoginId } as any,
+      sourceWalletId: { id: sender.id } as any,
+      destinationWalletId: { id: receiver.id } as any,
       state,
+      type: TRANSFER_TYPES.send,
       parameters: {
         bundle: {
           bundleSize,
@@ -121,7 +116,6 @@ export class TransferService {
     await this.transferRepository.save(transfer);
 
     Logger.debug('now, deal with tokens');
-
     const tokens = await this.tokenService.getTokensByBundle(
       sender.id,
       bundleSize,

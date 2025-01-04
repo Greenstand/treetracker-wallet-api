@@ -6,7 +6,8 @@ import {
   forwardRef,
   Inject,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { WalletRepository } from './wallet.repository';
 import { validate as uuidValidate } from 'uuid';
 import {
@@ -46,6 +47,7 @@ export class WalletService {
     @Inject(forwardRef(() => TransferService))
     private transferService: TransferService,
     private s3Service: S3Service,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async getById(id: string) {
@@ -337,25 +339,49 @@ export class WalletService {
     return updatedWallet;
   }
 
-  // TODO
-  // async batchCreateWallet() {}
-
-  async batchTransferWallet(
+  async batchCreateWallet(
     sender_wallet: string,
     token_transfer_amount_default: number,
     wallet_id: string,
     csvJson: {
       wallet_name: string;
       token_transfer_amount_overwrite?: number;
+      extra_wallet_data_logo_url?: string;
+      extra_wallet_data_cover_url?: string;
     }[],
     filePath: string,
   ): Promise<{ message: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const senderWallet = await this.getByName(sender_wallet);
-      const recipientWallets: { amount: number; walletDetails: any }[] = [];
+      let senderWallet;
+      if (sender_wallet) {
+        senderWallet = await this.getByName(sender_wallet);
+        if (!senderWallet) {
+          throw new HttpException(
+            'Sender wallet does not exist',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      }
+
+      const walletsToCreate: {
+        amount: number;
+        walletName: string;
+        extra_wallet_data_logo_url?: string;
+        extra_wallet_data_cover_url?: string;
+      }[] = [];
       let totalAmountToTransfer = 0;
 
-      for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
+      for (const {
+        wallet_name,
+        token_transfer_amount_overwrite,
+        extra_wallet_data_logo_url,
+        extra_wallet_data_cover_url,
+      } of csvJson) {
         const amount =
           token_transfer_amount_overwrite || token_transfer_amount_default;
         if (amount && !sender_wallet) {
@@ -367,39 +393,166 @@ export class WalletService {
         if (amount) {
           totalAmountToTransfer += +amount;
         }
-        const walletDetails = await this.getByName(wallet_name);
-        recipientWallets.push({ amount, walletDetails });
+        walletsToCreate.push({
+          amount,
+          walletName: wallet_name,
+          extra_wallet_data_logo_url,
+          extra_wallet_data_cover_url,
+        });
       }
 
+      if (senderWallet) {
+        const tokenCount = await this.tokenService.countTokenByWallet(
+          senderWallet.id,
+        );
+        if (totalAmountToTransfer > tokenCount) {
+          throw new HttpException(
+            'Sender does not have enough tokens.',
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+      }
+
+      const createdWallets = [];
+      for (const {
+        walletName,
+        amount,
+        extra_wallet_data_logo_url,
+        extra_wallet_data_cover_url,
+      } of walletsToCreate) {
+        const newWallet = await this.createWallet(wallet_id, walletName);
+
+        if (amount && senderWallet) {
+          await this.transferService.transferBundle(
+            wallet_id,
+            senderWallet,
+            newWallet,
+            amount,
+            false,
+          );
+        }
+
+        if (extra_wallet_data_logo_url || extra_wallet_data_cover_url) {
+          await this.addWalletToMapConfig({
+            walletId: newWallet.id,
+            name: newWallet.name,
+            walletLogoUrl: extra_wallet_data_logo_url,
+            walletCoverUrl: extra_wallet_data_cover_url,
+          });
+        }
+        createdWallets.push(newWallet);
+      }
+
+      await queryRunner.commitTransaction();
+      return {
+        message: 'Batch wallet creation successful',
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        error.message || 'Failed to process batch wallet creation',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } finally {
+      await queryRunner.release();
+
+      // Cleanup file
+      await fs.unlink(filePath).catch(() => {
+        this.logger.error(`Failed to delete file at path: ${filePath}`);
+      });
+    }
+  }
+
+  async batchTransferWallet(
+    sender_wallet: string,
+    token_transfer_amount_default: number,
+    wallet_id: string,
+    csvJson: {
+      wallet_name: string;
+      token_transfer_amount_overwrite?: number;
+    }[],
+    filePath: string,
+  ): Promise<{ message: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    let senderWallet;
+    try {
+      // Ensure sender_wallet exists
+      senderWallet = await this.getByName(sender_wallet);
+      if (!senderWallet) {
+        throw new HttpException(
+          'Sender wallet not found.',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const recipientWallets: { amount: number; walletDetails: any }[] = [];
+      let totalAmountToTransfer = 0;
+
+      for (const { wallet_name, token_transfer_amount_overwrite } of csvJson) {
+        const amount =
+          token_transfer_amount_overwrite || token_transfer_amount_default;
+
+        // Validate amount
+        if (amount <= 0) {
+          throw new HttpException(
+            `Invalid transfer amount for wallet: ${wallet_name}`,
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+
+        // Fetch recipient wallet details
+        const walletDetails = await this.getByName(wallet_name);
+        if (!walletDetails) {
+          throw new HttpException(
+            `Recipient wallet not found: ${wallet_name}`,
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        recipientWallets.push({ amount, walletDetails });
+        totalAmountToTransfer += amount;
+      }
+
+      // Validate sender wallet token balance
       const tokenCount = await this.tokenService.countTokenByWallet(
         senderWallet.id,
       );
       if (totalAmountToTransfer > tokenCount) {
         throw new HttpException(
-          'sender does not have enough tokens.',
+          'Sender does not have enough tokens.',
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
 
+      // Perform transfers
       for (const { walletDetails, amount } of recipientWallets) {
-        if (amount) {
-          await this.transferService.transferBundle(
-            wallet_id,
-            senderWallet,
-            walletDetails,
-            amount,
-            false,
-          );
-        }
+        await this.transferService.transferBundle(
+          wallet_id,
+          senderWallet,
+          walletDetails,
+          amount,
+          false,
+        );
       }
-      await fs.unlink(filePath);
+      await queryRunner.commitTransaction();
+      return { message: 'Batch wallet transfer successful' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        error.message || 'Failed to process batch wallet transfer',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } finally {
+      await queryRunner.release();
 
-      return {
-        message: 'Batch transfer successful',
-      };
-    } catch (e) {
-      await fs.unlink(filePath);
-      throw e;
+      // Cleanup file
+      await fs.unlink(filePath).catch(() => {
+        this.logger.error(`Failed to delete file at path: ${filePath}`);
+      });
     }
   }
 }

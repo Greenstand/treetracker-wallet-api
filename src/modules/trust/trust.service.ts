@@ -42,49 +42,78 @@ export class TrustService {
       limit,
       sort_by,
       order,
+      search,
+      managedWallets = [],
     } = filterDto;
 
-    const filter = this.getTrustRelationshipFilter({
-      walletId,
-      state,
-      type,
-      request_type,
-    });
+    const managedWalletIds = managedWallets.map((wallet) => wallet.id);
 
-    return this.trustRepository.getByFilter(filter, {
+    const filter: any = {
+      or: [
+        { actor_wallet_id: walletId },
+        { target_wallet_id: walletId },
+        { originator_wallet_id: walletId },
+        ...managedWalletIds.flatMap((id) => [
+          { actor_wallet_id: id },
+          { target_wallet_id: id },
+          { originator_wallet_id: id },
+        ]),
+      ],
+    };
+
+    if (state) filter.state = state;
+    if (type) filter.type = type;
+    if (request_type) filter.request_type = request_type;
+    if (search) {
+      filter.or.push(
+        { 'originator_wallet.name': { ilike: `%${search}%` } },
+        { 'actor_wallet.name': { ilike: `%${search}%` } },
+        { 'target_wallet.name': { ilike: `%${search}%` } },
+      );
+    }
+
+    const paginationOptions: PaginationOptions = {
       offset,
       limit,
       sort_by,
       order,
-    });
+    };
+
+    // return this.trustRepository.getByFilter(filter, paginationOptions);
+    try {
+      return await this.trustRepository.getByFilter(filter, paginationOptions);
+    } catch (error) {
+      console.error('Error in getTrustRelationships:', error);
+      throw error;
+    }
   }
 
-  /**
-   * Construct the filter object for querying trust relationships
-   */
-  private getTrustRelationshipFilter({
-    walletId,
-    state,
-    type,
-    request_type,
-  }: Partial<TrustFilterDto>): any {
-    const filter: any = {};
+  // /**
+  //  * Construct the filter object for querying trust relationships
+  //  */
+  // private getTrustRelationshipFilter({
+  //   walletId,
+  //   state,
+  //   type,
+  //   request_type,
+  // }: Partial<TrustFilterDto>): any {
+  //   const filter: any = {};
 
-    if (walletId) {
-      filter.walletId = walletId;
-    }
-    if (state) {
-      filter.state = state;
-    }
-    if (type) {
-      filter.type = type;
-    }
-    if (request_type) {
-      filter.request_type = request_type;
-    }
+  //   if (walletId) {
+  //     filter.walletId = walletId;
+  //   }
+  //   if (state) {
+  //     filter.state = state;
+  //   }
+  //   if (type) {
+  //     filter.type = type;
+  //   }
+  //   if (request_type) {
+  //     filter.request_type = request_type;
+  //   }
 
-    return filter;
-  }
+  //   return filter;
+  // }
 
   /*
    * Get all relationships which have been accepted
@@ -109,7 +138,6 @@ export class TrustService {
     const trustTypeSchema = Joi.string().valid(
       ...Object.values(ENTITY_TRUST_REQUEST_TYPE),
     );
-
     Joi.assert(trustType, trustTypeSchema);
 
     const trustRelationships =
