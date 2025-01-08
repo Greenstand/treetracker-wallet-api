@@ -1,4 +1,4 @@
-import { csvFileFilter } from '../csvFileFilter';
+import { csvFileFilter } from '../csv-file-filter';
 import { BadRequestException } from '@nestjs/common';
 
 describe('csvFileFilter', () => {
