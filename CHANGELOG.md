@@ -1,3 +1,10 @@
+## [1.41.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.41.0...v1.41.1) (2025-02-08)
+
+
+### Bug Fixes
+
+* bump up pg version to 13 ([060699d](https://github.com/Greenstand/treetracker-wallet-api/commit/060699df6de9bf79c228fecba2ae23694e3109a1))
+
 # [1.41.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.40.5...v1.41.0) (2024-12-12)
 
 
