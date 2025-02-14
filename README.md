@@ -1,5 +1,4 @@
-as
-#API Documentation
+# API Documentation
 
 To view the specs for the new API visit https://editor.swagger.io and load the YAML file from
 
@@ -446,6 +445,38 @@ NODE_ENV=test NODE_LOG_LEVEL=debug mocha --timeout 10000 --require co-mocha -w -
 ```
 
 Under the hook, there is a initial setup file: `/server/setup.js` to set the default log level.
+
+# Keycloak and Access Key Setup
+
+## Overview
+Keycloak is used for authentication and authorization in this project. For an excellent introduction to Keycloak, watch this video: https://www.youtube.com/watch?v=fvxQ8bW0vO8
+
+## Development Environment
+- Keycloak URL: https://dev-k8s.treetracker.org/keycloak/
+- Admin Console: https://dev-k8s.treetracker.org/keycloak/admin/master/console/
+  - Contact the admin team for login credentials
+
+## Obtaining Access Key
+1. Configure your client in Keycloak:
+   - Enable "Service accounts roles" in Authentication flow
+   - Get the "Client Secret" from the Credentials tab in Client details
+
+2. Add the following environment variables to your .env file:
+```bash
+PRIVATE_KEYCLOAK_REALM=treetracker
+PRIVATE_KEYCLOAK_BASE_URL=https://dev-k8s.treetracker.org/keycloak
+PRIVATE_KEYCLOAK_CLIENT_SECRET=<your_client_secret>
+PRIVATE_KEYCLOAK_CLIENT_ID=wallet-app-user-dev-svc
+```
+
+3. Generate an access token using curl:
+```bash
+curl --location 'https://dev-k8s.treetracker.org/keycloak/realms/treetracker/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'client_id=wallet-app-user-dev-svc' \
+--data-urlencode 'client_secret=<your_client_secret>' \
+--data-urlencode 'grant_type=client_credentials'
+```
 
 # How to test
 
