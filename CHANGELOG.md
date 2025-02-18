@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.41.1...v1.42.0) (2025-02-18)
+
+
+### Features
+
+* add keycloak section ([c21270a](https://github.com/Greenstand/treetracker-wallet-api/commit/c21270af2b0a547ec80fdc06097df0737e316ffb))
+
 ## [1.41.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.41.0...v1.41.1) (2025-02-08)
 
 
