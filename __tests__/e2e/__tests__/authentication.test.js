@@ -2,9 +2,8 @@ const { sendPostRequest, responseStatus: {OK}, assert } = require("../config");
 const { testData } = require("../libs/bootstrap.js");
 
 let currentResponse = null;
-const {apiKey} = testData;
 const url = '/auth';
-const headers = {'treetracker-api-key': apiKey};
+const headers = {};
 const user = {
     id: testData.wallet.id,
     wallet: testData.wallet.name,

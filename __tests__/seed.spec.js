@@ -10,11 +10,6 @@ describe('Seed data into DB', () => {
     await seed.seed();
   });
 
-  it('Should have api key', async () => {
-    const r = await knex.table('api_key').select().where('key', seed.apiKey);
-    expect(r).lengthOf(1);
-  });
-
   it('Should find a token', async () => {
     expect(seed.token).to.have.property('id');
     const r = await knex.table('token').select().where('id', seed.token.id);

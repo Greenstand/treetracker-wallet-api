@@ -32,7 +32,6 @@ const imageUpload = multer({
 const {
   handlerWrapper,
   verifyJWTHandler,
-  apiKeyHandler,
 } = require('../utils/utils');
 const {
   walletGet,
@@ -77,5 +76,5 @@ router.post(
   handlerWrapper(walletBatchTransfer),
 );
 
-routerWrapper.use('/wallets', apiKeyHandler, verifyJWTHandler, router);
+routerWrapper.use('/wallets', verifyJWTHandler, router);
 module.exports = routerWrapper;

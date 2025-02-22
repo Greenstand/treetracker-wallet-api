@@ -9,7 +9,6 @@ const { getSession } = require('../libs/sessionLibrary');
 const { testData } = require('../libs/bootstrap.js');
 
 let bearer = null;
-const { apiKey } = testData;
 const wallet = testData.wallet.name;
 const { password } = testData.wallet;
 const limit = 50;
@@ -23,7 +22,6 @@ describe('Wallets (Wallet API)', function () {
     const { token } = bearer;
     const headers = {
       Authorization: `Bearer ${token}`,
-      'treetracker-api-key': apiKey,
     };
     const response = await sendGetRequest(url, headers);
     const { status } = response;
@@ -36,7 +34,6 @@ describe('Wallets (Wallet API)', function () {
     const { token } = bearer;
     const headers = {
       Authorization: `Bearer ${token}`,
-      'treetracker-api-key': apiKey,
     };
     const payload = {
       wallet: expectedWallet,

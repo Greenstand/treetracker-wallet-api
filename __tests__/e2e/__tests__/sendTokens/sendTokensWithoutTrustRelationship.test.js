@@ -20,7 +20,6 @@ const {
 let senderBearerToken = null;
 let receiverBearerToken = null;
 let receiverEmptyBearerToken = null;
-const { apiKey } = testData;
 const tokenUid = testData.token.id;
 const getTokenInfoUri = `/tokens/${tokenUid}`;
 const sendTokensUri = '/transfers';
@@ -35,7 +34,6 @@ const { password } = testData.wallet;
 const headers = (token) => {
   return {
     Authorization: `Bearer ${token}`,
-    'treetracker-api-key': apiKey,
   };
 };
 

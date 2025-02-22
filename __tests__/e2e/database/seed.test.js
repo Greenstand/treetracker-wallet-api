@@ -5,11 +5,6 @@ const knex = require('./knex');
 describe('Seed data into DB', () => {
   let token;
 
-  it('Should have api key', async () => {
-    const r = await knex.table('api_key').select().where('key', seed.apiKey);
-    expect(r).lengthOf(1);
-  });
-
   it('Should find a token in walletA', async () => {
     expect(seed.token).to.have.property('id');
     const r = await knex.table('token').select().where('id', seed.token.id);

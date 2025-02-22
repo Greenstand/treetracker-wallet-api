@@ -19,7 +19,6 @@ describe('Authentication', () => {
   it(`[POST /auth] login with ${Zaven.name}`, (done) => {
     request(server)
       .post('/auth')
-      .set('treetracker-api-key', registeredUser.apiKey)
       .send({
         wallet: registeredUser.name,
         password: registeredUser.password,

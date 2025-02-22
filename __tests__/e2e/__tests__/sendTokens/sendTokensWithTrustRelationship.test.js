@@ -14,7 +14,6 @@ const { testData } = require('../../libs/bootstrap.js');
 
 let senderBearerToken = null;
 let receiverBearerToken = null;
-const { apiKey } = testData;
 const sendTokensUri = '/transfers';
 const trustRelationshipUri = '/trust_relationships';
 const acceptTrustRelationshipUri = (id) => `/trust_relationships/${id}/accept`;
@@ -26,7 +25,6 @@ const { password } = testData.wallet;
 const headers = (token) => {
   return {
     Authorization: `Bearer ${token}`,
-    'treetracker-api-key': apiKey,
   };
 };
 

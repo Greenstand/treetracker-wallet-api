@@ -5,7 +5,6 @@ const routerWrapper = express.Router();
 const {
   verifyJWTHandler,
   handlerWrapper,
-  apiKeyHandler,
 } = require('../utils/utils');
 
 const {
@@ -32,7 +31,6 @@ router.get('/:trustRelationshipId', handlerWrapper(trustRelationshipGetById))
 
 routerWrapper.use(
   '/trust_relationships',
-  apiKeyHandler,
   verifyJWTHandler,
   router,
 );

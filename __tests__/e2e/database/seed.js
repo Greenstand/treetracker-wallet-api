@@ -6,8 +6,6 @@ const uuid = require('uuid');
 const { v4: uuidV4 } = require('uuid');
 const knex = require('./knex');
 
-const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
-
 const wallet = {
   id: uuid.v4(),
   name: 'walletA',
@@ -91,15 +89,6 @@ async function createTokens(targetWallet, numberOfTokens) {
 }
 
 async function seed() {
-  log.log('seed api key');
-  await knex('api_key').insert({
-    key: apiKey,
-    tree_token_api_access: true,
-    hash: 'test',
-    salt: 'test',
-    name: 'test',
-  });
-
   // wallet
   await knex('wallet').insert({
     id: wallet.id,
@@ -164,8 +153,6 @@ async function seed() {
 async function clear(wallets) {
   log.log('clearing db');
 
-  await knex('api_key').where('key', apiKey).del();
-
   await Promise.all(
     wallets.map(async (w) => {
       await knex('transaction').where('source_wallet_id', w).del();
@@ -197,7 +184,6 @@ async function clear(wallets) {
 module.exports = {
   seed,
   clear,
-  apiKey,
   wallet,
   walletB,
   walletC,

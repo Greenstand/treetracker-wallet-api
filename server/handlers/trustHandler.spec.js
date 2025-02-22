@@ -9,7 +9,6 @@ const { errorHandler } = require('../utils/utils');
 
 chai.use(sinonChai);
 const { expect } = chai;
-const ApiKeyService = require('../services/ApiKeyService');
 const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
 const TrustRelationshipEnums = require('../utils/trust-enums');
@@ -19,7 +18,6 @@ describe('trustRouter', () => {
   const authenticatedWalletId = uuid.v4();
 
   beforeEach(() => {
-    sinon.stub(ApiKeyService.prototype, 'check');
     sinon.stub(JWTService, 'verify').returns({
       id: authenticatedWalletId,
     });

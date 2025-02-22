@@ -8,8 +8,6 @@ const seed = require('./seed');
 const TransferEnums = require('../server/utils/transfer-enum');
 chai.use(require('chai-uuid'));
 
-const { apiKey } = seed;
-
 describe('Create and accept a pending transfer', () => {
   let bearerToken;
   let bearerTokenB;
@@ -22,7 +20,6 @@ describe('Create and accept a pending transfer', () => {
       // Authorizes before each of the follow tests
       const res = await request(server)
         .post('/auth')
-        .set('treetracker-api-key', apiKey)
         .send({
           wallet: seed.wallet.name,
           password: seed.wallet.password,
@@ -36,7 +33,6 @@ describe('Create and accept a pending transfer', () => {
       // Authorizes before each of the follow tests
       const res = await request(server)
         .post('/auth')
-        .set('treetracker-api-key', apiKey)
         .send({
           wallet: seed.walletB.name,
           password: seed.walletB.password,
@@ -56,7 +52,6 @@ describe('Create and accept a pending transfer', () => {
   it(`Creates a pending transaction `, async () => {
     const res = await request(server)
       .post('/transfers')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         tokens: [seed.token.id],
@@ -77,7 +72,6 @@ describe('Create and accept a pending transfer', () => {
   it(`Token:#${seed.token.id} now should be pending `, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.token.id}`)
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.transfer_pending).eq(true);
@@ -86,7 +80,6 @@ describe('Create and accept a pending transfer', () => {
   it('Get all pending transfers belongs to walletB, should have one', async () => {
     const res = await request(server)
       .get(`/transfers?state=pending&wallet=${seed.wallet.name}&limit=1000`)
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.transfers).lengthOf(1);
@@ -100,7 +93,6 @@ describe('Create and accept a pending transfer', () => {
     const res = await request(server)
       .post(`/transfers/${pendingTransfer.id}/accept`)
       .set('Content-Type', 'application/json')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
   });
@@ -108,7 +100,6 @@ describe('Create and accept a pending transfer', () => {
   it(`Wallet:${seed.wallet.name} should be able to find the transfer, it should be completed 1`, async () => {
     const res = await request(server)
       .get(`/transfers?limit=1000`)
-      .set('treetracker-api-key', apiKey)
       .set('Content-Type', 'application/json')
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
@@ -121,7 +112,6 @@ describe('Create and accept a pending transfer', () => {
   it(`Token:#${seed.token.id} now should belong to ${seed.walletB.name}`, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.token.id}`)
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.wallet_id).eq(seed.walletB.id);
@@ -130,7 +120,6 @@ describe('Create and accept a pending transfer', () => {
   it(`Token:#${seed.token.id} now should have some transaction history`, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.token.id}/transactions?limit=1000`)
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.history).lengthOf(1);

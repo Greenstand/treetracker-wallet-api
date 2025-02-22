@@ -5,11 +5,10 @@ const routerWrapper = express.Router();
 const {
   handlerWrapper,
   verifyJWTHandler,
-  apiKeyHandler,
 } = require('../utils/utils');
 const { eventsGet } = require('../handlers/eventHandler');
 
 router.get('/', handlerWrapper(eventsGet));
 
-routerWrapper.use('/events', apiKeyHandler, verifyJWTHandler, router);
+routerWrapper.use('/events', verifyJWTHandler, router);
 module.exports = routerWrapper;

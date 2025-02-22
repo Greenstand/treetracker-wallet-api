@@ -5,7 +5,6 @@ const sinon = require('sinon');
 const uuid = require('uuid');
 const tokenRouter = require('../routes/tokenRouter');
 const { errorHandler } = require('../utils/utils');
-const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService');
 const TokenService = require('../services/TokenService');
 
@@ -16,7 +15,6 @@ describe('tokenRouter', () => {
   };
 
   beforeEach(() => {
-    sinon.stub(ApiKeyService.prototype, 'check');
     sinon.stub(JWTService, 'verify').returns({
       id: authenticatedWallet.id,
     });

@@ -3,7 +3,6 @@ const { expect } = require('chai');
 const express = require('express');
 const request = require('supertest');
 const authRouter = require('../routes/authRouter');
-const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService');
 const { errorHandler } = require('../utils/utils');
 const AuthService = require('../services/AuthService');
@@ -12,7 +11,6 @@ describe('authHandler', () => {
   let app;
 
   before(() => {
-    sinon.stub(ApiKeyService.prototype, 'check');
     sinon.stub(JWTService, 'sign');
     app = express();
     app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded

@@ -5,7 +5,6 @@ const uuid = require('uuid');
 const log = require('loglevel');
 const knex = require('../server/infra/database/knex');
 
-const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
 const wallet = {
   id: uuid.v4(),
   name: 'walletA',
@@ -52,7 +51,6 @@ const tokenB = {
 };
 
 const storyOfThisSeed = `
-    api_key: ${apiKey}
     a wallet: #${wallet.id}
       name: ${wallet.name}
       wallet: ${wallet.wallet}
@@ -88,16 +86,6 @@ log.debug(
 );
 
 async function seed() {
-  log.debug('seed api key');
-  // TODO should use appropriate hash & salt to populate this table
-  await knex('api_key').insert({
-    key: apiKey,
-    tree_token_api_access: true,
-    hash: 'test',
-    salt: 'test',
-    name: 'test',
-  });
-
   // wallet
   await knex('wallet').insert({
     id: wallet.id,
@@ -156,7 +144,6 @@ async function addTokenToWallet(walletId) {
 
 async function clear() {
   log.debug('clear tables');
-  await knex('api_key').del();
   await knex('transaction').del();
   await knex('token').del();
   await knex('wallet').del();
@@ -167,7 +154,6 @@ async function clear() {
 module.exports = {
   seed,
   clear,
-  apiKey,
   wallet,
   walletB,
   walletC,

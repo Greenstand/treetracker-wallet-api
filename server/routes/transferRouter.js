@@ -5,7 +5,6 @@ const routerWrapper = express.Router();
 const {
   handlerWrapper,
   verifyJWTHandler,
-  apiKeyHandler,
 } = require('../utils/utils');
 const {
   transferGet,
@@ -27,5 +26,5 @@ router.get('/', handlerWrapper(transferGet));
 router.get('/:transfer_id', handlerWrapper(transferIdGet));
 router.get('/:transfer_id/tokens', handlerWrapper(transferIdTokenGet));
 
-routerWrapper.use('/transfers', apiKeyHandler, verifyJWTHandler, router);
+routerWrapper.use('/transfers', verifyJWTHandler, router);
 module.exports = routerWrapper;

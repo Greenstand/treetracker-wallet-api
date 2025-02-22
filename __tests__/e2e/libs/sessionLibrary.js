@@ -2,9 +2,8 @@ const { sendPostRequest, responseStatus: {OK}, assert } = require("../config");
 const { testData } = require("./bootstrap");
 
 async function getSession(wallet, password) {
-    const {apiKey} = testData;
     const url = '/auth';
-    const header = {'treetracker-api-key': apiKey};
+    const header = {};
 
     const payload = {
         'wallet': wallet,

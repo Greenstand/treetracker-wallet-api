@@ -4,7 +4,6 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const helper = require('./utils');
 const HttpError = require('./HttpError');
-const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService');
 
 describe('routers/utils', () => {
@@ -92,43 +91,10 @@ describe('routers/utils', () => {
     });
   });
 
-  describe('apiKeyHandler', () => {
-    it('check failed, should get response with code 401', async () => {
-      const app = express();
-      // mock
-      sinon.stub(ApiKeyService.prototype, 'check').rejects(new HttpError(401));
-      app.get('/test', [
-        helper.apiKeyHandler,
-        async (_, res) => res.status(200).send({}),
-      ]);
-      app.use(helper.errorHandler);
-
-      const res = await request(app).get('/test');
-      expect(res.statusCode).eq(401);
-      ApiKeyService.prototype.check.restore();
-    });
-
-    it('check passed, should get response with code 200', async () => {
-      const app = express();
-      // mock
-      sinon.stub(ApiKeyService.prototype, 'check').rejects(new HttpError(401));
-      app.get('/test', [
-        helper.apiKeyHandler,
-        async (_, res) => res.status(200).send({}),
-      ]);
-      app.use(helper.errorHandler);
-
-      const res = await request(app).get('/test');
-      expect(res.statusCode).eq(401);
-      ApiKeyService.prototype.check.restore();
-    });
-  });
-
   describe('verifyJWTHandler', () => {
     it('pass correct token should pass the verify', async () => {
       const app = express();
       // mock
-      sinon.stub(ApiKeyService.prototype, 'check').rejects(new HttpError(401));
       app.get('/test', [
         helper.verifyJWTHandler,
         async (_, res) => res.status(200).send({}),
@@ -141,13 +107,11 @@ describe('routers/utils', () => {
         .get('/test')
         .set('Authorization', `Bearer ${token}`);
       expect(res.statusCode).eq(200);
-      ApiKeyService.prototype.check.restore();
     });
 
     it('pass corupt token should get response with code 403', async () => {
       const app = express();
-      // mock
-      sinon.stub(ApiKeyService.prototype, 'check').rejects(new HttpError(401));
+
       app.get('/test', [
         helper.verifyJWTHandler,
         async (_, res) => res.status(200).send({}),
@@ -160,7 +124,6 @@ describe('routers/utils', () => {
         .get('/test')
         .set('Authorization', `Bearer ${token.slice(1)}`); // NOTE corupt here
       expect(res.statusCode).eq(401);
-      ApiKeyService.prototype.check.restore();
     });
   });
 });

@@ -39,27 +39,10 @@ function getRandomArbitrary(min, max) {
 
   const salt = Crypto.randomBytes(32).toString('base64')  // create a secure salt
   const passwordHash = sha512(password, salt)
-  
-  const apiKey = generator.generate({
-      length: 32,
-      numbers: true
-  });
-
 
   const trx = await knex.transaction();
 
   try {
-
-
-    // create API key
-    const apiKeyData = {
-      key: apiKey,
-      tree_token_api_access: true,
-      name: username
-    }
-    const result0 = await trx('wallet.api_key').insert(apiKeyData).returning('*')
-    console.log(result0)
-
     // create wallet and password, salt
 
     const result = await trx('wallet.wallet').insert({
@@ -76,7 +59,6 @@ function getRandomArbitrary(min, max) {
 
     console.log(`wallet ${  username}`);
     console.log(`password ${  password}`);
-    console.log(`api key ${  apiKey}`);
 
   } catch (error) {
 

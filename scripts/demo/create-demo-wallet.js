@@ -25,7 +25,6 @@ function getRandomArbitrary(min, max) {
 
   const username = faker.internet.userName();
   const password = faker.internet.password(); // not a secure password
-  const apiKey = faker.internet.password();
 
   const salt = faker.internet.password(); // not a secure salt
   const passwordHash = sha512(password, salt);
@@ -33,17 +32,6 @@ function getRandomArbitrary(min, max) {
   const trx = await knex.transaction();
 
   try {
-    // create API key
-    const apiKeyData = {
-      key: apiKey,
-      tree_token_api_access: true,
-      name: username,
-    };
-    const result0 = await trx('wallet.api_key')
-      .insert(apiKeyData)
-      .returning('*');
-    console.log(result0);
-
     // create wallet and password, salt
 
     const result = await trx('wallet.wallet')
@@ -132,7 +120,6 @@ function getRandomArbitrary(min, max) {
 
     console.log(`wallet ${username}`);
     console.log(`password ${password}`);
-    console.log(`apiKey ${apiKey}`);
   } catch (error) {
     console.log(error);
     await trx.rollback();

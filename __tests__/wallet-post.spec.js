@@ -8,8 +8,6 @@ const seed = require('./seed');
 chai.use(require('chai-uuid'));
 const WalletService = require('../server/services/WalletService');
 
-const {apiKey} = seed;
-
 describe('Wallet: create(POST) wallets of an account', () => {
     let bearerTokenA;
 
@@ -21,7 +19,6 @@ describe('Wallet: create(POST) wallets of an account', () => {
             // Authorizes before each of the follow tests
             const res = await request(server)
                 .post('/auth')
-                .set('treetracker-api-key', apiKey)
                 .send({
                     wallet: seed.wallet.name,
                     password: seed.wallet.password,
@@ -43,7 +40,6 @@ describe('Wallet: create(POST) wallets of an account', () => {
         const res = await request(server)
             .post('/wallets')
             .send({wallet: 'azAZ.-@0123456789'})
-            .set('treetracker-api-key', apiKey)
             .set('content-type', 'application/json')
             .set('Authorization', `Bearer ${bearerTokenA}`);
 
@@ -58,7 +54,6 @@ describe('Wallet: create(POST) wallets of an account', () => {
         const res = await request(server)
             .post('/wallets')
             .send({wallet: 'ab'})
-            .set('treetracker-api-key', apiKey)
             .set('content-type', 'application/json')
             .set('Authorization', `Bearer ${bearerTokenA}`);
 
@@ -71,7 +66,6 @@ describe('Wallet: create(POST) wallets of an account', () => {
                     'GuQeXmxzL3YIJUWORWuGAMeWIbRrxdeKxrK7S0922As3sjr2k' +
                     'mZk4GYzLbSUffoRE7CYeSmQIguyHNcVe18wWP5zj78G0rISTiCj8wvn' +
                     'rtFbYBuGPfxEwHVs9kh6fSTUT3t6r6aYIPsvsRfM1wy'})
-            .set('treetracker-api-key', apiKey)
             .set('content-type', 'application/json')
             .set('Authorization', `Bearer ${bearerTokenA}`);
 
@@ -86,7 +80,6 @@ describe('Wallet: create(POST) wallets of an account', () => {
             const res = await request(server)
                 .post('/wallets')
                 .send({wallet: `test${char}`})
-                .set('treetracker-api-key', apiKey)
                 .set('content-type', 'application/json')
                 .set('Authorization', `Bearer ${bearerTokenA}`);
             expect(res).property('statusCode').to.eq(422);

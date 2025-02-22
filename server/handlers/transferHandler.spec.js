@@ -5,11 +5,10 @@ const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const uuid = require('uuid');
 const transferRouter = require('../routes/transferRouter');
-const { errorHandler, apiKeyHandler } = require('../utils/utils');
+const { errorHandler } = require('../utils/utils');
 
 chai.use(sinonChai);
 const { expect } = chai;
-const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService');
 const TransferService = require('../services/TransferService');
 const TransferEnums = require('../utils/transfer-enum');
@@ -20,14 +19,13 @@ describe('transferRouter', () => {
   const authenticatedWalletId = uuid.v4();
 
   beforeEach(() => {
-    sinon.stub(ApiKeyService.prototype, 'check');
     sinon.stub(JWTService, 'verify').returns({
       id: authenticatedWalletId,
     });
     app = express();
     app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
     app.use(express.json()); // parse application/json
-    app.use(apiKeyHandler, transferRouter);
+    app.use(transferRouter);
     app.use(errorHandler);
   });
 

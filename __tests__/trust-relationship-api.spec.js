@@ -8,8 +8,6 @@ const seed = require('./seed');
 const TrustRelationship = require('../server/utils/trust-enums');
 chai.use(require('chai-uuid'));
 
-const { apiKey } = seed;
-
 describe('Trust relationship management', () => {
   let bearerToken;
   let bearerTokenB;
@@ -24,7 +22,6 @@ describe('Trust relationship management', () => {
       // Authorizes before each of the follow tests
       const res = await request(server)
         .post('/auth')
-        .set('treetracker-api-key', apiKey)
         .send({
           wallet: seed.wallet.name,
           password: seed.wallet.password,
@@ -38,7 +35,6 @@ describe('Trust relationship management', () => {
       // Authorizes before each of the follow tests
       const res = await request(server)
         .post('/auth')
-        .set('treetracker-api-key', apiKey)
         .send({
           wallet: seed.walletB.name,
           password: seed.walletB.password,
@@ -52,7 +48,6 @@ describe('Trust relationship management', () => {
       // Authorizes before each of the follow tests
       const res = await request(server)
         .post('/auth')
-        .set('treetracker-api-key', apiKey)
         .send({
           wallet: seed.walletC.name,
           password: seed.walletC.password,
@@ -70,7 +65,6 @@ describe('Trust relationship management', () => {
   it('Creates send relationship', async () => {
     const res = await request(server)
       .post('/trust_relationships')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         trust_request_type: 'send',
@@ -82,7 +76,6 @@ describe('Trust relationship management', () => {
   it('GET /trust_relationships', async () => {
     const res = await request(server)
       .get('/trust_relationships')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).property('statusCode').to.eq(200); // Integration
     expect(res).property('body').property('trust_relationships').lengthOf(1); // Integration
@@ -92,7 +85,6 @@ describe('Trust relationship management', () => {
   it('POST /trust_relationships', async () => {
     const res = await request(server)
       .post('/trust_relationships')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         trust_request_type: 'send',
@@ -104,7 +96,6 @@ describe('Trust relationship management', () => {
   it('GET /trust_relationships with search parameter', async () => {
     const searchRes = await request(server)
       .get('/trust_relationships')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .query({ search: seed.walletB.name }); 
   
@@ -117,7 +108,6 @@ describe('Trust relationship management', () => {
   it('POST /trust_relationships with wrong request type', async () => {
     const res = await request(server)
       .post('/trust_relationships')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         trust_request_type: 'wrongtype',
@@ -132,7 +122,6 @@ describe('Trust relationship management', () => {
     await seed.seed();
     const res = await request(server)
       .post('/trust_relationships')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`)
       .send({
         trust_request_type: 'manage',
@@ -151,7 +140,6 @@ describe('Trust relationship management', () => {
     const res = await request(server)
       .post(`/trust_relationships/${trustRelationshipId}/accept`)
       .set('Content-Type', 'application/json')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
 
     expect(res).property('statusCode').to.eq(200);
@@ -166,7 +154,6 @@ describe('Trust relationship management', () => {
     await seed.seed();
     const res = await request(server)
       .post('/trust_relationships')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`)
       .send({
         trust_request_type: 'yield',
@@ -185,7 +172,6 @@ describe('Trust relationship management', () => {
     const res = await request(server)
       .post(`/trust_relationships/${trustRelationshipId}/accept`)
       .set('Content-Type', 'application/json')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).property('statusCode').to.eq(200);
     expect(res.body).property('state').eq('trusted');
