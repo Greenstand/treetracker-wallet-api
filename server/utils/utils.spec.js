@@ -1,7 +1,6 @@
 const request = require('supertest');
 const express = require('express');
 const { expect } = require('chai');
-const sinon = require('sinon');
 const helper = require('./utils');
 const HttpError = require('./HttpError');
 const JWTService = require('../services/JWTService');
