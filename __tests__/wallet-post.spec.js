@@ -1,7 +1,6 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
@@ -15,21 +14,7 @@ describe('Wallet: create(POST) wallets of an account', () => {
     await seed.clear();
     await seed.seed();
 
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.wallet.name,
-        password: seed.wallet.password,
-      });
-
-      expect(res).to.have.property('statusCode', 200);
-      bearerTokenA = res.body.token;
-      expect(bearerTokenA).to.match(/\S+/);
-    }
-  });
-
-  beforeEach(async () => {
-    sinon.restore();
+    bearerTokenA = seed.wallet.keycloak_account_id;
   });
 
   it('create wallet by a valid wallet name', async () => {

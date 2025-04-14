@@ -8,6 +8,7 @@ const knex = require('../server/infra/database/knex');
 const wallet = {
   id: uuid.v4(),
   name: 'walletA',
+  keycloak_account_id: uuid.v4(),
 };
 
 const capture = {
@@ -25,11 +26,13 @@ const token = {
 const walletB = {
   id: uuid.v4(),
   name: 'walletB',
+  keycloak_account_id: uuid.v4(),
 };
 
 const walletC = {
   id: uuid.v4(),
   name: 'walletC',
+  keycloak_account_id: uuid.v4(),
 };
 
 const tokenB = {
@@ -77,22 +80,13 @@ async function seed() {
   // TODO should use appropriate hash & salt to populate this table
 
   // wallet
-  await knex('wallet').insert({
-    id: wallet.id,
-    name: wallet.name,
-  });
+  await knex('wallet').insert(wallet);
 
   // walletB
-  await knex('wallet').insert({
-    id: walletB.id,
-    name: walletB.name,
-  });
+  await knex('wallet').insert(walletB);
 
   // walletC
-  await knex('wallet').insert({
-    id: walletC.id,
-    name: walletC.name,
-  });
+  await knex('wallet').insert(walletC);
 
   // relationships: 'walletB' manage 'walletC'
   await knex('wallet_trust').insert({
@@ -128,7 +122,6 @@ async function addTokenToWallet(walletId) {
 
 async function clear() {
   log.debug('clear tables');
-  await knex('api_key').del();
   await knex('transaction').del();
   await knex('token').del();
   await knex('wallet').del();

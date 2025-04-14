@@ -13,6 +13,7 @@ async function register(user) {
     .insert({
       id: uuid.v4(),
       name: user.name,
+      keycloak_account_id: user.keycloak_account_id,
     })
     .returning('*');
   log.info('registered wallet:', result);
@@ -27,13 +28,12 @@ async function register(user) {
  */
 async function registerAndLogin(user) {
   const userRegistered = await register(user);
-  userRegistered.token = userRegistered.id;
+  userRegistered.token = userRegistered.keycloak_account_id;
   return userRegistered;
 }
 
 async function clear() {
   log.debug('clear tables');
-  await knex('api_key').del();
   await knex('transaction').del();
   await knex('token').del();
   await knex('wallet').del();

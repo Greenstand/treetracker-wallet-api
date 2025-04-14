@@ -1,5 +1,6 @@
 {
   "id": "082450d6-278c-4887-bf6c-66a63ef177e7",
   "name": "zaven",
-  "password": "test1234"
+  "password": "test1234",
+  "keycloak_account_id": "236b5ba9-e798-438b-b578-a95b3b7f3bef"
 }

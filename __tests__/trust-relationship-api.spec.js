@@ -1,7 +1,6 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
@@ -11,49 +10,14 @@ chai.use(require('chai-uuid'));
 describe('Trust relationship management', () => {
   let bearerToken;
   let bearerTokenB;
-  let bearerTokenC;
   let trustRelationshipId;
 
   before(async () => {
     await seed.clear();
     await seed.seed();
 
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.wallet.name,
-        password: seed.wallet.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerToken = res.body.token;
-      expect(bearerToken).to.match(/\S+/);
-    }
-
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.walletB.name,
-        password: seed.walletB.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerTokenB = res.body.token;
-      expect(bearerTokenB).to.match(/\S+/);
-    }
-
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.walletC.name,
-        password: seed.walletC.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerTokenC = res.body.token;
-      expect(bearerTokenC).to.match(/\S+/);
-    }
-  });
-
-  beforeEach(async () => {
-    sinon.restore();
+    bearerToken = seed.wallet.keycloak_account_id;
+    bearerTokenB = seed.walletB.keycloak_account_id;
   });
 
   it('Creates send relationship', async () => {

@@ -1,7 +1,6 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
@@ -10,34 +9,13 @@ chai.use(require('chai-uuid'));
 
 describe('Trust relationship: cancel send', () => {
   let bearerToken;
-  let bearerTokenB;
   let trustRelationship;
 
   before(async () => {
     await seed.clear();
     await seed.seed();
 
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.wallet.name,
-        password: seed.wallet.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerToken = res.body.token;
-      expect(bearerToken).to.match(/\S+/);
-    }
-
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.walletB.name,
-        password: seed.walletB.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerTokenB = res.body.token;
-      expect(bearerTokenB).to.match(/\S+/);
-    }
+    bearerToken = seed.wallet.keycloak_account_id;
 
     const res = await request(server)
       .post('/trust_relationships')
@@ -48,10 +26,6 @@ describe('Trust relationship: cancel send', () => {
       });
     expect(res).property('statusCode').to.eq(201);
     trustRelationship = res.body;
-  });
-
-  beforeEach(async () => {
-    sinon.restore();
   });
 
   it(`Cancel this request by ${seed.wallet.name}`, async () => {

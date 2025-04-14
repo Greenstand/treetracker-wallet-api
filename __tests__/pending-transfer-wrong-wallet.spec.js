@@ -1,7 +1,6 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
@@ -9,48 +8,14 @@ chai.use(require('chai-uuid'));
 
 describe('Create and fail to accept a pending transfer with wrong wallet', () => {
   let bearerToken;
-  let bearerTokenB;
   let bearerTokenC;
 
   before(async () => {
     await seed.clear();
     await seed.seed();
 
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.wallet.name,
-        password: seed.wallet.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerToken = res.body.token;
-      expect(bearerToken).to.match(/\S+/);
-    }
-
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.walletB.name,
-        password: seed.walletB.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerTokenB = res.body.token;
-      expect(bearerTokenB).to.match(/\S+/);
-    }
-
-    {
-      const res = await request(server).post('/auth').send({
-        wallet: seed.walletC.name,
-        password: seed.walletC.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      expect(res).property('body').property('token').a('string');
-      bearerTokenC = res.body.token;
-    }
-  });
-
-  beforeEach(async () => {
-    sinon.restore();
+    bearerToken = seed.wallet.keycloak_account_id;
+    bearerTokenC = seed.walletC.keycloak_account_id;
   });
 
   let transferId;

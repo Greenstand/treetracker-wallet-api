@@ -1,7 +1,6 @@
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
-const sinon = require('sinon');
 const chai = require('chai');
 const server = require('../server/app');
 const seed = require('./seed');
@@ -17,31 +16,8 @@ describe('Create and accept a bundle transfer', () => {
     await seed.clear();
     await seed.seed();
 
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.wallet.name,
-        password: seed.wallet.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerToken = res.body.token;
-      expect(bearerToken).to.match(/\S+/);
-    }
-
-    {
-      // Authorizes before each of the follow tests
-      const res = await request(server).post('/auth').send({
-        wallet: seed.walletB.name,
-        password: seed.walletB.password,
-      });
-      expect(res).to.have.property('statusCode', 200);
-      bearerTokenB = res.body.token;
-      expect(bearerTokenB).to.match(/\S+/);
-    }
-  });
-
-  beforeEach(async () => {
-    sinon.restore();
+    bearerToken = seed.wallet.keycloak_account_id;
+    bearerTokenB = seed.walletB.keycloak_account_id;
   });
 
   it(`create Bundle transfer tokens from ${seed.wallet.name} to ${seed.walletB.name}`, async () => {

@@ -1,5 +1,6 @@
 {
   "id": "24f44064-df75-4168-8fdd-cc5478146142",
   "name": "meisze",
-  "password": "test1234"
+  "password": "test1234",
+  "keycloak_account_id": "0844098e-0756-403d-a963-de07b06ed77f"
 }
