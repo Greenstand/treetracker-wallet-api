@@ -30,8 +30,7 @@ const walletGet = async (req, res) => {
     created_at_end_date,
   } = validatedQuery;
 
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const { wallets, count } = await walletService.getAllWallets(
     wallet_id,
@@ -94,8 +93,7 @@ const walletPost = async (req, res) => {
     abortEarly: false,
   });
 
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const { wallet: walletToBeCreated, about } = validatedBody;
   const walletService = new WalletService();
@@ -120,8 +118,7 @@ const walletBatchCreate = async (req, res) => {
     abortEarly: false,
   });
 
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
   const { sender_wallet, token_transfer_amount_default } = validatedBody;
 
   const walletService = new WalletService();
@@ -152,8 +149,7 @@ const walletBatchTransfer = async (req, res) => {
     },
   );
 
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
   const { sender_wallet, token_transfer_amount_default } = validatedBody;
 
   const walletService = new WalletService();

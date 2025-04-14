@@ -10,8 +10,6 @@ const tokenGet = async (req, res) => {
     abortEarly: false,
   });
 
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
   const { limit, wallet, offset } = validatedQuery;
 
   const tokenService = new TokenService();
@@ -20,7 +18,7 @@ const tokenGet = async (req, res) => {
     wallet,
     limit,
     offset,
-    walletLoginId: wallet_id,
+    walletLoginId: req.wallet_id,
   });
 
   res.status(200).json({
@@ -34,13 +32,11 @@ const tokenGetById = async (req, res) => {
   });
 
   const { id } = validatedParams;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
 
   const tokenService = new TokenService();
   const token = await tokenService.getById({
     id,
-    walletLoginId: wallet_id,
+    walletLoginId: req.wallet_id,
   });
 
   res.status(200).json(token);
@@ -61,15 +57,13 @@ const tokenGetTransactionsById = async (req, res) => {
   });
 
   const { id } = validatedParams;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
 
   const tokenService = new TokenService();
   const transactions = await tokenService.getTransactions({
     tokenId: id,
     limit,
     offset,
-    walletLoginId: wallet_id,
+    walletLoginId: req.wallet_id,
   });
   res.status(200).json({
     history: transactions,

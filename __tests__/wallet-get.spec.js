@@ -8,8 +8,6 @@ const seed = require('./seed');
 chai.use(require('chai-uuid'));
 const WalletService = require('../server/services/WalletService');
 
-const { apiKey } = seed;
-
 describe('Wallet: Get wallets of an account', () => {
   let bearerTokenA;
   let bearerTokenB;
@@ -20,13 +18,10 @@ describe('Wallet: Get wallets of an account', () => {
 
     {
       // Authorizes before each of the follow tests
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send({
-          wallet: seed.wallet.name,
-          password: seed.wallet.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.wallet.name,
+        password: seed.wallet.password,
+      });
 
       expect(res).to.have.property('statusCode', 200);
       bearerTokenA = res.body.token;
@@ -35,13 +30,10 @@ describe('Wallet: Get wallets of an account', () => {
 
     {
       // Authorizes before each of the follow tests
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send({
-          wallet: seed.walletB.name,
-          password: seed.walletB.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.walletB.name,
+        password: seed.walletB.password,
+      });
       expect(res).to.have.property('statusCode', 200);
       bearerTokenB = res.body.token;
       expect(bearerTokenB).to.match(/\S+/);
@@ -70,7 +62,6 @@ describe('Wallet: Get wallets of an account', () => {
   it('Get wallets of WalletA without params', async () => {
     const res = await request(server)
       .get('/wallets')
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenA}`);
 
@@ -79,7 +70,6 @@ describe('Wallet: Get wallets of an account', () => {
 
     const resB = await request(server)
       .get('/wallets')
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenB}`);
 
@@ -91,7 +81,6 @@ describe('Wallet: Get wallets of an account', () => {
     const res = await request(server)
       .get('/wallets')
       .query({ name: 'walletB' })
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenB}`);
 
@@ -103,7 +92,6 @@ describe('Wallet: Get wallets of an account', () => {
     const res = await request(server)
       .get(`/wallets`)
       .query({ name: 'test0' })
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenB}`);
 
@@ -116,7 +104,6 @@ describe('Wallet: Get wallets of an account', () => {
     const res = await request(server)
       .get('/wallets')
       .query({ offset: 0 })
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenA}`);
 
@@ -127,7 +114,6 @@ describe('Wallet: Get wallets of an account', () => {
     const resB = await request(server)
       .get('/wallets')
       .query({ limit: 100, offset: 2 })
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenA}`);
 
@@ -138,7 +124,6 @@ describe('Wallet: Get wallets of an account', () => {
     const resC = await request(server)
       .get('/wallets')
       .query({ limit: 2, offset: 0 })
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenA}`);
     expect(resC).property('statusCode').to.eq(200);
@@ -150,7 +135,6 @@ describe('Wallet: Get wallets of an account', () => {
   it('Get wallet by valid uuid', async () => {
     const res = await request(server)
       .get(`/wallets/${seed.walletC.id}`)
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenA}`);
 
@@ -160,7 +144,6 @@ describe('Wallet: Get wallets of an account', () => {
   it('Get wallet by valid uuid which does not exist', async () => {
     const res = await request(server)
       .get(`/wallets/00a6fa25-df29-4701-9077-557932591766`)
-      .set('treetracker-api-key', apiKey)
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${bearerTokenA}`);
 

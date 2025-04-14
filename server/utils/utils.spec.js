@@ -2,10 +2,11 @@ const request = require('supertest');
 const express = require('express');
 const { expect } = require('chai');
 const sinon = require('sinon');
+const uuid = require('uuid');
 const helper = require('./utils');
 const HttpError = require('./HttpError');
-const ApiKeyService = require('../services/ApiKeyService');
 const JWTService = require('../services/JWTService');
+const WalletService = require('../services/WalletService');
 
 describe('routers/utils', () => {
   describe('handlerWrapper', () => {
@@ -92,75 +93,64 @@ describe('routers/utils', () => {
     });
   });
 
-  describe('apiKeyHandler', () => {
-    it('check failed, should get response with code 401', async () => {
-      const app = express();
-      // mock
-      sinon.stub(ApiKeyService.prototype, 'check').rejects(new HttpError(401));
-      app.get('/test', [
-        helper.apiKeyHandler,
-        async (_, res) => res.status(200).send({}),
-      ]);
-      app.use(helper.errorHandler);
-
-      const res = await request(app).get('/test');
-      expect(res.statusCode).eq(401);
-      ApiKeyService.prototype.check.restore();
-    });
-
-    it('check passed, should get response with code 200', async () => {
-      const app = express();
-      // mock
-      sinon.stub(ApiKeyService.prototype, 'check').rejects(new HttpError(401));
-      app.get('/test', [
-        helper.apiKeyHandler,
-        async (_, res) => res.status(200).send({}),
-      ]);
-      app.use(helper.errorHandler);
-
-      const res = await request(app).get('/test');
-      expect(res.statusCode).eq(401);
-      ApiKeyService.prototype.check.restore();
-    });
-  });
-
   describe('verifyJWTHandler', () => {
     it('pass correct token should pass the verify', async () => {
+      const keycloakId = uuid.v4();
+      const walletId = uuid.v4();
+      const verifyStub = sinon.stub(JWTService, 'verify').returns({
+        id: keycloakId,
+      });
+      const getWalletIdByKeycloakId = sinon
+        .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
+        .resolves({ id: walletId });
       const app = express();
-      // mock
-      sinon.stub(ApiKeyService.prototype, 'check').rejects(new HttpError(401));
-      app.get('/test', [
-        helper.verifyJWTHandler,
-        async (_, res) => res.status(200).send({}),
-      ]);
+      app.get('/test', helper.verifyJWTHandler, async (req, res) => {
+        res.send({ id: req.wallet_id });
+      });
       app.use(helper.errorHandler);
 
-      const payload = { id: 1 };
-      const token = JWTService.sign(payload);
       const res = await request(app)
         .get('/test')
-        .set('Authorization', `Bearer ${token}`);
+        .set('Authorization', `Bearer token`);
+
       expect(res.statusCode).eq(200);
-      ApiKeyService.prototype.check.restore();
+      expect(res.body.id).eql(walletId);
+      expect(getWalletIdByKeycloakId.calledOnceWithExactly(keycloakId)).eql(
+        true,
+      );
+      expect(verifyStub.calledOnceWithExactly('Bearer token')).eql(true);
+      sinon.restore();
     });
 
     it('pass corupt token should get response with code 403', async () => {
+      const keycloakId = uuid.v4();
+      const verifyStub = sinon.stub(JWTService, 'verify').returns({
+        id: keycloakId,
+      });
+      const getWalletIdByKeycloakId = sinon
+        .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
+        .rejects();
       const app = express();
       // mock
-      sinon.stub(ApiKeyService.prototype, 'check').rejects(new HttpError(401));
       app.get('/test', [
         helper.verifyJWTHandler,
-        async (_, res) => res.status(200).send({}),
+        async (req, res) => res.status(200).send({ id: req.walletId }),
       ]);
       app.use(helper.errorHandler);
 
-      const payload = { id: 1 };
-      const token = JWTService.sign(payload);
       const res = await request(app)
         .get('/test')
-        .set('Authorization', `Bearer ${token.slice(1)}`); // NOTE corupt here
+        .set('Authorization', `Bearer token`);
       expect(res.statusCode).eq(401);
-      ApiKeyService.prototype.check.restore();
+      expect(res.body).eql({
+        code: 401,
+        message: 'ERROR: Authentication, invalid token received',
+      });
+      expect(getWalletIdByKeycloakId.calledOnceWithExactly(keycloakId)).eql(
+        true,
+      );
+      expect(verifyStub.calledOnceWithExactly('Bearer token')).eql(true);
+      sinon.restore();
     });
   });
 });

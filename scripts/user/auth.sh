@@ -1,1 +1,0 @@
-curl -H "TREETRACKER-API-KEY: MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCEUrTBpq4zAoCLbwyOJtQW1K3bt9Ic66GkAzsRIGRxPTHOkKGC" -H "Content-Type: application/json" -X POST localhost:3006/auth

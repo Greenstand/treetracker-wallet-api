@@ -9,7 +9,7 @@ const { errorHandler } = require('../utils/utils');
 
 chai.use(sinonChai);
 const { expect } = chai;
-const ApiKeyService = require('../services/ApiKeyService');
+
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
@@ -18,10 +18,13 @@ const TrustRelationshipEnums = require('../utils/trust-enums');
 describe('walletRouter', () => {
   let app;
   const authenticatedWalletId = uuid.v4();
+  const keycloakId = uuid.v4();
 
   beforeEach(() => {
-    sinon.stub(ApiKeyService.prototype, 'check');
     sinon.stub(JWTService, 'verify').returns({
+      id: keycloakId,
+    });
+    sinon.stub(WalletService.prototype, 'getWalletIdByKeycloakId').resolves({
       id: authenticatedWalletId,
     });
     app = express();
@@ -37,8 +40,14 @@ describe('walletRouter', () => {
 
   describe('get /wallets', () => {
     it('no limit parameter(1000 as default)', async () => {
+      const walletId = uuid.v4();
+      sinon
+        .stub(WalletService.prototype, 'getAllWallets')
+        .resolves({ wallets: [{ id: walletId }], count: 1 });
       const res = await request(app).get('/wallets');
       expect(res).property('statusCode').eq(200);
+      expect(res.body.wallets[0]).property('id').eq(walletId);
+      expect(res.body.query.limit).eq(1000);
     });
 
     it('successfully', async () => {

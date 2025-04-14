@@ -6,8 +6,6 @@ const routerWrapper = express.Router();
 const multer = require('multer');
 const HttpError = require('../utils/HttpError');
 
-const { authenticateToken } = require('../middleware/tokenAuthValidation');
-
 const upload = multer({
   // eslint-disable-next-line consistent-return
   fileFilter(req, file, cb) {
@@ -19,7 +17,7 @@ const upload = multer({
   dest: '/tmp/csv',
 });
 
-const { handlerWrapper, apiKeyHandler } = require('../utils/utils');
+const { handlerWrapper, verifyJWTHandler } = require('../utils/utils');
 const {
   walletGet,
   walletGetTrustRelationships,
@@ -52,6 +50,6 @@ router.post(
   handlerWrapper(walletBatchTransfer),
 );
 
-routerWrapper.use('/wallets', apiKeyHandler, authenticateToken, router);
+routerWrapper.use('/wallets', verifyJWTHandler, router);
 
 module.exports = routerWrapper;

@@ -9,4 +9,3 @@ spec:
     headers:
       - content-type
       - authorization
-      - treetracker-api-key

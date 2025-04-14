@@ -13,8 +13,7 @@ const transferPost = async (req, res) => {
   });
   const transferService = new TransferService();
 
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const { result, status } = await transferService.initiateTransfer(
     validatedBody,
@@ -38,8 +37,7 @@ const transferIdAcceptPost = async (req, res) => {
   );
 
   const { transfer_id } = validatedParams;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const transferService = new TransferService();
   const result = await transferService.acceptTransfer(transfer_id, wallet_id);
@@ -54,8 +52,7 @@ const transferIdDeclinePost = async (req, res) => {
   );
 
   const { transfer_id } = validatedParams;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const transferService = new TransferService();
   const result = await transferService.declineTransfer(transfer_id, wallet_id);
@@ -70,8 +67,7 @@ const transferIdDelete = async (req, res) => {
   );
 
   const { transfer_id } = validatedParams;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const transferService = new TransferService();
   const result = await transferService.cancelTransfer(transfer_id, wallet_id);
@@ -89,8 +85,7 @@ const transferIdFulfill = async (req, res) => {
   });
 
   const { transfer_id } = validatedParams;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const transferService = new TransferService();
   const result = await transferService.fulfillTransfer(
@@ -107,8 +102,7 @@ const transferGet = async (req, res) => {
   });
 
   const { limit, offset, ...params } = validatedQuery;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const transferService = new TransferService();
 
@@ -137,8 +131,7 @@ const transferIdGet = async (req, res) => {
   );
 
   const { transfer_id } = validatedParams;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const transferService = new TransferService();
   const result = await transferService.getTransferById(transfer_id, wallet_id);
@@ -167,8 +160,7 @@ const transferIdTokenGet = async (req, res) => {
 
   const { limit, offset } = validatedQuery;
   const { transfer_id } = validatedParams;
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
+  const { wallet_id } = req;
 
   const transferService = new TransferService();
   const tokens = await transferService.getTokensByTransferId(

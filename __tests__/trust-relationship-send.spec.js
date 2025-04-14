@@ -8,8 +8,6 @@ const seed = require('./seed');
 const TrustRelationship = require('../server/utils/trust-enums');
 chai.use(require('chai-uuid'));
 
-const { apiKey } = seed;
-
 describe('Trust relationship: send', () => {
   let bearerToken;
   let bearerTokenB;
@@ -20,13 +18,10 @@ describe('Trust relationship: send', () => {
 
     {
       // Authorizes before each of the follow tests
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send({
-          wallet: seed.wallet.name,
-          password: seed.wallet.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.wallet.name,
+        password: seed.wallet.password,
+      });
       expect(res).to.have.property('statusCode', 200);
       bearerToken = res.body.token;
       expect(bearerToken).to.match(/\S+/);
@@ -34,13 +29,10 @@ describe('Trust relationship: send', () => {
 
     {
       // Authorizes before each of the follow tests
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send({
-          wallet: seed.walletB.name,
-          password: seed.walletB.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.walletB.name,
+        password: seed.walletB.password,
+      });
       expect(res).to.have.property('statusCode', 200);
       bearerTokenB = res.body.token;
       expect(bearerTokenB).to.match(/\S+/);
@@ -56,7 +48,6 @@ describe('Trust relationship: send', () => {
   it('Try to send a token to walletB again, should fail, no trust', async () => {
     const res = await request(server)
       .post('/transfers')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         tokens: [],
@@ -76,7 +67,6 @@ describe('Trust relationship: send', () => {
   it(`${seed.wallet.name} request "send" trust relationship with ${seed.walletB.name} `, async () => {
     const res = await request(server)
       .post('/trust_relationships')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         trust_request_type: 'send',
@@ -94,7 +84,6 @@ describe('Trust relationship: send', () => {
     const res = await request(server)
       .post(`/trust_relationships/${trustRelationship.id}/accept`)
       .set('Content-Type', 'application/json')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).property('statusCode').to.eq(200);
   });
@@ -102,7 +91,6 @@ describe('Trust relationship: send', () => {
   it('Wallet should be able to find the relationship, and it was approved', async () => {
     const res = await request(server)
       .get('/trust_relationships?limit=1000')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).property('statusCode').to.eq(200);
     expect(res).property('body').property('trust_relationships').lengthOf(1);
@@ -112,7 +100,6 @@ describe('Trust relationship: send', () => {
   it('Try to send a token to walletB again, this time, should success, 201', async () => {
     const res = await request(server)
       .post('/transfers')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         tokens: [],
@@ -130,7 +117,6 @@ describe('Trust relationship: send', () => {
   it('Try to send bundle token to walletB again, should success, 201', async () => {
     const res = await request(server)
       .post('/transfers')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         bundle: {

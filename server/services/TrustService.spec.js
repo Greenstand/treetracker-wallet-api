@@ -180,7 +180,6 @@ describe('TrustService', () => {
   });
 
   it('getAllTrustRelationships', async () => {
-    
     const data = {
       result: [
         { id: 'trustId1' },
@@ -189,14 +188,13 @@ describe('TrustService', () => {
         { id: 'trustId4' },
       ],
       count: 4,
-    }
-   
+    };
+
     const getAllTrustRelationshipsStub = sinon.stub(
       TrustService.prototype,
       'getAllTrustRelationships',
     );
-    getAllTrustRelationshipsStub
-      .resolves(data);
+    getAllTrustRelationshipsStub.resolves(data);
 
     const trustRelationships = await trustService.getAllTrustRelationships({
       state: 'requested',
@@ -205,9 +203,9 @@ describe('TrustService', () => {
       limit: 10,
       offset: 0,
     });
-    
+
     expect(trustRelationships).eql(data);
-    
+
     expect(
       getAllTrustRelationshipsStub.calledWithExactly({
         state: 'requested',
@@ -215,6 +213,25 @@ describe('TrustService', () => {
         request_type: 'send',
         limit: 10,
         offset: 0,
+      }),
+    ).eql(true);
+  });
+
+  it('trustRelationshipGetById', async () => {
+    const trustRelationshipGetByIdStub = sinon
+      .stub(Trust.prototype, 'getTrustRelationshipById')
+      .resolves('trustRelationship');
+
+    const trustRelationship = await trustService.trustRelationshipGetById({
+      walletLoginId: 'walletId',
+      trustRelationshipId: 'id',
+    });
+
+    expect(trustRelationship).eql('trustRelationship');
+    expect(
+      trustRelationshipGetByIdStub.calledOnceWithExactly({
+        walletId: 'walletId',
+        trustRelationshipId: 'id',
       }),
     ).eql(true);
   });
@@ -331,24 +348,5 @@ describe('TrustService', () => {
         }),
       ).eql(true);
     });
-  });
-
-  describe('trustRelationshipGetById', async () => {
-    const trustRelationshipGetByIdStub = sinon
-      .stub(Trust.prototype, 'trustRelationshipGetById')
-      .resolves('trustRelationship');
-
-    const trustRelationship = await trustService.trustRelationshipGetById({
-      walletId: 'walletId',
-      trustRelationshipId: 'id',
-    });
-
-    expect(trustRelationship).eql('trustRelationship');
-    expect(
-      trustRelationshipGetByIdStub.calledOnceWithExactly({
-        walletId: 'walletId',
-        trustRelationshipId: 'id',
-      }),
-    ).eql(true);
   });
 });

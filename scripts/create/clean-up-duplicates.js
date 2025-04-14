@@ -1,5 +1,6 @@
 const csv = require('async-csv');
 const fs = require('fs').promises;
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 
 function getRandomArbitrary(min, max) {
   return Math.random() * (max - min) + min;
@@ -9,10 +10,9 @@ function getRandomArbitrary(min, max) {
   const Knex = require('knex');
   const { v4: uuidv4 } = require('uuid');
 
-  const Config = require('./config/config');
   const knex = Knex({
     client: 'pg',
-    connection: Config.connectionString[process.env.NODE_ENV],
+    connection: process.env.DATABASE_URL,
   });
 
   const csvFile = './duplicate.uuid.csv';

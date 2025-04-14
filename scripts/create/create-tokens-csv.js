@@ -1,18 +1,14 @@
 const csv = require('async-csv');
 const fs = require('fs').promises;
-
-function getRandomArbitrary(min, max) {
-  return Math.random() * (max - min) + min;
-}
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 
 (async () => {
   const Knex = require('knex');
   const { v4: uuidv4 } = require('uuid');
 
-  const Config = require('./config/config');
   const knex = Knex({
     client: 'pg',
-    connection: Config.connectionString[process.env.NODE_ENV],
+    connection: process.env.DATABASE_URL,
   });
 
   const targetWallet = 'GreenstandEscrow';

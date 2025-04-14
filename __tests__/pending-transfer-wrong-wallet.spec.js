@@ -7,8 +7,6 @@ const server = require('../server/app');
 const seed = require('./seed');
 chai.use(require('chai-uuid'));
 
-const { apiKey } = seed;
-
 describe('Create and fail to accept a pending transfer with wrong wallet', () => {
   let bearerToken;
   let bearerTokenB;
@@ -20,13 +18,10 @@ describe('Create and fail to accept a pending transfer with wrong wallet', () =>
 
     {
       // Authorizes before each of the follow tests
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send({
-          wallet: seed.wallet.name,
-          password: seed.wallet.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.wallet.name,
+        password: seed.wallet.password,
+      });
       expect(res).to.have.property('statusCode', 200);
       bearerToken = res.body.token;
       expect(bearerToken).to.match(/\S+/);
@@ -34,26 +29,20 @@ describe('Create and fail to accept a pending transfer with wrong wallet', () =>
 
     {
       // Authorizes before each of the follow tests
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send({
-          wallet: seed.walletB.name,
-          password: seed.walletB.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.walletB.name,
+        password: seed.walletB.password,
+      });
       expect(res).to.have.property('statusCode', 200);
       bearerTokenB = res.body.token;
       expect(bearerTokenB).to.match(/\S+/);
     }
 
     {
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', apiKey)
-        .send({
-          wallet: seed.walletC.name,
-          password: seed.walletC.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.walletC.name,
+        password: seed.walletC.password,
+      });
       expect(res).to.have.property('statusCode', 200);
       expect(res).property('body').property('token').a('string');
       bearerTokenC = res.body.token;
@@ -69,7 +58,6 @@ describe('Create and fail to accept a pending transfer with wrong wallet', () =>
   it(`Creates a pending transaction `, async () => {
     const res = await request(server)
       .post('/transfers')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerToken}`)
       .send({
         tokens: [seed.token.id],
@@ -92,7 +80,6 @@ describe('Create and fail to accept a pending transfer with wrong wallet', () =>
     const res = await request(server)
       .post(`/transfers/${transferId}/accept`)
       .set('Content-Type', 'application/json')
-      .set('treetracker-api-key', apiKey)
       .set('Authorization', `Bearer ${bearerTokenC}`);
     expect(res).to.have.property('statusCode', 403);
     expect(res)

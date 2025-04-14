@@ -5,19 +5,23 @@ const sinon = require('sinon');
 const uuid = require('uuid');
 const tokenRouter = require('../routes/tokenRouter');
 const { errorHandler } = require('../utils/utils');
-const ApiKeyService = require('../services/ApiKeyService');
+
 const JWTService = require('../services/JWTService');
 const TokenService = require('../services/TokenService');
+const WalletService = require('../services/WalletService');
 
 describe('tokenRouter', () => {
   let app;
   const authenticatedWallet = {
     id: uuid.v4(),
+    keycloakId: uuid.v4(),
   };
 
   beforeEach(() => {
-    sinon.stub(ApiKeyService.prototype, 'check');
     sinon.stub(JWTService, 'verify').returns({
+      id: authenticatedWallet.keycloakId,
+    });
+    sinon.stub(WalletService.prototype, 'getWalletIdByKeycloakId').resolves({
       id: authenticatedWallet.id,
     });
     app = express();

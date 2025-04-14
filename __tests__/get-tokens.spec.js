@@ -21,13 +21,10 @@ describe('GET tokens', () => {
 
     {
       // Authorizes before each of the follow tests
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', seed.apiKey)
-        .send({
-          wallet: seed.wallet.name,
-          password: seed.wallet.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.wallet.name,
+        password: seed.wallet.password,
+      });
       expect(res).to.have.property('statusCode', 200);
       bearerToken = res.body.token;
       expect(bearerToken).to.match(/\S+/);
@@ -35,13 +32,10 @@ describe('GET tokens', () => {
 
     {
       // Authorizes before each of the follow tests
-      const res = await request(server)
-        .post('/auth')
-        .set('treetracker-api-key', seed.apiKey)
-        .send({
-          wallet: seed.walletB.name,
-          password: seed.walletB.password,
-        });
+      const res = await request(server).post('/auth').send({
+        wallet: seed.walletB.name,
+        password: seed.walletB.password,
+      });
       expect(res).to.have.property('statusCode', 200);
       bearerTokenB = res.body.token;
       expect(bearerTokenB).to.match(/\S+/);
@@ -51,7 +45,6 @@ describe('GET tokens', () => {
   it(`walletA, GET /tokens/${seed.token.id} Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.token.id}`)
-      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('id').eq(seed.token.id);
@@ -60,7 +53,6 @@ describe('GET tokens', () => {
   it(`walletA, GET /tokens/${seed.tokenB.id} Should be forbidden`, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.tokenB.id}`)
-      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 403);
   });
@@ -68,7 +60,6 @@ describe('GET tokens', () => {
   it(`walletA, GET /tokens Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens?limit=10`)
-      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.tokens[0]).to.have.property('id').eq(seed.token.id);
@@ -77,7 +68,6 @@ describe('GET tokens', () => {
   it(`walletB, GET /tokens Should be able to get a token, which actually belongs to walletC`, async () => {
     const res = await request(server)
       .get(`/tokens?limit=10&wallet=walletC`)
-      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.tokens[0]).to.have.property('id').eq(seed.tokenB.id);
@@ -86,7 +76,6 @@ describe('GET tokens', () => {
   it(`walletB, GET /tokens/${seed.tokenB.id} Should be able to get a token `, async () => {
     const res = await request(server)
       .get(`/tokens/${seed.tokenB.id}`)
-      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body).to.have.property('id').eq(seed.tokenB.id);
@@ -95,7 +84,6 @@ describe('GET tokens', () => {
     await seed.addTokenToWallet(seed.wallet.id);
     const res = await request(server)
       .get(`/tokens?limit=1`)
-      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
 
     expect(res).to.have.property('statusCode', 200);
@@ -107,7 +95,6 @@ describe('GET tokens', () => {
     const insertedId = (await seed.addTokenToWallet(seed.wallet.id))[0].id;
     const res = await request(server)
       .get(`/tokens?offset=1&limit=10`)
-      .set('treetracker-api-key', seed.apiKey)
       .set('Authorization', `Bearer ${bearerToken}`);
 
     expect(res).to.have.property('statusCode', 200);

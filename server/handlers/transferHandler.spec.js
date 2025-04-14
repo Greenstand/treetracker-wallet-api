@@ -5,29 +5,33 @@ const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const uuid = require('uuid');
 const transferRouter = require('../routes/transferRouter');
-const { errorHandler, apiKeyHandler } = require('../utils/utils');
+const { errorHandler } = require('../utils/utils');
 
 chai.use(sinonChai);
 const { expect } = chai;
-const ApiKeyService = require('../services/ApiKeyService');
+
 const JWTService = require('../services/JWTService');
 const TransferService = require('../services/TransferService');
 const TransferEnums = require('../utils/transfer-enum');
+const WalletService = require('../services/WalletService');
 
 describe('transferRouter', () => {
   let app;
 
   const authenticatedWalletId = uuid.v4();
+  const keycloakId = uuid.v4();
 
   beforeEach(() => {
-    sinon.stub(ApiKeyService.prototype, 'check');
     sinon.stub(JWTService, 'verify').returns({
+      id: keycloakId,
+    });
+    sinon.stub(WalletService.prototype, 'getWalletIdByKeycloakId').resolves({
       id: authenticatedWalletId,
     });
     app = express();
     app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
     app.use(express.json()); // parse application/json
-    app.use(apiKeyHandler, transferRouter);
+    app.use(transferRouter);
     app.use(errorHandler);
   });
 
@@ -40,7 +44,9 @@ describe('transferRouter', () => {
 
     const getByFilterStub = sinon
       .stub(TransferService.prototype, 'getByFilter')
-      .resolves({transfers:[{id: token0Id, state: TransferEnums.STATE.completed}]});
+      .resolves({
+        transfers: [{ id: token0Id, state: TransferEnums.STATE.completed }],
+      });
 
     const res = await request(app).get(
       '/transfers?limit=3&wallet=testWallet&offset=5',
@@ -138,7 +144,7 @@ describe('transferRouter', () => {
           bundleSize: 1,
         },
       },
-      token_count: 1
+      token_count: 1,
     });
     expect(
       initiateTranferStub.calledOnceWithExactly(
@@ -190,7 +196,7 @@ describe('transferRouter', () => {
           bundleSize: 1,
         },
       },
-      token_count: 1
+      token_count: 1,
     });
     expect(
       initiateTranferStub.calledOnceWithExactly(
@@ -410,7 +416,9 @@ describe('transferRouter', () => {
     const token2Id = uuid.v4();
 
     it('transferId param should be a guid, should throw error', async () => {
-      const res = await request(app).get(`/transfers/transferId/tokens?limit=20`);
+      const res = await request(app).get(
+        `/transfers/transferId/tokens?limit=20`,
+      );
       expect(res).property('statusCode').eq(422);
       expect(res.body.message).match(/transfer_id.*guid/i);
     });

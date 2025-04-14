@@ -33,7 +33,6 @@ describe('Zaven request to send 1 token to Meisze', () => {
       await request(server)
         .post(`/transfers/${transfer.id}/decline`)
         .set('Content-Type', 'application/json')
-        .set('treetracker-api-key', registeredMeisze.apiKey)
         .set('Authorization', `Bearer ${registeredMeisze.token}`)
         .expect(200);
     });
@@ -41,7 +40,6 @@ describe('Zaven request to send 1 token to Meisze', () => {
     it('The transfer status should be cancelled', async () => {
       await request(server)
         .get(`/transfers?limit=1000`)
-        .set('treetracker-api-key', registeredMeisze.apiKey)
         .set('Authorization', `Bearer ${registeredMeisze.token}`)
         .expect(200)
         .then((res) => {
@@ -55,7 +53,6 @@ describe('Zaven request to send 1 token to Meisze', () => {
     it('Zaven should still have 1 token', async () => {
       await request(server)
         .get(`/tokens?limit=10`)
-        .set('treetracker-api-key', registeredZaven.apiKey)
         .set('Authorization', `Bearer ${registeredZaven.token}`)
         .expect(200)
         .then((res) => {

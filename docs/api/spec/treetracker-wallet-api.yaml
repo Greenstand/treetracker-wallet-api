@@ -15,9 +15,9 @@ servers:
       environment:
         default: dev
         enum:
-          - dev     # Development server
-          - test    # Test server
-          - prod    # Production server
+          - dev # Development server
+          - test # Test server
+          - prod # Production server
 paths:
   '/auth':
     post:
@@ -1311,15 +1311,6 @@ paths:
           $ref: '#/components/responses/InvalidQueryParametersTrustRelationshipId'
 components:
   parameters:
-    treetrackerApiKeyParam:
-      name: TREETRACKER-API-KEY
-      in: header
-      description: 'API key for authenticating requests to the Treetracker Wallet API'
-      required: true
-      style: simple
-      schema:
-        type: string
-        example: '{{apiKey}}'
     contentTypeJsonHeader:
       name: Content-Type
       in: header
@@ -1395,10 +1386,10 @@ components:
             type: string
       example:
         wallets_created: 3
-        wallets_already_exists: [ ]
+        wallets_already_exists: []
         wallet_other_failure_count: 0
         extra_wallet_information_saved: 0
-        extraWalletInformationNotSaved: [ ]
+        extraWalletInformationNotSaved: []
     batchTransferRequest:
       title: 'Batch Transfer Request'
       required:
@@ -1489,7 +1480,7 @@ components:
                 type: string
                 format: uuid
               description: 'Array of explicit tokens'
-              example: [ 'ed155d71-67f0-4d21-a73d-f5445b8c43c8' ]
+              example: ['ed155d71-67f0-4d21-a73d-f5445b8c43c8']
         - properties:
             implicit:
               type: boolean
@@ -2080,4 +2071,4 @@ components:
       scheme: bearer
       bearerFormat: JWT
 security:
-  - httpBearer: [ ]
+  - httpBearer: []

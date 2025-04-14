@@ -4,8 +4,8 @@
 const log = require('loglevel');
 const { ValidationError } = require('joi');
 const HttpError = require('./HttpError');
-const ApiKeyService = require('../services/ApiKeyService');
-const JWTService = require('../services/JWTService.js');
+const JWTService = require('../services/JWTService');
+const WalletService = require('../services/WalletService');
 
 /*
  * This is from the library https://github.com/Abazhenov/express-async-handler
@@ -51,15 +51,16 @@ exports.errorHandler = (err, req, res, _next) => {
   }
 };
 
-exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
-  const apiKey = new ApiKeyService();
-  await apiKey.check(req.headers['treetracker-api-key'], req.originalUrl);
-  log.debug('Valid Access');
-  next();
-});
-
 exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
   const result = JWTService.verify(req.headers.authorization);
-  req.wallet_id = result.id;
-  next();
+  const walletService = new WalletService();
+  // there is a 404 error check in the repository
+  try {
+    const wallet = await walletService.getWalletIdByKeycloakId(result.id);
+    req.wallet_id = wallet.id;
+    next();
+  } catch (e) {
+    log.error('user info not found');
+    throw new HttpError(401, 'ERROR: Authentication, invalid token received');
+  }
 });

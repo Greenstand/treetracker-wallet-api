@@ -9,18 +9,22 @@ const { errorHandler } = require('../utils/utils');
 
 chai.use(sinonChai);
 const { expect } = chai;
-const ApiKeyService = require('../services/ApiKeyService');
+
 const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
 const TrustRelationshipEnums = require('../utils/trust-enums');
+const WalletService = require('../services/WalletService');
 
 describe('trustRouter', () => {
   let app;
   const authenticatedWalletId = uuid.v4();
+  const keycloakId = uuid.v4();
 
   beforeEach(() => {
-    sinon.stub(ApiKeyService.prototype, 'check');
     sinon.stub(JWTService, 'verify').returns({
+      id: keycloakId,
+    });
+    sinon.stub(WalletService.prototype, 'getWalletIdByKeycloakId').resolves({
       id: authenticatedWalletId,
     });
     app = express();
@@ -200,7 +204,7 @@ describe('trustRouter', () => {
         .stub(TrustService.prototype, 'getAllTrustRelationships')
         .resolves({
           result: [{ id: trustId }],
-          count
+          count,
         });
       const res = await request(app).get(
         `/trust_relationships?type=${TrustRelationshipEnums.ENTITY_TRUST_TYPE.send}&request_type=${TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.send}&state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted}&limit=${limit}&offset=${offset}`,
@@ -222,7 +226,7 @@ describe('trustRouter', () => {
   describe('get /trust_relationships/:id', () => {
     it('missed parameters -- relationshipId must be a guid', async () => {
       const res = await request(app).get(
-          `/trust_relationships/trustRelationshipId`,
+        `/trust_relationships/trustRelationshipId`,
       );
       expect(res).property('statusCode').eq(422);
       expect(res.body.message).match(/trustRelationshipId.*GUID/);
@@ -232,21 +236,20 @@ describe('trustRouter', () => {
       const trustRelationshipId = uuid.v4();
 
       const trustRelationshipGetByIdStub = sinon
-          .stub(TrustService.prototype, 'trustRelationshipGetById')
-          .resolves({id: trustRelationshipId});
+        .stub(TrustService.prototype, 'trustRelationshipGetById')
+        .resolves({ id: trustRelationshipId });
 
       const res = await request(app).get(
-          `/trust_relationships/${trustRelationshipId}`,
+        `/trust_relationships/${trustRelationshipId}`,
       );
 
       expect(res).property('statusCode').eq(200);
       expect(
-          trustRelationshipGetByIdStub.calledOnceWithExactly({
-            walletLoginId: authenticatedWalletId,
-            trustRelationshipId,
-          }),
+        trustRelationshipGetByIdStub.calledOnceWithExactly({
+          walletLoginId: authenticatedWalletId,
+          trustRelationshipId,
+        }),
       ).eql(true);
     });
-
-  })
+  });
 });

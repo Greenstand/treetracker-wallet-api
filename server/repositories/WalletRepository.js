@@ -6,6 +6,8 @@ const HttpError = require('../utils/HttpError');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 const BaseRepository = require('./BaseRepository');
 
+// @TODO repositories should not be throwing 404 errors
+// 404 errors should be thrown from the (service|model) functions
 class WalletRepository extends BaseRepository {
   constructor(session) {
     super('wallet', session);

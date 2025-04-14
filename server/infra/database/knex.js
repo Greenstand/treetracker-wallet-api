@@ -1,8 +1,8 @@
-require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 const Joi = require('joi');
 const log = require('loglevel');
 const knex = require('knex');
-const connection = require('../../../config/config').connectionString;
+
+const connection = process.env.DATABASE_URL;
 
 Joi.assert(connection, Joi.string().pattern(/^postgresql:\//));
 const knexConfig = {

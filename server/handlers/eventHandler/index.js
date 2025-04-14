@@ -7,16 +7,13 @@ const eventsGet = async (req, res) => {
 
   const { limit, since, wallet } = req.query;
 
-  const accessToken = req.user;
-  const { wallet_id } = accessToken;
-
   const eventService = new EventService();
 
   const events = await eventService.getAllEvents({
     limit,
     since,
     wallet,
-    walletLoginId: wallet_id,
+    walletLoginId: req.wallet_id,
   });
 
   res.status(200).json({ events });

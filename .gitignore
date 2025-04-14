@@ -9,7 +9,6 @@ database.json
 .env
 .env.test
 .env.development
-.vscode
 .nyc_output
 tmp/
 

@@ -1,16 +1,12 @@
-function getRandomArbitrary(min, max) {
-  return Math.random() * (max - min) + min;
-}
+require('dotenv').config({ path: `.env.${process.env.NODE_ENV}` });
 
 (async () => {
   const Knex = require('knex');
   const { v4: uuidv4 } = require('uuid');
 
-  // eslint-disable-next-line import/no-unresolved
-  const Config = require('./config/config');
   const knex = Knex({
     client: 'pg',
-    connection: Config.connectionString[process.env.NODE_ENV],
+    connection: process.env.DATABASE_URL,
   });
 
   const trx = await knex.transaction();

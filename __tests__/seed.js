@@ -5,14 +5,9 @@ const uuid = require('uuid');
 const log = require('loglevel');
 const knex = require('../server/infra/database/knex');
 
-const apiKey = 'FORTESTFORTESTFORTESTFORTESTFORTEST';
 const wallet = {
   id: uuid.v4(),
   name: 'walletA',
-  password: 'test1234',
-  passwordHash:
-    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
-  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
 };
 
 const capture = {
@@ -30,19 +25,11 @@ const token = {
 const walletB = {
   id: uuid.v4(),
   name: 'walletB',
-  password: 'test1234',
-  passwordHash:
-    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
-  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
 };
 
 const walletC = {
   id: uuid.v4(),
   name: 'walletC',
-  password: 'test1234',
-  passwordHash:
-    '31dd4fe716e1a908f0e9612c1a0e92bfdd9f66e75ae12244b4ee8309d5b869d435182f5848b67177aa17a05f9306e23c10ba41675933e2cb20c66f1b009570c1',
-  salt: 'TnDe2LDPS7VaPD9GQWL3fhG4jk194nde',
 };
 
 const tokenB = {
@@ -52,11 +39,9 @@ const tokenB = {
 };
 
 const storyOfThisSeed = `
-    api_key: ${apiKey}
     a wallet: #${wallet.id}
       name: ${wallet.name}
-      wallet: ${wallet.wallet}
-      password: ${wallet.password}
+      wallet: ${wallet.name}
 
     a capture: #${capture.id}
 
@@ -90,36 +75,23 @@ log.debug(
 async function seed() {
   log.debug('seed api key');
   // TODO should use appropriate hash & salt to populate this table
-  await knex('api_key').insert({
-    key: apiKey,
-    tree_token_api_access: true,
-    hash: 'test',
-    salt: 'test',
-    name: 'test',
-  });
 
   // wallet
   await knex('wallet').insert({
     id: wallet.id,
     name: wallet.name,
-    password: wallet.passwordHash,
-    salt: wallet.salt,
   });
 
   // walletB
   await knex('wallet').insert({
     id: walletB.id,
     name: walletB.name,
-    password: walletB.passwordHash,
-    salt: walletB.salt,
   });
 
   // walletC
   await knex('wallet').insert({
     id: walletC.id,
     name: walletC.name,
-    password: walletC.passwordHash,
-    salt: walletC.salt,
   });
 
   // relationships: 'walletB' manage 'walletC'
@@ -167,7 +139,6 @@ async function clear() {
 module.exports = {
   seed,
   clear,
-  apiKey,
   wallet,
   walletB,
   walletC,
