@@ -1,3 +1,23 @@
+# [1.43.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.0...v1.43.0) (2025-04-15)
+
+
+### Bug Fixes
+
+* fix integration tests ([56217c1](https://github.com/Greenstand/treetracker-wallet-api/commit/56217c1c43eaa976bd1e718cedd553cb7e42ea91))
+
+
+### Features
+
+* create db migration for keycloak_account_id field ([11c01a3](https://github.com/Greenstand/treetracker-wallet-api/commit/11c01a39d46c2d4c712e76a73e787647b383f4f4))
+* create token validation middleware ([cc389f7](https://github.com/Greenstand/treetracker-wallet-api/commit/cc389f7681677eb183e2073b3b58050c523cfd94))
+* keycloak deployment ([5c08ed7](https://github.com/Greenstand/treetracker-wallet-api/commit/5c08ed72d98179eebec1fa370a0b1a0e61be6157))
+* keycloak integration ([19c7beb](https://github.com/Greenstand/treetracker-wallet-api/commit/19c7bebb43067204919e7343cdff465292a90cb1))
+* merge master ([8f67672](https://github.com/Greenstand/treetracker-wallet-api/commit/8f676724bd9c939a73154be4c2ced5bebc860fbe))
+* protect all endpoints ([0d48182](https://github.com/Greenstand/treetracker-wallet-api/commit/0d481828187dbb6fb16cf10dfa19679d0bd9a77a))
+* protect endpoint routes ([6eb2c83](https://github.com/Greenstand/treetracker-wallet-api/commit/6eb2c83ff9700abb300040fdf806de53547c1a74))
+* replace keycloak-connect with passport ([c1032d4](https://github.com/Greenstand/treetracker-wallet-api/commit/c1032d4ebed837e325486f85064e6cded73f99a2))
+* set up keycloak and session ([789c240](https://github.com/Greenstand/treetracker-wallet-api/commit/789c240d3d47cd7ff231e850c1184c65e865adf4))
+
 # [1.42.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.41.1...v1.42.0) (2025-02-18)
 
 ### Features
