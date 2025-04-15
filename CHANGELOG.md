@@ -1,3 +1,10 @@
+## [1.43.1-keycloak.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.0...v1.43.1-keycloak.1) (2025-04-15)
+
+
+### Bug Fixes
+
+* cloud env deployment ([41e4dc4](https://github.com/Greenstand/treetracker-wallet-api/commit/41e4dc47bd652ab4bfbc9d60a40b60dac917e695))
+
 # [1.43.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.0...v1.43.0) (2025-04-15)
 
 
