@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: treetracker-wallet-api-v2
+  name: treetracker-wallet-api-keycloak
   labels:
-    app: treetracker-wallet-api-v2
+    app: treetracker-wallet-api-keycloak
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: treetracker-wallet-api-v2
+      app: treetracker-wallet-api-keycloak
   template:
     metadata:
       labels:
-        app: treetracker-wallet-api-v2
+        app: treetracker-wallet-api-keycloak
     spec:
       affinity:
         nodeAffinity:
@@ -24,7 +24,7 @@ spec:
                     values:
                       - microservices-node-pool
       containers:
-        - name: treetracker-wallet-api-v2
+        - name: treetracker-wallet-api-keycloak
           image: greenstand/treetracker-wallet-api:latest
           ports:
             - containerPort: 80

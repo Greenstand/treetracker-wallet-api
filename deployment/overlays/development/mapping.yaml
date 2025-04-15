@@ -1,7 +1,7 @@
 apiVersion: getambassador.io/v2
 kind: Mapping
 metadata:
-  name: treetracker-wallet-api-v2
+  name: treetracker-wallet-api-keycloak
 spec:
   cors:
     origins: '*'

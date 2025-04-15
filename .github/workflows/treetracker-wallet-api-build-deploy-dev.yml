@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - master
+      - keycloak
 
 env:
   project-directory: ./
@@ -27,7 +28,7 @@ jobs:
           node-version: '20.x'
 
       - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
-      - run: semantic-release
+      - run: semantic-release --branches keycloak
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
