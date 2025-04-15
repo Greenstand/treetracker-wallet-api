@@ -46,12 +46,22 @@ class Wallet {
     return newWallet;
   }
 
+  async updateWallet(walletObject) {
+    return this._walletRepository.update(walletObject);
+  }
+
   async getById(id) {
     return this._walletRepository.getById(id);
   }
 
-  async getWallet(walletId) {
+  async getWallet(loggedInWalletId, walletId) {
     const wallet = await this._walletRepository.getById(walletId);
+
+    // requested wallet is not managed by currently logged-in user
+    if (!(await this.hasControlOver(loggedInWalletId, walletId))) {
+      throw new HttpError(403, 'Have no permission to access this wallet');
+    }
+
     const tokenCount = await this._tokenRepository.countByFilter({
       wallet_id: walletId,
     });
@@ -92,7 +102,10 @@ class Wallet {
       return true;
     }
     // check sub wallet
-    const result = await this.getSubWallets(parentId, childId);
+    let result = await this.getSubWallets(parentId, childId);
+    if (result.result) {
+      result = result.result;
+    }
 
     if (result.length) {
       return true;

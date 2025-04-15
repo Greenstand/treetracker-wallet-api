@@ -62,6 +62,22 @@ describe('Trust relationship management', () => {
     expect(res).property('statusCode').to.eq(201);
   });
 
+  it('GET /trust_relationships with search parameter', async () => {
+    const searchRes = await request(server)
+      .get('/trust_relationships')
+      .set('Authorization', `Bearer ${bearerToken}`)
+      .query({ search: seed.walletB.name });
+
+    expect(searchRes).property('statusCode').to.eq(200);
+    expect(searchRes.body).to.have.property('trust_relationships');
+    expect(searchRes.body.trust_relationships).to.be.an('array').that.is.not
+      .empty;
+
+    expect(searchRes.body.trust_relationships[0])
+      .property('target_wallet')
+      .to.eq(seed.walletB.name);
+  });
+
   it(`${seed.walletB.name} try to request "manage" relationship to ${seed.wallet.name}`, async () => {
     await seed.clear();
     await seed.seed();

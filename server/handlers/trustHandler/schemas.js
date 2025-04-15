@@ -13,6 +13,11 @@ const trustGetQuerySchema = Joi.object({
   ),
   offset: Joi.number().integer().min(0).default(0),
   limit: Joi.number().integer().min(1).max(2000).default(500),
+  sort_by: Joi.string()
+    .valid('state', 'created_at', 'updated_at')
+    .default('created_at'),
+  order: Joi.string().valid('asc', 'desc').default('desc'),
+  search: Joi.string().optional(),
 });
 
 const trustPostSchema = Joi.object({
@@ -20,11 +25,13 @@ const trustPostSchema = Joi.object({
     .required()
     .valid(...Object.keys(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE)),
   requestee_wallet: Joi.string()
-      .required()
-      .invalid(Joi.ref('requester_wallet')).messages({
-        'any.invalid': 'Requester and requestee cannot be same.'
-      }),
+    .required()
+    .invalid(Joi.ref('requester_wallet'))
+    .messages({
+      'any.invalid': 'Requester and requestee cannot be same.',
+    }),
   requester_wallet: Joi.string(),
+  search: Joi.string().optional(),
 });
 
 const trustRelationshipIdSchema = Joi.object({

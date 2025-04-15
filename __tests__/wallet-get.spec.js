@@ -111,9 +111,10 @@ describe('Wallet: Get wallets of an account', () => {
     const res = await request(server)
       .get(`/wallets/${seed.walletC.id}`)
       .set('content-type', 'application/json')
-      .set('Authorization', `Bearer ${bearerTokenA}`);
+      .set('Authorization', `Bearer ${bearerTokenB}`);
 
     expect(res).property('statusCode').to.eq(200);
+    expect(res.body.id).to.eq(seed.walletC.id);
   });
 
   it('Get wallet by valid uuid which does not exist', async () => {

@@ -8,6 +8,7 @@ const {
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
+  walletPatchSchema,
   walletBatchCreateBodySchema,
   csvValidationSchema,
   walletBatchTransferBodySchema,
@@ -57,9 +58,13 @@ const walletSingleGet = async (req, res) => {
     abortEarly: false,
   });
 
-  const { wallet_id } = validatedParams;
+  const { wallet_id: requestedWalletId } = validatedParams;
+  const { wallet_id: loggedInWalletId } = req;
   const walletService = new WalletService();
-  const wallet = await walletService.getWallet(wallet_id);
+  const wallet = await walletService.getWallet(
+    loggedInWalletId,
+    requestedWalletId,
+  );
   res.status(200).send(wallet);
 };
 
@@ -73,18 +78,58 @@ const walletGetTrustRelationships = async (req, res) => {
       abortEarly: false,
     },
   );
+  const walletService = new WalletService();
 
-  const { wallet_id } = validatedParams;
-  const { state, type, request_type } = validatedQuery;
-  const trustService = new TrustService();
-  const trust_relationships = await trustService.getTrustRelationships({
-    walletId: wallet_id,
+  const { wallet_id: walletId } = validatedParams;
+  const { wallet_id: loggedInWalletId } = req;
+  const sortBy = 'created_at';
+  const orderBy = 'desc';
+  const {
     state,
     type,
     request_type,
-  });
+    limit,
+    offset,
+    sort_by,
+    order,
+    search,
+  } = validatedQuery;
+
+  const { wallets: managedWallets } = await walletService.getAllWallets(
+    loggedInWalletId,
+    {
+      limit: '1000',
+      offset: '0',
+    },
+    null,
+    sortBy,
+    orderBy,
+    null,
+    null,
+  );
+  const trustService = new TrustService();
+  const {
+    result: trust_relationships,
+    count: total,
+  } = await trustService.getTrustRelationships(
+    loggedInWalletId,
+    managedWallets,
+    {
+      walletId,
+      state,
+      type,
+      request_type,
+      limit,
+      offset,
+      sort_by,
+      order,
+      search,
+    },
+  );
   res.status(200).json({
     trust_relationships,
+    query: { limit, offset, sort_by, order, state, type, request_type, search },
+    total,
   });
 };
 
@@ -94,7 +139,6 @@ const walletPost = async (req, res) => {
   });
 
   const { wallet_id } = req;
-
   const { wallet: walletToBeCreated, about } = validatedBody;
   const walletService = new WalletService();
   const returnedWallet = await walletService.createWallet(
@@ -104,6 +148,34 @@ const walletPost = async (req, res) => {
   );
 
   res.status(201).json(returnedWallet);
+};
+
+const walletPatch = async (req, res) => {
+  const validatedBody = await walletPatchSchema.validateAsync(req.body, {
+    abortEarly: false,
+  });
+
+  const validatedParams = await walletIdParamSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+
+  const { wallet_id } = validatedParams;
+  const { wallet_id: loggedInWalletId } = req;
+  const { display_name, about, add_to_web_map } = validatedBody;
+  const { cover_image, logo_image } = req.files;
+
+  const walletService = new WalletService();
+  const updatedWallet = await walletService.updateWallet({
+    loggedInWalletId,
+    display_name,
+    about,
+    add_to_web_map,
+    cover_image,
+    logo_image,
+    wallet_id,
+  });
+
+  res.json(updatedWallet);
 };
 
 const walletBatchCreate = async (req, res) => {
@@ -118,9 +190,8 @@ const walletBatchCreate = async (req, res) => {
     abortEarly: false,
   });
 
-  const { wallet_id } = req;
   const { sender_wallet, token_transfer_amount_default } = validatedBody;
-
+  const { wallet_id } = req;
   const walletService = new WalletService();
 
   const result = await walletService.batchCreateWallet(
@@ -149,9 +220,8 @@ const walletBatchTransfer = async (req, res) => {
     },
   );
 
-  const { wallet_id } = req;
   const { sender_wallet, token_transfer_amount_default } = validatedBody;
-
+  const { wallet_id } = req;
   const walletService = new WalletService();
 
   const result = await walletService.batchTransferWallet(
@@ -167,6 +237,7 @@ const walletBatchTransfer = async (req, res) => {
 
 module.exports = {
   walletPost,
+  walletPatch,
   walletGetTrustRelationships,
   walletGet,
   walletSingleGet,

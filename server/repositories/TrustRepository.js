@@ -7,6 +7,39 @@ class TrustRepository extends BaseRepository {
     this._session = session;
   }
 
+  async getById(id) {
+    const object = await this._session
+      .getDB()
+      .select(
+        'wallet_trust.*',
+        'originator_wallet.name as originating_wallet',
+        'actor_wallet.name as actor_wallet',
+        'target_wallet.name as target_wallet',
+      )
+      .table(this._tableName)
+      .leftJoin(
+        'wallet as originator_wallet',
+        'wallet_trust.originator_wallet_id',
+        '=',
+        'originator_wallet.id',
+      )
+      .leftJoin(
+        'wallet as actor_wallet',
+        'wallet_trust.actor_wallet_id',
+        '=',
+        'actor_wallet.id',
+      )
+      .leftJoin(
+        'wallet as target_wallet',
+        'wallet_trust.target_wallet_id',
+        '=',
+        'target_wallet.id',
+      )
+      .where('wallet_trust.id', id)
+      .first();
+    return object;
+  }
+
   async getByOriginatorId(id) {
     const list = await this._session
       .getDB()
@@ -37,7 +70,12 @@ class TrustRepository extends BaseRepository {
     return list;
   }
 
-  async getByFilter(filter, limitOptions) {
+  async getByFilter(
+    filter,
+    limitOptions = {},
+    loggedInWalletId = '',
+    managedWalletIds = [],
+  ) {
     let promise = this._session
       .getDB()
       .select(
@@ -68,19 +106,101 @@ class TrustRepository extends BaseRepository {
       )
       .where((builder) => this.whereBuilder(filter, builder));
 
-    if (limitOptions && limitOptions.limit) {
-      promise = promise.limit(limitOptions.limit);
+    const count = await this._session.getDB().from(promise.as('p')).count('*');
+
+    let order = 'desc';
+    let column = 'created_at';
+
+    if (limitOptions) {
+      if (limitOptions.order) {
+        order = limitOptions.order;
+      }
+
+      if (limitOptions.sort_by) {
+        column = limitOptions.sort_by;
+      }
+      if (limitOptions.limit) {
+        promise = promise.limit(limitOptions.limit);
+      }
+
+      if (limitOptions.offset) {
+        promise = promise.offset(limitOptions.offset);
+      }
     }
 
-    if (limitOptions && limitOptions.offset) {
-      promise = promise.offset(limitOptions.offset);
+    // order by new column priority
+    // priority is 1 when state is requested and
+    // target is current wallet or one of its managed wallets
+    if (managedWalletIds.length > 0 && loggedInWalletId) {
+      promise = promise.select(
+        this._session.getDB().raw(
+          `CASE
+         WHEN wallet_trust.state = 'requested' AND
+              (wallet_trust.target_wallet_id = ? OR wallet_trust.target_wallet_id IN (${managedWalletIds
+                .map(() => '?')
+                .join(',')})) THEN 1
+         ELSE 0
+       END AS priority`,
+          [loggedInWalletId, ...managedWalletIds],
+        ),
+      );
+      promise = promise.orderBy([
+        { column: 'priority', order: 'desc' },
+        { column, order }, // secondary
+        { column: 'id', order }, // tertiary sort, prevent duplicate records among pages
+      ]);
+    } else {
+      // normal ordering for other endpoints
+      promise = promise.orderBy(column, order);
     }
 
-    return promise;
+    let result = await promise;
+
+    // remove priority column from result
+    // eslint-disable-next-line no-unused-vars
+    result = result.map(({ priority, ...rest }) => rest);
+
+    return { result, count: +count[0].count };
+  }
+
+  async countByFilter(filter) {
+    const promise = this._session
+      .getDB()
+      .select(
+        'wallet_trust.*',
+        'originator_wallet.name as originating_wallet',
+        'actor_wallet.name as actor_wallet',
+        'target_wallet.name as target_wallet',
+      )
+      .table(this._tableName)
+      // leftJoin or join for the three of them ?
+      .leftJoin(
+        'wallet as originator_wallet',
+        'wallet_trust.originator_wallet_id',
+        '=',
+        'originator_wallet.id',
+      )
+      .leftJoin(
+        'wallet as actor_wallet',
+        'wallet_trust.actor_wallet_id',
+        '=',
+        'actor_wallet.id',
+      )
+      .leftJoin(
+        'wallet as target_wallet',
+        'wallet_trust.target_wallet_id',
+        '=',
+        'target_wallet.id',
+      )
+      .where((builder) => this.whereBuilder(filter, builder));
+
+    const count = await this._session.getDB().from(promise.as('p')).count('*');
+
+    return +count[0].count;
   }
 
   async getAllByFilter(filter, limitOptions) {
-    let promise = this._session
+    const subquery = this._session
       .getDB()
       .select(
         'wallet_trust.id',
@@ -117,20 +237,41 @@ class TrustRepository extends BaseRepository {
         'target_wallet.id',
       )
       .where((builder) => this.whereBuilder(filter, builder))
-      .distinctOn('wallet_trust.id'); // distinct on id to avoid duplicates
+      .distinctOn('wallet_trust.id')
+      .orderBy('wallet_trust.id', 'asc');
 
-    // get the total count (before applying limit and offset options)
-    const count = await this._session.getDB().from(promise.as('p')).count('*');
+    let derivedTable = this._session
+      .getDB()
+      .select('*')
+      .from(subquery.as('subquery'));
+
+    let order = 'desc';
+    let column = 'created_at';
+
+    if (limitOptions) {
+      if (limitOptions.order) {
+        order = limitOptions.order;
+      }
+      if (limitOptions.sort_by) {
+        column = limitOptions.sort_by;
+      }
+    }
+
+    derivedTable = derivedTable.orderBy(column, order);
+
+    const count = await this._session
+      .getDB()
+      .from(derivedTable.as('p'))
+      .count('*');
 
     if (limitOptions && limitOptions.limit) {
-      promise = promise.limit(limitOptions.limit);
+      derivedTable = derivedTable.limit(limitOptions.limit);
     }
-
     if (limitOptions && limitOptions.offset) {
-      promise = promise.offset(limitOptions.offset);
+      derivedTable = derivedTable.offset(limitOptions.offset);
     }
 
-    const result = await promise;
+    const result = await derivedTable;
 
     return { result, count: +count[0].count };
   }

@@ -9,7 +9,6 @@ const { errorHandler } = require('../utils/utils');
 
 chai.use(sinonChai);
 const { expect } = chai;
-
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
@@ -24,6 +23,7 @@ describe('walletRouter', () => {
     sinon.stub(JWTService, 'verify').returns({
       id: keycloakId,
     });
+
     sinon.stub(WalletService.prototype, 'getWalletIdByKeycloakId').resolves({
       id: authenticatedWalletId,
     });
@@ -44,12 +44,13 @@ describe('walletRouter', () => {
       sinon
         .stub(WalletService.prototype, 'getAllWallets')
         .resolves({ wallets: [{ id: walletId }], count: 1 });
+
       const res = await request(app).get('/wallets');
+
       expect(res).property('statusCode').eq(200);
       expect(res.body.wallets[0]).property('id').eq(walletId);
       expect(res.body.query.limit).eq(1000);
     });
-
     it('successfully', async () => {
       const walletId = uuid.v4();
       const getAllWalletsStub = sinon
@@ -114,20 +115,31 @@ describe('walletRouter', () => {
     it('successfully', async () => {
       const getTrustRelationshipsStub = sinon
         .stub(TrustService.prototype, 'getTrustRelationships')
-        .resolves([{ id: trustRelationshipId }]);
+        .resolves({ result: [{ id: trustRelationshipId }], count: 1 });
       const res = await request(app).get(
         `/wallets/${walletId}/trust_relationships?state=${TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested}`,
       );
+      const managedWallets = [];
       expect(res).property('statusCode').eq(200);
       expect(res.body.trust_relationships).lengthOf(1);
+      expect(res.body.total).eql(1);
       expect(res.body.trust_relationships[0].id).eql(trustRelationshipId);
       expect(
-        getTrustRelationshipsStub.calledOnceWithExactly({
-          walletId,
-          state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
-          type: undefined,
-          request_type: undefined,
-        }),
+        getTrustRelationshipsStub.calledOnceWithExactly(
+          authenticatedWalletId,
+          managedWallets,
+          {
+            walletId,
+            state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
+            type: undefined,
+            request_type: undefined,
+            search: undefined,
+            limit: 500,
+            offset: 0,
+            sort_by: 'created_at',
+            order: 'desc',
+          },
+        ),
       ).eql(true);
     });
   });
@@ -147,7 +159,9 @@ describe('walletRouter', () => {
       const res = await request(app).get(`/wallets/${walletId}`);
       expect(res).property('statusCode').eq(200);
       expect(res.body).eql({ id: walletId });
-      expect(getWalletStub.calledOnceWithExactly(walletId)).eql(true);
+      expect(
+        getWalletStub.calledOnceWithExactly(authenticatedWalletId, walletId),
+      ).eql(true);
     });
   });
 

@@ -1,14 +1,17 @@
 const sinon = require('sinon');
 const chai = require('chai');
+const uuid = require('uuid');
 const TrustService = require('./TrustService');
 const WalletService = require('./WalletService');
 const Trust = require('../models/Trust');
 const EventService = require('./EventService');
+const Wallet = require('../models/Wallet');
 
 const { expect } = chai;
 
 describe('TrustService', () => {
   let trustService;
+  const authenticatedWalletId = uuid.v4();
 
   beforeEach(() => {
     trustService = new TrustService();
@@ -21,22 +24,35 @@ describe('TrustService', () => {
   it('getTrustRelationships', async () => {
     const getTrustRelationshipsStub = sinon
       .stub(Trust.prototype, 'getTrustRelationships')
-      .resolves(['trustRelationships']);
+      .resolves({ result: ['trustRelationships'], count: 1 });
+    const managedWallets = [{ id: '90f8b2ab-c101-405d-922a-0a64dbe64ab6' }];
 
     const getWalletStub = sinon
       .stub(WalletService.prototype, 'getWallet')
       .resolves({ id: 'walletId' });
 
-    const trustRelationship = await trustService.getTrustRelationships({
-      walletId: 'walletId',
-      state: 'state',
-      type: 'type',
-      request_type: 'request_type',
-      limit: 1,
-      offset: 0,
-    });
+    const hasControlOverStub = sinon
+      .stub(WalletService.prototype, 'hasControlOver')
+      .resolves(true);
 
-    expect(trustRelationship).eql(['trustRelationships']);
+    const trustRelationship = await trustService.getTrustRelationships(
+      authenticatedWalletId,
+      managedWallets,
+      {
+        walletId: 'walletId',
+        state: 'state',
+        type: 'type',
+        request_type: 'request_type',
+        limit: 1,
+        search: 'search',
+        offset: 0,
+        sort_by: 'sort_by',
+        order: 'order',
+      },
+    );
+
+    expect(trustRelationship.result).eql(['trustRelationships']);
+    expect(trustRelationship.count).eql(1);
     expect(
       getWalletStub.calledOnceWithExactly({
         walletId: 'walletId',
@@ -45,12 +61,22 @@ describe('TrustService', () => {
     expect(
       getTrustRelationshipsStub.calledOnceWithExactly({
         walletId: 'walletId',
+        managedWallets,
         state: 'state',
         type: 'type',
         request_type: 'request_type',
         limit: 1,
+        search: 'search',
         offset: 0,
+        sort_by: 'sort_by',
+        order: 'order',
       }),
+    ).eql(true);
+    expect(
+      hasControlOverStub.calledOnceWithExactly(
+        authenticatedWalletId,
+        'walletId',
+      ),
     ).eql(true);
   });
 
@@ -180,40 +206,75 @@ describe('TrustService', () => {
   });
 
   it('getAllTrustRelationships', async () => {
-    const data = {
+    const getAllWalletsStub = sinon
+      .stub(Wallet.prototype, 'getAllWallets')
+      .resolves({ wallets: [{ id: 'id1' }, { id: 'id2' }] });
+    const getTrustRelationshipsStub = sinon.stub(
+      TrustService.prototype,
+      'getTrustRelationships',
+    );
+    const managedWallets = [];
+    getTrustRelationshipsStub.onFirstCall().resolves({
       result: [
         { id: 'trustId1' },
         { id: 'trustId2' },
         { id: 'trustId3' },
         { id: 'trustId4' },
       ],
-      count: 4,
-    };
-
-    const getAllTrustRelationshipsStub = sinon.stub(
-      TrustService.prototype,
-      'getAllTrustRelationships',
-    );
-    getAllTrustRelationshipsStub.resolves(data);
-
-    const trustRelationships = await trustService.getAllTrustRelationships({
-      state: 'requested',
-      type: 'send',
-      request_type: 'send',
-      limit: 10,
-      offset: 0,
+    });
+    getTrustRelationshipsStub.onSecondCall().resolves({
+      result: [
+        { id: 'trustId1' },
+        { id: 'trustId2' },
+        { id: 'trustId5' },
+        { id: 'trustId6' },
+      ],
     });
 
-    expect(trustRelationships).eql(data);
-
+    const trustRelationships = await trustService.getAllTrustRelationships({
+      walletId: 'walletId',
+      state: 'state',
+      type: 'type',
+      request_type: 'request_type',
+    });
+    expect(trustRelationships).eql([
+      { id: 'trustId1' },
+      { id: 'trustId2' },
+      { id: 'trustId3' },
+      { id: 'trustId4' },
+      { id: 'trustId5' },
+      { id: 'trustId6' },
+    ]);
     expect(
-      getAllTrustRelationshipsStub.calledWithExactly({
-        state: 'requested',
-        type: 'send',
-        request_type: 'send',
-        limit: 10,
-        offset: 0,
-      }),
+      getAllWalletsStub.calledOnceWithExactly(
+        'walletId',
+        undefined,
+        undefined,
+        'created_at',
+        'desc',
+      ),
+    ).eql(true);
+    expect(
+      getTrustRelationshipsStub
+        .getCall(0)
+        .calledWithExactly('walletId', managedWallets, {
+          walletId: 'id1',
+          state: 'state',
+          search: undefined,
+          type: 'type',
+          request_type: 'request_type',
+        }),
+    ).eql(true);
+    expect(
+      getTrustRelationshipsStub
+        .getCall(1)
+        .calledWithExactly('walletId', managedWallets, {
+          walletId: 'id2',
+          state: 'state',
+          search: undefined,
+          type: 'type',
+          request_type: 'request_type',
+        }),
     ).eql(true);
   });
 

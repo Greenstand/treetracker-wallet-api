@@ -7,9 +7,9 @@ const Session = require('../infra/database/Session');
 const Token = require('../models/Token');
 const Transfer = require('../models/Transfer');
 const HttpError = require('../utils/HttpError');
-// const EventService = require('./EventService');
 const EventEnums = require('../utils/event-enum');
 const Event = require('../models/Event');
+const { upload } = require('./S3Service');
 
 class WalletService {
   constructor() {
@@ -30,8 +30,8 @@ class WalletService {
     return this._wallet.getByName(name);
   }
 
-  async getWallet(walletId) {
-    return this._wallet.getWallet(walletId);
+  async getWallet(loggedInWalletId, walletId) {
+    return this._wallet.getWallet(loggedInWalletId, walletId);
   }
 
   async getWalletIdByKeycloakId(keycloakAccountId) {
@@ -85,6 +85,79 @@ class WalletService {
         wallet: addedWallet.name,
         about: addedWallet.about,
       };
+    } catch (e) {
+      if (this._session.isTransactionInProgress()) {
+        await this._session.rollbackTransaction();
+      }
+      throw e;
+    }
+  }
+
+  async updateWallet({
+    loggedInWalletId,
+    display_name,
+    about,
+    add_to_web_map,
+    cover_image,
+    logo_image,
+    wallet_id,
+  }) {
+    try {
+      await this._session.beginTransaction();
+      const walletIdToUpdate = wallet_id;
+
+      // checked if logged in wallet has control over wallet to be updated
+      const hasControl = await this.hasControlOver(
+        loggedInWalletId,
+        walletIdToUpdate,
+      );
+
+      if (!hasControl) {
+        throw new HttpError(
+          422,
+          'You do not have permission to update this wallet',
+        );
+      }
+
+      // if images, upload images
+      let coverImageUrl = '';
+      let logoImageUrl = '';
+      if (cover_image) {
+        coverImageUrl = await upload(
+          cover_image[0].buffer,
+          `${walletIdToUpdate}_${new Date().toISOString()}`,
+          cover_image[0].mimetype || 'image/png',
+        );
+      }
+      if (logo_image) {
+        logoImageUrl = await upload(
+          logo_image[0].buffer,
+          `${walletIdToUpdate}_${new Date().toISOString()}`,
+          logo_image[0].mimetype || 'image/png',
+        );
+      }
+
+      const wallet = await this._wallet.updateWallet({
+        id: walletIdToUpdate,
+        display_name,
+        about,
+        ...(coverImageUrl && { cover_url: coverImageUrl }),
+        ...(logoImageUrl && { logo_url: logoImageUrl }),
+      });
+
+      if (add_to_web_map) {
+        await this.addWalletToMapConfig({
+          ...(coverImageUrl && { walletCoverUrl: coverImageUrl }),
+          ...(logoImageUrl && { walletLogoUrl: logoImageUrl }),
+          walletId: walletIdToUpdate,
+        });
+      }
+
+      await this._session.commitTransaction();
+
+      delete wallet.password;
+      delete wallet.salt;
+      return wallet;
     } catch (e) {
       if (this._session.isTransactionInProgress()) {
         await this._session.rollbackTransaction();

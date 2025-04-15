@@ -15,17 +15,7 @@ class Trust {
     return this._trustRepository.getById(id);
   }
 
-  /*
-   * Get trust relationships by filters, setting filter to undefined to allow all data
-   */
-  async getTrustRelationships({
-    walletId,
-    state,
-    type,
-    request_type,
-    offset,
-    limit,
-  }) {
+  static getTrustRelationshipFilter({ walletId, state, type, request_type }) {
     const filter = {
       and: [
         {
@@ -46,17 +36,43 @@ class Trust {
     if (request_type) {
       filter.and.push({ request_type });
     }
-    return this._trustRepository.getByFilter(filter, { offset, limit });
+
+    return filter;
   }
 
   /*
-   * Get all trust relationships by filters, setting filter to undefined to allow all data
+   * Get trust relationships by filters, setting filter to undefined to allow all data
    */
-  async getAllTrustRelationships({ walletId, state, type, request_type, offset, limit }) {
-    
+  async getTrustRelationships({
+    walletId,
+    managedWallets = [],
+    state,
+    type,
+    request_type,
+    offset,
+    limit,
+    sort_by,
+    search,
+    order,
+  }) {
+    const managedWalletIds = managedWallets.map((wallet) => wallet.id);
+
+    const orConditions = [
+      { actor_wallet_id: walletId },
+      { target_wallet_id: walletId },
+      { originator_wallet_id: walletId },
+    ];
+
+    managedWalletIds.forEach((managedWalletId) => {
+      orConditions.push({ actor_wallet_id: managedWalletId });
+      orConditions.push({ target_wallet_id: managedWalletId });
+      orConditions.push({ originator_wallet_id: managedWalletId });
+    });
     const filter = {
       and: [
-        {'originator_wallet.id': walletId},
+        {
+          or: orConditions,
+        },
       ],
     };
     if (state) {
@@ -68,7 +84,37 @@ class Trust {
     if (request_type) {
       filter.and.push({ request_type });
     }
-    return this._trustRepository.getAllByFilter(filter, { offset, limit });
+    if (search) {
+      filter.and.push({
+        or: [
+          { 'originator_wallet.name': { ilike: `%${search}%` } },
+          { 'actor_wallet.name': { ilike: `%${search}%` } },
+          { 'target_wallet.name': { ilike: `%${search}%` } },
+        ],
+      });
+    }
+    return this._trustRepository.getByFilter(
+      filter,
+      {
+        offset,
+        limit,
+        sort_by,
+        order,
+      },
+      walletId,
+      managedWalletIds,
+    );
+  }
+
+  async getTrustRelationshipsCount({ walletId, state, type, request_type }) {
+    const filter = Trust.getTrustRelationshipFilter({
+      walletId,
+      state,
+      type,
+      request_type,
+    });
+
+    return this._trustRepository.countByFilter(filter);
   }
 
   /*
@@ -106,14 +152,55 @@ class Trust {
     //      targetWallet = requesterWallet;
     //    }
 
-    // check if the orginator can control the actor
-    const hasControl = await walletModel.hasControlOver(
+    // check if the originator can control the actor
+    const origHasControlOverActor = await walletModel.hasControlOver(
       originatorWallet.id,
       actorWallet.id,
     );
 
-    if (!hasControl) {
+    // originating wallet has no permission to send request from actor wallet
+    if (!origHasControlOverActor) {
       throw new HttpError(403, 'Have no permission to deal with this actor');
+    }
+
+    // check if the originator can control the target
+    const origHasControlOverTarget = await walletModel.hasControlOver(
+      originatorWallet.id,
+      targetWallet.id,
+    );
+
+    // cannot send trust relationship requests from one sub wallet to another
+    if (
+      originatorWallet.id !== actorWallet.id &&
+      originatorWallet.id !== targetWallet.id &&
+      origHasControlOverActor &&
+      origHasControlOverTarget
+    ) {
+      throw new HttpError(
+        409,
+        'Cannot send trust relationship request to a sub wallet with the same parent',
+      );
+    }
+
+    // check if actor can control the target
+    const actorHasControlOverTarget = await walletModel.hasControlOver(
+      actorWallet.id,
+      targetWallet.id,
+    );
+
+    // originating wallet doesn't need to send requests to a sub wallet it manages
+    if (actorHasControlOverTarget) {
+      throw new HttpError(
+        409,
+        'The requesting wallet already manages the target wallet',
+      );
+    }
+
+    if (originatorWallet.id === targetWallet.id && origHasControlOverActor) {
+      throw new HttpError(
+        409,
+        'The requesting wallet is managed by the target wallet',
+      );
     }
 
     // check if the target wallet can accept the request
@@ -158,7 +245,10 @@ class Trust {
 
   // check if I (current wallet) can add a new trust like this
   async checkDuplicateRequest({ walletId, trustRelationship }) {
-    const trustRelationships = await this.getTrustRelationships({ walletId });
+    let trustRelationships = await this.getTrustRelationships({ walletId });
+    if (trustRelationships.result) {
+      trustRelationships = trustRelationships.result;
+    }
     if (
       trustRelationship.type ===
         TrustRelationshipEnums.ENTITY_TRUST_TYPE.send ||
@@ -200,9 +290,12 @@ class Trust {
   }
 
   async checkManageCircle({ walletId, trustRelationship }) {
-    const trustRelationshipTrusted = await this.getTrustRelationshipsTrusted(
+    let trustRelationshipTrusted = await this.getTrustRelationshipsTrusted(
       walletId,
     );
+    if (trustRelationshipTrusted.result) {
+      trustRelationshipTrusted = trustRelationshipTrusted.result;
+    }
     // just manage type of trust relationship
     if (
       trustRelationship.type === TrustRelationshipEnums.ENTITY_TRUST_TYPE.manage
@@ -283,7 +376,10 @@ class Trust {
     const allTrustRelationships = [];
     await Promise.all(
       allWallets.map(async (wallet) => {
-        const list = await this.getTrustRelationships({ walletId: wallet.id });
+        let list = await this.getTrustRelationships({ walletId: wallet.id });
+        if (list.result) {
+          list = list.result;
+        }
         allTrustRelationships.push(...list);
       }),
     );
@@ -295,8 +391,16 @@ class Trust {
 
   async updateTrustState(trustRelationship, state) {
     const trustRelationshipToUpdate = { ...trustRelationship };
+    const now = new Date();
+    const formattedDate = `${(now.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}/${now
+      .getDate()
+      .toString()
+      .padStart(2, '0')}/${now.getFullYear()}`;
 
     trustRelationshipToUpdate.state = state;
+    trustRelationshipToUpdate.updated_at = formattedDate;
     delete trustRelationshipToUpdate.originating_wallet;
     delete trustRelationshipToUpdate.actor_wallet;
     delete trustRelationshipToUpdate.target_wallet;
@@ -312,9 +416,12 @@ class Trust {
    * Accept a trust relationship request
    */
   async acceptTrustRequestSentToMe({ trustRelationshipId, walletId }) {
-    const trustRelationships = await this.getTrustRelationshipsRequestedToMe(
+    let trustRelationships = await this.getTrustRelationshipsRequestedToMe(
       walletId,
     );
+    if (trustRelationships.result) {
+      trustRelationships = trustRelationships.result;
+    }
     const trustRelationship = trustRelationships.reduce((a, c) => {
       if (c.id === trustRelationshipId) {
         return c;
@@ -340,9 +447,12 @@ class Trust {
    * Decline a trust relationship request
    */
   async declineTrustRequestSentToMe({ walletId, trustRelationshipId }) {
-    const trustRelationships = await this.getTrustRelationshipsRequestedToMe(
+    let trustRelationships = await this.getTrustRelationshipsRequestedToMe(
       walletId,
     );
+    if (trustRelationships.result) {
+      trustRelationships = trustRelationships.result;
+    }
     const trustRelationship = trustRelationships.reduce((a, c) => {
       if (c.id === trustRelationshipId) {
         return c;
@@ -370,12 +480,12 @@ class Trust {
     const trustRelationships = await this._trustRepository.getByFilter({
       'wallet_trust.id': trustRelationshipId,
     });
-    const [trustRelationship] = trustRelationships;
+    const [trustRelationship] = trustRelationships.result;
 
     if (!trustRelationship) {
       throw new HttpError(
         404,
-        'No such trust relationship exists or it is not associated with the current wallet.',
+        `Cannot find trust relationship by id: ${trustRelationshipId}`,
       );
     }
 
@@ -404,9 +514,12 @@ class Trust {
       ),
     );
 
-    const trustRelationships = await this.getTrustRelationshipsTrusted(
+    let trustRelationships = await this.getTrustRelationshipsTrusted(
       walletLoginId,
     );
+    if (trustRelationships.result) {
+      trustRelationships = trustRelationships.result;
+    }
     // check if the trust exist
     if (
       trustRelationships.some((trustRelationship) => {
@@ -439,28 +552,37 @@ class Trust {
   }
 
   async getTrustRelationshipById({ walletId, trustRelationshipId }) {
-    const filter = {
-      and: [
-        {
-          or: [
-            { actor_wallet_id: walletId },
-            { target_wallet_id: walletId },
-            { originator_wallet_id: walletId },
-          ],
-        },
-        {
-          'wallet_trust.id': trustRelationshipId,
-        },
-      ],
-    };
-
-    const [trustRelationship] = await this._trustRepository.getByFilter(filter);
+    const trustRelationship = await this._trustRepository.getById(
+      trustRelationshipId,
+    );
 
     if (!trustRelationship) {
       throw new HttpError(
         404,
-        'No such trust relationship exists or it is not associated with the current wallet.',
+        `Cannot find trust relationship by id: ${trustRelationshipId}`,
       );
+    }
+
+    const walletModel = new Wallet(this._session);
+    const hasControlOverActor = await walletModel.hasControlOver(
+      walletId,
+      trustRelationship.actor_wallet_id,
+    );
+    const hasControlOverTarget = await walletModel.hasControlOver(
+      walletId,
+      trustRelationship.target_wallet_id,
+    );
+    const hasControlOverOriginator = await walletModel.hasControlOver(
+      walletId,
+      trustRelationship.originator_wallet_id,
+    );
+
+    if (
+      !hasControlOverActor &&
+      !hasControlOverTarget &&
+      !hasControlOverOriginator
+    ) {
+      throw new HttpError(403, 'Have no permission to get this relationship');
     }
 
     return trustRelationship;

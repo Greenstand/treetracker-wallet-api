@@ -36,6 +36,13 @@ const walletGetTrustRelationshipsSchema = Joi.object({
   request_type: Joi.string().valid(
     ...Object.values(TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE),
   ),
+  offset: Joi.number().integer().min(0).default(0),
+  limit: Joi.number().integer().min(1).max(2000).default(500),
+  sort_by: Joi.string()
+    .valid('state', 'created_at', 'updated_at')
+    .default('created_at'),
+  order: Joi.string().valid('asc', 'desc').default('desc'),
+  search: Joi.string().optional(),
 });
 
 const walletPostSchema = Joi.object({
@@ -47,6 +54,12 @@ const walletPostSchema = Joi.object({
     .regex(new RegExp('^[A-Za-z0-9-@.]+$'))
     .message('wallet can only contain numbers, letters and the - . @ symbols'),
   about: Joi.string(),
+});
+
+const walletPatchSchema = Joi.object({
+  display_name: Joi.string().trim().min(2).max(30),
+  about: Joi.string().min(5).max(250),
+  add_to_web_map: Joi.boolean().default(false),
 });
 
 const walletBatchCreateBodySchema = Joi.object({
@@ -93,6 +106,7 @@ module.exports = {
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
+  walletPatchSchema,
   walletBatchCreateBodySchema,
   csvValidationSchema,
   csvValidationSchemaTransfer,

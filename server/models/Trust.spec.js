@@ -27,36 +27,56 @@ describe('Trust Model', () => {
 
   describe('getTrustRelationships', () => {
     const walletId = uuid();
+    const managedWallets = [{ id: '90f8b2ab-c101-405d-922a-0a64dbe64ab6' }];
+    const managedWalletIds = managedWallets.map((wallet) => wallet.id);
+    const orConditions = [
+      { actor_wallet_id: walletId },
+      { target_wallet_id: walletId },
+      { originator_wallet_id: walletId },
+    ];
+
+    managedWalletIds.forEach((managedWalletId) => {
+      orConditions.push({ actor_wallet_id: managedWalletId });
+      orConditions.push({ target_wallet_id: managedWalletId });
+      orConditions.push({ originator_wallet_id: managedWalletId });
+    });
     const filter = {
       and: [
         {
-          or: [
-            { actor_wallet_id: walletId },
-            { target_wallet_id: walletId },
-            { originator_wallet_id: walletId },
-          ],
+          or: orConditions,
         },
       ],
     };
 
     it('should get relationships', async () => {
       trustRepositoryStub.getByFilter.resolves(['relationship1']);
+
       const result = await trustModel.getTrustRelationships({
+        managedWallets,
         walletId,
+        search: undefined,
         limit: 10,
         offset: 1,
       });
       expect(result).eql(['relationship1']);
-      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(filter, {
-        limit: 10,
-        offset: 1,
-      });
+      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly(
+        filter,
+        {
+          limit: 10,
+          offset: 1,
+          order: undefined,
+          sort_by: undefined,
+        },
+        walletId,
+        managedWalletIds,
+      );
     });
 
     it('should get relationships -- state', async () => {
       trustRepositoryStub.getByFilter.resolves(['relationship2']);
       const result = await trustModel.getTrustRelationships({
         walletId,
+        managedWallets,
         limit: 10,
         offset: 1,
         state: 'state',
@@ -69,7 +89,11 @@ describe('Trust Model', () => {
         {
           limit: 10,
           offset: 1,
+          order: undefined,
+          sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -77,7 +101,9 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves(['relationship3']);
       const result = await trustModel.getTrustRelationships({
         walletId,
+        managedWallets,
         limit: 10,
+        search: undefined,
         offset: 11,
         type: 'type',
       });
@@ -89,7 +115,11 @@ describe('Trust Model', () => {
         {
           limit: 10,
           offset: 11,
+          order: undefined,
+          sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -97,7 +127,9 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves(['relationship4']);
       const result = await trustModel.getTrustRelationships({
         walletId,
+        managedWallets,
         limit: 101,
+        search: undefined,
         offset: 1,
         request_type: 'request_type',
       });
@@ -109,7 +141,11 @@ describe('Trust Model', () => {
         {
           limit: 101,
           offset: 1,
+          order: undefined,
+          sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
 
@@ -117,8 +153,10 @@ describe('Trust Model', () => {
       trustRepositoryStub.getByFilter.resolves(['relationship1']);
       const result = await trustModel.getTrustRelationships({
         walletId,
+        managedWallets,
         limit: 100,
         offset: 0,
+        search: undefined,
         state: 'state',
         request_type: 'request_type',
         type: 'type',
@@ -133,7 +171,11 @@ describe('Trust Model', () => {
         {
           limit: 100,
           offset: 0,
+          order: undefined,
+          sort_by: undefined,
         },
+        walletId,
+        managedWalletIds,
       );
     });
   });
@@ -192,8 +234,123 @@ describe('Trust Model', () => {
       expect(trustRepositoryStub.create).not.called;
     });
 
-    it('should request trust', async () => {
+    it('should error out -- The requesting wallet already manages the target wallet', async () => {
+      // originator wallet same as actor wallet
+      const originatorActorWallet = {
+        id: requesterWallet.id,
+        name: 'requester',
+      };
+
+      // originator has control over both actor and target
       hasControlStub.resolves(true);
+
+      let error;
+      try {
+        await trustModel.requestTrustFromAWallet({
+          trustRequestType,
+          requesteeWallet,
+          requesterWallet,
+          originatorWallet: originatorActorWallet,
+        });
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(409);
+      expect(error.message).eql(
+        'The requesting wallet already manages the target wallet',
+      );
+      expect(hasControlStub.getCall(0)).calledWithExactly(
+        originatorActorWallet.id,
+        requesterWallet.id,
+      );
+      expect(hasControlStub.getCall(1)).calledWithExactly(
+        originatorActorWallet.id,
+        requesteeWallet.id,
+      );
+      expect(hasControlStub.getCall(2)).calledWithExactly(
+        requesterWallet.id,
+        requesteeWallet.id,
+      );
+      expect(checkDuplicateStub).not.called;
+      expect(trustRepositoryStub.create).not.called;
+    });
+
+    it('should error out -- sub wallet cannot send trust request to another sub wallet', async () => {
+      // originator has control over both actor and target
+      hasControlStub.resolves(true);
+      let error;
+      try {
+        await trustModel.requestTrustFromAWallet({
+          trustRequestType,
+          requesteeWallet,
+          requesterWallet,
+          originatorWallet,
+        });
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(409);
+      expect(error.message).eql(
+        'Cannot send trust relationship request to a sub wallet with the same parent',
+      );
+      expect(hasControlStub.getCall(0)).calledWithExactly(
+        originatorWallet.id,
+        requesterWallet.id,
+      );
+      expect(hasControlStub.getCall(1)).calledWithExactly(
+        originatorWallet.id,
+        requesteeWallet.id,
+      );
+      expect(checkDuplicateStub).not.called;
+      expect(trustRepositoryStub.create).not.called;
+    });
+
+    it('should error out -- The requesting wallet is managed by the target wallet', async () => {
+      // originator has control over both actor and target
+      hasControlStub.onCall(0).resolves(true);
+      hasControlStub.onCall(1).resolves(true);
+      // actor does not have control over target
+      hasControlStub.onCall(2).resolves(false);
+
+      let error;
+      try {
+        await trustModel.requestTrustFromAWallet({
+          trustRequestType,
+          requesteeWallet: originatorWallet,
+          requesterWallet,
+          originatorWallet,
+        });
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(409);
+      expect(error.message).eql(
+        'The requesting wallet is managed by the target wallet',
+      );
+      expect(hasControlStub.getCall(0)).calledWithExactly(
+        originatorWallet.id,
+        requesterWallet.id,
+      );
+      expect(hasControlStub.getCall(1)).calledWithExactly(
+        originatorWallet.id,
+        originatorWallet.id,
+      );
+      expect(hasControlStub.getCall(2)).calledWithExactly(
+        requesterWallet.id,
+        originatorWallet.id,
+      );
+      expect(checkDuplicateStub).not.called;
+      expect(trustRepositoryStub.create).not.called;
+    });
+
+    it('should request trust', async () => {
+      // originator has control over actor
+      hasControlStub.onCall(0).resolves(true);
+      // originator doesn't have control over target
+      hasControlStub.onCall(1).resolves(false);
       const resultObject = {
         id: uuid(),
         type: 'type',
@@ -227,9 +384,13 @@ describe('Trust Model', () => {
         originator_wallet_id: originatorWallet.id,
         target_wallet_id: requesteeWallet.id,
       });
-      expect(hasControlStub).calledOnceWithExactly(
+      expect(hasControlStub.getCall(0)).calledWithExactly(
         originatorWallet.id,
         requesterWallet.id,
+      );
+      expect(hasControlStub.getCall(1)).calledWithExactly(
+        originatorWallet.id,
+        requesteeWallet.id,
       );
       expect(checkDuplicateStub).calledOnceWithExactly({
         walletId: originatorWallet.id,
@@ -268,7 +429,15 @@ describe('Trust Model', () => {
     });
 
     it('should error out -- Not supported type', async () => {
-      getTrustRelationshipStub.resolves();
+      // getTrustRelationshipStub.resolves();
+      getTrustRelationshipStub.resolves([
+        {
+          request_type: 'request_type',
+          actor_wallet_id: 'actor_wallet_id',
+          target_wallet_id: 'target_wallet_id',
+          state: TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.requested,
+        },
+      ]);
       const walletId = uuid();
       let error;
       try {
@@ -583,6 +752,14 @@ describe('Trust Model', () => {
   it('updateTrustState', async () => {
     trustRepositoryStub.update.resolves({ status: 'updated' });
 
+    const now = new Date();
+    const formattedDate = `${(now.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}/${now
+      .getDate()
+      .toString()
+      .padStart(2, '0')}/${now.getFullYear()}`;
+
     const result = await trustModel.updateTrustState(
       {
         id: 'trustId',
@@ -604,6 +781,7 @@ describe('Trust Model', () => {
     expect(trustRepositoryStub.update).calledOnceWithExactly({
       id: 'trustId',
       state: 'new state',
+      updated_at: formattedDate,
     });
   });
 
@@ -746,7 +924,7 @@ describe('Trust Model', () => {
     });
 
     it('should error out -- no permission to accept', async () => {
-      trustRepositoryStub.getByFilter.resolves([]);
+      trustRepositoryStub.getByFilter.resolves({ count: 0, result: [] });
       const trustRelationshipId = uuid();
       const walletId = uuid();
 
@@ -762,7 +940,7 @@ describe('Trust Model', () => {
 
       expect(error.code).eql(404);
       expect(error.message).eql(
-        'No such trust relationship exists or it is not associated with the current wallet.',
+        `Cannot find trust relationship by id: ${trustRelationshipId}`,
       );
       expect(trustRepositoryStub.getByFilter).calledOnceWithExactly({
         'wallet_trust.id': trustRelationshipId,
@@ -774,9 +952,10 @@ describe('Trust Model', () => {
       const trustRelationshipId = uuid();
       const walletId = uuid();
 
-      trustRepositoryStub.getByFilter.resolves([
-        { originator_wallet_id: walletId, id: trustRelationshipId },
-      ]);
+      trustRepositoryStub.getByFilter.resolves({
+        count: 1,
+        result: [{ originator_wallet_id: walletId, id: trustRelationshipId }],
+      });
       updateTrustStateStub.resolves('state cancelled');
       const result = await trustModel.cancelTrustRequest({
         trustRelationshipId,
@@ -920,31 +1099,29 @@ describe('Trust Model', () => {
   describe('getTrustRelationshipById', () => {
     const walletId = uuid();
     const trustRelationshipId = uuid();
-    const filter = {
-      and: [
-        {
-          or: [
-            { actor_wallet_id: walletId },
-            { target_wallet_id: walletId },
-            { originator_wallet_id: walletId },
-          ],
-        },
-        {
-          'wallet_trust.id': trustRelationshipId,
-        },
-      ],
-    };
+    const hasControlStub = sinon.stub(Wallet.prototype, 'hasControlOver');
 
     it('should get relationship', async () => {
-      trustRepositoryStub.getByFilter.resolves(['trustRelationship']);
+      trustRepositoryStub.getById.resolves({
+        id: trustRelationshipId,
+        actor_wallet_id: walletId,
+        target_wallet_id: walletId,
+        originator_wallet_id: walletId,
+      });
+      hasControlStub.resolves(true);
       const result = await trustModel.getTrustRelationshipById({
         walletId,
         trustRelationshipId,
       });
-      expect(result).eql('trustRelationship');
-      expect(trustRepositoryStub.getByFilter).calledOnceWithExactly({
-        ...filter,
+      expect(result).eql({
+        id: trustRelationshipId,
+        actor_wallet_id: walletId,
+        target_wallet_id: walletId,
+        originator_wallet_id: walletId,
       });
+      expect(trustRepositoryStub.getById).calledOnceWithExactly(
+        trustRelationshipId,
+      );
     });
   });
 });

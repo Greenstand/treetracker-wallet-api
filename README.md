@@ -1,4 +1,3 @@
-as
 #API Documentation
 
 To view the specs for the new API visit https://editor.swagger.io and load the YAML file from
@@ -174,18 +173,33 @@ If you have not installed db-migrate globally, while in the database folder, you
 
 See here to learn more about db-migrate: https://db-migrate.readthedocs.io/en/latest/
 
-### Setting up env variables
 
-in your .env.development file you have (you can look at env.example)
+# Keycloak and Access Key Setup
+
+
+
+## Overview
+
+Keycloak is used for authentication and authorization in this project. For an excellent introduction to Keycloak, watch this video: https://www.youtube.com/watch?v=fvxQ8bW0vO8
+
+
+
+## Development Environment
+- Contact the admin team for login credentials
+
+## Generate an access token using curl:
+
+```bash
+
+curl --location 'https://dev-k8s.treetracker.org/keycloak/realms/treetracker/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'client_id=get-from-admin' \
+--data-urlencode 'grant_type=password' \
+--data-urlencode 'username=get-from-admin' \
+--data-urlencode 'password=get-from-admin' \
 
 ```
-...
-PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
-PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
-...
-```
 
-Copy and paste the PUBLIC_KEY and PRIVATE_KEY strings above exactly as is. Then, go to your jwtRS256.key.pub and jwtRS256.key files generated earlier in your config folder and remove all the new lines. Replace the "XXXXX.." with the key codes between the BEGIN PUBLIC KEY and END PUBLIC KEY sections (pasted as a single line) from your respective jwtRS256.key.pub and jwtRS256.key files. \*\*Don't just copy and paste the whole block from these files into these sections since we need to preserve this format with the "\n" injected into the strings here. To find out more, read the dotenv documentation on Multiline Values https://www.npmjs.com/package/dotenv
 
 ### Running Scripts
 
