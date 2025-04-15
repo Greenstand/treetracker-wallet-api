@@ -1,3 +1,10 @@
+## [1.43.1-keycloak.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.1-keycloak.1...v1.43.1-keycloak.2) (2025-04-15)
+
+
+### Bug Fixes
+
+* env variable ([144a446](https://github.com/Greenstand/treetracker-wallet-api/commit/144a4469ee99fef5a2252fa2d8b8eb531ea7120a))
+
 ## [1.43.1-keycloak.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.0...v1.43.1-keycloak.1) (2025-04-15)
 
 
