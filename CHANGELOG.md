@@ -1,3 +1,10 @@
+## [1.42.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.0...v1.42.1) (2025-04-17)
+
+
+### Bug Fixes
+
+* s3 url ([5b4aa80](https://github.com/Greenstand/treetracker-wallet-api/commit/5b4aa804ff112030126c99ac103b45c90d91cbb8))
+
 # [1.42.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.41.1...v1.42.0) (2025-02-18)
 
 
