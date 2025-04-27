@@ -1,3 +1,5 @@
+## [1.42.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.1...v1.42.2) (2025-04-17)
+
 ## [1.43.1-keycloak.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.1-keycloak.1...v1.43.1-keycloak.2) (2025-04-15)
 
 
@@ -6,6 +8,9 @@
 * env variable ([144a446](https://github.com/Greenstand/treetracker-wallet-api/commit/144a4469ee99fef5a2252fa2d8b8eb531ea7120a))
 
 ## [1.43.1-keycloak.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.0...v1.43.1-keycloak.1) (2025-04-15)
+* s3 url ([c642005](https://github.com/Greenstand/treetracker-wallet-api/commit/c6420057616afcf77f3c99ce812e7791a2fef10d))
+
+## [1.42.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.0...v1.42.1) (2025-04-17)
 
 
 ### Bug Fixes
@@ -18,6 +23,9 @@
 ### Bug Fixes
 
 * fix integration tests ([56217c1](https://github.com/Greenstand/treetracker-wallet-api/commit/56217c1c43eaa976bd1e718cedd553cb7e42ea91))
+* s3 url ([5b4aa80](https://github.com/Greenstand/treetracker-wallet-api/commit/5b4aa804ff112030126c99ac103b45c90d91cbb8))
+
+# [1.42.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.41.1...v1.42.0) (2025-02-18)
 
 
 ### Features

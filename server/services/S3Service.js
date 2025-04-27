@@ -14,7 +14,7 @@ const upload = async (file, key, mimetype) => {
   const command = new PutObjectCommand(params);
   await s3.send(command);
 
-  return `https://${bucket}.s3-${region}.amazonaws.com/${key}`;
+  return `https://${bucket}.s3.${region}.amazonaws.com/${encodeURIComponent(key)}`;
 };
 
 module.exports = {
