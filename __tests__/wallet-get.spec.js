@@ -2,6 +2,7 @@ require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
 const chai = require('chai');
+const uuid = require('uuid');
 const server = require('../server/app');
 const seed = require('./seed');
 chai.use(require('chai-uuid'));
@@ -32,6 +33,15 @@ describe('Wallet: Get wallets of an account', () => {
       'desc',
     );
     expect(res.count).to.eq(11);
+  });
+
+  it('should return 401, user does not exist', async () => {
+    await request(server)
+      .get('/wallets')
+      .send({ wallet: 'azAZ.-@0123456789' })
+      .set('content-type', 'application/json')
+      .set('Authorization', `Bearer ${uuid.v4()}`)
+      .expect(401);
   });
 
   it('Get wallets of WalletA without params', async () => {

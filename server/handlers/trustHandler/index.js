@@ -5,6 +5,9 @@ const {
   trustGetQuerySchema,
 } = require('./schemas');
 
+// @TODO(deprecated) is this endpoint still in use
+// /wallet/:id/trust_relationships works better
+// if not in use remove and remove the getAllTrustRelationships function
 const trustGet = async (req, res) => {
   const validatedQuery = await trustGetQuerySchema.validateAsync(req.query, {
     abortEarly: false,

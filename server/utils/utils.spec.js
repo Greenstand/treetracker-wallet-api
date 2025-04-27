@@ -122,6 +122,37 @@ describe('routers/utils', () => {
       sinon.restore();
     });
 
+    it('to create parent wallet', async () => {
+      const keycloakId = uuid.v4();
+      const verifyStub = sinon.stub(JWTService, 'verify').returns({
+        id: keycloakId,
+      });
+      const getWalletIdByKeycloakId = sinon
+        .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
+        .resolves();
+      const app = express();
+      // mock
+      app.post('/wallets', [
+        helper.verifyJWTHandler,
+        async (req, res) =>
+          res.status(200).send({ keycloakId: req.keycloak_id }),
+      ]);
+      app.use(helper.errorHandler);
+
+      const res = await request(app)
+        .post('/wallets')
+        .set('Authorization', `Bearer token`);
+      expect(res.statusCode).eq(200);
+      expect(res.body).eql({
+        keycloakId,
+      });
+      expect(getWalletIdByKeycloakId.calledOnceWithExactly(keycloakId)).eql(
+        true,
+      );
+      expect(verifyStub.calledOnceWithExactly('Bearer token')).eql(true);
+      sinon.restore();
+    });
+
     it('pass corupt token should get response with code 403', async () => {
       const keycloakId = uuid.v4();
       const verifyStub = sinon.stub(JWTService, 'verify').returns({
@@ -129,17 +160,17 @@ describe('routers/utils', () => {
       });
       const getWalletIdByKeycloakId = sinon
         .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
-        .rejects();
+        .resolves();
       const app = express();
       // mock
-      app.get('/test', [
+      app.get('/wallets', [
         helper.verifyJWTHandler,
-        async (req, res) => res.status(200).send({ id: req.walletId }),
+        async (req, res) => res.status(200).send({ id: req.wallet_id }),
       ]);
       app.use(helper.errorHandler);
 
       const res = await request(app)
-        .get('/test')
+        .get('/wallets')
         .set('Authorization', `Bearer token`);
       expect(res.statusCode).eq(401);
       expect(res.body).eql({

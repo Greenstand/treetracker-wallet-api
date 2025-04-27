@@ -18,6 +18,28 @@ describe('WalletService', () => {
     sinon.restore();
   });
 
+  it('createParentWallet', async () => {
+    const createParentWalletStub = sinon.stub(
+      Wallet.prototype,
+      'createParentWallet',
+    );
+    const keycloakId = uuid.v4();
+    const wallet = 'wallet';
+    const about = 'test about';
+    const walletId = uuid.v4();
+    createParentWalletStub.resolves({ name: wallet, id: walletId, about });
+    expect(walletService).instanceOf(WalletService);
+    const createdParentWallet = await walletService.createParentWallet(
+      keycloakId,
+      wallet,
+      about,
+    );
+    expect(createdParentWallet).eql({ wallet, id: walletId, about });
+    expect(
+      createParentWalletStub.calledOnceWithExactly(keycloakId, wallet, about),
+    ).eql(true);
+  });
+
   it('getById', async () => {
     const walletId1 = uuid.v4();
     sinon

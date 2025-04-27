@@ -62,9 +62,7 @@ class WalletRepository extends BaseRepository {
       .table(this._tableName)
       .where('keycloak_account_id', keycloakAccountId)
       .first();
-    if (!object) {
-      throw new HttpError(404, `User is not associated with any wallet`);
-    }
+
     return object;
   }
 
