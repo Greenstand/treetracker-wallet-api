@@ -1,3 +1,16 @@
+# [1.44.0-keycloak.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.1-keycloak.2...v1.44.0-keycloak.1) (2025-04-27)
+
+
+### Bug Fixes
+
+* s3 url ([c642005](https://github.com/Greenstand/treetracker-wallet-api/commit/c6420057616afcf77f3c99ce812e7791a2fef10d))
+* s3 url ([5b4aa80](https://github.com/Greenstand/treetracker-wallet-api/commit/5b4aa804ff112030126c99ac103b45c90d91cbb8))
+
+
+### Features
+
+* create parent wallet by a logged in user ([68a9fce](https://github.com/Greenstand/treetracker-wallet-api/commit/68a9fce94db9852c13f596636f368ce3978a4479))
+
 ## [1.42.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.1...v1.42.2) (2025-04-17)
 
 ## [1.43.1-keycloak.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.1-keycloak.1...v1.43.1-keycloak.2) (2025-04-15)
