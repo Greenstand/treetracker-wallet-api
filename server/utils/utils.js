@@ -54,13 +54,18 @@ exports.errorHandler = (err, req, res, _next) => {
 exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
   const result = JWTService.verify(req.headers.authorization);
   const walletService = new WalletService();
-  // there is a 404 error check in the repository
-  try {
-    const wallet = await walletService.getWalletIdByKeycloakId(result.id);
+
+  const wallet = await walletService.getWalletIdByKeycloakId(result.id);
+  if (!wallet || !wallet.id) {
+    if (req.originalUrl === '/wallets' && req.method === 'POST') {
+      req.keycloak_id = result.id;
+      next();
+    } else {
+      log.error('user info not found');
+      throw new HttpError(401, 'ERROR: Authentication, invalid token received');
+    }
+  } else {
     req.wallet_id = wallet.id;
     next();
-  } catch (e) {
-    log.error('user info not found');
-    throw new HttpError(401, 'ERROR: Authentication, invalid token received');
   }
 });

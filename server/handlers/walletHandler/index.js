@@ -14,6 +14,7 @@ const {
   walletBatchTransferBodySchema,
   csvValidationSchemaTransfer,
 } = require('./schemas');
+const HttpError = require('../../utils/HttpError');
 
 const walletGet = async (req, res) => {
   const validatedQuery = await walletGetQuerySchema.validateAsync(req.query, {
@@ -141,11 +142,24 @@ const walletPost = async (req, res) => {
   const { wallet_id } = req;
   const { wallet: walletToBeCreated, about } = validatedBody;
   const walletService = new WalletService();
-  const returnedWallet = await walletService.createWallet(
-    wallet_id,
-    walletToBeCreated,
-    about,
-  );
+
+  let returnedWallet;
+  if (!wallet_id) {
+    // new keycloak user
+    const { keycloak_id } = req;
+    if (!keycloak_id) throw new HttpError(500, 'keycloak id not found');
+    returnedWallet = await walletService.createParentWallet(
+      keycloak_id,
+      walletToBeCreated,
+      about,
+    );
+  } else {
+    returnedWallet = await walletService.createWallet(
+      wallet_id,
+      walletToBeCreated,
+      about,
+    );
+  }
 
   res.status(201).json(returnedWallet);
 };

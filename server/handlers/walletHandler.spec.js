@@ -194,6 +194,34 @@ describe('walletRouter', () => {
       ).eql(true);
     });
 
+    it('successfully creates parent wallet', async () => {
+      sinon.restore();
+      sinon.stub(JWTService, 'verify').returns({
+        id: keycloakId,
+      });
+      sinon
+        .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
+        .resolves({});
+      const createParentWalletStub = sinon
+        .stub(WalletService.prototype, 'createParentWallet')
+        .resolves(mockWallet);
+      const res = await request(app).post('/wallets').send({
+        wallet: mockWallet.wallet,
+        about: mockWallet.about,
+      });
+      expect(res).property('statusCode').eq(201);
+      expect(res.body.wallet).eq(mockWallet.wallet);
+      expect(res.body.id).eq(mockWallet.id);
+      expect(res.body.about).eq(mockWallet.about);
+      expect(
+        createParentWalletStub.calledOnceWithExactly(
+          keycloakId,
+          mockWallet.wallet,
+          mockWallet.about,
+        ),
+      ).eql(true);
+    });
+
     it('missed parameter', async () => {
       const res = await request(app).post('/wallets').send({});
       expect(res).property('statusCode').eq(422);

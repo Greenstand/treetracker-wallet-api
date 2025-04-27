@@ -31,7 +31,7 @@ describe('Wallet Model', () => {
     sinon.restore();
   });
 
-  describe('createWallet function', async () => {
+  describe('createWallet function', () => {
     const walletId = uuid();
     const wallet = 'wallet';
 
@@ -90,6 +90,67 @@ describe('Wallet Model', () => {
       expect(walletRepositoryStub.create).calledOnceWithExactly({
         name: wallet,
         about,
+      });
+    });
+  });
+
+  describe('createParentWallet function', () => {
+    const wallet = 'wallet';
+
+    it('should error out, wallet already exists', async () => {
+      walletRepositoryStub.getByName.resolves();
+      let error;
+
+      try {
+        await walletModel.createParentWallet(uuid(), wallet);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(409);
+      expect(error.message).eql(`The wallet "wallet" already exists`);
+      expect(walletRepositoryStub.getByName).calledOnceWithExactly('wallet');
+      expect(trustRepositoryStub.create).not.called;
+      expect(walletRepositoryStub.create).not.called;
+    });
+
+    it('should error out, some other error', async () => {
+      walletRepositoryStub.getByName.rejects('internal error');
+      let error;
+
+      try {
+        await walletModel.createParentWallet(uuid(), wallet);
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.toString()).eql(`internal error`);
+      expect(walletRepositoryStub.getByName).calledOnceWithExactly('wallet');
+      expect(trustRepositoryStub.create).not.called;
+      expect(walletRepositoryStub.create).not.called;
+    });
+
+    it('should create default wallet', async () => {
+      walletRepositoryStub.getByName.rejects(new HttpError(404));
+      const newWalletId = uuid();
+      const keycloakId = uuid();
+      const about = 'default wallet about';
+
+      walletRepositoryStub.create.resolves({ id: newWalletId });
+
+      const result = await walletModel.createParentWallet(
+        keycloakId,
+        wallet,
+        about,
+      );
+
+      expect(result).eql({ id: newWalletId });
+      expect(trustRepositoryStub.create).not.called;
+      expect(walletRepositoryStub.getByName).calledOnceWithExactly('wallet');
+      expect(walletRepositoryStub.create).calledOnceWithExactly({
+        name: wallet,
+        about,
+        keycloak_account_id: keycloakId,
       });
     });
   });

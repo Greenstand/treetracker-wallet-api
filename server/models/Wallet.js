@@ -13,8 +13,7 @@ class Wallet {
     this._tokenRepository = new TokenRepository(session);
   }
 
-  async createWallet(loggedInWalletId, wallet, about) {
-    // check name
+  async checkWalletName(wallet) {
     try {
       await this._walletRepository.getByName(wallet);
       throw new HttpError(409, `The wallet "${wallet}" already exists`);
@@ -25,8 +24,24 @@ class Wallet {
         throw e;
       }
     }
+  }
 
-    // TO DO: check if wallet is expected format type?
+  async createParentWallet(keycloakId, wallet, about) {
+    await this.checkWalletName(wallet);
+
+    const newWallet = await this._walletRepository.create({
+      name: wallet,
+      about,
+      keycloak_account_id: keycloakId,
+    });
+
+    return newWallet;
+  }
+
+  async createWallet(loggedInWalletId, wallet, about) {
+    // check name
+    await this.checkWalletName(wallet);
+
     // TO DO: Need to check account permissions -> manage accounts
 
     // need to create a wallet object

@@ -48,6 +48,20 @@ class WalletService {
     return wallet;
   }
 
+  async createParentWallet(keycloakId, wallet, about) {
+    const newParentWallet = await this._wallet.createParentWallet(
+      keycloakId,
+      wallet,
+      about,
+    );
+
+    return {
+      id: newParentWallet.id,
+      wallet: newParentWallet.name,
+      about: newParentWallet.about,
+    };
+  }
+
   async createWallet(loggedInWalletId, wallet, about) {
     try {
       await this._session.beginTransaction();
