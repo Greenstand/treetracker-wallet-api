@@ -1,4 +1,5 @@
 const csvtojson = require('csvtojson');
+const publishWalletToQueue = require('../../middleware/publishWalletToQueue');
 
 const WalletService = require('../../services/WalletService');
 const TrustService = require('../../services/TrustService');
@@ -160,6 +161,8 @@ const walletPost = async (req, res) => {
       about,
     );
   }
+
+  await publishWalletToQueue(returnedWallet);
 
   res.status(201).json(returnedWallet);
 };

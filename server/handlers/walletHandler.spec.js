@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const uuid = require('uuid');
+const queue = require('treetracker-wallet-app/packages/queue');
 const walletRouter = require('../routes/walletRouter');
 const { errorHandler } = require('../utils/utils');
 
@@ -166,6 +167,16 @@ describe('walletRouter', () => {
   });
 
   describe('post /wallets', () => {
+    let publishStub;
+
+    beforeEach(() => {
+      publishStub = sinon.stub(queue, 'publish').returns();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
     const walletId = uuid.v4();
     const mockWallet = {
       id: walletId,
