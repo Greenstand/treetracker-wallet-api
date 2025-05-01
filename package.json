@@ -39,7 +39,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.556.0",
     "@sentry/node": "^9.11.0",
-    "@treetracker": "file:node_modules/treetracker-wallet-app/packages",
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "chai-uuid": "^1.0.6",
@@ -83,7 +82,7 @@
     "generate-password": "^1.6.0",
     "http-status-codes": "1.4.0",
     "husky": "^3.1.0",
-    "mocha": "^10.8.2",
+    "mocha": "^10.1.0",
     "mock-knex": "^0.4.9",
     "nyc": "^15.1.0",
     "prettier": "^2.1.2",
