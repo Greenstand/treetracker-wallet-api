@@ -1,15 +1,16 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
+const log = require('loglevel');
 
 const queue = require('treetracker-wallet-app/packages/queue');
 
 describe('publishWalletToQueue', () => {
   let publishStub;
-  //   let consoleErrorStub;
+  let logErrorStub;
 
   beforeEach(() => {
-    publishStub = sinon.stub(queue, 'publish').returns();
-    // consoleErrorStub = sinon.stub(console, 'error');
+    publishStub = sinon.stub(queue, 'publish');
+    logErrorStub = sinon.stub(log, 'error');
   });
 
   afterEach(() => {
@@ -40,5 +41,30 @@ describe('publishWalletToQueue', () => {
     });
   });
 
-  it('should not throw error if publish fails', async () => {});
+  it('should not throw error if publish fails', () => {
+    publishStub.throws(new Error('publish failed'));
+
+    const wallet = {
+      id: 2,
+      userId: 43,
+      createdAt: '2025-04-30T00:00:00Z',
+    };
+
+    let errorCaught = false;
+    try {
+      publishWalletToQueue(wallet);
+    } catch (err) {
+      errorCaught = true;
+    }
+
+    expect(errorCaught).to.be.false;
+    expect(publishStub.calledOnce).to.be.true;
+    expect(logErrorStub.calledOnce).to.be.true;
+    expect(logErrorStub.firstCall.args[0]).to.equal(
+      'Failed to publish wallet creation message:',
+    );
+    expect(logErrorStub.firstCall.args[1])
+      .to.be.an('error')
+      .with.property('message', 'publish failed');
+  });
 });
