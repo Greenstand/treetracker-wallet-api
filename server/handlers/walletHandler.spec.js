@@ -193,6 +193,7 @@ describe('walletRouter', () => {
         about: mockWallet.about,
       });
       expect(res).property('statusCode').eq(201);
+      expect(publishStub.calledOnce).to.be.true;
       expect(res.body.wallet).eq(mockWallet.wallet);
       expect(res.body.id).eq(mockWallet.id);
       expect(res.body.about).eq(mockWallet.about);
