@@ -1,5 +1,5 @@
 const csvtojson = require('csvtojson');
-const queueService = require('../../services/QueueService');
+const QueueService = require('../../services/QueueService');
 
 const WalletService = require('../../services/WalletService');
 const TrustService = require('../../services/TrustService');
@@ -162,7 +162,7 @@ const walletPost = async (req, res) => {
     );
   }
 
-  await queueService.sendWalletCreationNotification(returnedWallet);
+  await QueueService.sendWalletCreationNotification(returnedWallet);
 
   res.status(201).json(returnedWallet);
 };

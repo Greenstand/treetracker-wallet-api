@@ -1,8 +1,9 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const log = require('loglevel');
-
 const queue = require('treetracker-wallet-app/packages/queue');
+const knex = require('../infra/database/knex');
+const QueueService = require('./QueueService');
 
 describe('QueueService', () => {
   let publishStub;
@@ -17,9 +18,6 @@ describe('QueueService', () => {
     sinon.restore();
   });
 
-  const queueService = require('./QueueService');
-  const knex = require('../infra/database/knex');
-
   describe('sendWalletCreationNotification', () => {
     it('should publish a wallet creation message to the queue', async () => {
       const wallet = {
@@ -28,7 +26,7 @@ describe('QueueService', () => {
         createdAt: '2025-04-29T00:00:00Z',
       };
 
-      await queueService.sendWalletCreationNotification(wallet);
+      await QueueService.sendWalletCreationNotification(wallet);
 
       expect(publishStub.calledOnce).to.be.true;
       expect(publishStub.firstCall.args[0]).to.deep.equal({
@@ -42,7 +40,7 @@ describe('QueueService', () => {
       });
     });
 
-    it('should not throw error if publish fails', () => {
+    it('should not throw error if publish fails', async () => {
       publishStub.throws(new Error('publish failed'));
 
       const wallet = {
@@ -53,7 +51,7 @@ describe('QueueService', () => {
 
       let errorCaught = false;
       try {
-        queueService.sendWalletCreationNotification(wallet);
+        await QueueService.sendWalletCreationNotification(wallet);
       } catch (err) {
         errorCaught = true;
       }

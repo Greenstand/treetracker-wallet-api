@@ -3,20 +3,15 @@ const queue = require('treetracker-wallet-app/packages/queue');
 const knex = require('../infra/database/knex');
 
 class QueueService {
-  constructor() {
-    this.queue = queue;
-    this.knex = knex;
-  }
-
   /**
    * Publishes a wallet creation event to the queue.
    * @param {Object} wallet - The wallet object that was just created.
    * @returns {Promise<void>}
    */
-  sendWalletCreationNotification(wallet) {
+  static async sendWalletCreationNotification(wallet) {
     try {
-      this.queue.publish({
-        pgClient: this.knex,
+      queue.publish({
+        pgClient: knex,
         channel: 'wallet_created',
         data: {
           walletId: wallet.id,
@@ -33,4 +28,4 @@ class QueueService {
   }
 }
 
-module.exports = new QueueService();
+module.exports = QueueService;
