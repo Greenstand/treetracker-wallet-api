@@ -3,6 +3,10 @@
   "version": "1.44.0-keycloak.1",
   "description": "https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "main": "server/server.js",
   "scripts": {
     "lint": "npm run eslint",
@@ -55,6 +59,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemon": "^2.0.4",
     "pg": "^8.5.1",
+    "treetracker-wallet-app": "github:Greenstand/treetracker-wallet-app",
     "uuid": "^8.2.0"
   },
   "devDependencies": {
