@@ -209,6 +209,46 @@ class WalletService {
     );
   }
 
+  async getPendingTransfersSummary(walletLoginId, walletId) {
+    const hasControl = await this.hasControlOver(walletLoginId, walletId);
+    if (!hasControl) {
+      throw new HttpError(403, 'Have no permission to access this wallet');
+    }
+
+    const wallet = await this.getById(walletId);
+    
+    const transfer = new Transfer(this._session);
+    const { outgoing, incoming } = await transfer._transferRepository.getPendingTransfersSummary(walletId);
+
+    let outgoingTotalAmount = 0;
+    outgoing.forEach(outgoingTransfer => {
+      const amount = outgoingTransfer.parameters?.bundle?.bundleSize || outgoingTransfer.parameters?.tokens?.length || 0;
+      outgoingTotalAmount += amount;
+    });
+
+    let incomingTotalAmount = 0;
+    incoming.forEach(incomingTransfer => {
+      const amount = incomingTransfer.parameters?.bundle?.bundleSize || incomingTransfer.parameters?.tokens?.length || 0;
+      incomingTotalAmount += amount;
+    });
+
+    const netPending = incomingTotalAmount - outgoingTotalAmount;
+
+    return {
+      wallet_id: walletId,
+      wallet_name: wallet.name,
+      pending_outgoing: {
+        total_amount: outgoingTotalAmount,
+        count: outgoing.length,
+      },
+      pending_incoming: {
+        total_amount: incomingTotalAmount,
+        count: incoming.length,
+      },
+      net_pending: netPending,
+    };
+  }
+
   async hasControlOver(parentId, childId) {
     return this._wallet.hasControlOver(parentId, childId);
   }

@@ -74,6 +74,7 @@ describe('TrustService', () => {
         offset: 0,
         sort_by: 'sort_by',
         order: 'order',
+        exclude_managed: undefined,
       }),
     ).eql(true);
     // expect(

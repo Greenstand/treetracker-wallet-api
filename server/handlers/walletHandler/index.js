@@ -93,6 +93,7 @@ const walletGetTrustRelationships = async (req, res) => {
     sort_by,
     order,
     search,
+    exclude_managed,
   } = validatedQuery;
 
   const { wallets: managedWallets } = await walletService.getAllWallets(
@@ -124,11 +125,12 @@ const walletGetTrustRelationships = async (req, res) => {
       sort_by,
       order,
       search,
+      exclude_managed,
     },
   );
   res.status(200).json({
     trust_relationships,
-    query: { limit, offset, sort_by, order, state, type, request_type, search },
+    query: { limit, offset, sort_by, order, state, type, request_type, search, exclude_managed },
     total,
   });
 };
@@ -235,6 +237,23 @@ const walletBatchTransfer = async (req, res) => {
   res.status(200).send(result);
 };
 
+const walletGetPendingTransfersSummary = async (req, res) => {
+  const validatedParams = await walletIdParamSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+
+  const { wallet_id: requestedWalletId } = validatedParams;
+  const { wallet_id: loggedInWalletId } = req;
+  const walletService = new WalletService();
+  
+  const summary = await walletService.getPendingTransfersSummary(
+    loggedInWalletId,
+    requestedWalletId,
+  );
+  
+  res.status(200).json(summary);
+};
+
 module.exports = {
   walletPost,
   walletPatch,
@@ -243,4 +262,5 @@ module.exports = {
   walletSingleGet,
   walletBatchCreate,
   walletBatchTransfer,
+  walletGetPendingTransfersSummary,
 };
