@@ -124,7 +124,8 @@ describe('walletRouter', () => {
           limit: 500, 
           offset: 0, 
           sort_by: 'created_at', 
-          order: 'desc' 
+          order: 'desc',
+          exclude_managed: false
         }),
       ).eql(true);
     });

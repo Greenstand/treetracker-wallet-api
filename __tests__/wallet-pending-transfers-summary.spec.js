@@ -109,6 +109,11 @@ describe('Wallet: Get pending transfers summary', () => {
   });
 
   it('Should create a pending bundle transfer and check summary', async () => {
+    await seed.addTokenToWallet(seed.wallet.id);
+    await seed.addTokenToWallet(seed.wallet.id);
+    await seed.addTokenToWallet(seed.wallet.id);
+    await seed.addTokenToWallet(seed.wallet.id);
+    await seed.addTokenToWallet(seed.wallet.id);
 
     const transferRes = await request(server)
       .post('/transfers')
