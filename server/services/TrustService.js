@@ -26,6 +26,7 @@ class TrustService {
       sort_by,
       order,
       search,
+      exclude_managed,
     },
   ) {
     // check if wallet exists first
@@ -54,6 +55,7 @@ class TrustService {
       sort_by,
       order,
       search,
+      exclude_managed,
     });
 
     // const count = await this._trust.getTrustRelationshipsCount({

@@ -54,6 +54,7 @@ class Trust {
     sort_by,
     search,
     order,
+    exclude_managed,
   }) {
     const managedWalletIds = managedWallets.map((wallet) => wallet.id);
 
@@ -93,7 +94,8 @@ class Trust {
         ],
       });
     }
-    return this._trustRepository.getByFilter(
+
+    const result = await this._trustRepository.getByFilter(
       filter,
       {
         offset,
@@ -104,6 +106,16 @@ class Trust {
       walletId,
       managedWalletIds,
     );
+
+    if (exclude_managed) {
+      result.result = result.result.filter(relationship => 
+        relationship.request_type !== 'manage' && 
+        relationship.request_type !== 'yield'
+      );
+      result.count = result.result.length;
+    }
+
+    return result;
   }
 
   async getTrustRelationshipsCount({ walletId, state, type, request_type }) {

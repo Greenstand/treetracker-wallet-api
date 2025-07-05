@@ -164,6 +164,31 @@ class TransferRepository extends BaseRepository {
       state: TransferEnum.STATE.pending,
     });
   }
+
+  async getPendingTransfersSummary(wallet_id) {
+    const outgoingQuery = this._session
+      .getDB()(this._tableName)
+      .where({
+        source_wallet_id: wallet_id,
+        state: TransferEnum.STATE.pending,
+      })
+      .select('parameters');
+
+    const incomingQuery = this._session
+      .getDB()(this._tableName)
+      .where({
+        destination_wallet_id: wallet_id,
+        state: TransferEnum.STATE.pending,
+      })
+      .select('parameters');
+
+    const [outgoing, incoming] = await Promise.all([
+      outgoingQuery,
+      incomingQuery,
+    ]);
+
+    return { outgoing, incoming };
+  }
 }
 
 module.exports = TransferRepository;

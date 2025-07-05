@@ -487,6 +487,51 @@ paths:
                 code: 422
                 message: '"wallet_id" must be a valid GUID'
       deprecated: false
+  '/wallets/{wallet_uuid}/pending-transfers':
+    get:
+      tags:
+        - Wallet operations
+      operationId: get-wallets-walletId-pendingTransfers
+      summary: Get pending transfers summary for a wallet
+      description: 'Returns a summary of pending token transfers for the specified wallet, including both incoming and outgoing transfers with counts and total amounts.'
+      parameters:
+        - $ref: '#/components/parameters/treetrackerApiKeyParam'
+        - name: wallet_uuid
+          description: 'ID of wallet to get pending transfers summary for'
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
+      responses:
+        '200':
+          description: 'Pending transfers summary'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/pendingTransfersSummary'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: 'Access denied - user does not have permission to access this wallet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 403
+                message: 'Have no permission to access this wallet'
+        '422':
+          description: 'Invalid wallet UUID parameter'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              example:
+                code: 422
+                message: '"wallet_id" must be a valid GUID'
+      deprecated: false
   /wallets/batch-create-wallet:
     post:
       tags:
@@ -1934,6 +1979,57 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/walletItem'
+    pendingTransfersSummary:
+      title: 'Pending Transfers Summary'
+      type: object
+      properties:
+        wallet_id:
+          type: string
+          format: uuid
+          description: 'ID of the wallet'
+          example: 482bf306-30c7-4cea-833a-1cdda3d96573
+        wallet_name:
+          type: string
+          description: 'Name of the wallet'
+          example: 'test_wallet'
+        pending_outgoing:
+          type: object
+          description: 'Summary of outgoing pending transfers'
+          properties:
+            total_amount:
+              type: integer
+              description: 'Total number of tokens in outgoing pending transfers'
+              example: 5
+            count:
+              type: integer
+              description: 'Number of outgoing pending transfers'
+              example: 2
+        pending_incoming:
+          type: object
+          description: 'Summary of incoming pending transfers'
+          properties:
+            total_amount:
+              type: integer
+              description: 'Total number of tokens in incoming pending transfers'
+              example: 3
+            count:
+              type: integer
+              description: 'Number of incoming pending transfers'
+              example: 1
+        net_pending:
+          type: integer
+          description: 'Net pending amount (incoming - outgoing)'
+          example: -2
+      example:
+        wallet_id: '482bf306-30c7-4cea-833a-1cdda3d96573'
+        wallet_name: 'test_wallet'
+        pending_outgoing:
+          total_amount: 5
+          count: 2
+        pending_incoming:
+          total_amount: 3
+          count: 1
+        net_pending: -2
   responses:
     InvalidQueryParametersLimit:
       description: 'Invalid query parameters'

@@ -42,6 +42,7 @@ const {
   walletBatchCreate,
   walletBatchTransfer,
   walletPatch,
+  walletGetPendingTransfersSummary,
 } = require('../handlers/walletHandler');
 
 router
@@ -63,6 +64,11 @@ router.patch(
 router.get(
   '/:wallet_id/trust_relationships',
   handlerWrapper(walletGetTrustRelationships),
+);
+
+router.get(
+  '/:wallet_id/pending-transfers',
+  handlerWrapper(walletGetPendingTransfersSummary),
 );
 
 router.post(
