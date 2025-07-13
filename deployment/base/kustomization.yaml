@@ -5,3 +5,4 @@ resources:
 - treetracker-wallet-api-db-migration-job.yaml
 - treetracker-wallet-api-clusterrole.yaml
 - treetracker-wallet-api-clusterrolebinding.yaml
+- treetracker-wallet-api-beta-clusterrolebinding.yaml
