@@ -108,10 +108,17 @@ class Trust {
     );
 
     if (exclude_managed) {
-      result.result = result.result.filter(relationship => 
-        relationship.request_type !== 'manage' && 
-        relationship.request_type !== 'yield'
-      );
+      const managedWalletIds = new Set(managedWallets.map((wallet) => wallet.id));
+      
+      result.result = result.result.filter(relationship => {
+        const actorIsManaged = managedWalletIds.has(relationship.actor_wallet_id);
+        const targetIsManaged = managedWalletIds.has(relationship.target_wallet_id);
+        
+        const isBothManagedInternal = actorIsManaged && targetIsManaged;
+        
+        return !isBothManagedInternal;
+      });
+      
       result.count = result.result.length;
     }
 
