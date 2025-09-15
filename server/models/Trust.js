@@ -108,11 +108,11 @@ class Trust {
     );
 
     if (exclude_managed) {
-      const managedWalletIds = new Set(managedWallets.map((wallet) => wallet.id));
+      const managedWalletIdSet = new Set(managedWallets.map((wallet) => wallet.id));
       
       result.result = result.result.filter(relationship => {
-        const actorIsManaged = managedWalletIds.has(relationship.actor_wallet_id);
-        const targetIsManaged = managedWalletIds.has(relationship.target_wallet_id);
+        const actorIsManaged = managedWalletIdSet.has(relationship.actor_wallet_id);
+        const targetIsManaged = managedWalletIdSet.has(relationship.target_wallet_id);
         
         const isBothManagedInternal = actorIsManaged && targetIsManaged;
         
