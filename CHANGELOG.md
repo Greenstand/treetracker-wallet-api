@@ -1,3 +1,15 @@
+# [1.43.0-beta.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.2...v1.43.0-beta.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* **tests:** resolve failing test assertions ([204850a](https://github.com/Greenstand/treetracker-wallet-api/commit/204850a75021eb56a37e767303da4a907955ca53))
+
+
+### Features
+
+* **wallet:** add pending transfers summary endpoint ([08cf4e7](https://github.com/Greenstand/treetracker-wallet-api/commit/08cf4e78cc083ba7c615500db0df4c05101e7a39))
+
 # [1.43.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.2...v1.43.0) (2025-07-05)
 
 
