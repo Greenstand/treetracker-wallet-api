@@ -18,4 +18,6 @@ tmp/
 *.log
 
 #IDEA
-.idea
+.idea.DS_Store
+.secrets
+.github/event-payloads/

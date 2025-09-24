@@ -1,0 +1,7 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: treetracker-wallet-api-v2
+spec:
+  prefix: /beta/wallet/
+  service: treetracker-wallet-api-v2

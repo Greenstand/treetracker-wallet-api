@@ -1,0 +1,11 @@
+namespace: wallet-api-beta
+
+resources:
+  - ../../../base
+  # - ../common
+  - secrets/jwt-sealedsecret.yaml
+  - secrets/db-sealedsecret.yaml
+  - secrets/s3-sealedsecret.yaml
+
+patchesStrategicMerge:
+  - mapping-patch.yaml
