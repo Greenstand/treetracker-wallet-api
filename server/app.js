@@ -62,5 +62,4 @@ const { version } = require('../package.json');
 app.get('*', function (req, res) {
   res.status(200).send(version);
 });
-
 module.exports = app;
