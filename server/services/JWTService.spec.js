@@ -15,7 +15,7 @@ describe('JWTService', () => {
 
   it('Keycloak token should be able to be verified', async () => {
     
-    // White we can use keycloak token from env file, its a good idea to use fresh token for testing
+    // While we can use keycloak token from env file, its a good idea to use fresh token for testing
     // const keycloakUserToken = process.env.KEYCLOAK_USER_TOKEN || '';
 
     const params = new URLSearchParams();
