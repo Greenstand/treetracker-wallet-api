@@ -59,7 +59,7 @@ exports.apiKeyHandler = exports.handlerWrapper(async (req, res, next) => {
 });
 
 exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
-  const result = JWTService.verify(req.headers.authorization);
+  const result = await JWTService.verify(req.headers.authorization);
   req.wallet_id = result.id;
   next();
 });
