@@ -1,8 +1,12 @@
 {
   "name": "treetracker",
-  "version": "1.43.1-keycloak.2",
+  "version": "1.44.0-keycloak.1",
   "description": "https://documenter.getpostman.com/view/10112806/SWTD8H5x?version=latest",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "main": "server/server.js",
   "scripts": {
     "lint": "npm run eslint",

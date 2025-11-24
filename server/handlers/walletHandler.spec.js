@@ -166,6 +166,16 @@ describe('walletRouter', () => {
   });
 
   describe('post /wallets', () => {
+    let publishStub;
+
+    beforeEach(() => {
+      publishStub = sinon.stub(queue, 'publish').returns();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
     const walletId = uuid.v4();
     const mockWallet = {
       id: walletId,
@@ -182,6 +192,7 @@ describe('walletRouter', () => {
         about: mockWallet.about,
       });
       expect(res).property('statusCode').eq(201);
+      expect(publishStub.calledOnce).to.be.true;
       expect(res.body.wallet).eq(mockWallet.wallet);
       expect(res.body.id).eq(mockWallet.id);
       expect(res.body.about).eq(mockWallet.about);
