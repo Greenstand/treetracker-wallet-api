@@ -1,3 +1,16 @@
+# [1.44.0-keycloak.2](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.1...v1.44.0-keycloak.2) (2025-11-24)
+
+
+### Bug Fixes
+
+* npm audit ([62791eb](https://github.com/Greenstand/treetracker-wallet-api/commit/62791eb90fb6295501b3619fd9fee44c9f026e16))
+* queue service ([aea2c03](https://github.com/Greenstand/treetracker-wallet-api/commit/aea2c0397d5d8c97ae7983f4a4cd6c22287ef14e))
+
+
+### Features
+
+* change public key source ([083047a](https://github.com/Greenstand/treetracker-wallet-api/commit/083047ae46b37811c5c37f5ab006191920ea02e7))
+
 # [1.44.0-keycloak.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.1-keycloak.2...v1.44.0-keycloak.1) (2025-04-27)
 
 
