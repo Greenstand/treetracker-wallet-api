@@ -1,5 +1,4 @@
 const log = require('loglevel');
-const queue = require('treetracker-wallet-app/packages/queue');
 const knex = require('../infra/database/knex');
 
 class QueueService {
@@ -10,14 +9,19 @@ class QueueService {
    */
   static async sendWalletCreationNotification(wallet) {
     try {
-      queue.publish({
-        pgClient: knex,
-        channel: 'wallet_created',
-        data: {
+      const text = `INSERT into queue.message(channel, data) values ($1, $2) RETURNING *`;
+      const values = [
+        'wallet_created',
+        {
           walletId: wallet.id,
           userId: wallet.userId,
           createdAt: wallet.createdAt,
         },
+      ];
+
+      knex.query(text, values, (err, res) => {
+        if (err) throw Error(`insertion error: ${err}`);
+        log.debug(`postgres message dispatch success: ${res}`);
       });
       log.debug(
         `Wallet creation notification sent for wallet ID: ${wallet.id}`,

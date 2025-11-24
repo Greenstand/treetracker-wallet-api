@@ -1,15 +1,10 @@
 const JWTTools = require('jsonwebtoken');
 const log = require('loglevel');
+const axios = require('axios');
 const HttpError = require('../utils/HttpError');
 
-const publicKEY = process.env.KEYCLOAK_PUBLIC_KEY?.replace(/\\n/g, '\n');
-const verifyOptions = {
-  issuer: process.env.KEYCLOAK_ISSUER,
-  algorithms: ['RS256'],
-};
-
 class JWTService {
-  static verify(authorization) {
+  static async verify(authorization) {
     if (!authorization) {
       throw new HttpError(
         401,
@@ -20,19 +15,42 @@ class JWTService {
     const token = tokenArray[1];
     let walletId;
     if (token) {
+      // get the public key
+      const KEYCLOAK_URL =
+        process.env.KEYCLOAK_URL || 'http://treetracker-keycloak.keycloak';
+      let publicKey;
+
+      try {
+        const response = await axios.get(`${KEYCLOAK_URL}`);
+        publicKey = response.data.public_key;
+      } catch (error) {
+        throw new HttpError(500, JSON.stringify(error?.response) || error);
+      }
+
       // Decode the token
-      JWTTools.verify(token, publicKEY, verifyOptions, (err, decod) => {
-        if (err) {
-          log.error(err?.message);
-          throw new HttpError(401, 'ERROR: Authentication, token not verified');
-        }
-        if (!decod?.sub)
-          throw new HttpError(
-            401,
-            'ERROR: Authentication, invalid token received',
-          );
-        walletId = decod.sub;
-      });
+      JWTTools.verify(
+        token,
+        publicKey,
+        {
+          issuer: KEYCLOAK_URL,
+          algorithms: ['RS256'],
+        },
+        (err, decod) => {
+          if (err) {
+            log.error(err?.message);
+            throw new HttpError(
+              401,
+              'ERROR: Authentication, token not verified',
+            );
+          }
+          if (!decod?.sub)
+            throw new HttpError(
+              401,
+              'ERROR: Authentication, invalid token received',
+            );
+          walletId = decod.sub;
+        },
+      );
     } else {
       throw new HttpError(401, 'ERROR: Authentication, invalid token received');
     }

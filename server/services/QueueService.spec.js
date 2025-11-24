@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
 const log = require('loglevel');
-const queue = require('treetracker-wallet-app/packages/queue');
 const knex = require('../infra/database/knex');
 const QueueService = require('./QueueService');
 
@@ -10,7 +9,7 @@ describe('QueueService', () => {
   let logErrorStub;
 
   beforeEach(() => {
-    publishStub = sinon.stub(queue, 'publish');
+    // publishStub = sinon.stub(queue, 'publish');
     logErrorStub = sinon.stub(log, 'error');
   });
 

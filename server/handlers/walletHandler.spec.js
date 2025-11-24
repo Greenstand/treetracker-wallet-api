@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const chai = require('chai');
 const sinonChai = require('sinon-chai');
 const uuid = require('uuid');
-const queue = require('treetracker-wallet-app/packages/queue');
 const walletRouter = require('../routes/walletRouter');
 const { errorHandler } = require('../utils/utils');
 
