@@ -69,15 +69,5 @@ spec:
                 secretKeyRef:
                   name: aws-s3
                   key: s3_access_key_id
-            - name: KEYCLOAK_ISSUER
-              valueFrom:
-                secretKeyRef:
-                  name: keycloak
-                  key: KEYCLOAK_ISSUER
-            - name: KEYCLOAK_PUBLIC_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: keycloak
-                  key: KEYCLOAK_PUBLIC_KEY
             - name: NODE_LOG_LEVEL
               value: debug
