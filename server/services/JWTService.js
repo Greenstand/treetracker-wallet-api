@@ -17,7 +17,7 @@ class JWTService {
     if (token) {
       // get the public key
       const KEYCLOAK_URL =
-        process.env.KEYCLOAK_URL || 'http://treetracker-keycloak.keycloak';
+        process.env.KEYCLOAK_URL || 'http://keycloak-service.keycloak';
       let publicKey;
 
       try {

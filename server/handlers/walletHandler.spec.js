@@ -169,7 +169,7 @@ describe('walletRouter', () => {
     let publishStub;
 
     beforeEach(() => {
-      publishStub = sinon.stub(queue, 'publish').returns();
+      // publishStub = sinon.stub(queue, 'publish').returns();
     });
 
     afterEach(() => {
