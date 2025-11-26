@@ -7,7 +7,7 @@ chai.use(require('chai-uuid'));
 const Zaven = require('../mock-data/Zaven.json');
 const Meisze = require('../mock-data/Meisze.json');
 const testUtils = require('./testUtils');
-const TokenA = require('../mock-data/TokenA');
+const TokenA = require('../mock-data/TokenA.json');
 const TransferEnums = require('../../server/utils/transfer-enum');
 
 describe('Zaven request to send 1 token to Meisze', () => {
