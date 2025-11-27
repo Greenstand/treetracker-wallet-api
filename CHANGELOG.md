@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.6](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.5...v1.44.0-keycloak.6) (2025-11-27)
+
+
+### Bug Fixes
+
+* keycloak url port ([5dd3b86](https://github.com/Greenstand/treetracker-wallet-api/commit/5dd3b86aad0830c95fe867c92b914eaa9267aac8))
+
 # [1.44.0-keycloak.5](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.4...v1.44.0-keycloak.5) (2025-11-27)
 
 
