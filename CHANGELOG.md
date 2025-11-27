@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.8](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.7...v1.44.0-keycloak.8) (2025-11-27)
+
+
+### Bug Fixes
+
+* add debug log ([dcac3d3](https://github.com/Greenstand/treetracker-wallet-api/commit/dcac3d359d91aed70bbbf674fb55b618c45db6d7))
+
 # [1.44.0-keycloak.7](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.6...v1.44.0-keycloak.7) (2025-11-27)
 
 
