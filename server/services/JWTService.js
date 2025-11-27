@@ -17,13 +17,11 @@ class JWTService {
     if (token) {
       // get the public key
       const KEYCLOAK_URL =
-        process.env.KEYCLOAK_URL || 'http://keycloak-service.keycloak';
+        process.env.KEYCLOAK_URL || 'http://keycloak-service.keycloak:8080';
       let publicKey;
 
       try {
-        const response = await axios.get(
-          `${KEYCLOAK_URL}/realms/treetracker:8080`,
-        );
+        const response = await axios.get(`${KEYCLOAK_URL}/realms/treetracker`);
         publicKey = response.data.public_key;
       } catch (error) {
         throw new HttpError(500, JSON.stringify(error?.response) || error);
