@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.9](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.8...v1.44.0-keycloak.9) (2025-11-27)
+
+
+### Bug Fixes
+
+* upgrade axios ([0a73bb7](https://github.com/Greenstand/treetracker-wallet-api/commit/0a73bb7416099f11348b13fd35be0cc9f249ac55))
+
 # [1.44.0-keycloak.8](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.7...v1.44.0-keycloak.8) (2025-11-27)
 
 
