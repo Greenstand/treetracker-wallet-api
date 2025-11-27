@@ -22,9 +22,8 @@ class JWTService {
 
       try {
         const response = await axios.get(`${KEYCLOAK_URL}/realms/treetracker`);
-        const data = response.data;
-        console.log(data);
-        publicKey = data.public_key;
+        console.log(response);
+        publicKey = response.data.public_key;
       } catch (error) {
         throw new HttpError(500, JSON.stringify(error?.response) || error);
       }
