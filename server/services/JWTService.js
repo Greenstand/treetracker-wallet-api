@@ -1,6 +1,6 @@
 const JWTTools = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
 const log = require('loglevel');
-const axios = require('axios');
 const HttpError = require('../utils/HttpError');
 
 class JWTService {
@@ -17,17 +17,14 @@ class JWTService {
     if (token) {
       // get the public key
       const KEYCLOAK_URL =
-        process.env.KEYCLOAK_URL || 'http://keycloak-service.keycloak:8080';
-      let publicKey;
+        process.env.KEYCLOAK_URL ||
+        'http://keycloak-service.keycloak:8080/realms/treetracker';
 
-      try {
-        const response = await axios.get(`${KEYCLOAK_URL}/realms/treetracker`);
-        console.log(response);
-        console.log(response.data);
-        publicKey = response.data.public_key;
-      } catch (error) {
-        throw new HttpError(500, JSON.stringify(error?.response) || error);
-      }
+      const client = jwksClient({
+        jwksUri: `${KEYCLOAK_URL}/protocol/openid-connect/certs`,
+      });
+      const r = await client.getSigningKey();
+      const publicKey = r.getPublicKey();
 
       // Decode the token
       JWTTools.verify(
