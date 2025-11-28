@@ -75,7 +75,7 @@ const csvValidationSchema = Joi.array()
         Joi.string().valid(''),
       ],
       extra_wallet_data_about: Joi.string(),
-    }),
+    }).options({ allowUnknown: true }),
   )
   .unique('wallet_name')
   .min(1)
