@@ -18,7 +18,7 @@ class JWTService {
       // get the public key
       const KEYCLOAK_URL =
         process.env.KEYCLOAK_URL ||
-        'http://keycloak-service.keycloak:8080/realms/treetracker';
+        'https://dev-k8s.treetracker.org/keycloak/realms/treetracker';
 
       const client = jwksClient({
         jwksUri: `${KEYCLOAK_URL}/protocol/openid-connect/certs`,
