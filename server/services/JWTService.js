@@ -2,6 +2,7 @@ const JWTTools = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 const log = require('loglevel');
 const HttpError = require('../utils/HttpError');
+const { JWT_ISSUERS } = require('./enums');
 
 class JWTService {
   static async verify(authorization) {
@@ -17,7 +18,6 @@ class JWTService {
     if (token) {
       // get the public key
       const KEYCLOAK_URL =
-        process.env.KEYCLOAK_URL ||
         'http://keycloak-service.keycloak:8080/keycloak/realms/treetracker';
 
       const client = jwksClient({
@@ -31,7 +31,7 @@ class JWTService {
         token,
         publicKey,
         {
-          issuer: KEYCLOAK_URL,
+          issuer: JWT_ISSUERS,
           algorithms: ['RS256'],
         },
         (err, decod) => {
