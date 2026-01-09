@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.13](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.12...v1.44.0-keycloak.13) (2026-01-09)
+
+
+### Bug Fixes
+
+* jwt issuer ([c9fdfd9](https://github.com/Greenstand/treetracker-wallet-api/commit/c9fdfd91d2cb033e78810ba8b207ecbb865af056))
+
 # [1.44.0-keycloak.12](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.11...v1.44.0-keycloak.12) (2026-01-01)
 
 
