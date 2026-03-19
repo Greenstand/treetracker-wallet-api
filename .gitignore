@@ -1,5 +1,9 @@
 node_modules/
 config/
+# Keys
+*.key
+*.key.pub
+*.pem
 private.key
 public.key
 jwtRS256.key
