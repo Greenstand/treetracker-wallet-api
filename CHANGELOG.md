@@ -1,3 +1,11 @@
+## [1.43.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.0...v1.43.1) (2026-03-20)
+
+
+### Bug Fixes
+
+* use wildcard patterns for private key exclusions in .gitignore ([7ce4b4e](https://github.com/Greenstand/treetracker-wallet-api/commit/7ce4b4eab09a476a7df068c31d27d37714e89094))
+* use wildcard patterns for private key exclusions in .gitignore ([5565839](https://github.com/Greenstand/treetracker-wallet-api/commit/55658394de2cd01e0946a186244848ac47f606f6))
+
 # [1.43.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.42.2...v1.43.0) (2025-10-30)
 
 
