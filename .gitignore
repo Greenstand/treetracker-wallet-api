@@ -1,18 +1,16 @@
 node_modules/
 config/
+
 # Keys
 *.key
 *.key.pub
 *.pem
-private.key
-public.key
-jwtRS256.key
-jwtRS256.key.pub
 keygen.sh
 database.json
-.env
-.env.test
-.env.development
+
+# Environment variables
+.env*
+
 .vscode
 .nyc_output
 tmp/
