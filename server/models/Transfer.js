@@ -69,6 +69,7 @@ class Transfer {
     after,
     sort_by,
     order,
+    prioritize_pending_receiver_action_for_wallet_id,
   }) {
     const filter = {
       and: [],
@@ -101,7 +102,13 @@ class Transfer {
     if (after) {
       filter.and.push({ after: { 'transfer.created_at': after } });
     }
-    return this.getByFilter(filter, { offset, limit, sort_by, order });
+    return this.getByFilter(filter, {
+      offset,
+      limit,
+      sort_by,
+      order,
+      prioritize_pending_receiver_action_for_wallet_id,
+    });
   }
 
   /*

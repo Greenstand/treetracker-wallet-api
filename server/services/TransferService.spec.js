@@ -169,6 +169,7 @@ describe('TransferService', () => {
           after: undefined,
           sort_by: undefined,
           order: undefined,
+          prioritize_pending_receiver_action_for_wallet_id: 'walletLoginId',
         }),
       ).eql(true);
       expect(walletGetByIdOrNameStub.notCalled).eql(true);
@@ -200,9 +201,38 @@ describe('TransferService', () => {
           after,
           sort_by: undefined,
           order: undefined,
+          prioritize_pending_receiver_action_for_wallet_id: 'walletLoginId',
         }),
       ).eql(true);
       expect(walletGetByIdOrNameStub.calledOnceWithExactly('wallet')).eql(true);
+    });
+
+    it('getByFilter -- skips priority ordering for custom sorts', async () => {
+      await transferService.getByFilter(
+        {
+          state: 'state',
+          limit: 1,
+          offset: 1,
+          sort_by: 'state',
+          order: 'asc',
+        },
+        'walletLoginId',
+      );
+
+      expect(
+        getTransfersStub.calledOnceWithExactly({
+          state: 'state',
+          limit: 1,
+          offset: 1,
+          walletLoginId: 'walletLoginId',
+          walletId: undefined,
+          before: undefined,
+          after: undefined,
+          sort_by: 'state',
+          order: 'asc',
+          prioritize_pending_receiver_action_for_wallet_id: undefined,
+        }),
+      ).eql(true);
     });
   });
 
