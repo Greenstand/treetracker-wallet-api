@@ -27,6 +27,11 @@ class TransferService {
       order,
     } = query;
 
+    const effectiveSortBy = sort_by || 'created_at';
+    const effectiveOrder = order || 'desc';
+    const isDefaultSort =
+      effectiveSortBy === 'created_at' && effectiveOrder === 'desc';
+
     let walletId;
 
     if (wallet) {
@@ -44,8 +49,10 @@ class TransferService {
       after,
       sort_by,
       order,
+      prioritize_pending_receiver_action_for_wallet_id: isDefaultSort
+        ? walletLoginId
+        : undefined,
     });
-
     return { transfers, count };
   }
 
