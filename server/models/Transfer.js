@@ -102,13 +102,19 @@ class Transfer {
     if (after) {
       filter.and.push({ after: { 'transfer.created_at': after } });
     }
-    return this.getByFilter(filter, {
+    const limitOptions = {
       offset,
       limit,
       sort_by,
       order,
-      prioritize_pending_receiver_action_for_wallet_id,
-    });
+    };
+
+    if (prioritize_pending_receiver_action_for_wallet_id !== undefined) {
+      limitOptions.prioritize_pending_receiver_action_for_wallet_id =
+        prioritize_pending_receiver_action_for_wallet_id;
+    }
+
+    return this.getByFilter(filter, limitOptions);
   }
 
   /*
