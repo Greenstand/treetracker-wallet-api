@@ -195,7 +195,7 @@ const walletBatchCreate = async (req, res) => {
   const { sender_wallet, token_transfer_amount_default } = validatedBody;
   const { wallet_id } = req;
   const walletService = new WalletService();
-
+  
   const result = await walletService.batchCreateWallet(
     sender_wallet,
     token_transfer_amount_default,
