@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const BaseRepository = require('./BaseRepository');
 const TransferEnum = require('../utils/transfer-enum');
+const TrustRelationshipEnums = require('../utils/trust-enums');
 
 class TransferRepository extends BaseRepository {
   constructor(session) {
@@ -131,6 +132,7 @@ class TransferRepository extends BaseRepository {
 
     let order = 'desc';
     let column = 'transfer.created_at';
+    let useDefaultPriorityOrdering = false;
 
     if (limitOptions) {
       if (limitOptions.order) {
@@ -139,7 +141,59 @@ class TransferRepository extends BaseRepository {
       if (limitOptions.sort_by) {
         column = limitOptions.sort_by;
       }
+      if (limitOptions.prioritize_pending_receiver_action_for_wallet_id) {
+        useDefaultPriorityOrdering = true;
+      }
     }
+
+    if (useDefaultPriorityOrdering) {
+      const walletLoginId =
+        limitOptions.prioritize_pending_receiver_action_for_wallet_id;
+
+      promise = promise.orderByRaw(
+        `
+          CASE
+            WHEN transfer.state = ?
+              AND (
+                transfer.destination_wallet_id = ?
+                OR EXISTS (
+                  SELECT 1
+                  FROM wallet_trust
+                  WHERE (
+                    wallet_trust.actor_wallet_id = ?
+                    AND wallet_trust.target_wallet_id = transfer.destination_wallet_id
+                    AND wallet_trust.request_type = ?
+                    AND wallet_trust.state = ?
+                  ) OR (
+                    wallet_trust.target_wallet_id = ?
+                    AND wallet_trust.actor_wallet_id = transfer.destination_wallet_id
+                    AND wallet_trust.request_type = ?
+                    AND wallet_trust.state = ?
+                  )
+                )
+              ) THEN 0
+            WHEN transfer.state = ? THEN 1
+            WHEN transfer.state = ? THEN 2
+            WHEN transfer.state = ? THEN 3
+            ELSE 4
+          END ASC
+        `,
+        [
+          TransferEnum.STATE.pending,
+          walletLoginId,
+          walletLoginId,
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
+          TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+          walletLoginId,
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.yield,
+          TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+          TransferEnum.STATE.pending,
+          TransferEnum.STATE.completed,
+          TransferEnum.STATE.cancelled,
+        ],
+      );
+    }
+
     promise = promise.orderBy(column, order);
 
     // get the total count (before applying limit and offset options)
