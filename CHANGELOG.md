@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.1...v1.44.0) (2026-03-31)
+
+
+### Features
+
+* **transfer:** add prioritization for pending receiver actions in transfer filtering ([12e95c9](https://github.com/Greenstand/treetracker-wallet-api/commit/12e95c98b397ce84205426909a6b17b562f52200))
+
 ## [1.43.1](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.0...v1.43.1) (2026-03-20)
 
 
