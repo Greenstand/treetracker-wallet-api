@@ -5,4 +5,5 @@ module.exports = [
   require('./trustRouter'),
   require('./walletRouter'),
   require('./eventRouter'),
+  require('./actionTokenRouter')
 ];
