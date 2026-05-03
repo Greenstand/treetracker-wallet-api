@@ -1,6 +1,3 @@
-const Joi = require('joi');
-const HttpError = require('../utils/HttpError');
-const TrustRelationshipEnums = require('../utils/trust-enums');
 const BaseRepository = require('./BaseRepository');
 
 class StripeUserRepository extends BaseRepository {

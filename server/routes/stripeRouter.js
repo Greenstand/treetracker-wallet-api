@@ -1,13 +1,8 @@
-const StripeService = require('../services/StripeService')
 const express = require('express');
+const StripeService = require('../services/StripeService')
 
 const router = express.Router();
 const routerWrapper = express.Router();
-const {
-  handlerWrapper,
-  verifyJWTHandler,
-  apiKeyHandler,
-} = require('../utils/utils');
 
 const createCheckout = async (req, res) => {
     const checkoutUrl = await new StripeService(123).createCheckout()

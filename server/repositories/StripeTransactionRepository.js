@@ -1,6 +1,3 @@
-const Joi = require('joi');
-const HttpError = require('../utils/HttpError');
-const TrustRelationshipEnums = require('../utils/trust-enums');
 const BaseRepository = require('./BaseRepository');
 
 class StripeTransactionRepository extends BaseRepository {
@@ -40,7 +37,7 @@ class StripeTransactionRepository extends BaseRepository {
 
     async updateStatus(id, status) {
         if (['FAILED', 'CANCELLED', 'PAID'].includes(status)){
-            return
+            return undefined
         }
 
         const object = {status, update_at: undefined}
@@ -53,7 +50,7 @@ class StripeTransactionRepository extends BaseRepository {
                 .returning('*');
             }) 
 
-            return result[0];
+        return result[0];
     }
 }
 

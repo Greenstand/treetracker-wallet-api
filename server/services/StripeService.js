@@ -16,31 +16,33 @@ class StripeService {
         this._stripeTransactionRepo = new StripeTransactionRepository(this._session)
     }
 
-    #getOrCreateStripeUser = async () => {
+    async __getOrCreateStripeUser() {
         let stripeUser = await this._stripeUserRepo.getByUserId(this.userId)
         if (!stripeUser){
             // In reality, we should be getting this from the user record
             const userInfo = {name: 'Test User', email: 'testuser@test.com'}
             const customer = await stripe.customers.create(userInfo);
 
-            const stripeCustomerId = customer["id"]
+            const stripeCustomerId = customer.id
             stripeUser = await this._stripeUserRepo.create(this.userId, stripeCustomerId)
         }
 
         return stripeUser
     }
 
-    #createTransaction = async (stripeUserId) => {
-        return await this._stripeTransactionRepo.create(stripeUserId)
+    async __createTransaction(stripeUserId) {
+        const transaction = await this._stripeTransactionRepo.create(stripeUserId)
+        return transaction
     }
 
-    #updateTransaction = async (transactionId, status) => {
-        return await this._stripeTransactionRepo.updateStatus(transactionId, status)
+    async __updateTransaction(transactionId, status) {
+        const transaction = await this._stripeTransactionRepo.updateStatus(transactionId, status)
+        return transaction
     }
 
-    createCheckout = async (metaInfo={}) => {
-        const stripeUser = await this.#getOrCreateStripeUser()
-        const stripeTransaction = await this.#createTransaction(stripeUser.id)
+    async createCheckout(metaInfo={}) {
+        const stripeUser = await this.__getOrCreateStripeUser()
+        const stripeTransaction = await this.__createTransaction(stripeUser.id)
 
         const checkoutSession = await stripe.checkout.sessions.create({
             mode: 'payment',
@@ -57,14 +59,12 @@ class StripeService {
             ],
         });
 
-        console.log(checkoutSession)
-
-        return checkoutSession["url"]
+        return checkoutSession.url
     }
     
-    verifyCheckout = async (webhookData) => {
-        const transactionId = webhookData["object"]["client_reference_id"]
-        await this.#updateTransaction(transactionId, 'PAID')
+    async verifyCheckout(webhookData) {
+        const transactionId = webhookData.object.client_reference_id
+        await this.__updateTransaction(transactionId, 'PAID')
     }
 }
 
