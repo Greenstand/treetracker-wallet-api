@@ -5,9 +5,11 @@ const StripeUserRepository = require('../repositories/StripeUserRepository');
 const StripeTransactionRepository = require('../repositories/StripeTransactionRepository');
 
 
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 class StripeService {
+
     constructor(userId){
         this.userId = userId // user tied to Greenstand
 
@@ -62,9 +64,22 @@ class StripeService {
         return checkoutSession.url
     }
     
-    async verifyCheckout(webhookData) {
-        const transactionId = webhookData.object.client_reference_id
-        await this.__updateTransaction(transactionId, 'PAID')
+    async verifyCheckout(webhookData, dataSignature) {
+        const event = stripe.webhooks.constructEvent(
+            webhookData,
+            dataSignature,
+            STRIPE_WEBHOOK_SECRET,
+        );
+
+        const eventType = event.type;
+        const transactionId = event.data.object.client_reference_id;
+
+        if (eventType === 'checkout.session.completed') {
+            await this.__updateTransaction(transactionId, 'PAID');
+        } else {
+            await this.__updateTransaction(transactionId, 'FAILED');
+        }
+
     }
 }
 

@@ -10,12 +10,14 @@ const createCheckout = async (req, res) => {
 }
 
 const verifyCheckout = async (req, res) => {
-    await new StripeService(123).verifyCheckout()
+    const webhookData = req.body;
+    const dataSignature = req.headers['stripe-signature']
+    await new StripeService(123).verifyCheckout(webhookData, dataSignature)
     res.status(200).json({});
 }
 
 router.get('/getCheckout', createCheckout);
-router.get('/verifyCheckout', verifyCheckout);
+router.post('/verifyCheckout', verifyCheckout);
 
 routerWrapper.use('/stripe', router);
 module.exports = routerWrapper;

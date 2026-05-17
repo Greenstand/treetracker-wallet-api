@@ -36,19 +36,17 @@ class StripeTransactionRepository extends BaseRepository {
     }
 
     async updateStatus(id, status) {
-        if (['FAILED', 'CANCELLED', 'PAID'].includes(status)){
+        if (!(['FAILED', 'CANCELLED', 'PAID'].includes(status))){
             return undefined
         }
 
-        const object = {status, update_at: undefined}
+        const object = {status, updated_at: new Date()}
         const result = await this._session
             .getDB()
-            .with('updated', (qb) => {
-                qb.update(object)
-                .into(this._tableName)
-                .where('id', id)
-                .returning('*');
-            }) 
+            .update(object)
+            .into(this._tableName)
+            .where('id', id)
+            .returning('*')
 
         return result[0];
     }
