@@ -4,8 +4,6 @@ const Session = require('../infra/database/Session');
 const StripeUserRepository = require('../repositories/StripeUserRepository');
 const StripeTransactionRepository = require('../repositories/StripeTransactionRepository');
 
-
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 class StripeService {
@@ -68,7 +66,7 @@ class StripeService {
         const event = stripe.webhooks.constructEvent(
             webhookData,
             dataSignature,
-            STRIPE_WEBHOOK_SECRET,
+            process.env.STRIPE_WEBHOOK_SECRET,
         );
 
         const eventType = event.type;
