@@ -1,8 +1,10 @@
 const csvtojson = require('csvtojson');
+const log = require('loglevel');
 const QueueService = require('../../services/QueueService');
 
 const WalletService = require('../../services/WalletService');
 const TrustService = require('../../services/TrustService');
+const TransferService = require('../../services/TransferService');
 
 const {
   walletGetQuerySchema,
@@ -145,6 +147,7 @@ const walletPost = async (req, res) => {
   const walletService = new WalletService();
 
   let returnedWallet;
+  let isFirstWallet = false;
   if (!wallet_id) {
     // new keycloak user
     const { keycloak_id } = req;
@@ -154,6 +157,7 @@ const walletPost = async (req, res) => {
       walletToBeCreated,
       about,
     );
+    isFirstWallet = true;
   } else {
     returnedWallet = await walletService.createWallet(
       wallet_id,
@@ -163,6 +167,34 @@ const walletPost = async (req, res) => {
   }
 
   await QueueService.sendWalletCreationNotification(returnedWallet);
+
+  // System gift: on a user's first (parent) wallet, award REGISTER_REWARD_TOKEN_COUNT
+  // tokens from SENDER_WALLET_ID. Done in-process here (no HTTP/Keycloak auth). A send to a
+  // self-custody wallet lands pending, so we immediately accept it as the receiver to credit it.
+  const senderWalletId = process.env.SENDER_WALLET_ID;
+  const rewardCount = Number(process.env.REGISTER_REWARD_TOKEN_COUNT) || 0;
+  if (isFirstWallet && senderWalletId && rewardCount > 0) {
+    try {
+      const { result: giftTransfer } = await new TransferService().initiateTransfer(
+        {
+          sender_wallet: senderWalletId,
+          receiver_wallet: returnedWallet.id,
+          bundle: { bundle_size: rewardCount },
+        },
+        senderWalletId, // actor controls the sender → pending transfer
+      );
+      if (giftTransfer.state !== 'completed') {
+        await new TransferService().acceptTransfer(
+          giftTransfer.id,
+          returnedWallet.id, // accept as the receiver → completes, tokens credited
+        );
+      }
+    } catch (err) {
+      log.error(
+        `System gift failed for wallet ${returnedWallet.id}: ${err.message}`,
+      );
+    }
+  }
 
   res.status(201).json(returnedWallet);
 };
