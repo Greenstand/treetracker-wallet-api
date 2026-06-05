@@ -17,8 +17,10 @@ class JWTService {
     let walletId;
     if (token) {
       // get the public key
+      // LOCAL DEV: in-cluster URL is unreachable; use the public dev Keycloak so
+      // local can fetch JWKS to verify dev-realm tokens (testuser1).
       const KEYCLOAK_URL =
-        'http://keycloak-service.keycloak:8080/keycloak/realms/treetracker';
+        'https://dev-k8s.treetracker.org/keycloak/realms/treetracker';
 
       const client = jwksClient({
         jwksUri: `${KEYCLOAK_URL}/protocol/openid-connect/certs`,
