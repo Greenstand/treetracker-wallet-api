@@ -147,7 +147,6 @@ const walletPost = async (req, res) => {
   const walletService = new WalletService();
 
   let returnedWallet;
-  let isFirstWallet = false;
   if (!wallet_id) {
     // new keycloak user
     const { keycloak_id } = req;
@@ -157,7 +156,6 @@ const walletPost = async (req, res) => {
       walletToBeCreated,
       about,
     );
-    isFirstWallet = true;
   } else {
     returnedWallet = await walletService.createWallet(
       wallet_id,
@@ -168,8 +166,29 @@ const walletPost = async (req, res) => {
 
   await QueueService.sendWalletCreationNotification(returnedWallet);
 
-  // System gift: on a user's first (parent) wallet, award REGISTER_REWARD_TOKEN_COUNT
-  // tokens from SENDER_WALLET_ID. Done in-process here (no HTTP/Keycloak auth). A send to a
+  // Is this the current user's FIRST wallet? Count the wallets the user owns/manages
+  // (their account/parent wallet + any managed sub-wallets); first wallet => count === 1.
+  const parentWalletId = wallet_id || returnedWallet.id;
+  let isFirstWallet = false;
+  try {
+    const { count } = await walletService.getAllWallets(
+      parentWalletId,
+      { limit: 1, offset: 0 },
+      undefined,
+      'created_at',
+      'desc',
+      undefined,
+      undefined,
+      false, // skip per-wallet token counting (we only need the count)
+      true, // getWalletCount
+    );
+    isFirstWallet = Number(count) === 1;
+  } catch (err) {
+    log.error(`Failed to count wallets for ${parentWalletId}: ${err.message}`);
+  }
+
+  // System gift: on the user's first wallet, award REGISTER_REWARD_TOKEN_COUNT tokens
+  // from SENDER_WALLET_ID. Done in-process here (no HTTP/Keycloak auth). A send to a
   // self-custody wallet lands pending, so we immediately accept it as the receiver to credit it.
   const senderWalletId = process.env.SENDER_WALLET_ID;
   const rewardCount = Number(process.env.REGISTER_REWARD_TOKEN_COUNT) || 0;
