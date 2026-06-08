@@ -594,3 +594,5 @@ Now the online version of wallet API is v1.10.x, to patch this version:
 5. Check if new tag with name v1.10.x created
 6. Run action: Deploy to Production (NOTE, choose running on branch v1.10, and the tag name just created)
 7. Check the online version, it should be the one you released.
+
+<!-- trigger -->
