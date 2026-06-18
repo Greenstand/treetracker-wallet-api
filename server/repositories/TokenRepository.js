@@ -33,9 +33,12 @@ class TokenRepository extends BaseRepository {
    * select transaction table by transfer id, return matched tokens
    */
   async getByTransferId(transferId, limit, offset) {
+    // Select only the token columns: token and transaction both have an `id`
+    // column, so a bare select('*') lets transaction.id overwrite token.id in
+    // the result, returning the transaction id where callers expect the token id.
     return this._session
       .getDB()
-      .select('*')
+      .select('token.*')
       .from('token')
       .join('transaction', 'token.id', 'transaction.token_id')
       .where('transaction.transfer_id', transferId)

@@ -37,10 +37,14 @@ const transferIdAcceptPost = async (req, res) => {
   );
 
   const { transfer_id } = validatedParams;
-  const { wallet_id } = req;
+  const { wallet_id, keycloak_id } = req;
 
   const transferService = new TransferService();
-  const result = await transferService.acceptTransfer(transfer_id, wallet_id);
+  const result = await transferService.acceptTransfer(
+    transfer_id,
+    wallet_id,
+    keycloak_id,
+  );
 
   res.json(result);
 };
@@ -52,10 +56,14 @@ const transferIdDeclinePost = async (req, res) => {
   );
 
   const { transfer_id } = validatedParams;
-  const { wallet_id } = req;
+  const { wallet_id, keycloak_id } = req;
 
   const transferService = new TransferService();
-  const result = await transferService.declineTransfer(transfer_id, wallet_id);
+  const result = await transferService.declineTransfer(
+    transfer_id,
+    wallet_id,
+    keycloak_id,
+  );
 
   res.json(result);
 };
@@ -67,10 +75,14 @@ const transferIdDelete = async (req, res) => {
   );
 
   const { transfer_id } = validatedParams;
-  const { wallet_id } = req;
+  const { wallet_id, keycloak_id } = req;
 
   const transferService = new TransferService();
-  const result = await transferService.cancelTransfer(transfer_id, wallet_id);
+  const result = await transferService.cancelTransfer(
+    transfer_id,
+    wallet_id,
+    keycloak_id,
+  );
 
   res.json(result);
 };

@@ -110,11 +110,26 @@ class Wallet {
   /*
    * I have control over given wallet
    */
-  async hasControlOver(parentId, childId) {
+  async hasControlOver(parentId, childId, keycloakId) {
     // if the given wallet is me, then pass
     if (parentId === childId) {
       log.debug('The same wallet');
       return true;
+    }
+    // Keycloak-bound owner: with Keycloak login the authoritative link between a
+    // user and a wallet is wallet.keycloak_account_id. If the requesting Keycloak
+    // user is bound to the target wallet, they control it (hasControlOver predates
+    // Keycloak and otherwise only knows wallet-id equality / trust relationships).
+    if (keycloakId) {
+      try {
+        const childWallet = await this._walletRepository.getById(childId);
+        if (childWallet && childWallet.keycloak_account_id === keycloakId) {
+          log.debug('Keycloak user is bound to the target wallet');
+          return true;
+        }
+      } catch (e) {
+        // fall through to the trust check below
+      }
     }
     // check sub wallet
     let result = await this.getSubWallets(parentId, childId);

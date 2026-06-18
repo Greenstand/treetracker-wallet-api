@@ -336,7 +336,7 @@ class Transfer {
   /*
    * Accept a pending transfer, if wallet has the privilege to do so
    */
-  async acceptTransfer(transferId, walletLoginId) {
+  async acceptTransfer(transferId, walletLoginId, keycloakLoginId) {
     const transfer = await this._transferRepository.getById(transferId);
     const receiverId = transfer.destination_wallet_id;
     if (transfer.state !== TransferEnums.STATE.pending) {
@@ -345,6 +345,7 @@ class Transfer {
     const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
       walletLoginId,
       receiverId,
+      keycloakLoginId,
     );
     if (!doesCurrentAccountHasControlOverReceiver) {
       throw new HttpError(
@@ -386,7 +387,7 @@ class Transfer {
   /*
    * Decline a pending transfer, if I has the privilege to do so
    */
-  async declineTransfer(transferId, walletLoginId) {
+  async declineTransfer(transferId, walletLoginId, keycloakLoginId) {
     const transfer = await this._transferRepository.getById(transferId);
     const sourceWalletId = transfer.source_wallet_id;
     const destWalletId = transfer.destination_wallet_id;
@@ -403,6 +404,7 @@ class Transfer {
       const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
         walletLoginId,
         destWalletId,
+        keycloakLoginId,
       );
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
@@ -414,6 +416,7 @@ class Transfer {
       const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
         walletLoginId,
         sourceWalletId,
+        keycloakLoginId,
       );
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
@@ -431,7 +434,7 @@ class Transfer {
     return transferJson;
   }
 
-  async cancelTransfer(transferId, walletLoginId) {
+  async cancelTransfer(transferId, walletLoginId, keycloakLoginId) {
     const transfer = await this._transferRepository.getById(transferId);
     const sourceWalletId = transfer.source_wallet_id;
     const destWalletId = transfer.destination_wallet_id;
@@ -448,6 +451,7 @@ class Transfer {
       const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
         walletLoginId,
         sourceWalletId,
+        keycloakLoginId,
       );
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
@@ -459,6 +463,7 @@ class Transfer {
       const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
         walletLoginId,
         destWalletId,
+        keycloakLoginId,
       );
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
