@@ -226,8 +226,12 @@ class WalletService {
     );
   }
 
-  async hasControlOver(parentId, childId, keycloakId) {
-    return this._wallet.hasControlOver(parentId, childId, keycloakId);
+  async hasControlOver(parentId, childId) {
+    return this._wallet.hasControlOver(parentId, childId);
+  }
+
+  async hasKeycloakControlOver(keycloakId, walletId) {
+    return this._wallet.hasKeycloakControlOver(keycloakId, walletId);
   }
 
   async batchCreateWallet(

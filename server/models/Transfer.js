@@ -342,11 +342,9 @@ class Transfer {
     if (transfer.state !== TransferEnums.STATE.pending) {
       throw new HttpError(409, 'The transfer state is not pending');
     }
-    const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-      walletLoginId,
-      receiverId,
-      keycloakLoginId,
-    );
+    const doesCurrentAccountHasControlOverReceiver =
+      (await this._wallet.hasControlOver(walletLoginId, receiverId)) ||
+      (await this._wallet.hasKeycloakControlOver(keycloakLoginId, receiverId));
     if (!doesCurrentAccountHasControlOverReceiver) {
       throw new HttpError(
         403,
@@ -401,11 +399,12 @@ class Transfer {
       );
     }
     if (transfer.state === TransferEnums.STATE.pending) {
-      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-        walletLoginId,
-        destWalletId,
-        keycloakLoginId,
-      );
+      const doesCurrentAccountHasControlOverReceiver =
+        (await this._wallet.hasControlOver(walletLoginId, destWalletId)) ||
+        (await this._wallet.hasKeycloakControlOver(
+          keycloakLoginId,
+          destWalletId,
+        ));
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
@@ -413,11 +412,12 @@ class Transfer {
         );
       }
     } else {
-      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-        walletLoginId,
-        sourceWalletId,
-        keycloakLoginId,
-      );
+      const doesCurrentAccountHasControlOverReceiver =
+        (await this._wallet.hasControlOver(walletLoginId, sourceWalletId)) ||
+        (await this._wallet.hasKeycloakControlOver(
+          keycloakLoginId,
+          sourceWalletId,
+        ));
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
@@ -448,11 +448,12 @@ class Transfer {
       );
     }
     if (transfer.state === TransferEnums.STATE.pending) {
-      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-        walletLoginId,
-        sourceWalletId,
-        keycloakLoginId,
-      );
+      const doesCurrentAccountHasControlOverReceiver =
+        (await this._wallet.hasControlOver(walletLoginId, sourceWalletId)) ||
+        (await this._wallet.hasKeycloakControlOver(
+          keycloakLoginId,
+          sourceWalletId,
+        ));
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
@@ -460,11 +461,12 @@ class Transfer {
         );
       }
     } else {
-      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-        walletLoginId,
-        destWalletId,
-        keycloakLoginId,
-      );
+      const doesCurrentAccountHasControlOverReceiver =
+        (await this._wallet.hasControlOver(walletLoginId, destWalletId)) ||
+        (await this._wallet.hasKeycloakControlOver(
+          keycloakLoginId,
+          destWalletId,
+        ));
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,

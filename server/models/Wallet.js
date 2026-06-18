@@ -110,26 +110,11 @@ class Wallet {
   /*
    * I have control over given wallet
    */
-  async hasControlOver(parentId, childId, keycloakId) {
+  async hasControlOver(parentId, childId) {
     // if the given wallet is me, then pass
     if (parentId === childId) {
       log.debug('The same wallet');
       return true;
-    }
-    // Keycloak-bound owner: with Keycloak login the authoritative link between a
-    // user and a wallet is wallet.keycloak_account_id. If the requesting Keycloak
-    // user is bound to the target wallet, they control it (hasControlOver predates
-    // Keycloak and otherwise only knows wallet-id equality / trust relationships).
-    if (keycloakId) {
-      try {
-        const childWallet = await this._walletRepository.getById(childId);
-        if (childWallet && childWallet.keycloak_account_id === keycloakId) {
-          log.debug('Keycloak user is bound to the target wallet');
-          return true;
-        }
-      } catch (e) {
-        // fall through to the trust check below
-      }
     }
     // check sub wallet
     let result = await this.getSubWallets(parentId, childId);
@@ -139,6 +124,30 @@ class Wallet {
 
     if (result.length) {
       return true;
+    }
+    return false;
+  }
+
+  /*
+   * The Keycloak user has control over the given wallet.
+   *
+   * With Keycloak login the authoritative link between a user and a wallet is
+   * wallet.keycloak_account_id (the Keycloak `sub`). hasControlOver predates
+   * Keycloak and only knows wallet-id equality / trust relationships, so this is
+   * the dedicated check for the Keycloak-bound owner.
+   */
+  async hasKeycloakControlOver(keycloakId, walletId) {
+    if (!keycloakId) {
+      return false;
+    }
+    try {
+      const wallet = await this._walletRepository.getById(walletId);
+      if (wallet && wallet.keycloak_account_id === keycloakId) {
+        log.debug('Keycloak user is bound to the target wallet');
+        return true;
+      }
+    } catch (e) {
+      // wallet not found / lookup failed -> no control
     }
     return false;
   }
