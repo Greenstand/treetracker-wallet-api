@@ -19,10 +19,8 @@ class QueueService {
         },
       ];
 
-      knex.query(text, values, (err, res) => {
-        if (err) throw Error(`insertion error: ${err}`);
-        log.debug(`postgres message dispatch success: ${res}`);
-      });
+      const res = await knex.raw(text, values);
+      log.debug(`postgres message dispatch success: ${JSON.stringify(res.rows)}`);
       log.debug(
         `Wallet creation notification sent for wallet ID: ${wallet.id}`,
       );

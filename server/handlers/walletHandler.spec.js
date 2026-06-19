@@ -12,6 +12,7 @@ const { expect } = chai;
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
+const QueueService = require('../services/QueueService');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 
 describe('walletRouter', () => {
@@ -113,6 +114,9 @@ describe('walletRouter', () => {
     });
 
     it('successfully', async () => {
+      sinon
+        .stub(WalletService.prototype, 'getAllWallets')
+        .resolves({ wallets: [], count: 0 });
       const getTrustRelationshipsStub = sinon
         .stub(TrustService.prototype, 'getTrustRelationships')
         .resolves({ result: [{ id: trustRelationshipId }], count: 1 });
@@ -166,16 +170,6 @@ describe('walletRouter', () => {
   });
 
   describe('post /wallets', () => {
-    let publishStub;
-
-    beforeEach(() => {
-      // publishStub = sinon.stub(queue, 'publish').returns();
-    });
-
-    afterEach(() => {
-      sinon.restore();
-    });
-
     const walletId = uuid.v4();
     const mockWallet = {
       id: walletId,
@@ -184,6 +178,9 @@ describe('walletRouter', () => {
     };
 
     it('successfully creates managed wallet', async () => {
+      const publishStub = sinon
+        .stub(QueueService, 'sendWalletCreationNotification')
+        .resolves();
       const createWalletStub = sinon
         .stub(WalletService.prototype, 'createWallet')
         .resolves(mockWallet);
@@ -210,6 +207,7 @@ describe('walletRouter', () => {
       sinon.stub(JWTService, 'verify').returns({
         id: keycloakId,
       });
+      sinon.stub(QueueService, 'sendWalletCreationNotification').resolves();
       sinon
         .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
         .resolves({});

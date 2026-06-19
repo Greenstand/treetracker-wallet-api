@@ -4,6 +4,19 @@ const log = require('loglevel');
 const HttpError = require('../utils/HttpError');
 const { JWT_ISSUERS } = require('./enums');
 
+const getPublicKey = async () => {
+  if (process.env.KEYCLOAK_PUBLIC_KEY) {
+    return process.env.KEYCLOAK_PUBLIC_KEY.replace(/\\n/g, '\n');
+  }
+
+  const issuer = process.env.KEYCLOAK_ISSUER || JWT_ISSUERS[0];
+  const client = jwksClient({
+    jwksUri: `${issuer}/protocol/openid-connect/certs`,
+  });
+  const key = await client.getSigningKey();
+  return key.getPublicKey();
+};
+
 class JWTService {
   static async verify(authorization) {
     if (!authorization) {
@@ -12,23 +25,17 @@ class JWTService {
         'ERROR: Authentication, no token supplied for protected path',
       );
     }
-    const tokenArray = authorization.split('Bearer ');
-    const token = tokenArray[1];
-    let walletId;
-    if (token) {
-      // get the public key
-      // LOCAL DEV: in-cluster URL is unreachable; use the public dev Keycloak so
-      // local can fetch JWKS to verify dev-realm tokens (testuser1).
-      const KEYCLOAK_URL =
-        'https://dev-k8s.treetracker.org/keycloak/realms/treetracker';
+    if (!authorization.startsWith('Bearer ')) {
+      throw new HttpError(401, 'ERROR: Authentication, invalid token received');
+    }
 
-      const client = jwksClient({
-        jwksUri: `${KEYCLOAK_URL}/protocol/openid-connect/certs`,
-      });
-      const r = await client.getSigningKey();
-      const publicKey = r.getPublicKey();
+    const token = authorization.slice('Bearer '.length);
+    if (!token) {
+      throw new HttpError(401, 'ERROR: Authentication, invalid token received');
+    }
 
-      // Decode the token
+    const publicKey = await getPublicKey();
+    const decoded = await new Promise((resolve, reject) => {
       JWTTools.verify(
         token,
         publicKey,
@@ -36,26 +43,24 @@ class JWTService {
           issuer: JWT_ISSUERS,
           algorithms: ['RS256'],
         },
-        (err, decod) => {
+        (err, payload) => {
           if (err) {
             log.error(err?.message);
-            throw new HttpError(
-              401,
-              'ERROR: Authentication, token not verified',
+            reject(
+              new HttpError(401, 'ERROR: Authentication, token not verified'),
             );
+            return;
           }
-          if (!decod?.sub)
-            throw new HttpError(
-              401,
-              'ERROR: Authentication, invalid token received',
-            );
-          walletId = decod.sub;
+          resolve(payload);
         },
       );
-    } else {
+    });
+
+    if (!decoded?.sub) {
       throw new HttpError(401, 'ERROR: Authentication, invalid token received');
     }
-    return { id: walletId };
+
+    return { id: decoded.sub };
   }
 }
 
