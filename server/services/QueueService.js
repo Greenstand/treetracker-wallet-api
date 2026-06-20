@@ -9,20 +9,16 @@ class QueueService {
    */
   static async sendWalletCreationNotification(wallet) {
     try {
-      const text = `INSERT into queue.message(channel, data) values ($1, $2) RETURNING *`;
-      const values = [
-        'wallet_created',
-        {
-          walletId: wallet.id,
-          userId: wallet.userId,
-          createdAt: wallet.createdAt,
-        },
-      ];
-
-      knex.query(text, values, (err, res) => {
-        if (err) throw Error(`insertion error: ${err}`);
-        log.debug(`postgres message dispatch success: ${res}`);
+      const data = JSON.stringify({
+        walletId: wallet.id,
+        userId: wallet.userId,
+        createdAt: wallet.createdAt,
       });
+
+      await knex.raw(
+        'INSERT INTO queue.message(channel, data) VALUES (?, ?) RETURNING *',
+        ['wallet_created', data],
+      );
       log.debug(
         `Wallet creation notification sent for wallet ID: ${wallet.id}`,
       );
