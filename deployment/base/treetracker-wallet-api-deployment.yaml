@@ -71,3 +71,7 @@ spec:
                   key: s3_access_key_id
             - name: NODE_LOG_LEVEL
               value: debug
+            - name: SENDER_WALLET_ID
+              value: 0121b2f8-f905-4645-9ccc-fd0c5974eed2
+            - name: REGISTER_REWARD_TOKEN_COUNT
+              value: "1"
