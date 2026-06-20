@@ -11,7 +11,9 @@ chai.use(sinonChai);
 const { expect } = chai;
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
+const TransferService = require('../services/TransferService');
 const JWTService = require('../services/JWTService');
+const QueueService = require('../services/QueueService');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 
 describe('walletRouter', () => {
@@ -28,8 +30,8 @@ describe('walletRouter', () => {
       id: authenticatedWalletId,
     });
     app = express();
-    app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
-    app.use(express.json()); // parse application/json
+    app.use(express.urlencoded({ extended: false }));
+    app.use(express.json());
     app.use(walletRouter);
     app.use(errorHandler);
   });
@@ -113,6 +115,9 @@ describe('walletRouter', () => {
     });
 
     it('successfully', async () => {
+      sinon
+        .stub(WalletService.prototype, 'getAllWallets')
+        .resolves({ wallets: [], count: 0 });
       const getTrustRelationshipsStub = sinon
         .stub(TrustService.prototype, 'getTrustRelationships')
         .resolves({ result: [{ id: trustRelationshipId }], count: 1 });
@@ -166,22 +171,27 @@ describe('walletRouter', () => {
   });
 
   describe('post /wallets', () => {
-    let publishStub;
-
-    beforeEach(() => {
-      // publishStub = sinon.stub(queue, 'publish').returns();
-    });
-
-    afterEach(() => {
-      sinon.restore();
-    });
-
     const walletId = uuid.v4();
     const mockWallet = {
       id: walletId,
       wallet: 'test-wallet-2',
       about: 'test about',
     };
+
+    let queueStub;
+
+    beforeEach(() => {
+      queueStub = sinon
+        .stub(QueueService, 'sendWalletCreationNotification')
+        .resolves();
+      sinon
+        .stub(WalletService.prototype, 'getAllWallets')
+        .resolves({ wallets: [], count: 2 });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
 
     it('successfully creates managed wallet', async () => {
       const createWalletStub = sinon
@@ -192,7 +202,7 @@ describe('walletRouter', () => {
         about: mockWallet.about,
       });
       expect(res).property('statusCode').eq(201);
-      expect(publishStub.calledOnce).to.be.true;
+      expect(queueStub.calledOnce).to.be.true;
       expect(res.body.wallet).eq(mockWallet.wallet);
       expect(res.body.id).eq(mockWallet.id);
       expect(res.body.about).eq(mockWallet.about);
@@ -207,12 +217,16 @@ describe('walletRouter', () => {
 
     it('successfully creates parent wallet', async () => {
       sinon.restore();
-      sinon.stub(JWTService, 'verify').returns({
-        id: keycloakId,
-      });
+      sinon.stub(JWTService, 'verify').returns({ id: keycloakId });
       sinon
         .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
         .resolves({});
+      sinon
+        .stub(QueueService, 'sendWalletCreationNotification')
+        .resolves();
+      sinon
+        .stub(WalletService.prototype, 'getAllWallets')
+        .resolves({ wallets: [], count: 1 });
       const createParentWalletStub = sinon
         .stub(WalletService.prototype, 'createParentWallet')
         .resolves(mockWallet);
@@ -237,6 +251,200 @@ describe('walletRouter', () => {
       const res = await request(app).post('/wallets').send({});
       expect(res).property('statusCode').eq(422);
       expect(res.body.message).match(/wallet.*required/);
+    });
+
+    describe('gift token on first wallet', () => {
+      const senderWalletId = uuid.v4();
+      const transferId = uuid.v4();
+
+      function setupParentWalletStubs() {
+        sinon.restore();
+        sinon.stub(JWTService, 'verify').returns({ id: keycloakId });
+        sinon
+          .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
+          .resolves({});
+        sinon
+          .stub(QueueService, 'sendWalletCreationNotification')
+          .resolves();
+        sinon
+          .stub(WalletService.prototype, 'createParentWallet')
+          .resolves(mockWallet);
+      }
+
+      it('sends gift tokens when first wallet and env vars are set', async () => {
+        setupParentWalletStubs();
+        sinon
+          .stub(WalletService.prototype, 'getAllWallets')
+          .resolves({ wallets: [], count: 1 });
+        const initiateStub = sinon
+          .stub(TransferService.prototype, 'initiateTransfer')
+          .resolves({ result: { id: transferId, state: 'pending' } });
+        const acceptStub = sinon
+          .stub(TransferService.prototype, 'acceptTransfer')
+          .resolves();
+
+        process.env.SENDER_WALLET_ID = senderWalletId;
+        process.env.REGISTER_REWARD_TOKEN_COUNT = '1';
+        try {
+          const res = await request(app).post('/wallets').send({
+            wallet: mockWallet.wallet,
+          });
+          expect(res).property('statusCode').eq(201);
+          expect(initiateStub.calledOnce).to.be.true;
+          expect(initiateStub.firstCall.args[0]).to.deep.equal({
+            sender_wallet: senderWalletId,
+            receiver_wallet: walletId,
+            bundle: { bundle_size: 1 },
+          });
+          expect(acceptStub.calledOnce).to.be.true;
+          expect(acceptStub.firstCall.args[0]).to.equal(transferId);
+          expect(acceptStub.firstCall.args[1]).to.equal(walletId);
+        } finally {
+          delete process.env.SENDER_WALLET_ID;
+          delete process.env.REGISTER_REWARD_TOKEN_COUNT;
+        }
+      });
+
+      it('skips accept when transfer is already completed', async () => {
+        setupParentWalletStubs();
+        sinon
+          .stub(WalletService.prototype, 'getAllWallets')
+          .resolves({ wallets: [], count: 1 });
+        sinon
+          .stub(TransferService.prototype, 'initiateTransfer')
+          .resolves({ result: { id: transferId, state: 'completed' } });
+        const acceptStub = sinon
+          .stub(TransferService.prototype, 'acceptTransfer')
+          .resolves();
+
+        process.env.SENDER_WALLET_ID = senderWalletId;
+        process.env.REGISTER_REWARD_TOKEN_COUNT = '1';
+        try {
+          const res = await request(app).post('/wallets').send({
+            wallet: mockWallet.wallet,
+          });
+          expect(res).property('statusCode').eq(201);
+          expect(acceptStub.called).to.be.false;
+        } finally {
+          delete process.env.SENDER_WALLET_ID;
+          delete process.env.REGISTER_REWARD_TOKEN_COUNT;
+        }
+      });
+
+      it('does not send gift when not the first wallet', async () => {
+        setupParentWalletStubs();
+        sinon
+          .stub(WalletService.prototype, 'getAllWallets')
+          .resolves({ wallets: [], count: 3 });
+        const initiateStub = sinon
+          .stub(TransferService.prototype, 'initiateTransfer')
+          .resolves();
+
+        process.env.SENDER_WALLET_ID = senderWalletId;
+        process.env.REGISTER_REWARD_TOKEN_COUNT = '1';
+        try {
+          const res = await request(app).post('/wallets').send({
+            wallet: mockWallet.wallet,
+          });
+          expect(res).property('statusCode').eq(201);
+          expect(initiateStub.called).to.be.false;
+        } finally {
+          delete process.env.SENDER_WALLET_ID;
+          delete process.env.REGISTER_REWARD_TOKEN_COUNT;
+        }
+      });
+
+      it('does not send gift when SENDER_WALLET_ID is not set', async () => {
+        setupParentWalletStubs();
+        sinon
+          .stub(WalletService.prototype, 'getAllWallets')
+          .resolves({ wallets: [], count: 1 });
+        const initiateStub = sinon
+          .stub(TransferService.prototype, 'initiateTransfer')
+          .resolves();
+
+        delete process.env.SENDER_WALLET_ID;
+        process.env.REGISTER_REWARD_TOKEN_COUNT = '1';
+        try {
+          const res = await request(app).post('/wallets').send({
+            wallet: mockWallet.wallet,
+          });
+          expect(res).property('statusCode').eq(201);
+          expect(initiateStub.called).to.be.false;
+        } finally {
+          delete process.env.REGISTER_REWARD_TOKEN_COUNT;
+        }
+      });
+
+      it('does not send gift when REGISTER_REWARD_TOKEN_COUNT is 0', async () => {
+        setupParentWalletStubs();
+        sinon
+          .stub(WalletService.prototype, 'getAllWallets')
+          .resolves({ wallets: [], count: 1 });
+        const initiateStub = sinon
+          .stub(TransferService.prototype, 'initiateTransfer')
+          .resolves();
+
+        process.env.SENDER_WALLET_ID = senderWalletId;
+        process.env.REGISTER_REWARD_TOKEN_COUNT = '0';
+        try {
+          const res = await request(app).post('/wallets').send({
+            wallet: mockWallet.wallet,
+          });
+          expect(res).property('statusCode').eq(201);
+          expect(initiateStub.called).to.be.false;
+        } finally {
+          delete process.env.SENDER_WALLET_ID;
+          delete process.env.REGISTER_REWARD_TOKEN_COUNT;
+        }
+      });
+
+      it('wallet still created when gift transfer fails', async () => {
+        setupParentWalletStubs();
+        sinon
+          .stub(WalletService.prototype, 'getAllWallets')
+          .resolves({ wallets: [], count: 1 });
+        sinon
+          .stub(TransferService.prototype, 'initiateTransfer')
+          .rejects(new Error('not enough tokens'));
+
+        process.env.SENDER_WALLET_ID = senderWalletId;
+        process.env.REGISTER_REWARD_TOKEN_COUNT = '1';
+        try {
+          const res = await request(app).post('/wallets').send({
+            wallet: mockWallet.wallet,
+          });
+          expect(res).property('statusCode').eq(201);
+          expect(res.body.id).eq(walletId);
+        } finally {
+          delete process.env.SENDER_WALLET_ID;
+          delete process.env.REGISTER_REWARD_TOKEN_COUNT;
+        }
+      });
+
+      it('wallet still created when wallet count fails', async () => {
+        setupParentWalletStubs();
+        sinon
+          .stub(WalletService.prototype, 'getAllWallets')
+          .rejects(new Error('db error'));
+        const initiateStub = sinon
+          .stub(TransferService.prototype, 'initiateTransfer')
+          .resolves();
+
+        process.env.SENDER_WALLET_ID = senderWalletId;
+        process.env.REGISTER_REWARD_TOKEN_COUNT = '1';
+        try {
+          const res = await request(app).post('/wallets').send({
+            wallet: mockWallet.wallet,
+          });
+          expect(res).property('statusCode').eq(201);
+          expect(res.body.id).eq(walletId);
+          expect(initiateStub.called).to.be.false;
+        } finally {
+          delete process.env.SENDER_WALLET_ID;
+          delete process.env.REGISTER_REWARD_TOKEN_COUNT;
+        }
+      });
     });
   });
 });
