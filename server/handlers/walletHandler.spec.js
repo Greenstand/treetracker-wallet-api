@@ -12,6 +12,7 @@ const { expect } = chai;
 const WalletService = require('../services/WalletService');
 const TrustService = require('../services/TrustService');
 const JWTService = require('../services/JWTService');
+const QueueService = require('../services/QueueService');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 
 describe('walletRouter', () => {
@@ -28,8 +29,8 @@ describe('walletRouter', () => {
       id: authenticatedWalletId,
     });
     app = express();
-    app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
-    app.use(express.json()); // parse application/json
+    app.use(express.urlencoded({ extended: false }));
+    app.use(express.json());
     app.use(walletRouter);
     app.use(errorHandler);
   });
@@ -113,6 +114,9 @@ describe('walletRouter', () => {
     });
 
     it('successfully', async () => {
+      sinon
+        .stub(WalletService.prototype, 'getAllWallets')
+        .resolves({ wallets: [], count: 0 });
       const getTrustRelationshipsStub = sinon
         .stub(TrustService.prototype, 'getTrustRelationships')
         .resolves({ result: [{ id: trustRelationshipId }], count: 1 });
@@ -166,22 +170,27 @@ describe('walletRouter', () => {
   });
 
   describe('post /wallets', () => {
-    let publishStub;
-
-    beforeEach(() => {
-      // publishStub = sinon.stub(queue, 'publish').returns();
-    });
-
-    afterEach(() => {
-      sinon.restore();
-    });
-
     const walletId = uuid.v4();
     const mockWallet = {
       id: walletId,
       wallet: 'test-wallet-2',
       about: 'test about',
     };
+
+    let queueStub;
+
+    beforeEach(() => {
+      queueStub = sinon
+        .stub(QueueService, 'sendWalletCreationNotification')
+        .resolves();
+      sinon
+        .stub(WalletService.prototype, 'getAllWallets')
+        .resolves({ wallets: [], count: 2 });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
 
     it('successfully creates managed wallet', async () => {
       const createWalletStub = sinon
@@ -192,7 +201,7 @@ describe('walletRouter', () => {
         about: mockWallet.about,
       });
       expect(res).property('statusCode').eq(201);
-      expect(publishStub.calledOnce).to.be.true;
+      expect(queueStub.calledOnce).to.be.true;
       expect(res.body.wallet).eq(mockWallet.wallet);
       expect(res.body.id).eq(mockWallet.id);
       expect(res.body.about).eq(mockWallet.about);
@@ -207,12 +216,16 @@ describe('walletRouter', () => {
 
     it('successfully creates parent wallet', async () => {
       sinon.restore();
-      sinon.stub(JWTService, 'verify').returns({
-        id: keycloakId,
-      });
+      sinon.stub(JWTService, 'verify').returns({ id: keycloakId });
       sinon
         .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
         .resolves({});
+      sinon
+        .stub(QueueService, 'sendWalletCreationNotification')
+        .resolves();
+      sinon
+        .stub(WalletService.prototype, 'getAllWallets')
+        .resolves({ wallets: [], count: 1 });
       const createParentWalletStub = sinon
         .stub(WalletService.prototype, 'createParentWallet')
         .resolves(mockWallet);
