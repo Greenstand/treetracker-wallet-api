@@ -5,11 +5,11 @@ const knex = require('../infra/database/knex');
 const QueueService = require('./QueueService');
 
 describe('QueueService', () => {
-  let publishStub;
+  let knexRawStub;
   let logErrorStub;
 
   beforeEach(() => {
-    // publishStub = sinon.stub(queue, 'publish');
+    knexRawStub = sinon.stub(knex, 'raw').resolves();
     logErrorStub = sinon.stub(log, 'error');
   });
 
@@ -27,20 +27,21 @@ describe('QueueService', () => {
 
       await QueueService.sendWalletCreationNotification(wallet);
 
-      expect(publishStub.calledOnce).to.be.true;
-      expect(publishStub.firstCall.args[0]).to.deep.equal({
-        pgClient: knex,
-        channel: 'wallet_created',
-        data: {
-          walletId: 1,
-          userId: 42,
-          createdAt: '2025-04-29T00:00:00Z',
-        },
+      expect(knexRawStub.calledOnce).to.be.true;
+      expect(knexRawStub.firstCall.args[0]).to.equal(
+        'INSERT INTO queue.message(channel, data) VALUES (?, ?) RETURNING *',
+      );
+      expect(knexRawStub.firstCall.args[1][0]).to.equal('wallet_created');
+      const payload = JSON.parse(knexRawStub.firstCall.args[1][1]);
+      expect(payload).to.deep.equal({
+        walletId: 1,
+        userId: 42,
+        createdAt: '2025-04-29T00:00:00Z',
       });
     });
 
     it('should not throw error if publish fails', async () => {
-      publishStub.throws(new Error('publish failed'));
+      knexRawStub.rejects(new Error('publish failed'));
 
       const wallet = {
         id: 2,
@@ -56,7 +57,6 @@ describe('QueueService', () => {
       }
 
       expect(errorCaught).to.be.false;
-      expect(publishStub.calledOnce).to.be.true;
       expect(logErrorStub.calledOnce).to.be.true;
       expect(logErrorStub.firstCall.args[0]).to.equal(
         'Failed to publish wallet creation message:',
