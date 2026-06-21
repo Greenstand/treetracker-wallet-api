@@ -1,3 +1,16 @@
+# [1.44.0-keycloak.14](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.13...v1.44.0-keycloak.14) (2026-06-21)
+
+
+### Bug Fixes
+
+* change to use internet keyclock url so can access it outside ([d9bb5b5](https://github.com/Greenstand/treetracker-wallet-api/commit/d9bb5b5b8f8119c0ff83c927c030bcf1a6475c58))
+* count first wallet ([8171eb2](https://github.com/Greenstand/treetracker-wallet-api/commit/8171eb27a300e1ba3fe3bc5664b0e0760665fe61))
+* gift token to first wallet, but the first wallet logic is wrong ([2a35e82](https://github.com/Greenstand/treetracker-wallet-api/commit/2a35e822a47648e59c09326c8f5df8405f27750a))
+* replace non-existent knex.query() with knex.raw() in QueueService ([39dafc8](https://github.com/Greenstand/treetracker-wallet-api/commit/39dafc874585b3cb3d137f18c0dcc868470e95b5))
+* rewrite JWTService tests for async Keycloak verification ([5c56540](https://github.com/Greenstand/treetracker-wallet-api/commit/5c56540b446fd8a264142032a4ef2ace35f2c090))
+* update walletHandler stubs and add gift token test coverage ([59b4f13](https://github.com/Greenstand/treetracker-wallet-api/commit/59b4f133bdcc40b482fc25b7d58b21bda3d3ac20))
+* use env var for Keycloak URL instead of hardcoding ([abec096](https://github.com/Greenstand/treetracker-wallet-api/commit/abec096ce00d6c3395207be58bbf93f7d72ebdc8))
+
 # [1.44.0-keycloak.13](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.12...v1.44.0-keycloak.13) (2026-01-09)
 
 
