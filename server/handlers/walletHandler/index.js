@@ -1,8 +1,10 @@
 const csvtojson = require('csvtojson');
+const log = require('loglevel');
 const QueueService = require('../../services/QueueService');
 
 const WalletService = require('../../services/WalletService');
 const TrustService = require('../../services/TrustService');
+const TransferService = require('../../services/TransferService');
 
 const {
   walletGetQuerySchema,
@@ -163,6 +165,55 @@ const walletPost = async (req, res) => {
   }
 
   await QueueService.sendWalletCreationNotification(returnedWallet);
+
+  // Is this the current user's FIRST wallet? Count the wallets the user owns/manages
+  // (their account/parent wallet + any managed sub-wallets); first wallet => count === 1.
+  const parentWalletId = wallet_id || returnedWallet.id;
+  let isFirstWallet = false;
+  try {
+    const { count } = await walletService.getAllWallets(
+      parentWalletId,
+      { limit: 1, offset: 0 },
+      undefined,
+      'created_at',
+      'desc',
+      undefined,
+      undefined,
+      false, // skip per-wallet token counting (we only need the count)
+      true, // getWalletCount
+    );
+    isFirstWallet = Number(count) === 1;
+  } catch (err) {
+    log.error(`Failed to count wallets for ${parentWalletId}: ${err.message}`);
+  }
+
+  // System gift: on the user's first wallet, award REGISTER_REWARD_TOKEN_COUNT tokens
+  // from SENDER_WALLET_ID. Done in-process here (no HTTP/Keycloak auth). A send to a
+  // self-custody wallet lands pending, so we immediately accept it as the receiver to credit it.
+  const senderWalletId = process.env.SENDER_WALLET_ID;
+  const rewardCount = Number(process.env.REGISTER_REWARD_TOKEN_COUNT) || 0;
+  if (isFirstWallet && senderWalletId && rewardCount > 0) {
+    try {
+      const { result: giftTransfer } = await new TransferService().initiateTransfer(
+        {
+          sender_wallet: senderWalletId,
+          receiver_wallet: returnedWallet.id,
+          bundle: { bundle_size: rewardCount },
+        },
+        senderWalletId, // actor controls the sender → pending transfer
+      );
+      if (giftTransfer.state !== 'completed') {
+        await new TransferService().acceptTransfer(
+          giftTransfer.id,
+          returnedWallet.id, // accept as the receiver → completes, tokens credited
+        );
+      }
+    } catch (err) {
+      log.error(
+        `System gift failed for wallet ${returnedWallet.id}: ${err.message}`,
+      );
+    }
+  }
 
   res.status(201).json(returnedWallet);
 };

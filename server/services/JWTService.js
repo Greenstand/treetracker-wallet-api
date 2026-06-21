@@ -16,8 +16,8 @@ class JWTService {
     const token = tokenArray[1];
     let walletId;
     if (token) {
-      // get the public key
       const KEYCLOAK_URL =
+        process.env.KEYCLOAK_URL ||
         'http://keycloak-service.keycloak:8080/keycloak/realms/treetracker';
 
       const client = jwksClient({
