@@ -166,25 +166,27 @@ const walletPost = async (req, res) => {
 
   await QueueService.sendWalletCreationNotification(returnedWallet);
 
-  // Is this the current user's FIRST wallet? Count the wallets the user owns/manages
-  // (their account/parent wallet + any managed sub-wallets); first wallet => count === 1.
-  const parentWalletId = wallet_id || returnedWallet.id;
   let isFirstWallet = false;
-  try {
-    const { count } = await walletService.getAllWallets(
-      parentWalletId,
-      { limit: 1, offset: 0 },
-      undefined,
-      'created_at',
-      'desc',
-      undefined,
-      undefined,
-      false, // skip per-wallet token counting (we only need the count)
-      true, // getWalletCount
-    );
-    isFirstWallet = Number(count) === 1;
-  } catch (err) {
-    log.error(`Failed to count wallets for ${parentWalletId}: ${err.message}`);
+  if (!wallet_id) {
+    // Count the wallets the new user owns/manages; first wallet => count === 1.
+    try {
+      const { count } = await walletService.getAllWallets(
+        returnedWallet.id,
+        { limit: 1, offset: 0 },
+        undefined,
+        'created_at',
+        'desc',
+        undefined,
+        undefined,
+        false, // skip per-wallet token counting (we only need the count)
+        true, // getWalletCount
+      );
+      isFirstWallet = Number(count) === 1;
+    } catch (err) {
+      log.error(
+        `Failed to count wallets for ${returnedWallet.id}: ${err.message}`,
+      );
+    }
   }
 
   // System gift: on the user's first wallet, award REGISTER_REWARD_TOKEN_COUNT tokens
