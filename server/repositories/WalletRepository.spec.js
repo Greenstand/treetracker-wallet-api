@@ -105,6 +105,7 @@ describe('WalletRepository', () => {
       'desc',
       undefined,
       undefined,
+      undefined,
       true,
     );
     expect(entity).to.eql({ wallets: [{ id: 1 }], count: 1 });
