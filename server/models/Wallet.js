@@ -161,6 +161,7 @@ class Wallet {
     order,
     created_at_start_date,
     created_at_end_date,
+    scope,
     getCount,
   ) {
     return this._walletRepository.getAllWallets(
@@ -171,6 +172,7 @@ class Wallet {
       order,
       created_at_start_date,
       created_at_end_date,
+      scope,
       getCount,
     );
   }

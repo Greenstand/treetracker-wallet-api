@@ -20,6 +20,7 @@ const walletGetQuerySchema = Joi.object({
   order: Joi.string().valid('asc', 'desc').default('desc'),
   created_at_start_date: Joi.date().iso(),
   created_at_end_date: Joi.date().iso(),
+  scope: Joi.string().valid('all', 'child', 'managed'),
 });
 
 const walletIdParamSchema = Joi.object({

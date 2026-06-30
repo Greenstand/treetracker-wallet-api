@@ -171,6 +171,7 @@ class WalletService {
     order,
     created_at_start_date,
     created_at_end_date,
+    scope,
     getTokenCount = true,
     getWalletCount = true,
   ) {
@@ -184,6 +185,7 @@ class WalletService {
         order,
         created_at_start_date,
         created_at_end_date,
+        scope,
         getWalletCount,
       );
       return {
@@ -205,6 +207,7 @@ class WalletService {
       order,
       created_at_start_date,
       created_at_end_date,
+      scope,
       getWalletCount,
     );
   }
