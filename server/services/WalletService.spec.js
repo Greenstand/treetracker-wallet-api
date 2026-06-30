@@ -245,9 +245,11 @@ describe('WalletService', () => {
         'asc',
         undefined,
         undefined,
+        undefined,
         false,
       );
-      expect(getAllWalletsStub).calledOnceWithExactly(
+      expect(
+        getAllWalletsStub.calledOnceWithExactly(
         id,
         limitOptions,
         'name',
@@ -255,9 +257,10 @@ describe('WalletService', () => {
         'asc',
         undefined,
         undefined,
+        undefined,
         true,
-      );
-      // ).eql(true);
+        ),
+      ).eql(true);
       expect(allWallets).eql({ wallets: result, count });
     });
 
