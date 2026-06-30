@@ -147,10 +147,6 @@ class WalletRepository extends BaseRepository {
         .table('wallet')
         .where('id', id);
 
-      if (name) {
-        selfQuery.where('name', 'ilike', `%${name}%`);
-      }
-
       query = selfQuery.union([
         withNameFilter(childWallets),
         withNameFilter(directManagedWallets),
