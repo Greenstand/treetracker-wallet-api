@@ -336,16 +336,15 @@ class Transfer {
   /*
    * Accept a pending transfer, if wallet has the privilege to do so
    */
-  async acceptTransfer(transferId, walletLoginId) {
+  async acceptTransfer(transferId, walletLoginId, keycloakLoginId) {
     const transfer = await this._transferRepository.getById(transferId);
     const receiverId = transfer.destination_wallet_id;
     if (transfer.state !== TransferEnums.STATE.pending) {
       throw new HttpError(409, 'The transfer state is not pending');
     }
-    const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-      walletLoginId,
-      receiverId,
-    );
+    const doesCurrentAccountHasControlOverReceiver =
+      (await this._wallet.hasControlOver(walletLoginId, receiverId)) ||
+      (await this._wallet.hasKeycloakControlOver(keycloakLoginId, receiverId));
     if (!doesCurrentAccountHasControlOverReceiver) {
       throw new HttpError(
         403,
@@ -386,7 +385,7 @@ class Transfer {
   /*
    * Decline a pending transfer, if I has the privilege to do so
    */
-  async declineTransfer(transferId, walletLoginId) {
+  async declineTransfer(transferId, walletLoginId, keycloakLoginId) {
     const transfer = await this._transferRepository.getById(transferId);
     const sourceWalletId = transfer.source_wallet_id;
     const destWalletId = transfer.destination_wallet_id;
@@ -400,10 +399,12 @@ class Transfer {
       );
     }
     if (transfer.state === TransferEnums.STATE.pending) {
-      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-        walletLoginId,
-        destWalletId,
-      );
+      const doesCurrentAccountHasControlOverReceiver =
+        (await this._wallet.hasControlOver(walletLoginId, destWalletId)) ||
+        (await this._wallet.hasKeycloakControlOver(
+          keycloakLoginId,
+          destWalletId,
+        ));
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
@@ -411,10 +412,12 @@ class Transfer {
         );
       }
     } else {
-      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-        walletLoginId,
-        sourceWalletId,
-      );
+      const doesCurrentAccountHasControlOverReceiver =
+        (await this._wallet.hasControlOver(walletLoginId, sourceWalletId)) ||
+        (await this._wallet.hasKeycloakControlOver(
+          keycloakLoginId,
+          sourceWalletId,
+        ));
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
@@ -431,7 +434,7 @@ class Transfer {
     return transferJson;
   }
 
-  async cancelTransfer(transferId, walletLoginId) {
+  async cancelTransfer(transferId, walletLoginId, keycloakLoginId) {
     const transfer = await this._transferRepository.getById(transferId);
     const sourceWalletId = transfer.source_wallet_id;
     const destWalletId = transfer.destination_wallet_id;
@@ -445,10 +448,12 @@ class Transfer {
       );
     }
     if (transfer.state === TransferEnums.STATE.pending) {
-      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-        walletLoginId,
-        sourceWalletId,
-      );
+      const doesCurrentAccountHasControlOverReceiver =
+        (await this._wallet.hasControlOver(walletLoginId, sourceWalletId)) ||
+        (await this._wallet.hasKeycloakControlOver(
+          keycloakLoginId,
+          sourceWalletId,
+        ));
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,
@@ -456,10 +461,12 @@ class Transfer {
         );
       }
     } else {
-      const doesCurrentAccountHasControlOverReceiver = await this._wallet.hasControlOver(
-        walletLoginId,
-        destWalletId,
-      );
+      const doesCurrentAccountHasControlOverReceiver =
+        (await this._wallet.hasControlOver(walletLoginId, destWalletId)) ||
+        (await this._wallet.hasKeycloakControlOver(
+          keycloakLoginId,
+          destWalletId,
+        ));
       if (!doesCurrentAccountHasControlOverReceiver) {
         throw new HttpError(
           403,

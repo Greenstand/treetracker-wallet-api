@@ -129,6 +129,30 @@ class Wallet {
   }
 
   /*
+   * The Keycloak user has control over the given wallet.
+   *
+   * With Keycloak login the authoritative link between a user and a wallet is
+   * wallet.keycloak_account_id (the Keycloak `sub`). hasControlOver predates
+   * Keycloak and only knows wallet-id equality / trust relationships, so this is
+   * the dedicated check for the Keycloak-bound owner.
+   */
+  async hasKeycloakControlOver(keycloakId, walletId) {
+    if (!keycloakId) {
+      return false;
+    }
+    try {
+      const wallet = await this._walletRepository.getById(walletId);
+      if (wallet && wallet.keycloak_account_id === keycloakId) {
+        log.debug('Keycloak user is bound to the target wallet');
+        return true;
+      }
+    } catch (e) {
+      // wallet not found / lookup failed -> no control
+    }
+    return false;
+  }
+
+  /*
    * Get all wallet managed by me(parentId)
    * Optionally get a specific subwallet
    */

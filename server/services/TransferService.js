@@ -198,7 +198,7 @@ class TransferService {
     }
   }
 
-  async acceptTransfer(transferId, walletLoginId) {
+  async acceptTransfer(transferId, walletLoginId, keycloakLoginId) {
     try {
       await this._session.beginTransaction();
 
@@ -211,6 +211,7 @@ class TransferService {
       const result = await this._transfer.acceptTransfer(
         transferId,
         walletLoginId,
+        keycloakLoginId,
       );
 
       if (transfer && result.state === TransferEnums.STATE.completed) {
@@ -249,7 +250,7 @@ class TransferService {
     }
   }
 
-  async declineTransfer(transferId, walletLoginId) {
+  async declineTransfer(transferId, walletLoginId, keycloakLoginId) {
     try {
       await this._session.beginTransaction();
 
@@ -269,6 +270,7 @@ class TransferService {
       const result = await this._transfer.declineTransfer(
         transferId,
         walletLoginId,
+        keycloakLoginId,
       );
 
       // transfer request cancelled by destination
@@ -310,7 +312,7 @@ class TransferService {
     }
   }
 
-  async cancelTransfer(transferId, walletLoginId) {
+  async cancelTransfer(transferId, walletLoginId, keycloakLoginId) {
     try {
       await this._session.beginTransaction();
 
@@ -330,6 +332,7 @@ class TransferService {
       const result = await this._transfer.cancelTransfer(
         transferId,
         walletLoginId,
+        keycloakLoginId,
       );
 
       // transfer pending cancelled by requestor
