@@ -62,15 +62,12 @@ class WalletRepository extends BaseRepository {
     order,
     created_at_start_date,
     created_at_end_date,
+    scope,
     getCount,
   ) {
-    let query = this._session
-      .getDB()
-      .select('id', 'name', 'about', 'logo_url', 'created_at')
-      .table('wallet')
-      .where('id', id);
+    const effectiveScope = scope || 'all';
 
-    let union1 = this._session
+    const childWallets = this._session
       .getDB()
       .select(
         'wallet.id',
@@ -87,9 +84,30 @@ class WalletRepository extends BaseRepository {
           TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
         'wallet_trust.state':
           TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
-      });
+      })
+      .whereNull('wallet.password');
 
-    let union2 = this._session
+    const directManagedWallets = this._session
+      .getDB()
+      .select(
+        'wallet.id',
+        'wallet.name',
+        'wallet.about',
+        'wallet.logo_url',
+        'wallet.created_at',
+      )
+      .table('wallet_trust')
+      .join('wallet', 'wallet_trust.target_wallet_id', '=', 'wallet.id')
+      .where({
+        'wallet_trust.actor_wallet_id': id,
+        'wallet_trust.request_type':
+          TrustRelationshipEnums.ENTITY_TRUST_REQUEST_TYPE.manage,
+        'wallet_trust.state':
+          TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
+      })
+      .whereNotNull('wallet.password');
+
+    const yieldManagedWallets = this._session
       .getDB()
       .select(
         'wallet.id',
@@ -108,14 +126,39 @@ class WalletRepository extends BaseRepository {
           TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
       });
 
-    if (name) {
-      union1 = union1.where('name', 'ilike', `%${name}%`);
-      union2 = union2.where('name', 'ilike', `%${name}%`);
+    const withNameFilter = (queryBuilder) => {
+      if (!name) {
+        return queryBuilder;
+      }
+      return queryBuilder.where('wallet.name', 'ilike', `%${name}%`);
+    };
+
+    let query;
+    if (effectiveScope === 'child') {
+      query = withNameFilter(childWallets);
+    } else if (effectiveScope === 'managed') {
+      query = withNameFilter(directManagedWallets).union(
+        withNameFilter(yieldManagedWallets),
+      );
+    } else {
+      const selfQuery = this._session
+        .getDB()
+        .select('id', 'name', 'about', 'logo_url', 'created_at')
+        .table('wallet')
+        .where('id', id);
+
+      query = selfQuery.union([
+        withNameFilter(childWallets),
+        withNameFilter(directManagedWallets),
+        withNameFilter(yieldManagedWallets),
+      ]);
     }
 
-    query = query.union(union1, union2).orderBy(sort_by, order);
-
-    query = this._session.getDB().select('*').from(query.as('t'));
+    query = this._session
+      .getDB()
+      .select('*')
+      .from(query.as('t'))
+      .orderBy(sort_by, order);
 
     if (created_at_start_date) {
       query = query.whereRaw(`cast("created_at" as date) >= ?`, [

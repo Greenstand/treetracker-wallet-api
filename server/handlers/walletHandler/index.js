@@ -29,6 +29,7 @@ const walletGet = async (req, res) => {
     order,
     created_at_start_date,
     created_at_end_date,
+    scope,
   } = validatedQuery;
 
   const { wallet_id } = req;
@@ -44,6 +45,7 @@ const walletGet = async (req, res) => {
     order,
     created_at_start_date,
     created_at_end_date,
+    scope,
   );
 
   res.status(200).json({

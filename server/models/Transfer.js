@@ -71,15 +71,30 @@ class Transfer {
     order,
     prioritize_pending_receiver_action_for_wallet_id,
   }) {
+    const { wallets: visibleWallets } = await this._wallet.getAllWallets(
+      walletLoginId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+      undefined,
+      undefined,
+      'all',
+      false,
+    );
+    const visibleWalletIds = Array.from(
+      new Set([walletLoginId, ...visibleWallets.map((wallet) => wallet.id)]),
+    );
+
     const filter = {
       and: [],
     };
     filter.and.push({
-      or: [
-        { source_wallet_id: walletLoginId },
-        { destination_wallet_id: walletLoginId },
-        { originator_wallet_id: walletLoginId },
-      ],
+      or: visibleWalletIds.flatMap((visibleWalletId) => [
+        { source_wallet_id: visibleWalletId },
+        { destination_wallet_id: visibleWalletId },
+        { originator_wallet_id: visibleWalletId },
+      ]),
     });
     if (state) {
       filter.and.push({ state });

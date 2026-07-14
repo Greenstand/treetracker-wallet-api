@@ -151,6 +151,7 @@ describe('Wallet Model', () => {
       'asc',
       undefined,
       undefined,
+      undefined,
       false,
     );
 
@@ -163,6 +164,7 @@ describe('Wallet Model', () => {
       wallet,
       'created_at',
       'asc',
+      undefined,
       undefined,
       undefined,
       false,
