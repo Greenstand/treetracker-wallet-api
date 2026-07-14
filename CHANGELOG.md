@@ -1,3 +1,16 @@
+# [1.45.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0...v1.45.0) (2026-07-14)
+
+
+### Bug Fixes
+
+* **wallet-api:** improve transfer visibility for managed and trusted wallet flows ([e37f96c](https://github.com/Greenstand/treetracker-wallet-api/commit/e37f96c913ce6b6fee5d22b7ac8ef23366702246))
+* **wallet-api:** preserve self wallet in default wallet listings ([1a3aa36](https://github.com/Greenstand/treetracker-wallet-api/commit/1a3aa36ad95593220e82fdf9e5ff9771c7e40086))
+
+
+### Features
+
+* **wallet-api:** add wallet scope filtering for managed wallet queries ([893f9b3](https://github.com/Greenstand/treetracker-wallet-api/commit/893f9b37589f2f2a9454b8cef5e941aba6261aa6))
+
 # [1.44.0](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.43.1...v1.44.0) (2026-03-31)
 
 
