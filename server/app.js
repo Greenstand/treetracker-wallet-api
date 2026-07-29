@@ -33,20 +33,25 @@ app.use(
       }
       return next();
     }
-    if (
-      req.method === 'POST' ||
-      req.method === 'PATCH' ||
-      req.method === 'PUT'
-    ) {
-      if (req.headers['content-type'] !== 'application/json') {
-        throw new HttpError(
-          415,
-          'Invalid content type. API only supports application/json',
-        );
-      }
-    }
+    // if (
+    //   req.method === 'POST' ||
+    //   req.method === 'PATCH' ||
+    //   req.method === 'PUT'
+    // ) {
+    //   if (req.headers['content-type'] !== 'application/json') {
+    //     throw new HttpError(
+    //       415,
+    //       'Invalid content type. API only supports application/json',
+    //     );
+    //   }
+    // }
     next();
   }),
+);
+
+app.use(
+  '/stripe/verifyCheckout',
+  express.raw({ type: 'application/json' })
 );
 
 app.use(express.urlencoded({ extended: false })); // parse application/x-www-form-urlencoded
