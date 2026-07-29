@@ -325,7 +325,7 @@ class WalletService {
       for (const wallet of walletsCreated) {
         const receiverWallet = await this.getByName(wallet.wallet);
         const walletDetails = csvJson.find(
-          (w) => w.wallet_name === wallet.wallet,
+          (w) => w.wallet_name === wallet.name,
         );
 
         const {
@@ -396,7 +396,9 @@ class WalletService {
         if (status === 'fulfilled') {
           extraWalletInformationSaved += 1;
         } else {
-          extraWalletInformationNotSaved.push(reason);
+          extraWalletInformationNotSaved.push(
+            reason.toString().split('Error: ')[1],
+          );
         }
       }
 
@@ -516,10 +518,10 @@ class WalletService {
 
   async hasControlOverByName(parentId, childName) {
     //
-    const walletInstance = await this._walletService.getByName(childName);
-    const isSub = await this._walletService.hasControlOver(
+    const walletInstance = await this.getByName(childName);
+    const isSub = await this.hasControlOver(
       parentId,
-      childName.id,
+      walletInstance.id,
     );
     if (!isSub) {
       throw new HttpError(
