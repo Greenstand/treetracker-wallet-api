@@ -324,6 +324,15 @@ paths:
             type: string
             format: date
             example: 2023-09-20
+        - name: account_id
+          in: query
+          description: 'Filter wallets by account id'
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 496ffa8e-2fa2-488c-98e1-acf9b57c230b
       responses:
         '200':
           description: 'Returns list of managed wallets'
@@ -623,6 +632,10 @@ paths:
       operationId: post-transfers
       summary: 'Move, request, and send tokens between wallets'
       description: 'Move, request, and send tokens between wallets (by name or id) as allowed by trust relationships. Transfer can be created/requested either using an explicit list of token ids or by specifying a bundle of tokens using tags and a count of tokens to attempt to transfer. The originator of the request (currently logged in wallet) is used by the server code to compute who the originating wallet is for this request, whether the request is a credit, debit, or managed transfer, and if appropriate trust relationships exist to automatically execute or if it must be stored as a request until approval. A claim boolean is entered to specify if the tokens are transferable. Claimed tokens cannot participate in further transfers after they are received.'
+      security:
+        - normalUserAccessTokenAuth
+        - walletOperatorMicroserviceAccessTokenAuth
+          description: 'For the wallet operator microservice to do transfers, the transfer is executed immediately without the need for the wallet to accept the transfer.'
       parameters:
         - $ref: '#/components/parameters/treetrackerApiKeyParam'
         - $ref: '#/components/parameters/contentTypeJsonHeader'
@@ -2171,9 +2184,15 @@ components:
             code: 404
             message: 'Could not find wallet by id: ef6a37ce-c459-4a2c-83c3-85e829e4a753'
   securitySchemes:
-    httpBearer:
+    normalUserAccessTokenAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: 'This is for the normal user to authenticate with the wallet service, using the bearered JWT token which is issued by Keycloak, that is, the access token, to verify the authenticity of the request'
+    walletOperatorMicroserviceAccessTokenAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'This is for other microservices to authenticate with the wallet service, using the bearered JWT token which is issued by Keycloak, that is, the access token, to verify the authenticity of the request, the access token must have the `wallet_operator` role, see more at: https://github.com/Greenstand/treetracker-wallet-app/blob/89737430276a0ed0856734d1d51aa901a1f4c0e8/apps/user/README.md#how-to-access-wallet-api-draft'
 security:
-  - httpBearer: [ ]
+  - normalUserAccessTokenAuth: [ ]
