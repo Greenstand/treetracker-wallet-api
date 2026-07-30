@@ -22,6 +22,9 @@ const verifyOptions = {
   algorithms: ['RS256'],
 };
 
+const ACTION_TOKEN_TYPE = 'send-token';
+const ACTION_TOKEN_TTL = process.env.ACTION_TOKEN_TTL || '7d';
+
 class JWTService {
   static sign(payload) {
     return JWTTools.sign(payload, privateKEY, signingOptions);
@@ -56,6 +59,34 @@ class JWTService {
       throw new HttpError(401, 'ERROR: Authentication, token not verified');
     }
     return result;
+  }
+
+  static signActionToken(payload, options = {}) {
+    return JWTTools.sign({ ...payload, action: ACTION_TOKEN_TYPE }, privateKEY, {
+      ...signingOptions,
+      expiresIn: ACTION_TOKEN_TTL,
+      ...options,
+    });
+  }
+
+  static verifyActionToken(token) {
+    if (!token) {
+      throw new HttpError(401, 'ERROR: ActionToken, no token supplied');
+    }
+    let decoded;
+    try {
+      decoded = JWTTools.verify(token, publicKEY, verifyOptions);
+    } catch (err) {
+      log.debug(err);
+      if (err.name === 'TokenExpiredError') {
+        throw new HttpError(401, 'ERROR: ActionToken expired');
+      }
+      throw new HttpError(401, 'ERROR: ActionToken not verified');
+    }
+    if (decoded.action !== ACTION_TOKEN_TYPE) {
+      throw new HttpError(401, 'ERROR: ActionToken, invalid action type');
+    }
+    return decoded;
   }
 }
 

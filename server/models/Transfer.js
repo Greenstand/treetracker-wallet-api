@@ -125,8 +125,7 @@ class Transfer {
     };
 
     if (prioritize_pending_receiver_action_for_wallet_id !== undefined) {
-      limitOptions.prioritize_pending_receiver_action_for_wallet_id =
-        prioritize_pending_receiver_action_for_wallet_id;
+      limitOptions.prioritize_pending_receiver_action_for_wallet_id = prioritize_pending_receiver_action_for_wallet_id;
     }
 
     return this.getByFilter(filter, limitOptions);
@@ -254,6 +253,53 @@ class Transfer {
     }
     // TODO
     return expect.fail();
+  }
+
+  /*
+   *  Complete a transfer authorized by a redeemed action token
+   *  The signed token replaces trust/control checks 
+   *  Tokens are validated up front (all-or-nothing)
+   */ 
+  async transferActionToken(originatorWalletId, sender, receiver, tokens) {
+    tokens.forEach((token) => {
+      if (!Token.belongsTo(token, sender.id)) {
+        throw new HttpError(
+          409,
+          `The token ${token.id} is no longer owned by the sender wallet`,
+        );
+      }
+      if (!Token.beAbleToTransfer(token)) {
+        throw new HttpError(409, `The token ${token.id} cannot be transferred`);
+      }
+      if (token.claim) {
+        throw new HttpError(
+          409,
+          `The token ${token.id} is claimed, cannot be transferred`,
+        );
+      }
+    });
+
+    const transfer = await this.create({
+      originator_wallet_id: originatorWalletId,
+      source_wallet_id: sender.id,
+      destination_wallet_id: receiver.id,
+      state: TransferEnums.STATE.completed,
+      parameters: {
+        tokens: tokens.map((token) => token.id),
+      },
+      claim: false,
+    });
+
+    await this._token.completeTransfer(
+      tokens,
+      {
+        ...transfer,
+        source_wallet_id: sender.id,
+        destination_wallet_id: receiver.id,
+      },
+      false,
+    );
+    return transfer;
   }
 
   async transferBundle(

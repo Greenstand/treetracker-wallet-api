@@ -1006,4 +1006,76 @@ describe('TransferService', () => {
       ).eql(true);
     });
   });
+
+  describe('redeemActionToken', () => {
+    const senderWallet = { id: 'sender-id', name: 'walletA' };
+    const receiverWallet = { id: 'receiver-id', name: 'walletB' };
+    let getByIdWalletStub;
+    let getByIdTokenStub;
+    let logEventStub;
+
+    beforeEach(() => {
+      getByIdWalletStub = sinon.stub(WalletService.prototype, 'getById');
+      getByIdWalletStub.withArgs('sender-id').resolves(senderWallet);
+      getByIdWalletStub.withArgs('receiver-id').resolves(receiverWallet);
+      getByIdTokenStub = sinon.stub(TokenService.prototype, 'getById');
+      logEventStub = sinon.stub(EventService.prototype, 'logEvent').resolves();
+    });
+
+    it('completes the transfer and logs events for both wallets', async () => {
+      getByIdTokenStub.resolves({
+        id: 't1',
+        wallet_id: 'sender-id',
+        transfer_pending: false,
+        claim: false,
+      });
+      const completed = {
+        id: 'transfer-1',
+        state: TransferEnums.STATE.completed,
+      };
+      const transferStub = sinon
+        .stub(Transfer.prototype, 'transferActionToken')
+        .resolves(completed);
+
+      const result = await transferService.redeemActionToken({
+        senderWalletId: 'sender-id',
+        receiverWalletId: 'receiver-id',
+        tokenIds: ['t1'],
+      });
+
+      expect(result).eql(completed);
+      expect(transferStub.calledOnce).eql(true);
+      expect(transferStub.firstCall.args[0]).eql('receiver-id');
+      expect(transferStub.firstCall.args[1]).eql(senderWallet);
+      expect(transferStub.firstCall.args[2]).eql(receiverWallet);
+      expect(logEventStub.calledTwice).eql(true);
+      expect(commitTransactionStub.calledOnce).eql(true);
+      expect(rollbackTransactionStub.called).eql(false);
+    });
+
+    it('rejects with 409 and rolls back when a token no longer belongs to the sender', async () => {
+      getByIdTokenStub.resolves({
+        id: 't1',
+        wallet_id: 'someone-else',
+        transfer_pending: false,
+        claim: false,
+      });
+
+      let error;
+      try {
+        await transferService.redeemActionToken({
+          senderWalletId: 'sender-id',
+          receiverWalletId: 'receiver-id',
+          tokenIds: ['t1'],
+        });
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).to.have.property('code', 409);
+      expect(logEventStub.called).eql(false);
+      expect(commitTransactionStub.called).eql(false);
+      expect(rollbackTransactionStub.calledOnce).eql(true);
+    });
+  });
 });
