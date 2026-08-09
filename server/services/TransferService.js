@@ -439,6 +439,55 @@ class TransferService {
     }
   }
 
+
+   // Transfer the tokens promised by a redeemed action token 
+  async redeemActionToken({ senderWalletId, receiverWalletId, tokenIds }) {
+    try {
+      await this._session.beginTransaction();
+
+      const senderWallet = await this._walletService.getById(senderWalletId);
+      const receiverWallet =
+        await this._walletService.getById(receiverWalletId);
+
+      const tokenService = new TokenService();
+      const tokens = await Promise.all(
+        tokenIds.map((id) => tokenService.getById({ id }, true)),
+      );
+
+      const result = await this._transfer.transferActionToken(
+        receiverWallet.id,
+        senderWallet,
+        receiverWallet,
+        tokens,
+      );
+
+      const payload = {
+        walletSender: senderWallet.name,
+        walletReceiver: receiverWallet.name,
+        tokenTransferred: tokenIds,
+      };
+
+      await this._eventService.logEvent({
+        wallet_id: senderWallet.id,
+        type: EventEnums.TRANSFER.transfer_completed,
+        payload,
+      });
+      await this._eventService.logEvent({
+        wallet_id: receiverWallet.id,
+        type: EventEnums.TRANSFER.transfer_completed,
+        payload,
+      });
+
+      await this._session.commitTransaction();
+      return result;
+    } catch (e) {
+      if (this._session.isTransactionInProgress()) {
+        await this._session.rollbackTransaction();
+      }
+      throw e;
+    }
+  }
+
   async getTransferById(transferId, walletLoginId) {
     const transfer = await this._transfer.getById({
       transferId,
