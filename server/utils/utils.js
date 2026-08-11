@@ -55,10 +55,13 @@ exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
   const result = await JWTService.verify(req.headers.authorization);
   const walletService = new WalletService();
 
+  // Always expose the Keycloak user id so handlers can authorize by the
+  // wallet<->keycloak binding (wallet.keycloak_account_id), not just by wallet id.
+  req.keycloak_id = result.id;
+
   const wallet = await walletService.getWalletIdByKeycloakId(result.id);
   if (!wallet || !wallet.id) {
     if (req.originalUrl === '/wallets' && req.method === 'POST') {
-      req.keycloak_id = result.id;
       next();
     } else {
       log.error('user info not found');

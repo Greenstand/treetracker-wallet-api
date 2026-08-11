@@ -230,6 +230,10 @@ class WalletService {
     return this._wallet.hasControlOver(parentId, childId);
   }
 
+  async hasKeycloakControlOver(keycloakId, walletId) {
+    return this._wallet.hasKeycloakControlOver(keycloakId, walletId);
+  }
+
   async batchCreateWallet(
     sender_wallet,
     token_transfer_amount_default,
