@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.16](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.15...v1.44.0-keycloak.16) (2026-08-30)
+
+
+### Bug Fixes
+
+* **wallet:** include display_name in GET /wallets so profile updates are visible ([5f093cd](https://github.com/Greenstand/treetracker-wallet-api/commit/5f093cda2041b8f9f63af31ca5d6e415137b3513))
+
 # [1.44.0-keycloak.15](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.14...v1.44.0-keycloak.15) (2026-08-09)
 
 
