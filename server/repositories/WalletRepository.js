@@ -79,7 +79,15 @@ class WalletRepository extends BaseRepository {
   ) {
     let query = this._session
       .getDB()
-      .select('id', 'name', 'about', 'display_name', 'logo_url', 'created_at')
+      .select(
+        'id',
+        'name',
+        'about',
+        'display_name',
+        'logo_url',
+        'cover_url',
+        'created_at',
+      )
       .table('wallet')
       .where('id', id);
 
@@ -91,6 +99,7 @@ class WalletRepository extends BaseRepository {
         'wallet.about',
         'wallet.display_name',
         'wallet.logo_url',
+        'wallet.cover_url',
         'wallet.created_at',
       )
       .table('wallet_trust')
@@ -111,6 +120,7 @@ class WalletRepository extends BaseRepository {
         'wallet.about',
         'wallet.display_name',
         'wallet.logo_url',
+        'wallet.cover_url',
         'wallet.created_at',
       )
       .table('wallet_trust')

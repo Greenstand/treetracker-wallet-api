@@ -1817,10 +1817,17 @@ components:
         about:
           type: string
           example: 'feugiat pretium nibh ipsum consequat nisl vel pretium lectus quam id leo in vitae turpis massa sed elementum tempus egestas'
+        display_name:
+          type: string
+          example: Test Wallet
         logo_url:
           type: string
           format: url
           example: https://www.placehold.co/192x192
+        cover_url:
+          type: string
+          format: url
+          example: https://www.placehold.co/1200x300
         created_at:
           type: string
           format: date-time
