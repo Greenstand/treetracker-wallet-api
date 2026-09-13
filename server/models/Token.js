@@ -26,6 +26,9 @@ class Token {
     const result = await this._tokenRepository.countByFilter({
       wallet_id,
       claim: false,
+      // Exclude tokens already reserved by a pending transfer so the send
+      // guard cannot promise the same tokens twice.
+      transfer_pending: false,
     });
     return result;
   }
