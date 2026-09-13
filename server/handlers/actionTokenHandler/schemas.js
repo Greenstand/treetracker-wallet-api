@@ -26,4 +26,19 @@ const actionTokenRedeemSchema = Joi.object({
   action_token: Joi.string().required(),
 });
 
-module.exports = { actionTokenGenerateSchema, actionTokenRedeemSchema };
+const actionTokenListQuerySchema = Joi.object({
+  state: Joi.string().valid('active', 'redeemed', 'cancelled'),
+  limit: Joi.number().integer().min(1).max(2000).default(1000),
+  offset: Joi.number().integer().min(0).default(0),
+});
+
+const actionTokenIdParamSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+});
+
+module.exports = {
+  actionTokenGenerateSchema,
+  actionTokenRedeemSchema,
+  actionTokenListQuerySchema,
+  actionTokenIdParamSchema,
+};
