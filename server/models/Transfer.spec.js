@@ -554,6 +554,7 @@ describe('Transfer Model', () => {
     let transferCreateStub;
     let completeTransferStub;
     let getTokensByBundleStub;
+    let pendingTransferStub;
     let countNotClaimedTokenByWalletStub;
 
     beforeEach(() => {
@@ -563,6 +564,7 @@ describe('Transfer Model', () => {
       transferCreateStub = sinon.stub(Transfer.prototype, 'create');
       completeTransferStub = sinon.stub(Token.prototype, 'completeTransfer');
       getTokensByBundleStub = sinon.stub(Token.prototype, 'getTokensByBundle');
+      pendingTransferStub = sinon.stub(Token.prototype, 'pendingTransfer');
       countNotClaimedTokenByWalletStub = sinon.stub(
         Token.prototype,
         'countNotClaimedTokenByWallet',
@@ -729,7 +731,12 @@ describe('Transfer Model', () => {
         },
         claim: true,
       });
-      expect(getTokensByBundleStub).not.called;
+      expect(getTokensByBundleStub).calledOnceWithExactly(
+        senderId,
+        bundleSize,
+        true,
+      );
+      expect(pendingTransferStub).calledOnceWithExactly(tokens, transferResult);
       expect(completeTransferStub).not.called;
     });
 
@@ -789,7 +796,12 @@ describe('Transfer Model', () => {
         },
         claim: true,
       });
-      expect(getTokensByBundleStub).not.called;
+      expect(getTokensByBundleStub).calledOnceWithExactly(
+        senderId,
+        bundleSize,
+        true,
+      );
+      expect(pendingTransferStub).calledOnceWithExactly(tokens, transferResult);
       expect(completeTransferStub).not.called;
     });
   });
@@ -896,7 +908,7 @@ describe('Transfer Model', () => {
       transferRepositoryStub.getById.resolves(transferObject);
       hasControlOverStub.resolves(true);
       updateStub.resolves({ id: transferId });
-      getTokensByBundleStub.resolves(tokens);
+      getTokensByPendingTransferIdStub.resolves(tokens);
 
       let error;
       try {
@@ -916,9 +928,11 @@ describe('Transfer Model', () => {
         ...transferObject,
         state: TransferEnums.STATE.completed,
       });
-      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(getTokensByBundleStub).not.called;
       expect(completeTransferStub).not.called;
-      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
     });
 
     it('should accept transfer - bundle size', async () => {
@@ -944,7 +958,7 @@ describe('Transfer Model', () => {
       transferRepositoryStub.getById.resolves(transferObject);
       hasControlOverStub.resolves(true);
       updateStub.resolves({ id: transferId });
-      getTokensByBundleStub.resolves(tokens);
+      getTokensByPendingTransferIdStub.resolves(tokens);
 
       const result = await transferModel.acceptTransfer(
         transferId,
@@ -961,12 +975,14 @@ describe('Transfer Model', () => {
         ...transferObject,
         state: TransferEnums.STATE.completed,
       });
-      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(getTokensByBundleStub).not.called;
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferObject,
       );
-      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
     });
 
     it('should accept transfer - tokens', async () => {
@@ -1404,7 +1420,7 @@ describe('Transfer Model', () => {
       transferRepositoryStub.getById.resolves(transferResult);
       hasControlStub.resolves(true);
       updateStub.resolves({ id: transferId, state: 'fulfilled' });
-      getTokensByBundleStub.resolves(tokens);
+      getTokenByPendingTransferIdStub.resolves(tokens);
 
       const result = await transferModel.fulfillTransfer(
         transferId,
@@ -1415,12 +1431,12 @@ describe('Transfer Model', () => {
       expect(transferRepositoryStub.getById).calledOnceWithExactly(transferId);
       expect(hasControlStub).calledOnceWithExactly(walletLoginId, senderId);
       expect(updateStub).calledOnceWithExactly(transferResult);
-      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 4);
+      expect(getTokensByBundleStub).not.called;
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferResult,
       );
-      expect(getTokenByPendingTransferIdStub).not.called;
+      expect(getTokenByPendingTransferIdStub).calledOnceWithExactly(transferId);
     });
 
     it('should fulfill transfer -- tokens', async () => {
