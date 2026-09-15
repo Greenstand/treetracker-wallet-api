@@ -31,6 +31,27 @@ class ActionTokenRepository extends BaseRepository {
     const result = await query;
     return { result, count: +count[0].count };
   }
+
+  // Token ids already promised by this sender's outstanding (active,
+  // unexpired) links — excluded from selection when issuing a new one (#847).
+  async getActiveReservedTokenIds(senderWalletId) {
+    const rows = await this._session
+      .getDB()
+      .select('token_ids')
+      .table(this._tableName)
+      .where('sender_wallet_id', senderWalletId)
+      .andWhere('state', 'active')
+      .andWhere('expires_at', '>', new Date());
+
+    const ids = new Set();
+    rows.forEach((row) => {
+      const tokenIds = Array.isArray(row.token_ids)
+        ? row.token_ids
+        : JSON.parse(row.token_ids || '[]');
+      tokenIds.forEach((id) => ids.add(id));
+    });
+    return ids;
+  }
 }
 
 module.exports = ActionTokenRepository;
