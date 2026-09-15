@@ -121,9 +121,13 @@ describe('Transfer Model', () => {
   it('getTransfers', async () => {
     const transferId = uuid();
     const walletLoginId = uuid();
+    const subWalletId = uuid();
     const state = uuid();
     const walletId = uuid();
 
+    const getAllWalletsStub = sinon
+      .stub(Wallet.prototype, 'getAllWallets')
+      .resolves({ wallets: [{ id: walletLoginId }, { id: subWalletId }] });
     const getByFilterStub = sinon
       .stub(Transfer.prototype, 'getByFilter')
       .resolves({transfers:[{id: transferId}]});
@@ -140,6 +144,13 @@ describe('Transfer Model', () => {
     });
 
     expect(result).eql({transfers:[{id: transferId}]});
+    expect(getAllWalletsStub).calledOnceWithExactly(
+      walletLoginId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
     expect(getByFilterStub).calledOnceWithExactly(
       {
         and: [
@@ -148,6 +159,9 @@ describe('Transfer Model', () => {
               { source_wallet_id: walletLoginId },
               { destination_wallet_id: walletLoginId },
               { originator_wallet_id: walletLoginId },
+              { source_wallet_id: subWalletId },
+              { destination_wallet_id: subWalletId },
+              { originator_wallet_id: subWalletId },
             ],
           },
           { state },

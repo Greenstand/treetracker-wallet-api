@@ -73,13 +73,22 @@ class Transfer {
     const filter = {
       and: [],
     };
-    filter.and.push({
-      or: [
-        { source_wallet_id: walletLoginId },
-        { destination_wallet_id: walletLoginId },
-        { originator_wallet_id: walletLoginId },
-      ],
+    // Include the wallets the logged-in wallet manages (self + sub-wallets) so
+    // transfers to/from secondary wallets are visible and can be accepted.
+    const { wallets } = await this._wallet.getAllWallets(
+      walletLoginId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
+    const orConditions = [];
+    wallets.forEach((w) => {
+      orConditions.push({ source_wallet_id: w.id });
+      orConditions.push({ destination_wallet_id: w.id });
+      orConditions.push({ originator_wallet_id: w.id });
     });
+    filter.and.push({ or: orConditions });
     if (state) {
       filter.and.push({ state });
     }
