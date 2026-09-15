@@ -24,6 +24,9 @@ const actionTokenGenerateSchema = Joi.alternatives().conditional(
 
 const actionTokenRedeemSchema = Joi.object({
   action_token: Joi.string().required(),
+  // Which of the caller's wallets should receive the tokens (id or name).
+  // Defaults to the caller's login wallet when omitted (#855).
+  wallet: Joi.string(),
 });
 
 module.exports = { actionTokenGenerateSchema, actionTokenRedeemSchema };
