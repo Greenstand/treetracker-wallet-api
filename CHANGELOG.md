@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.17](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.16...v1.44.0-keycloak.17) (2026-09-17)
+
+
+### Bug Fixes
+
+* include wallet display and cover fields in list ([7d9cc05](https://github.com/Greenstand/treetracker-wallet-api/commit/7d9cc05b5083be0d58ef136dea884223c9ea4e8e))
+
 # [1.44.0-keycloak.16](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.15...v1.44.0-keycloak.16) (2026-08-30)
 
 
