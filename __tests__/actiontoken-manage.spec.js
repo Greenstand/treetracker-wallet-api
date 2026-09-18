@@ -17,6 +17,7 @@ describe('List and revoke action tokens', () => {
   let cancelledId;
   let redeemableToken;
   let redeemableId;
+  let subWalletLinkId;
 
   before(async () => {
     await seed.clear();
@@ -125,5 +126,55 @@ describe('List and revoke action tokens', () => {
       .send({ action_token: redeemableToken });
 
     expect(res).to.have.property('statusCode', 409);
+  });
+  it(`${seed.walletB.name} issues a link from ${seed.walletC.name}, a wallet it manages`, async () => {
+    const res = await request(server)
+      .post('/action-tokens')
+      .set('Authorization', `Bearer ${bearerTokenB}`)
+      .send({
+        recipient_email: 'samwel@example.com',
+        sender_wallet: seed.walletC.name,
+        tokens: [seed.tokenB.id],
+      });
+
+    expect(res).to.have.property('statusCode', 201);
+    subWalletLinkId = res.body.id;
+  });
+
+  it(`${seed.walletB.name} sees the ${seed.walletC.name} link in its own list`, async () => {
+    const res = await request(server)
+      .get('/action-tokens')
+      .set('Authorization', `Bearer ${bearerTokenB}`);
+
+    expect(res).to.have.property('statusCode', 200);
+    const link = res.body.action_tokens.find((a) => a.id === subWalletLinkId);
+    expect(link).to.include({
+      state: 'active',
+      sender_wallet_id: seed.walletC.id,
+    });
+  });
+
+  it(`${seed.wallet.name} neither sees nor cancels the ${seed.walletC.name} link`, async () => {
+    const list = await request(server)
+      .get('/action-tokens')
+      .set('Authorization', `Bearer ${bearerToken}`);
+    expect(list).to.have.property('statusCode', 200);
+    expect(
+      list.body.action_tokens.find((a) => a.id === subWalletLinkId),
+    ).to.equal(undefined);
+
+    const cancel = await request(server)
+      .delete(`/action-tokens/${subWalletLinkId}`)
+      .set('Authorization', `Bearer ${bearerToken}`);
+    expect(cancel).to.have.property('statusCode', 404);
+  });
+
+  it(`${seed.walletB.name} cancels the ${seed.walletC.name} link`, async () => {
+    const res = await request(server)
+      .delete(`/action-tokens/${subWalletLinkId}`)
+      .set('Authorization', `Bearer ${bearerTokenB}`);
+
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body).to.include({ id: subWalletLinkId, state: 'cancelled' });
   });
 });

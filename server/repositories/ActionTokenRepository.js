@@ -5,23 +5,25 @@ const BaseRepository = require('./BaseRepository');
 class ActionTokenRepository extends BaseRepository {
   constructor(session) {
     super('action_token', session);
-    this._tableName = 'action_token';
-    this._session = session;
   }
 
-  // List a sender's issued links, newest first, with total count.
-  async getBySender(senderWalletId, { state, limit, offset } = {}) {
+  // List the links issued from any of the given sender wallets, newest first,
+  // with the total count before limit/offset.
+  async getBySenders(senderWalletIds, { state, limit, offset } = {}) {
     let query = this._session
       .getDB()
       .select()
       .table(this._tableName)
-      .where('sender_wallet_id', senderWalletId);
+      .whereIn('sender_wallet_id', senderWalletIds);
     if (state) {
       query = query.where('state', state);
     }
     query = query.orderBy('created_at', 'desc');
 
-    const count = await this._session.getDB().from(query.clone().as('p')).count('*');
+    const count = await this._session
+      .getDB()
+      .from(query.clone().as('p'))
+      .count('*');
 
     if (offset) query = query.offset(offset);
     if (limit) query = query.limit(limit);

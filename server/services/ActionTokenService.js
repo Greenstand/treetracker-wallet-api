@@ -88,6 +88,7 @@ class ActionTokenService {
   static toSummary(record) {
     return {
       id: record.id,
+      sender_wallet_id: record.sender_wallet_id,
       recipient_email: record.recipient_email,
       token_count: record.token_count,
       state: ActionTokenService.deriveState(record),
@@ -97,6 +98,23 @@ class ActionTokenService {
         ? new Date(record.redeemed_at).toISOString()
         : null,
     };
+  }
+
+  // Every wallet the login wallet may act for: itself plus the wallets it
+  // manages. Same rule TokenService.getById applies to token access.
+  async _controlledWalletIds(walletLoginId) {
+    const { wallets } = await this._walletService.getAllWallets(
+      walletLoginId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+      undefined,
+      undefined,
+      false,
+      false,
+    );
+    return wallets.map((wallet) => wallet.id);
   }
 
   async generate(
@@ -172,10 +190,12 @@ class ActionTokenService {
     };
   }
 
-  // Sender lists their outstanding/past links.
+  // Lists the links issued from the login wallet or any wallet it controls,
+  // since generate() lets a sender share from a sub-wallet (#869).
   async list(walletLoginId, { state, limit, offset } = {}) {
-    const { result, count } = await this._actionTokenRepository.getBySender(
-      walletLoginId,
+    const senderWalletIds = await this._controlledWalletIds(walletLoginId);
+    const { result, count } = await this._actionTokenRepository.getBySenders(
+      senderWalletIds,
       { state, limit, offset },
     );
     return {
@@ -192,7 +212,11 @@ class ActionTokenService {
     } catch (e) {
       throw new HttpError(404, 'Action token not found');
     }
-    if (record.sender_wallet_id !== walletLoginId) {
+    const isOwner = await this._walletService.hasControlOver(
+      walletLoginId,
+      record.sender_wallet_id,
+    );
+    if (!isOwner) {
       throw new HttpError(404, 'Action token not found');
     }
     if (record.state !== STATE.active) {
