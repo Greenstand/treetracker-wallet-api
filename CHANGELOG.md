@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.18](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.17...v1.44.0-keycloak.18) (2026-09-18)
+
+
+### Bug Fixes
+
+* **wallet-api:** let a redeemer choose which of their wallets receives the tokens ([7716c3f](https://github.com/Greenstand/treetracker-wallet-api/commit/7716c3f7801b0faa38dc6ad35116a58b30bdc15c)), closes [#855](https://github.com/Greenstand/treetracker-wallet-api/issues/855) [#855](https://github.com/Greenstand/treetracker-wallet-api/issues/855)
+
 # [1.44.0-keycloak.17](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.16...v1.44.0-keycloak.17) (2026-09-17)
 
 
