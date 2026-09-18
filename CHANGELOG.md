@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.20](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.19...v1.44.0-keycloak.20) (2026-09-18)
+
+
+### Bug Fixes
+
+* **wallet:** reserve bundle tokens on send so a sender cannot over-promise ([b865cc4](https://github.com/Greenstand/treetracker-wallet-api/commit/b865cc4c57862c1814000ee05674ce6c476d8019)), closes [Greenstand/treetracker-wallet-app#845](https://github.com/Greenstand/treetracker-wallet-app/issues/845)
+
 # [1.44.0-keycloak.19](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.18...v1.44.0-keycloak.19) (2026-09-18)
 
 
