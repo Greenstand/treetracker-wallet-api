@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const HttpError = require('../utils/HttpError');
 const TokenService = require('./TokenService');
 const TransferService = require('./TransferService');
+const WalletService = require('./WalletService');
 
 const ACTION_TOKEN_TYPE = 'send-token';
 const ACTION_TOKEN_TTL = process.env.ACTION_TOKEN_TTL || '7d';
@@ -16,6 +17,7 @@ class ActionTokenService {
   constructor() {
     this._tokenService = new TokenService();
     this._transferService = new TransferService();
+    this._walletService = new WalletService();
   }
 
   /** 
@@ -94,11 +96,30 @@ class ActionTokenService {
     };
   }
 
-  async redeem({ action_token }, walletLoginId) {
+  async redeem({ action_token, wallet }, walletLoginId) {
     const payload = ActionTokenService.verifyActionToken(action_token);
+
+    // Default to the caller's login wallet, but let them redeem into any
+    // wallet they control (e.g. one they just created) instead (#855).
+    let receiverWalletId = walletLoginId;
+    if (wallet) {
+      const walletInstance = await this._walletService.getByIdOrName(wallet);
+      const isSub = await this._walletService.hasControlOver(
+        walletLoginId,
+        walletInstance.id,
+      );
+      if (!isSub) {
+        throw new HttpError(
+          403,
+          'Wallet does not belong to the logged in wallet',
+        );
+      }
+      receiverWalletId = walletInstance.id;
+    }
+
     return this._transferService.redeemActionToken({
       senderWalletId: payload.sender_wallet_id,
-      receiverWalletId: walletLoginId,
+      receiverWalletId,
       tokenIds: payload.token_ids,
     });
   }
