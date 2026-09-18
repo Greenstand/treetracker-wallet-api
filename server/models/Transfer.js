@@ -357,7 +357,14 @@ class Transfer {
         // TODO: boolean for claim
         claim: claimBoolean,
       });
-      // set token transfer_pending to true ??
+      // Reserve the bundle so the same tokens cannot be promised to a later
+      // transfer before this one is accepted.
+      const tokens = await this._token.getTokensByBundle(
+        sender.id,
+        bundleSize,
+        claimBoolean,
+      );
+      await this._token.pendingTransfer(tokens, transfer);
       return this.constructor.removeWalletIds(transfer);
     }
     if (hasControlOverReceiver) {
@@ -408,11 +415,9 @@ class Transfer {
     // deal with tokens
     if (bundleSize) {
       log.debug('transfer bundle of tokens');
-      const { source_wallet_id } = transfer;
-      const tokens = await this._token.getTokensByBundle(
-        source_wallet_id,
-        bundleSize,
-      );
+      // Consume the tokens reserved when this transfer was made pending, rather
+      // than re-selecting at accept time (which raced with other transfers).
+      const tokens = await this._token.getTokensByPendingTransferId(transfer.id);
       if (tokens.length < bundleSize) {
         throw new HttpError(409, 'Do not have enough tokens');
       }
