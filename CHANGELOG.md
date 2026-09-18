@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.19](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.18...v1.44.0-keycloak.19) (2026-09-18)
+
+
+### Bug Fixes
+
+* **action-token:** honour the sender wallet instead of the login wallet ([#567](https://github.com/Greenstand/treetracker-wallet-api/issues/567)) ([3740fde](https://github.com/Greenstand/treetracker-wallet-api/commit/3740fde6788bde4ccdc962cbea31008c1b0589ae)), closes [Greenstand/treetracker-wallet-app#869](https://github.com/Greenstand/treetracker-wallet-app/issues/869)
+
 # [1.44.0-keycloak.18](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.17...v1.44.0-keycloak.18) (2026-09-18)
 
 
