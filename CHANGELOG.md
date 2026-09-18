@@ -1,3 +1,38 @@
+# [1.44.0-keycloak.20](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.19...v1.44.0-keycloak.20) (2026-09-18)
+
+
+### Bug Fixes
+
+* **wallet:** reserve bundle tokens on send so a sender cannot over-promise ([b865cc4](https://github.com/Greenstand/treetracker-wallet-api/commit/b865cc4c57862c1814000ee05674ce6c476d8019)), closes [Greenstand/treetracker-wallet-app#845](https://github.com/Greenstand/treetracker-wallet-app/issues/845)
+
+# [1.44.0-keycloak.19](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.18...v1.44.0-keycloak.19) (2026-09-18)
+
+
+### Bug Fixes
+
+* **action-token:** honour the sender wallet instead of the login wallet ([#567](https://github.com/Greenstand/treetracker-wallet-api/issues/567)) ([3740fde](https://github.com/Greenstand/treetracker-wallet-api/commit/3740fde6788bde4ccdc962cbea31008c1b0589ae)), closes [Greenstand/treetracker-wallet-app#869](https://github.com/Greenstand/treetracker-wallet-app/issues/869)
+
+# [1.44.0-keycloak.18](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.17...v1.44.0-keycloak.18) (2026-09-18)
+
+
+### Bug Fixes
+
+* **wallet-api:** let a redeemer choose which of their wallets receives the tokens ([7716c3f](https://github.com/Greenstand/treetracker-wallet-api/commit/7716c3f7801b0faa38dc6ad35116a58b30bdc15c)), closes [#855](https://github.com/Greenstand/treetracker-wallet-api/issues/855) [#855](https://github.com/Greenstand/treetracker-wallet-api/issues/855)
+
+# [1.44.0-keycloak.17](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.16...v1.44.0-keycloak.17) (2026-09-17)
+
+
+### Bug Fixes
+
+* include wallet display and cover fields in list ([7d9cc05](https://github.com/Greenstand/treetracker-wallet-api/commit/7d9cc05b5083be0d58ef136dea884223c9ea4e8e))
+
+# [1.44.0-keycloak.16](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.15...v1.44.0-keycloak.16) (2026-08-30)
+
+
+### Bug Fixes
+
+* **wallet:** include display_name in GET /wallets so profile updates are visible ([5f093cd](https://github.com/Greenstand/treetracker-wallet-api/commit/5f093cda2041b8f9f63af31ca5d6e415137b3513))
+
 # [1.44.0-keycloak.15](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.14...v1.44.0-keycloak.15) (2026-08-09)
 
 

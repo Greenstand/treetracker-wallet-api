@@ -3,12 +3,13 @@
  * authorizing a future transfer. The token itself stays stateless; a persisted
  * action_token row mirrors each issued link so the sender can list and revoke
  * outstanding links and redemption can reject cancelled/spent links (#846).
-*/
+ */
 const jwt = require('jsonwebtoken');
 const uuid = require('uuid');
 const HttpError = require('../utils/HttpError');
 const TokenService = require('./TokenService');
 const TransferService = require('./TransferService');
+const WalletService = require('./WalletService');
 const Session = require('../infra/database/Session');
 const ActionTokenRepository = require('../repositories/ActionTokenRepository');
 
@@ -29,12 +30,13 @@ class ActionTokenService {
     this._session = new Session();
     this._tokenService = new TokenService();
     this._transferService = new TransferService();
+    this._walletService = new WalletService();
     this._actionTokenRepository = new ActionTokenRepository(this._session);
   }
 
   /**
    * options can override signing options
-  */
+   */
   static signActionToken(payload, options = {}) {
     return jwt.sign(
       { ...payload, action: ACTION_TOKEN_TYPE },
@@ -97,8 +99,28 @@ class ActionTokenService {
     };
   }
 
-  async generate({ recipient_email, tokens, bundle }, walletLoginId) {
+  async generate(
+    { recipient_email, tokens, bundle, sender_wallet },
+    walletLoginId,
+  ) {
     let tokenIds;
+
+    // Absent sender_wallet keeps the previous behaviour: the login wallet.
+    let senderWalletId = walletLoginId;
+    if (sender_wallet) {
+      const wallet = await this._walletService.getByIdOrName(sender_wallet);
+      const isSub = await this._walletService.hasControlOver(
+        walletLoginId,
+        wallet.id,
+      );
+      if (!isSub) {
+        throw new HttpError(
+          403,
+          'Wallet does not belong to the logged in wallet',
+        );
+      }
+      senderWalletId = wallet.id;
+    }
 
     if (tokens) {
       const resolved = await Promise.all(
@@ -107,6 +129,7 @@ class ActionTokenService {
       tokenIds = resolved.map((token) => token.id);
     } else {
       const resolved = await this._tokenService.getTokens({
+        wallet: sender_wallet,
         limit: bundle.bundle_size,
         offset: 0,
         walletLoginId,
@@ -124,7 +147,7 @@ class ActionTokenService {
     const actionToken = ActionTokenService.signActionToken({
       jti: id,
       sub: recipient_email,
-      sender_wallet_id: walletLoginId,
+      sender_wallet_id: senderWalletId,
       token_ids: tokenIds,
     });
 
@@ -133,7 +156,7 @@ class ActionTokenService {
 
     await this._actionTokenRepository.create({
       id,
-      sender_wallet_id: walletLoginId,
+      sender_wallet_id: senderWalletId,
       recipient_email,
       token_ids: JSON.stringify(tokenIds),
       token_count: tokenIds.length,
@@ -185,7 +208,7 @@ class ActionTokenService {
     return ActionTokenService.toSummary(updated);
   }
 
-  async redeem({ action_token }, walletLoginId) {
+  async redeem({ action_token, wallet }, walletLoginId) {
     const payload = ActionTokenService.verifyActionToken(action_token);
 
     // Enforce the persisted lifecycle when the link was issued with a record.
@@ -209,9 +232,27 @@ class ActionTokenService {
       }
     }
 
+    // Default to the caller's login wallet, but let them redeem into any
+    // wallet they control (e.g. one they just created) instead (#855).
+    let receiverWalletId = walletLoginId;
+    if (wallet) {
+      const walletInstance = await this._walletService.getByIdOrName(wallet);
+      const isSub = await this._walletService.hasControlOver(
+        walletLoginId,
+        walletInstance.id,
+      );
+      if (!isSub) {
+        throw new HttpError(
+          403,
+          'Wallet does not belong to the logged in wallet',
+        );
+      }
+      receiverWalletId = walletInstance.id;
+    }
+
     const result = await this._transferService.redeemActionToken({
       senderWalletId: payload.sender_wallet_id,
-      receiverWalletId: walletLoginId,
+      receiverWalletId,
       tokenIds: payload.token_ids,
     });
 
@@ -219,7 +260,7 @@ class ActionTokenService {
       await this._actionTokenRepository.update({
         id: record.id,
         state: STATE.redeemed,
-        redeemed_by_wallet_id: walletLoginId,
+        redeemed_by_wallet_id: receiverWalletId,
         redeemed_at: new Date().toISOString(),
       });
     }
