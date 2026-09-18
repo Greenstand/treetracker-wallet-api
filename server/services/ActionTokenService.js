@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const HttpError = require('../utils/HttpError');
 const TokenService = require('./TokenService');
 const TransferService = require('./TransferService');
+const WalletService = require('./WalletService');
 
 const ACTION_TOKEN_TYPE = 'send-token';
 const ACTION_TOKEN_TTL = process.env.ACTION_TOKEN_TTL || '7d';
@@ -16,6 +17,7 @@ class ActionTokenService {
   constructor() {
     this._tokenService = new TokenService();
     this._transferService = new TransferService();
+    this._walletService = new WalletService();
   }
 
   /** 
@@ -57,8 +59,28 @@ class ActionTokenService {
     return decoded;
   }
 
-  async generate({ recipient_email, tokens, bundle }, walletLoginId) {
+  async generate(
+    { recipient_email, tokens, bundle, sender_wallet },
+    walletLoginId,
+  ) {
     let tokenIds;
+
+    // Absent sender_wallet keeps the previous behaviour: the login wallet.
+    let senderWalletId = walletLoginId;
+    if (sender_wallet) {
+      const wallet = await this._walletService.getByIdOrName(sender_wallet);
+      const isSub = await this._walletService.hasControlOver(
+        walletLoginId,
+        wallet.id,
+      );
+      if (!isSub) {
+        throw new HttpError(
+          403,
+          'Wallet does not belong to the logged in wallet',
+        );
+      }
+      senderWalletId = wallet.id;
+    }
 
     if (tokens) {
       const resolved = await Promise.all(
@@ -67,6 +89,7 @@ class ActionTokenService {
       tokenIds = resolved.map((token) => token.id);
     } else {
       const resolved = await this._tokenService.getTokens({
+        wallet: sender_wallet,
         limit: bundle.bundle_size,
         offset: 0,
         walletLoginId,
@@ -82,7 +105,7 @@ class ActionTokenService {
 
     const actionToken = ActionTokenService.signActionToken({
       sub: recipient_email,
-      sender_wallet_id: walletLoginId,
+      sender_wallet_id: senderWalletId,
       token_ids: tokenIds,
     });
 
