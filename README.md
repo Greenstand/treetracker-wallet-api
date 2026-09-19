@@ -124,7 +124,12 @@ DATABASE_SCHEMA=wallet
 PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nXXXXXXXXXXXXXXXX\n-----END PUBLIC KEY-----"
 PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\nXXXXXXXXXXXXXXXXXXXXX\n-----END RSA PRIVATE KEY-----"
 NODE_LOG_LEVEL=trace
+ACTION_TOKEN_SECRET=<long random string>
 ```
+
+`ACTION_TOKEN_SECRET` signs share links (`POST /action-tokens`). Any long random string works,
+for example the output of `openssl rand -base64 48`. The server refuses to start without it,
+except under `NODE_ENV=test`; rotating it invalidates every outstanding link.
 
 If you are using the postgres user:
 

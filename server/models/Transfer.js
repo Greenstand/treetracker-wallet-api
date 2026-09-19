@@ -73,13 +73,31 @@ class Transfer {
     const filter = {
       and: [],
     };
-    filter.and.push({
-      or: [
-        { source_wallet_id: walletLoginId },
-        { destination_wallet_id: walletLoginId },
-        { originator_wallet_id: walletLoginId },
-      ],
-    });
+    // Include the wallets the logged-in wallet manages (self + sub-wallets) so
+    // transfers to/from secondary wallets are visible and can be accepted.
+    const { wallets } = await this._wallet.getAllWallets(
+      walletLoginId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
+    // Seed with the login wallet itself rather than relying on getAllWallets to
+    // return it: an empty `or` array is dropped by knex, which would silently
+    // remove the ownership restriction and return every transfer in the table.
+    const orConditions = [
+      { source_wallet_id: walletLoginId },
+      { destination_wallet_id: walletLoginId },
+      { originator_wallet_id: walletLoginId },
+    ];
+    wallets
+      .filter((w) => w.id !== walletLoginId)
+      .forEach((w) => {
+        orConditions.push({ source_wallet_id: w.id });
+        orConditions.push({ destination_wallet_id: w.id });
+        orConditions.push({ originator_wallet_id: w.id });
+      });
+    filter.and.push({ or: orConditions });
     if (state) {
       filter.and.push({ state });
     }
@@ -357,7 +375,14 @@ class Transfer {
         // TODO: boolean for claim
         claim: claimBoolean,
       });
-      // set token transfer_pending to true ??
+      // Reserve the bundle so the same tokens cannot be promised to a later
+      // transfer before this one is accepted.
+      const tokens = await this._token.getTokensByBundle(
+        sender.id,
+        bundleSize,
+        claimBoolean,
+      );
+      await this._token.pendingTransfer(tokens, transfer);
       return this.constructor.removeWalletIds(transfer);
     }
     if (hasControlOverReceiver) {
@@ -408,11 +433,9 @@ class Transfer {
     // deal with tokens
     if (bundleSize) {
       log.debug('transfer bundle of tokens');
-      const { source_wallet_id } = transfer;
-      const tokens = await this._token.getTokensByBundle(
-        source_wallet_id,
-        bundleSize,
-      );
+      // Consume the tokens reserved when this transfer was made pending, rather
+      // than re-selecting at accept time (which raced with other transfers).
+      const tokens = await this._token.getTokensByPendingTransferId(transfer.id);
       if (tokens.length < bundleSize) {
         throw new HttpError(409, 'Do not have enough tokens');
       }

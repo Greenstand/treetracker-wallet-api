@@ -121,9 +121,13 @@ describe('Transfer Model', () => {
   it('getTransfers', async () => {
     const transferId = uuid();
     const walletLoginId = uuid();
+    const subWalletId = uuid();
     const state = uuid();
     const walletId = uuid();
 
+    const getAllWalletsStub = sinon
+      .stub(Wallet.prototype, 'getAllWallets')
+      .resolves({ wallets: [{ id: walletLoginId }, { id: subWalletId }] });
     const getByFilterStub = sinon
       .stub(Transfer.prototype, 'getByFilter')
       .resolves({transfers:[{id: transferId}]});
@@ -140,6 +144,13 @@ describe('Transfer Model', () => {
     });
 
     expect(result).eql({transfers:[{id: transferId}]});
+    expect(getAllWalletsStub).calledOnceWithExactly(
+      walletLoginId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
     expect(getByFilterStub).calledOnceWithExactly(
       {
         and: [
@@ -148,6 +159,9 @@ describe('Transfer Model', () => {
               { source_wallet_id: walletLoginId },
               { destination_wallet_id: walletLoginId },
               { originator_wallet_id: walletLoginId },
+              { source_wallet_id: subWalletId },
+              { destination_wallet_id: subWalletId },
+              { originator_wallet_id: subWalletId },
             ],
           },
           { state },
@@ -163,6 +177,47 @@ describe('Transfer Model', () => {
       },
       { limit: 10, offset: 0, sort_by: null, order: null },
     );
+  });
+
+  it('getTransfers still restricts to the login wallet if getAllWallets returns nothing', async () => {
+    const transferId = uuid();
+    const walletLoginId = uuid();
+
+    sinon.stub(Wallet.prototype, 'getAllWallets').resolves({ wallets: [] });
+    const getByFilterStub = sinon
+      .stub(Transfer.prototype, 'getByFilter')
+      .resolves({ transfers: [{ id: transferId }] });
+
+    await transferModel.getTransfers({ walletLoginId });
+
+    // An empty `or` array would be dropped by knex and every transfer in the
+    // table would be returned, so the login wallet must always be present.
+    const [filter] = getByFilterStub.getCall(0).args;
+    expect(filter.and[0].or).eql([
+      { source_wallet_id: walletLoginId },
+      { destination_wallet_id: walletLoginId },
+      { originator_wallet_id: walletLoginId },
+    ]);
+  });
+
+  it('getTransfers does not repeat the login wallet when getAllWallets includes it', async () => {
+    const walletLoginId = uuid();
+    const subWalletId = uuid();
+
+    sinon
+      .stub(Wallet.prototype, 'getAllWallets')
+      .resolves({ wallets: [{ id: walletLoginId }, { id: subWalletId }] });
+    const getByFilterStub = sinon
+      .stub(Transfer.prototype, 'getByFilter')
+      .resolves({ transfers: [] });
+
+    await transferModel.getTransfers({ walletLoginId });
+
+    const [filter] = getByFilterStub.getCall(0).args;
+    expect(filter.and[0].or).lengthOf(6);
+    expect(
+      filter.and[0].or.filter((c) => c.source_wallet_id === walletLoginId),
+    ).lengthOf(1);
   });
 
   describe('isDeduct', () => {
@@ -554,6 +609,7 @@ describe('Transfer Model', () => {
     let transferCreateStub;
     let completeTransferStub;
     let getTokensByBundleStub;
+    let pendingTransferStub;
     let countNotClaimedTokenByWalletStub;
 
     beforeEach(() => {
@@ -563,6 +619,7 @@ describe('Transfer Model', () => {
       transferCreateStub = sinon.stub(Transfer.prototype, 'create');
       completeTransferStub = sinon.stub(Token.prototype, 'completeTransfer');
       getTokensByBundleStub = sinon.stub(Token.prototype, 'getTokensByBundle');
+      pendingTransferStub = sinon.stub(Token.prototype, 'pendingTransfer');
       countNotClaimedTokenByWalletStub = sinon.stub(
         Token.prototype,
         'countNotClaimedTokenByWallet',
@@ -729,7 +786,12 @@ describe('Transfer Model', () => {
         },
         claim: true,
       });
-      expect(getTokensByBundleStub).not.called;
+      expect(getTokensByBundleStub).calledOnceWithExactly(
+        senderId,
+        bundleSize,
+        true,
+      );
+      expect(pendingTransferStub).calledOnceWithExactly(tokens, transferResult);
       expect(completeTransferStub).not.called;
     });
 
@@ -896,7 +958,7 @@ describe('Transfer Model', () => {
       transferRepositoryStub.getById.resolves(transferObject);
       hasControlOverStub.resolves(true);
       updateStub.resolves({ id: transferId });
-      getTokensByBundleStub.resolves(tokens);
+      getTokensByPendingTransferIdStub.resolves(tokens);
 
       let error;
       try {
@@ -916,9 +978,11 @@ describe('Transfer Model', () => {
         ...transferObject,
         state: TransferEnums.STATE.completed,
       });
-      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(getTokensByBundleStub).not.called;
       expect(completeTransferStub).not.called;
-      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
     });
 
     it('should accept transfer - bundle size', async () => {
@@ -945,7 +1009,7 @@ describe('Transfer Model', () => {
       transferRepositoryStub.getById.resolves(transferObject);
       hasControlOverStub.resolves(true);
       updateStub.resolves({ id: transferId });
-      getTokensByBundleStub.resolves(tokens);
+      getTokensByPendingTransferIdStub.resolves(tokens);
 
       const result = await transferModel.acceptTransfer(
         transferId,
@@ -962,13 +1026,15 @@ describe('Transfer Model', () => {
         ...transferObject,
         state: TransferEnums.STATE.completed,
       });
-      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(getTokensByBundleStub).not.called;
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferObject,
         true,
       );
-      expect(getTokensByPendingTransferIdStub).not.called;
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
     });
 
     it('should accept transfer - tokens', async () => {
