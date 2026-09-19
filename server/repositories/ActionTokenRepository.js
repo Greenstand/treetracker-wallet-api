@@ -32,14 +32,14 @@ class ActionTokenRepository extends BaseRepository {
     return { result, count: +count[0].count };
   }
 
-  // Token ids already promised by this sender's outstanding (active,
-  // unexpired) links — excluded from selection when issuing a new one (#847).
-  async getActiveReservedTokenIds(senderWalletId) {
+  // Token ids already promised by outstanding (active, unexpired) links of
+  // any of the given sender wallets: excluded when issuing a new one (#847).
+  async getActiveReservedTokenIds(senderWalletIds) {
     const rows = await this._session
       .getDB()
       .select('token_ids')
       .table(this._tableName)
-      .where('sender_wallet_id', senderWalletId)
+      .whereIn('sender_wallet_id', senderWalletIds)
       .andWhere('state', 'active')
       .andWhere('expires_at', '>', new Date());
 

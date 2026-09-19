@@ -141,8 +141,14 @@ class ActionTokenService {
       });
       if (tokens.length === 0) break;
 
+      // Pages are not ordered, so a token seen on one page can reappear on
+      // the next: never promise the same token twice in one link.
       tokens.forEach((token) => {
-        if (selected.length < count && !reservedTokenIds.has(token.id)) {
+        if (
+          selected.length < count &&
+          !reservedTokenIds.has(token.id) &&
+          !selected.includes(token.id)
+        ) {
           selected.push(token.id);
         }
       });
@@ -158,14 +164,6 @@ class ActionTokenService {
     { recipient_email, tokens, bundle, sender_wallet },
     walletLoginId,
   ) {
-    // Tokens already promised by this sender's other outstanding links must
-    // not be handed out again (#847), whether requested explicitly or drawn
-    // from a bundle.
-    const reservedTokenIds =
-      await this._actionTokenRepository.getActiveReservedTokenIds(
-        walletLoginId,
-      );
-
     let tokenIds;
 
     // Absent sender_wallet keeps the previous behaviour: the login wallet.
@@ -185,6 +183,16 @@ class ActionTokenService {
       senderWalletId = wallet.id;
     }
 
+    // Tokens already promised by an outstanding link must not be handed out
+    // again (#847), whether requested explicitly or drawn from a bundle. The
+    // same token may have been promised from the sub-wallet that owns it
+    // (bundle with sender_wallet) or from the login wallet (explicit ids), so
+    // the live links of every wallet the login controls count.
+    const reservedTokenIds =
+      await this._actionTokenRepository.getActiveReservedTokenIds(
+        await this._controlledWalletIds(walletLoginId),
+      );
+
     if (tokens) {
       const resolved = await Promise.all(
         tokens.map((id) => this._tokenService.getById({ id, walletLoginId })),
@@ -196,7 +204,9 @@ class ActionTokenService {
       if (alreadyReserved.length > 0) {
         throw new HttpError(
           409,
-          `Token(s) already committed to an outstanding share link: ${alreadyReserved.join(', ')}`,
+          `Token(s) already committed to an outstanding share link: ${alreadyReserved.join(
+            ', ',
+          )}`,
         );
       }
     } else {
