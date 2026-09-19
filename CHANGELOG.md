@@ -1,3 +1,11 @@
+# [1.44.0-keycloak.22](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.21...v1.44.0-keycloak.22) (2026-09-19)
+
+
+### Bug Fixes
+
+* **action-token:** reserve tokens across every wallet the login controls ([55cc83b](https://github.com/Greenstand/treetracker-wallet-api/commit/55cc83ba00eed5eade1e237b3b0bc2f6706c7572)), closes [#567](https://github.com/Greenstand/treetracker-wallet-api/issues/567)
+* **wallet-api:** don't hand out a token already promised by another link ([ae0de69](https://github.com/Greenstand/treetracker-wallet-api/commit/ae0de6982f7d3e3ea93d4321b7fb908aac232131)), closes [#847](https://github.com/Greenstand/treetracker-wallet-api/issues/847) [#565](https://github.com/Greenstand/treetracker-wallet-api/issues/565) [#567](https://github.com/Greenstand/treetracker-wallet-api/issues/567) [#561](https://github.com/Greenstand/treetracker-wallet-api/issues/561) [Greenstand/treetracker-wallet-app#847](https://github.com/Greenstand/treetracker-wallet-app/issues/847)
+
 # [1.44.0-keycloak.21](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.20...v1.44.0-keycloak.21) (2026-09-19)
 
 
