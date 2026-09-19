@@ -17,8 +17,24 @@ const ActionTokenRepository = require('../repositories/ActionTokenRepository');
 
 const ACTION_TOKEN_TYPE = 'send-token';
 const ACTION_TOKEN_TTL = process.env.ACTION_TOKEN_TTL || '7d';
-const ACTION_TOKEN_SECRET =
-  process.env.ACTION_TOKEN_SECRET || 'action-token-dev-secret';
+
+// A share link is a bearer credential for the tokens it names, so the secret
+// that signs it must come from the environment: a fallback readable on GitHub
+// would let anyone forge a link for any wallet (#573). Refuse to start
+// without it. Only the test suite may use a fixed value; it never leaves the
+// process.
+function resolveActionTokenSecret() {
+  if (process.env.ACTION_TOKEN_SECRET) {
+    return process.env.ACTION_TOKEN_SECRET;
+  }
+  if (process.env.NODE_ENV === 'test') {
+    return 'action-token-test-secret';
+  }
+  throw new Error(
+    'ACTION_TOKEN_SECRET is not set: refusing to start, share links would be signed with a public fallback secret (#573)',
+  );
+}
+const ACTION_TOKEN_SECRET = resolveActionTokenSecret();
 
 const STATE = {
   active: 'active',
