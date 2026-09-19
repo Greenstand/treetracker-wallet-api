@@ -985,6 +985,85 @@ describe('Transfer Model', () => {
       );
     });
 
+    it('should accept transfer - bundle size with no reservation', async () => {
+      // v1 and v2 share this database and create pending bundle transfers
+      // without reserving tokens, so their rows have nothing to consume.
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const receiverId = uuid();
+      const senderId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        destination_wallet_id: receiverId,
+        source_wallet_id: senderId,
+        state: 'pending',
+        claim: false,
+        parameters: {
+          bundle: {
+            bundleSize: 2,
+          },
+        },
+      };
+
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(true);
+      updateStub.resolves({ id: transferId });
+      getTokensByPendingTransferIdStub.resolves([]);
+      getTokensByBundleStub.resolves(tokens);
+
+      const result = await transferModel.acceptTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      expect(result).eql({ id: transferId });
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
+      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(completeTransferStub).calledOnceWithExactly(
+        tokens,
+        transferObject,
+        false,
+      );
+    });
+
+    it('should throw error -- no reservation and not enough free tokens', async () => {
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const receiverId = uuid();
+      const senderId = uuid();
+
+      transferRepositoryStub.getById.resolves({
+        id: transferId,
+        destination_wallet_id: receiverId,
+        source_wallet_id: senderId,
+        state: 'pending',
+        parameters: {
+          bundle: {
+            bundleSize: 2,
+          },
+        },
+      });
+      hasControlOverStub.resolves(true);
+      updateStub.resolves({ id: transferId });
+      getTokensByPendingTransferIdStub.resolves([]);
+      getTokensByBundleStub.resolves([{ id: uuid() }]);
+
+      let error;
+      try {
+        await transferModel.acceptTransfer(transferId, walletLoginId);
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(409);
+      expect(error.message).eql('Do not have enough tokens');
+      expect(completeTransferStub).not.called;
+    });
+
     it('should accept transfer - bundle size', async () => {
       const transferId = uuid();
       const walletLoginId = uuid();

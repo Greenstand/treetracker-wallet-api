@@ -435,7 +435,16 @@ class Transfer {
       log.debug('transfer bundle of tokens');
       // Consume the tokens reserved when this transfer was made pending, rather
       // than re-selecting at accept time (which raced with other transfers).
-      const tokens = await this._token.getTokensByPendingTransferId(transfer.id);
+      let tokens = await this._token.getTokensByPendingTransferId(transfer.id);
+      if (tokens.length === 0) {
+        // The v1 and v2 APIs share this database and create pending bundle
+        // transfers without reserving, so their rows have nothing to consume.
+        // Fall back to the selection they would have made themselves.
+        tokens = await this._token.getTokensByBundle(
+          transfer.source_wallet_id,
+          bundleSize,
+        );
+      }
       if (tokens.length < bundleSize) {
         throw new HttpError(409, 'Do not have enough tokens');
       }
