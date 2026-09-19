@@ -30,7 +30,7 @@ describe('Create and accept a bundle transfer', () => {
         },
         sender_wallet: seed.wallet.name,
         receiver_wallet: seed.walletB.name,
-        claim: false,
+        claim: true,
       });
     expect(res).property('statusCode').to.eq(202);
     expect(res)
@@ -78,5 +78,8 @@ describe('Create and accept a bundle transfer', () => {
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.wallet_id).eq(seed.walletB.id);
+    // The sender asked for ownership to transfer, so accepting must claim
+    // the token. Before the fix the flag was dropped and claim stayed false.
+    expect(res.body.claim).eq(true);
   });
 });

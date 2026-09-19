@@ -439,7 +439,11 @@ class Transfer {
       if (tokens.length < bundleSize) {
         throw new HttpError(409, 'Do not have enough tokens');
       }
-      await this._token.completeTransfer(tokens, transfer);
+      await this._token.completeTransfer(
+        tokens,
+        transfer,
+        Boolean(transfer.claim),
+      );
     } else {
       log.debug('transfer tokens');
       const tokens = await this._token.getTokensByPendingTransferId(transferId);
@@ -449,7 +453,11 @@ class Transfer {
           source_wallet_id: Joi.string().required(),
         }).unknown(),
       );
-      await this._token.completeTransfer(tokens, transfer);
+      await this._token.completeTransfer(
+        tokens,
+        transfer,
+        Boolean(transfer.claim),
+      );
     }
     return transferJson;
   }
@@ -579,13 +587,21 @@ class Transfer {
     if (bundleSize) {
       log.debug('transfer bundle of tokens');
       const tokens = await this._token.getTokensByBundle(senderId, bundleSize);
-      await this._token.completeTransfer(tokens, transfer);
+      await this._token.completeTransfer(
+        tokens,
+        transfer,
+        Boolean(transfer.claim),
+      );
     } else {
       log.debug('transfer tokens');
       const tokens = await this._token.getTokensByPendingTransferId(
         transfer.id,
       );
-      await this._token.completeTransfer(tokens, transfer);
+      await this._token.completeTransfer(
+        tokens,
+        transfer,
+        Boolean(transfer.claim),
+      );
     }
     return transferJson;
   }
@@ -649,7 +665,11 @@ class Transfer {
       });
 
       // transfer
-      await this._token.completeTransfer(tokens, transfer);
+      await this._token.completeTransfer(
+        tokens,
+        transfer,
+        Boolean(transfer.claim),
+      );
     } else {
       throw new HttpError(409, 'No need to specify tokens', true);
     }
