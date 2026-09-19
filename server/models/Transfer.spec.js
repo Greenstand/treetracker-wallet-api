@@ -179,6 +179,47 @@ describe('Transfer Model', () => {
     );
   });
 
+  it('getTransfers still restricts to the login wallet if getAllWallets returns nothing', async () => {
+    const transferId = uuid();
+    const walletLoginId = uuid();
+
+    sinon.stub(Wallet.prototype, 'getAllWallets').resolves({ wallets: [] });
+    const getByFilterStub = sinon
+      .stub(Transfer.prototype, 'getByFilter')
+      .resolves({ transfers: [{ id: transferId }] });
+
+    await transferModel.getTransfers({ walletLoginId });
+
+    // An empty `or` array would be dropped by knex and every transfer in the
+    // table would be returned, so the login wallet must always be present.
+    const [filter] = getByFilterStub.getCall(0).args;
+    expect(filter.and[0].or).eql([
+      { source_wallet_id: walletLoginId },
+      { destination_wallet_id: walletLoginId },
+      { originator_wallet_id: walletLoginId },
+    ]);
+  });
+
+  it('getTransfers does not repeat the login wallet when getAllWallets includes it', async () => {
+    const walletLoginId = uuid();
+    const subWalletId = uuid();
+
+    sinon
+      .stub(Wallet.prototype, 'getAllWallets')
+      .resolves({ wallets: [{ id: walletLoginId }, { id: subWalletId }] });
+    const getByFilterStub = sinon
+      .stub(Transfer.prototype, 'getByFilter')
+      .resolves({ transfers: [] });
+
+    await transferModel.getTransfers({ walletLoginId });
+
+    const [filter] = getByFilterStub.getCall(0).args;
+    expect(filter.and[0].or).lengthOf(6);
+    expect(
+      filter.and[0].or.filter((c) => c.source_wallet_id === walletLoginId),
+    ).lengthOf(1);
+  });
+
   describe('isDeduct', () => {
     let hasControlOverStub;
 

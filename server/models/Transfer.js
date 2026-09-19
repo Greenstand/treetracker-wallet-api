@@ -82,12 +82,21 @@ class Transfer {
       'created_at',
       'desc',
     );
-    const orConditions = [];
-    wallets.forEach((w) => {
-      orConditions.push({ source_wallet_id: w.id });
-      orConditions.push({ destination_wallet_id: w.id });
-      orConditions.push({ originator_wallet_id: w.id });
-    });
+    // Seed with the login wallet itself rather than relying on getAllWallets to
+    // return it: an empty `or` array is dropped by knex, which would silently
+    // remove the ownership restriction and return every transfer in the table.
+    const orConditions = [
+      { source_wallet_id: walletLoginId },
+      { destination_wallet_id: walletLoginId },
+      { originator_wallet_id: walletLoginId },
+    ];
+    wallets
+      .filter((w) => w.id !== walletLoginId)
+      .forEach((w) => {
+        orConditions.push({ source_wallet_id: w.id });
+        orConditions.push({ destination_wallet_id: w.id });
+        orConditions.push({ originator_wallet_id: w.id });
+      });
     filter.and.push({ or: orConditions });
     if (state) {
       filter.and.push({ state });
