@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.26](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.25...v1.44.0-keycloak.26) (2026-09-19)
+
+
+### Bug Fixes
+
+* **transfer:** keep the claim flag when completing a transfer ([#566](https://github.com/Greenstand/treetracker-wallet-api/issues/566)) ([25f8249](https://github.com/Greenstand/treetracker-wallet-api/commit/25f8249c1dde26d78134eb3d342cec440cab0a70)), closes [Greenstand/treetracker-wallet-app#857](https://github.com/Greenstand/treetracker-wallet-app/issues/857)
+
 # [1.44.0-keycloak.25](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.24...v1.44.0-keycloak.25) (2026-09-19)
 
 
