@@ -941,6 +941,7 @@ describe('Transfer Model', () => {
         destination_wallet_id: receiverId,
         source_wallet_id: senderId,
         state: 'pending',
+        claim: true,
         parameters: {
           bundle: {
             bundleSize: 2,
@@ -974,6 +975,7 @@ describe('Transfer Model', () => {
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferObject,
+        true,
       );
       expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
         transferId,
@@ -991,6 +993,7 @@ describe('Transfer Model', () => {
         destination_wallet_id: receiverId,
         source_wallet_id: senderId,
         state: 'pending',
+        claim: true,
       };
 
       const tokens = [{ id: uuid() }, { id: uuid() }];
@@ -1019,6 +1022,7 @@ describe('Transfer Model', () => {
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferObject,
+        true,
       );
       expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
         transferId,
@@ -1405,6 +1409,7 @@ describe('Transfer Model', () => {
         id: transferId,
         source_wallet_id: senderId,
         state: TransferEnums.STATE.requested,
+        claim: true,
         parameters: {
           bundle: {
             bundleSize: 4,
@@ -1430,6 +1435,7 @@ describe('Transfer Model', () => {
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferResult,
+        true,
       );
       expect(getTokenByPendingTransferIdStub).not.called;
     });
@@ -1443,6 +1449,7 @@ describe('Transfer Model', () => {
         id: transferId,
         source_wallet_id: senderId,
         state: TransferEnums.STATE.requested,
+        claim: true,
       };
       const tokens = [{ id: uuid() }, { id: uuid() }];
       transferRepositoryStub.getById.resolves(transferResult);
@@ -1463,6 +1470,7 @@ describe('Transfer Model', () => {
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferResult,
+        true,
       );
       expect(getTokenByPendingTransferIdStub).calledOnceWithExactly(transferId);
     });
@@ -1722,6 +1730,7 @@ describe('Transfer Model', () => {
         id: transferId,
         source_wallet_id: senderId,
         state: TransferEnums.STATE.requested,
+        claim: true,
         parameters: {
           bundle: {
             bundleSize: 2,
@@ -1745,6 +1754,7 @@ describe('Transfer Model', () => {
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferResult,
+        true,
       );
     });
   });
