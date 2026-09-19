@@ -1,3 +1,11 @@
+# [1.44.0-keycloak.24](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.23...v1.44.0-keycloak.24) (2026-09-19)
+
+
+### Bug Fixes
+
+* **wallet:** never let the transfer filter degenerate to "all transfers" ([1d2006a](https://github.com/Greenstand/treetracker-wallet-api/commit/1d2006acdee4b833351eea13cc366ae2390f28c6))
+* **wallet:** show transfers to managed sub-wallets ([f5ae2dd](https://github.com/Greenstand/treetracker-wallet-api/commit/f5ae2dd31f1325402a53b019c574ebd31f41c26f)), closes [Greenstand/treetracker-wallet-app#852](https://github.com/Greenstand/treetracker-wallet-app/issues/852)
+
 # [1.44.0-keycloak.23](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.22...v1.44.0-keycloak.23) (2026-09-19)
 
 
