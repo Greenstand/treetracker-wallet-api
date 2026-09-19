@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.23](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.22...v1.44.0-keycloak.23) (2026-09-19)
+
+
+### Bug Fixes
+
+* **action-token:** require ACTION_TOKEN_SECRET, never sign share links with a public fallback ([103c89f](https://github.com/Greenstand/treetracker-wallet-api/commit/103c89f2e91725c580313597d2e2acba30656dd4)), closes [#573](https://github.com/Greenstand/treetracker-wallet-api/issues/573)
+
 # [1.44.0-keycloak.22](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.21...v1.44.0-keycloak.22) (2026-09-19)
 
 
