@@ -1,3 +1,15 @@
+# [1.44.0-keycloak.21](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.20...v1.44.0-keycloak.21) (2026-09-19)
+
+
+### Bug Fixes
+
+* **action-token:** list and cancel links for every wallet the login controls ([847419b](https://github.com/Greenstand/treetracker-wallet-api/commit/847419baab198209dce605ad87975ddd5580f316)), closes [#567](https://github.com/Greenstand/treetracker-wallet-api/issues/567) [Greenstand/treetracker-wallet-app#846](https://github.com/Greenstand/treetracker-wallet-app/issues/846)
+
+
+### Features
+
+* **wallet-api:** persist action-token links so senders can list and revoke them ([b2fdeb4](https://github.com/Greenstand/treetracker-wallet-api/commit/b2fdeb43c01f7372ad3d15e0d50c8528664a95ad)), closes [#846](https://github.com/Greenstand/treetracker-wallet-api/issues/846) [#846](https://github.com/Greenstand/treetracker-wallet-api/issues/846)
+
 # [1.44.0-keycloak.20](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.19...v1.44.0-keycloak.20) (2026-09-18)
 
 
