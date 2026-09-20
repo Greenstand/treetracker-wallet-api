@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.27](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.26...v1.44.0-keycloak.27) (2026-09-20)
+
+
+### Features
+
+* **wallet:** report sendable and pending token counts ([8027c30](https://github.com/Greenstand/treetracker-wallet-api/commit/8027c309d4c6a4f949dea089dc7759e4f34d0690)), closes [#560](https://github.com/Greenstand/treetracker-wallet-api/issues/560) [#572](https://github.com/Greenstand/treetracker-wallet-api/issues/572)
+
 # [1.44.0-keycloak.26](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.25...v1.44.0-keycloak.26) (2026-09-19)
 
 
