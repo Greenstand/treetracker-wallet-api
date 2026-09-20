@@ -208,6 +208,15 @@ class WalletService {
           wallets.map(async (wallet) => {
             const json = { ...wallet };
             json.tokens_in_wallet = await token.countTokenByWallet(wallet.id);
+            // What can be sent right now, and what a pending send is holding.
+            // countNotClaimedTokenByWallet is the same check transferBundle
+            // runs, so the screen and the guard cannot disagree.
+            json.tokens_available = await token.countNotClaimedTokenByWallet(
+              wallet.id,
+            );
+            json.tokens_pending = await token.countPendingTokenByWallet(
+              wallet.id,
+            );
             return json;
           }),
         ),

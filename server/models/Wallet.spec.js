@@ -179,13 +179,28 @@ describe('Wallet Model', () => {
       id: walletId,
       wallet: 'wallet',
       tokens_in_wallet: 20,
+      tokens_available: 20,
+      tokens_pending: 20,
     });
     expect(walletRepositoryStub.getById).calledOnceWithExactly(walletId);
     expect(hasControlOverStub).calledOnceWithExactly(
       authenticatedWalletId,
       walletId,
     );
-    expect(tokenRepositoryStub).calledOnceWithExactly({ wallet_id: walletId });
+    // Total, sendable now, and held by a pending send.
+    expect(tokenRepositoryStub).calledThrice;
+    expect(tokenRepositoryStub.getCall(0)).calledWithExactly({
+      wallet_id: walletId,
+    });
+    expect(tokenRepositoryStub.getCall(1)).calledWithExactly({
+      wallet_id: walletId,
+      claim: false,
+      transfer_pending: false,
+    });
+    expect(tokenRepositoryStub.getCall(2)).calledWithExactly({
+      wallet_id: walletId,
+      transfer_pending: true,
+    });
   });
 
   it('getByName function', async () => {

@@ -34,6 +34,17 @@ class Token {
   }
 
   /*
+   * Count how many tokens a wallet has reserved by a pending transfer, so a
+   * client can explain the gap between what is held and what can be sent.
+   */
+  async countPendingTokenByWallet(wallet_id) {
+    return this._tokenRepository.countByFilter({
+      wallet_id,
+      transfer_pending: true,
+    });
+  }
+
+  /*
    * Get n tokens from a wallet
    */
   async getTokensByBundle(wallet_id, bundleSize, claimBoolean) {
