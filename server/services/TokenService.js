@@ -33,6 +33,23 @@ class TokenService {
     return tokens;
   }
 
+  // Mirrors getTokens, including the fallback to the login wallet when no
+  // wallet is named, but returns only tokens free to be promised.
+  async getAvailableTokens({ wallet, limit, offset, walletLoginId }) {
+    if (!wallet) {
+      return this._token.getAvailableTokens(walletLoginId, limit, offset);
+    }
+    const walletInstance = await this._walletService.getByName(wallet);
+    const isSub = await this._walletService.hasControlOver(
+      walletLoginId,
+      walletInstance.id,
+    );
+    if (!isSub) {
+      throw new HttpError(403, 'Wallet does not belong to the logged in wallet');
+    }
+    return this._token.getAvailableTokens(walletInstance.id, limit, offset);
+  }
+
   async getById({ id, walletLoginId }, withoutPermissionCheck) {
     // check permission
     const token = await this._token.getById(id);
