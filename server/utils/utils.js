@@ -37,6 +37,7 @@ exports.errorHandler = (err, req, res, _next) => {
     res.status(err.code).send({
       code: err.code,
       message: err.message,
+      ...(err.reason && { reason: err.reason }),
     });
   } else if (err instanceof ValidationError) {
     res.status(422).send({
@@ -61,8 +62,16 @@ exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
       req.keycloak_id = result.id;
       next();
     } else {
-      log.error('user info not found');
-      throw new HttpError(401, 'ERROR: Authentication, invalid token received');
+      // The token verified on the line above. The only thing missing is a
+      // wallet, so do not call this an authentication failure: 401 stays
+      // reserved for a token that is genuinely bad or expired.
+      log.error('no wallet for this account yet');
+      throw new HttpError(
+        409,
+        'ERROR: This account has no wallet yet',
+        undefined,
+        'no_wallet',
+      );
     }
   } else {
     req.wallet_id = wallet.id;

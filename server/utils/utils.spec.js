@@ -153,7 +153,9 @@ describe('routers/utils', () => {
       sinon.restore();
     });
 
-    it('pass corupt token should get response with code 403', async () => {
+    // The token verifies here; only the wallet is missing. Named for what it
+    // stubs, not for a corrupt token.
+    it('a valid token with no wallet yet gets 409 and reason no_wallet', async () => {
       const keycloakId = uuid.v4();
       const verifyStub = sinon.stub(JWTService, 'verify').returns({
         id: keycloakId,
@@ -172,10 +174,11 @@ describe('routers/utils', () => {
       const res = await request(app)
         .get('/wallets')
         .set('Authorization', `Bearer token`);
-      expect(res.statusCode).eq(401);
+      expect(res.statusCode).eq(409);
       expect(res.body).eql({
-        code: 401,
-        message: 'ERROR: Authentication, invalid token received',
+        code: 409,
+        message: 'ERROR: This account has no wallet yet',
+        reason: 'no_wallet',
       });
       expect(getWalletIdByKeycloakId.calledOnceWithExactly(keycloakId)).eql(
         true,
