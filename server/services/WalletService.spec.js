@@ -291,6 +291,18 @@ describe('WalletService', () => {
       );
       countTokenByWalletStub.onFirstCall().resolves(2);
       countTokenByWalletStub.onSecondCall().resolves(4);
+      const countAvailableStub = sinon.stub(
+        Token.prototype,
+        'countNotClaimedTokenByWallet',
+      );
+      countAvailableStub.onFirstCall().resolves(1);
+      countAvailableStub.onSecondCall().resolves(4);
+      const countPendingStub = sinon.stub(
+        Token.prototype,
+        'countPendingTokenByWallet',
+      );
+      countPendingStub.onFirstCall().resolves(1);
+      countPendingStub.onSecondCall().resolves(0);
       const allWallets = await walletService.getAllWallets(
         id,
         limitOptions,
@@ -309,11 +321,15 @@ describe('WalletService', () => {
             id: walletId1,
             name: 'walletName',
             tokens_in_wallet: 2,
+            tokens_available: 1,
+            tokens_pending: 1,
           },
           {
             id: walletId2,
             name: 'walletName2',
             tokens_in_wallet: 4,
+            tokens_available: 4,
+            tokens_pending: 0,
           },
         ],
         count: 2,

@@ -1834,7 +1834,18 @@ components:
           example: 2023-08-08T06:28:39.766Z
         tokens_in_wallet:
           type: integer
+          description: Every token the wallet holds, reserved and claimed included.
           example: 12
+        tokens_available:
+          type: integer
+          description: >-
+            Tokens that can be sent right now: not claimed and not reserved by
+            a pending transfer. This is the same count the send guard applies.
+          example: 9
+        tokens_pending:
+          type: integer
+          description: Tokens reserved by a pending outgoing transfer.
+          example: 3
     walletNameOrId:
       title: 'Wallet Name or ID'
       oneOf:
