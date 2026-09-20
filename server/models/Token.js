@@ -33,6 +33,14 @@ class Token {
     return result;
   }
 
+  async reserveForActionToken(tokenIds, actionTokenId) {
+    return this._tokenRepository.reserveForActionToken(tokenIds, actionTokenId);
+  }
+
+  async releaseActionTokenReservation(actionTokenId) {
+    return this._tokenRepository.releaseActionTokenReservation(actionTokenId);
+  }
+
   /*
    * Get n tokens from a wallet
    */
