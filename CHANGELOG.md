@@ -1,3 +1,15 @@
+# [1.44.0-keycloak.30](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.29...v1.44.0-keycloak.30) (2026-09-21)
+
+
+### Bug Fixes
+
+* **action-token:** release a link reservation that never got its row ([30d8acd](https://github.com/Greenstand/treetracker-wallet-api/commit/30d8acd97f1ee391b32c1b2c37099e34c1c0d5aa)), closes [#574](https://github.com/Greenstand/treetracker-wallet-api/issues/574)
+
+
+### Features
+
+* **action-token:** reserve link tokens with transfer_pending ([b6a8e6a](https://github.com/Greenstand/treetracker-wallet-api/commit/b6a8e6a9dcb35800988b01dc51483a349fb3175c)), closes [#574](https://github.com/Greenstand/treetracker-wallet-api/issues/574)
+
 # [1.44.0-keycloak.29](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.28...v1.44.0-keycloak.29) (2026-09-21)
 
 
