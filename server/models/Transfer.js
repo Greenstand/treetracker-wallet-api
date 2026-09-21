@@ -382,6 +382,14 @@ class Transfer {
         bundleSize,
         claimBoolean,
       );
+      // The count above and this pick are two reads; a concurrent send can
+      // reserve tokens between them. Refuse rather than record a pending
+      // transfer that is short (409 at accept, forever) or empty (accept
+      // would take the v1/v2 fallback and pick tokens the sender may no
+      // longer be able to spare).
+      if (tokens.length < bundleSize) {
+        throw new HttpError(409, `Do not have enough tokens to send`);
+      }
       await this._token.pendingTransfer(tokens, transfer);
       return this.constructor.removeWalletIds(transfer);
     }

@@ -747,7 +747,7 @@ describe('Transfer Model', () => {
         source_wallet_id: senderId,
       };
       transferCreateStub.resolves(transferResult);
-      const tokens = [{ id: uuid() }, { id: uuid() }];
+      const tokens = [{ id: uuid() }, { id: uuid() }, { id: uuid() }];
       getTokensByBundleStub.resolves(tokens);
 
       const result = await transferModel.transferBundle(
@@ -792,6 +792,46 @@ describe('Transfer Model', () => {
         true,
       );
       expect(pendingTransferStub).calledOnceWithExactly(tokens, transferResult);
+      expect(completeTransferStub).not.called;
+    });
+
+    it('should error out -- hasControlOverSender, pick came back short', async () => {
+      // The count passed, but a concurrent send reserved tokens before the
+      // pick. Refuse instead of recording a pending transfer that can never
+      // be accepted from its own reservation.
+      const bundleSize = 3;
+      const senderId = uuid();
+      const receiverId = uuid();
+      const walletLoginId = uuid();
+      let error;
+
+      hasControlOverStub.onCall(0).resolves(true);
+      hasControlOverStub.onCall(1).resolves(false);
+      isDeductStub.resolves(true);
+      hasTrustStub.resolves(true);
+      transferCreateStub.resolves({ id: uuid() });
+      getTokensByBundleStub.resolves([{ id: uuid() }, { id: uuid() }]);
+
+      try {
+        await transferModel.transferBundle(
+          walletLoginId,
+          { id: senderId },
+          { id: receiverId },
+          bundleSize,
+          true,
+        );
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error.code).eql(409);
+      expect(error.message).eql(`Do not have enough tokens to send`);
+      expect(getTokensByBundleStub).calledOnceWithExactly(
+        senderId,
+        bundleSize,
+        true,
+      );
+      expect(pendingTransferStub).not.called;
       expect(completeTransferStub).not.called;
     });
 
