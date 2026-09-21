@@ -33,12 +33,20 @@ class Token {
     return result;
   }
 
-  async reserveForActionToken(tokenIds, actionTokenId) {
-    return this._tokenRepository.reserveForActionToken(tokenIds, actionTokenId);
+  async reserveForActionToken(tokenIds, actionTokenId, walletId) {
+    return this._tokenRepository.reserveForActionToken(
+      tokenIds,
+      actionTokenId,
+      walletId,
+    );
   }
 
   async releaseActionTokenReservation(actionTokenId) {
     return this._tokenRepository.releaseActionTokenReservation(actionTokenId);
+  }
+
+  async releaseOrphanedActionTokenReservations() {
+    return this._tokenRepository.releaseOrphanedActionTokenReservations();
   }
 
   /*
