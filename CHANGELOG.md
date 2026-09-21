@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.32](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.31...v1.44.0-keycloak.32) (2026-09-21)
+
+
+### Bug Fixes
+
+* **action-token:** make link reservations wallet-scoped, atomic and self-healing ([8f519f6](https://github.com/Greenstand/treetracker-wallet-api/commit/8f519f6e12b93c44a2420f927c30a9511a090b5f)), closes [#579](https://github.com/Greenstand/treetracker-wallet-api/issues/579) [#574](https://github.com/Greenstand/treetracker-wallet-api/issues/574) [#574](https://github.com/Greenstand/treetracker-wallet-api/issues/574)
+
 # [1.44.0-keycloak.31](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.30...v1.44.0-keycloak.31) (2026-09-21)
 
 
