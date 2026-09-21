@@ -39,6 +39,13 @@ exports.errorHandler = (err, req, res, _next) => {
       message: err.message,
       ...(err.reason && { reason: err.reason }),
     });
+  } else if (err.code === '40001') {
+    // Postgres serialization failure. Every connection runs SERIALIZABLE, so
+    // two conflicting requests leave one aborted. It is transient, not broken.
+    res.status(409).send({
+      code: 409,
+      message: 'Another request changed this at the same time, please retry',
+    });
   } else if (err instanceof ValidationError) {
     res.status(422).send({
       code: 422,

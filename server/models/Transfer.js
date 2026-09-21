@@ -382,6 +382,14 @@ class Transfer {
         bundleSize,
         claimBoolean,
       );
+      // The count above and this pick are two reads; a concurrent send can
+      // reserve tokens between them. Refuse rather than record a pending
+      // transfer that is short (409 at accept, forever) or empty (accept
+      // would take the v1/v2 fallback and pick tokens the sender may no
+      // longer be able to spare).
+      if (tokens.length < bundleSize) {
+        throw new HttpError(409, `Do not have enough tokens to send`);
+      }
       await this._token.pendingTransfer(tokens, transfer);
       return this.constructor.removeWalletIds(transfer);
     }
@@ -435,7 +443,16 @@ class Transfer {
       log.debug('transfer bundle of tokens');
       // Consume the tokens reserved when this transfer was made pending, rather
       // than re-selecting at accept time (which raced with other transfers).
-      const tokens = await this._token.getTokensByPendingTransferId(transfer.id);
+      let tokens = await this._token.getTokensByPendingTransferId(transfer.id);
+      if (tokens.length === 0) {
+        // The v1 and v2 APIs share this database and create pending bundle
+        // transfers without reserving, so their rows have nothing to consume.
+        // Fall back to the selection they would have made themselves.
+        tokens = await this._token.getTokensByBundle(
+          transfer.source_wallet_id,
+          bundleSize,
+        );
+      }
       if (tokens.length < bundleSize) {
         throw new HttpError(409, 'Do not have enough tokens');
       }
