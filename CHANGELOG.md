@@ -1,3 +1,13 @@
+# [1.44.0-keycloak.31](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.30...v1.44.0-keycloak.31) (2026-09-21)
+
+
+### Bug Fixes
+
+* **db:** surface a failed COMMIT instead of answering 200 with nothing saved ([df5969e](https://github.com/Greenstand/treetracker-wallet-api/commit/df5969eef549f6a259422030f5118928507a791a)), closes [#570](https://github.com/Greenstand/treetracker-wallet-api/issues/570)
+* **transfer:** accept bundle transfers that reserved no tokens ([b365556](https://github.com/Greenstand/treetracker-wallet-api/commit/b365556b089debda0e523bd56f98387d99c48fde)), closes [#560](https://github.com/Greenstand/treetracker-wallet-api/issues/560) [#560](https://github.com/Greenstand/treetracker-wallet-api/issues/560) [#570](https://github.com/Greenstand/treetracker-wallet-api/issues/570)
+* **transfer:** refuse a pending bundle whose reservation came back short ([188ba45](https://github.com/Greenstand/treetracker-wallet-api/commit/188ba45804b2789d73121a1f26d723cbbf5f7751)), closes [#560](https://github.com/Greenstand/treetracker-wallet-api/issues/560) [#570](https://github.com/Greenstand/treetracker-wallet-api/issues/570)
+* **transfer:** return 409 for a serialization failure, not 500 ([83aa323](https://github.com/Greenstand/treetracker-wallet-api/commit/83aa3232b51b1f7b30fc8f9f99d3cdf7e9fcaa5c)), closes [#570](https://github.com/Greenstand/treetracker-wallet-api/issues/570)
+
 # [1.44.0-keycloak.30](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.29...v1.44.0-keycloak.30) (2026-09-21)
 
 
