@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.28](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.27...v1.44.0-keycloak.28) (2026-09-21)
+
+
+### Bug Fixes
+
+* **auth:** stop calling a missing wallet an invalid token ([42b8b2d](https://github.com/Greenstand/treetracker-wallet-api/commit/42b8b2d0ee2cc6634e240eb023b223edc7df747d)), closes [Greenstand/treetracker-wallet-app#891](https://github.com/Greenstand/treetracker-wallet-app/issues/891)
+
 # [1.44.0-keycloak.27](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.26...v1.44.0-keycloak.27) (2026-09-20)
 
 
