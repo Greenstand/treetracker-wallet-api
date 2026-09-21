@@ -9,6 +9,7 @@
 const jwt = require('jsonwebtoken');
 const uuid = require('uuid');
 const HttpError = require('../utils/HttpError');
+const Token = require('../models/Token');
 const TokenService = require('./TokenService');
 const TransferService = require('./TransferService');
 const WalletService = require('./WalletService');
@@ -135,9 +136,9 @@ class ActionTokenService {
     return wallets.map((wallet) => wallet.id);
   }
 
-  // Page through the sender wallet's tokens collecting ones not already
-  // promised by another outstanding link, until `count` are found or the
-  // wallet runs out.
+  // Page through the sender wallet's available tokens collecting ones not
+  // already promised by another outstanding link, until `count` are found or
+  // the wallet runs out.
   async _selectAvailableTokens(
     { sender_wallet, walletLoginId },
     count,
@@ -149,7 +150,7 @@ class ActionTokenService {
 
     // Bound the scan: a very large wallet still terminates in finite pages.
     for (let page = 0; page < 500 && selected.length < count; page += 1) {
-      const tokens = await this._tokenService.getTokens({
+      const tokens = await this._tokenService.getAvailableTokens({
         wallet: sender_wallet,
         limit: pageSize,
         offset,
@@ -214,6 +215,19 @@ class ActionTokenService {
         tokens.map((id) => this._tokenService.getById({ id, walletLoginId })),
       );
       tokenIds = resolved.map((token) => token.id);
+      // The rule Transfer.transferActionToken applies at claim time, moved
+      // here so the sender hears about it instead of the recipient.
+      const unavailable = resolved.filter(
+        (token) => !Token.beAbleToTransfer(token) || token.claim,
+      );
+      if (unavailable.length > 0) {
+        throw new HttpError(
+          409,
+          `Token(s) cannot be transferred: ${unavailable
+            .map((token) => token.id)
+            .join(', ')}`,
+        );
+      }
       const alreadyReserved = tokenIds.filter((tid) =>
         reservedTokenIds.has(tid),
       );

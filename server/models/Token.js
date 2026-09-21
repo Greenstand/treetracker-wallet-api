@@ -139,6 +139,18 @@ class Token {
     return transactions;
   }
 
+  /*
+   * Tokens of a wallet that can actually be promised: not reserved by a
+   * pending transfer, and not claimed. getByOwner deliberately returns the
+   * wallet's full holdings, which is what GET /tokens must keep showing.
+   */
+  async getAvailableTokens(walletId, limit, offset) {
+    return this._tokenRepository.getByFilter(
+      { wallet_id: walletId, transfer_pending: false, claim: false },
+      { limit, offset },
+    );
+  }
+
   async getByOwner(walletId, limit, offset) {
     const tokens = await this._tokenRepository.getByFilter(
       { wallet_id: walletId },
