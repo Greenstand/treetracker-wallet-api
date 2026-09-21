@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.29](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.28...v1.44.0-keycloak.29) (2026-09-21)
+
+
+### Bug Fixes
+
+* **action-token:** do not promise tokens a pending send reserved ([c75fb9b](https://github.com/Greenstand/treetracker-wallet-api/commit/c75fb9b086481b3240f523134348f609ec4d8fed)), closes [#571](https://github.com/Greenstand/treetracker-wallet-api/issues/571)
+
 # [1.44.0-keycloak.28](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.27...v1.44.0-keycloak.28) (2026-09-21)
 
 
