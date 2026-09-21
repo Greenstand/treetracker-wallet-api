@@ -71,8 +71,11 @@ describe('Share link generation skips reserved tokens', () => {
     });
     const promised = await knex('token').whereIn('id', record.token_ids);
     expect(promised).lengthOf(2);
+    // The link claims what it promises, so each token is now reserved to it
+    // rather than to the pending send.
     promised.forEach((token) => {
-      expect(token.transfer_pending).eq(false);
+      expect(token.transfer_pending).eq(true);
+      expect(token.action_token_id).eq(record.id);
     });
   });
 });

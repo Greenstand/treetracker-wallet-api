@@ -32,6 +32,22 @@ class ActionTokenRepository extends BaseRepository {
     return { result, count: +count[0].count };
   }
 
+  /*
+   * Flip every overdue active link to expired and return their ids, so the
+   * caller can hand their tokens back. Global rather than per wallet: any
+   * link activity by anyone releases everyone's expired links, which is why
+   * no cron job is needed.
+   */
+  async expireOverdue() {
+    const rows = await this._session
+      .getDB()
+      .table(this._tableName)
+      .where('state', 'active')
+      .andWhere('expires_at', '<=', new Date())
+      .update({ state: 'expired' }, ['id']);
+    return rows.map((row) => row.id);
+  }
+
   // Token ids already promised by outstanding (active, unexpired) links of
   // any of the given sender wallets: excluded when issuing a new one (#847).
   async getActiveReservedTokenIds(senderWalletIds) {

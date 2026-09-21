@@ -33,6 +33,14 @@ class Token {
     return result;
   }
 
+  async reserveForActionToken(tokenIds, actionTokenId) {
+    return this._tokenRepository.reserveForActionToken(tokenIds, actionTokenId);
+  }
+
+  async releaseActionTokenReservation(actionTokenId) {
+    return this._tokenRepository.releaseActionTokenReservation(actionTokenId);
+  }
+
   /*
    * Count how many tokens a wallet has reserved by a pending transfer, so a
    * client can explain the gap between what is held and what can be sent.
