@@ -273,21 +273,32 @@ class ActionTokenService {
     // take the same row.
     const reserved = await this._token.reserveForActionToken(tokenIds, id);
     if (reserved !== tokenIds.length) {
+      // A concurrent link or send took some of them between the selection
+      // above and this update. Hand back the rows this call did flag: they
+      // carry an id no action_token row will ever have, so nothing else
+      // (cancel, redeem, expiry) could release them.
+      await this._token.releaseActionTokenReservation(id);
       throw new HttpError(
         409,
         `Wallet does not have ${tokenIds.length} tokens available`,
       );
     }
 
-    await this._actionTokenRepository.create({
-      id,
-      sender_wallet_id: senderWalletId,
-      recipient_email,
-      token_ids: JSON.stringify(tokenIds),
-      token_count: tokenIds.length,
-      state: STATE.active,
-      expires_at: expiresAt,
-    });
+    try {
+      await this._actionTokenRepository.create({
+        id,
+        sender_wallet_id: senderWalletId,
+        recipient_email,
+        token_ids: JSON.stringify(tokenIds),
+        token_count: tokenIds.length,
+        state: STATE.active,
+        expires_at: expiresAt,
+      });
+    } catch (e) {
+      // Same orphan otherwise: flagged tokens with no link to release them.
+      await this._token.releaseActionTokenReservation(id);
+      throw e;
+    }
 
     return {
       id,
