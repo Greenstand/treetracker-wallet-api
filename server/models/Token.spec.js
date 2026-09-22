@@ -45,6 +45,8 @@ describe('Token Model', () => {
     expect(tokenRepositoryStub.countByFilter).calledOnceWithExactly({
       wallet_id: walletId,
       claim: false,
+      // Tokens a pending send already holds are not available to promise.
+      transfer_pending: false,
     });
   });
 
