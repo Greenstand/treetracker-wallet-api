@@ -6,7 +6,7 @@
   "main": "server/server.js",
   "scripts": {
     "lint": "npm run eslint",
-    "lint:fix": "npm run eslint:fix && npm run prettier:fix",
+    "lint:fix": "npm run eslint:fix && npm run prettier-fix",
     "eslint": "eslint --report-unused-disable-directives .",
     "eslint:fix": "npm run eslint -- --fix",
     "test": "npm run test-unit-ci && npm run test-integration-ci && npm run test-repository",
