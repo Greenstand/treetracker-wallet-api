@@ -505,7 +505,7 @@ npm run test-integration
 In order to efficiently run our integration tests, we rely on automated database seeding/clearing functions to mock database entries. To test these functions, run:
 
 ```
-npm run test-seedDB
+npm run test-seed
 ```
 
 ## End to End test
