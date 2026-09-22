@@ -555,6 +555,7 @@ describe('Transfer Model', () => {
     let completeTransferStub;
     let getTokensByBundleStub;
     let countNotClaimedTokenByWalletStub;
+    let pendingTransferStub;
 
     beforeEach(() => {
       isDeductStub = sinon.stub(Transfer.prototype, 'isDeduct');
@@ -562,6 +563,7 @@ describe('Transfer Model', () => {
       hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
       transferCreateStub = sinon.stub(Transfer.prototype, 'create');
       completeTransferStub = sinon.stub(Token.prototype, 'completeTransfer');
+      pendingTransferStub = sinon.stub(Token.prototype, 'pendingTransfer');
       getTokensByBundleStub = sinon.stub(Token.prototype, 'getTokensByBundle');
       countNotClaimedTokenByWalletStub = sinon.stub(
         Token.prototype,
@@ -690,7 +692,7 @@ describe('Transfer Model', () => {
         source_wallet_id: senderId,
       };
       transferCreateStub.resolves(transferResult);
-      const tokens = [{ id: uuid() }, { id: uuid() }];
+      const tokens = [{ id: uuid() }, { id: uuid() }, { id: uuid() }];
       getTokensByBundleStub.resolves(tokens);
 
       const result = await transferModel.transferBundle(
@@ -729,8 +731,45 @@ describe('Transfer Model', () => {
         },
         claim: true,
       });
-      expect(getTokensByBundleStub).not.called;
+      // The pending transfer now reserves its bundle, so the same tokens
+      // cannot be promised again before it is accepted.
+      expect(getTokensByBundleStub).calledOnceWithExactly(
+        senderId,
+        bundleSize,
+        true,
+      );
+      expect(pendingTransferStub).calledOnceWithExactly(tokens, transferResult);
       expect(completeTransferStub).not.called;
+    });
+
+    it('should error out -- hasControlOverSender, pick came back short', async () => {
+      // The count passed, but a concurrent send took tokens before the pick.
+      const bundleSize = 3;
+      const senderId = uuid();
+      const receiverId = uuid();
+      const walletLoginId = uuid();
+
+      hasControlOverStub.onCall(0).resolves(true);
+      hasControlOverStub.onCall(1).resolves(false);
+      isDeductStub.resolves(true);
+      hasTrustStub.resolves(true);
+      transferCreateStub.resolves({ id: uuid() });
+      getTokensByBundleStub.resolves([{ id: uuid() }]);
+
+      let error;
+      try {
+        await transferModel.transferBundle(
+          walletLoginId,
+          { id: senderId },
+          { id: receiverId },
+          bundleSize,
+          true,
+        );
+      } catch (e) {
+        error = e;
+      }
+      expect(error.code).eql(409);
+      expect(pendingTransferStub).not.called;
     });
 
     it('should create transfer -- hasControlOverReceiver', async () => {
@@ -896,6 +935,9 @@ describe('Transfer Model', () => {
       transferRepositoryStub.getById.resolves(transferObject);
       hasControlOverStub.resolves(true);
       updateStub.resolves({ id: transferId });
+      // No reservation, so the legacy fallback picks free tokens and still
+      // comes back short.
+      getTokensByPendingTransferIdStub.resolves([]);
       getTokensByBundleStub.resolves(tokens);
 
       let error;
@@ -918,7 +960,6 @@ describe('Transfer Model', () => {
       });
       expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
       expect(completeTransferStub).not.called;
-      expect(getTokensByPendingTransferIdStub).not.called;
     });
 
     it('should accept transfer - bundle size', async () => {
@@ -944,7 +985,9 @@ describe('Transfer Model', () => {
       transferRepositoryStub.getById.resolves(transferObject);
       hasControlOverStub.resolves(true);
       updateStub.resolves({ id: transferId });
-      getTokensByBundleStub.resolves(tokens);
+      // The pending transfer reserved these, so accept consumes them
+      // instead of re-selecting.
+      getTokensByPendingTransferIdStub.resolves(tokens);
 
       const result = await transferModel.acceptTransfer(
         transferId,
@@ -961,12 +1004,46 @@ describe('Transfer Model', () => {
         ...transferObject,
         state: TransferEnums.STATE.completed,
       });
-      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(getTokensByPendingTransferIdStub).calledOnceWithExactly(
+        transferId,
+      );
+      expect(getTokensByBundleStub).not.called;
       expect(completeTransferStub).calledOnceWithExactly(
         tokens,
         transferObject,
       );
-      expect(getTokensByPendingTransferIdStub).not.called;
+    });
+
+    it('should accept transfer - bundle size with no reservation', async () => {
+      // Created by v1 or v2, which do not reserve, so the legacy pick runs.
+      const transferId = uuid();
+      const walletLoginId = uuid();
+      const receiverId = uuid();
+      const senderId = uuid();
+
+      const transferObject = {
+        id: transferId,
+        destination_wallet_id: receiverId,
+        source_wallet_id: senderId,
+        state: 'pending',
+        parameters: { bundle: { bundleSize: 2 } },
+      };
+      const tokens = [{ id: uuid() }, { id: uuid() }];
+
+      transferRepositoryStub.getById.resolves(transferObject);
+      hasControlOverStub.resolves(true);
+      updateStub.resolves({ id: transferId });
+      getTokensByPendingTransferIdStub.resolves([]);
+      getTokensByBundleStub.resolves(tokens);
+
+      const result = await transferModel.acceptTransfer(
+        transferId,
+        walletLoginId,
+      );
+
+      expect(result).eql({ id: transferId });
+      expect(getTokensByBundleStub).calledOnceWithExactly(senderId, 2);
+      expect(completeTransferStub).calledOnceWithExactly(tokens, transferObject);
     });
 
     it('should accept transfer - tokens', async () => {
