@@ -99,6 +99,20 @@ class Wallet {
     };
   }
 
+  // True when both wallets carry the same non-null keycloak_account_id.
+  async belongToSameAccount(walletIdA, walletIdB) {
+    const [a, b] = await Promise.all([
+      this.getKeycloakIdByWalletId(walletIdA),
+      this.getKeycloakIdByWalletId(walletIdB),
+    ]);
+    return Boolean(a) && a === b;
+  }
+
+  async getKeycloakIdByWalletId(walletId) {
+    const wallet = await this._walletRepository.getById(walletId);
+    return wallet?.keycloak_account_id;
+  }
+
   async getWalletIdByKeycloakId(keycloakAccountId) {
     return this._walletRepository.getWalletIdByKeycloakId(keycloakAccountId);
   }
@@ -127,6 +141,14 @@ class Wallet {
       log.debug('The same wallet');
       return true;
     }
+    // Wallets of the same account are siblings, not sub-wallets (#900), so
+    // there is no trust row linking them.
+    if (await this.belongToSameAccount(parentId, childId)) {
+      log.debug('Same keycloak account');
+      return true;
+    }
+    // A manage trust still grants control, so wallets granted from v1, v2 or
+    // the admin panel keep working on the shared database.
     // check sub wallet
     let result = await this.getSubWallets(parentId, childId);
     if (result.result) {

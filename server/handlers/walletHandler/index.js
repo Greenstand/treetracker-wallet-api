@@ -146,23 +146,16 @@ const walletPost = async (req, res) => {
   const { wallet: walletToBeCreated, about } = validatedBody;
   const walletService = new WalletService();
 
-  let returnedWallet;
-  if (!wallet_id) {
-    // new keycloak user
-    const { keycloak_id } = req;
-    if (!keycloak_id) throw new HttpError(500, 'keycloak id not found');
-    returnedWallet = await walletService.createParentWallet(
-      keycloak_id,
-      walletToBeCreated,
-      about,
-    );
-  } else {
-    returnedWallet = await walletService.createWallet(
-      wallet_id,
-      walletToBeCreated,
-      about,
-    );
-  }
+  // Every wallet made here is a top level wallet carrying the account's
+  // keycloak id. Sub-wallets, which need a manage trust row, are not a
+  // concept this app uses (#900).
+  const keycloakId = req.keycloak_id || (await walletService.getKeycloakIdByWalletId(wallet_id));
+  if (!keycloakId) throw new HttpError(500, 'keycloak id not found');
+  const returnedWallet = await walletService.createParentWallet(
+    keycloakId,
+    walletToBeCreated,
+    about,
+  );
 
   await QueueService.sendWalletCreationNotification(returnedWallet);
 

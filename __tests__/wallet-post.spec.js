@@ -58,18 +58,19 @@ describe('Wallet: create(POST) wallets of an account', () => {
       expect(wallet.name).to.eq('azAZ.-@0123456789');
     });
 
+    // Since #900 a second wallet is top level, carrying the account's
+    // keycloak id, so no manage trust row is written.
     const trustService = new TrustService();
     const trust = await trustService.getTrustRelationships(res.body.id, [], {
       walletId: res.body.id,
     });
-    expect(trust.count).equal(1);
-    expect(trust.result.length).equal(1);
-    expect(trust.result[0].originating_wallet).equal('walletA');
-    expect(trust.result[0].actor_wallet).equal('walletA');
-    expect(trust.result[0].target_wallet).equal('azAZ.-@0123456789');
-    expect(trust.result[0].type).equal('manage');
-    expect(trust.result[0].state).equal('trusted');
-    expect(trust.result[0].request_type).equal('manage');
+    expect(trust.count).equal(0);
+    expect(trust.result.length).equal(0);
+
+    const created = await walletService.getById(res.body.id);
+    const creator = await walletService.getByName('walletA');
+    expect(created.keycloak_account_id).to.exist;
+    expect(created.keycloak_account_id).equal(creator.keycloak_account_id);
   });
 
   it('create wallet by invalid name length', async () => {

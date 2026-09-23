@@ -34,6 +34,10 @@ class WalletService {
     return this._wallet.getWallet(loggedInWalletId, walletId);
   }
 
+  async getKeycloakIdByWalletId(walletId) {
+    return this._wallet.getKeycloakIdByWalletId(walletId);
+  }
+
   async getWalletIdByKeycloakId(keycloakAccountId) {
     return this._wallet.getWalletIdByKeycloakId(keycloakAccountId);
   }
