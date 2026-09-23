@@ -45,7 +45,6 @@ describe('Token Model', () => {
     expect(tokenRepositoryStub.countByFilter).calledOnceWithExactly({
       wallet_id: walletId,
       claim: false,
-      transfer_pending: false,
     });
   });
 

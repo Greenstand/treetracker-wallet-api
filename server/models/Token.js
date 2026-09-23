@@ -26,38 +26,8 @@ class Token {
     const result = await this._tokenRepository.countByFilter({
       wallet_id,
       claim: false,
-      // Exclude tokens already reserved by a pending transfer so the send
-      // guard cannot promise the same tokens twice.
-      transfer_pending: false,
     });
     return result;
-  }
-
-  async reserveForActionToken(tokenIds, actionTokenId, walletId) {
-    return this._tokenRepository.reserveForActionToken(
-      tokenIds,
-      actionTokenId,
-      walletId,
-    );
-  }
-
-  async releaseActionTokenReservation(actionTokenId) {
-    return this._tokenRepository.releaseActionTokenReservation(actionTokenId);
-  }
-
-  async releaseOrphanedActionTokenReservations() {
-    return this._tokenRepository.releaseOrphanedActionTokenReservations();
-  }
-
-  /*
-   * Count how many tokens a wallet has reserved by a pending transfer, so a
-   * client can explain the gap between what is held and what can be sent.
-   */
-  async countPendingTokenByWallet(wallet_id) {
-    return this._tokenRepository.countByFilter({
-      wallet_id,
-      transfer_pending: true,
-    });
   }
 
   /*
@@ -153,18 +123,6 @@ class Token {
       { limit, offset },
     );
     return transactions;
-  }
-
-  /*
-   * Tokens of a wallet that can actually be promised: not reserved by a
-   * pending transfer, and not claimed. getByOwner deliberately returns the
-   * wallet's full holdings, which is what GET /tokens must keep showing.
-   */
-  async getAvailableTokens(walletId, limit, offset) {
-    return this._tokenRepository.getByFilter(
-      { wallet_id: walletId, transfer_pending: false, claim: false },
-      { limit, offset },
-    );
   }
 
   async getByOwner(walletId, limit, offset) {

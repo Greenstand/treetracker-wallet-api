@@ -4,7 +4,6 @@ const TrustRepository = require('../repositories/TrustRepository');
 const TrustRelationshipEnums = require('../utils/trust-enums');
 const HttpError = require('../utils/HttpError');
 const TokenRepository = require('../repositories/TokenRepository');
-const Token = require('./Token');
 
 class Wallet {
   constructor(session) {
@@ -78,25 +77,15 @@ class Wallet {
       throw new HttpError(403, 'Have no permission to access this wallet');
     }
 
-    const token = new Token(this._session);
     const tokenCount = await this._tokenRepository.countByFilter({
       wallet_id: walletId,
     });
-    // Same counters GET /wallets reports, so the two endpoints agree.
-    const availableCount = await token.countNotClaimedTokenByWallet(walletId);
-    const pendingCount = await token.countPendingTokenByWallet(walletId);
     const walletName = wallet.name;
     delete wallet.password;
     delete wallet.salt;
     delete wallet.created_at;
     delete wallet.name;
-    return {
-      ...wallet,
-      wallet: walletName,
-      tokens_in_wallet: tokenCount,
-      tokens_available: availableCount,
-      tokens_pending: pendingCount,
-    };
+    return { ...wallet, wallet: walletName, tokens_in_wallet: tokenCount };
   }
 
   async getWalletIdByKeycloakId(keycloakAccountId) {

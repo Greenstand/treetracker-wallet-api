@@ -1,6 +1,5 @@
 const Session = require('../infra/database/Session');
 const Transfer = require('../models/Transfer');
-const Token = require('../models/Token');
 const HttpError = require('../utils/HttpError');
 const WalletService = require('./WalletService');
 const TokenService = require('./TokenService');
@@ -442,12 +441,7 @@ class TransferService {
 
 
    // Transfer the tokens promised by a redeemed action token 
-  async redeemActionToken({
-    senderWalletId,
-    receiverWalletId,
-    tokenIds,
-    actionTokenId,
-  }) {
+  async redeemActionToken({ senderWalletId, receiverWalletId, tokenIds }) {
     try {
       await this._session.beginTransaction();
 
@@ -455,17 +449,10 @@ class TransferService {
       const receiverWallet =
         await this._walletService.getById(receiverWalletId);
 
-      // Hand this link's own tokens back first, so transferActionToken sees
-      // them as free. Anything taken by a normal transfer meanwhile still
-      // fails its existing checks.
-      const token = new Token(this._session);
-      if (actionTokenId) {
-        await token.releaseActionTokenReservation(actionTokenId);
-      }
-
-      // Read on this transaction's session: a separate TokenService would
-      // open its own connection and miss the release above.
-      const tokens = await Promise.all(tokenIds.map((id) => token.getById(id)));
+      const tokenService = new TokenService();
+      const tokens = await Promise.all(
+        tokenIds.map((id) => tokenService.getById({ id }, true)),
+      );
 
       const result = await this._transfer.transferActionToken(
         receiverWallet.id,
