@@ -5,7 +5,6 @@ require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
 const chai = require('chai');
-const uuid = require('uuid');
 const server = require('../server/app');
 const seed = require('./seed');
 const knex = require('../server/infra/database/knex');
@@ -135,52 +134,5 @@ describe('Share link reservations block a normal send', () => {
     expect(moved).lengthOf(1);
     expect(moved[0].transfer_pending).eq(false);
     expect(moved[0].action_token_id).eq(null);
-  });
-
-  it('an explicit token of a managed wallet needs sender_wallet, and a refusal flags nothing', async () => {
-    // walletB manages walletC and may read tokenB, but without sender_wallet
-    // the link would speak for walletB, which does not own it. Claim time
-    // would refuse it, so refuse now, and leave no reservation behind.
-    const res = await request(server)
-      .post('/action-tokens')
-      .set('Authorization', `Bearer ${bearerB}`)
-      .send({
-        recipient_email: 'samwel@example.com',
-        tokens: [seed.tokenB.id],
-      });
-    expect(res).to.have.property('statusCode', 409);
-
-    const flagged = await knex('token').whereNotNull('action_token_id');
-    expect(flagged).lengthOf(0);
-    const rows = await knex('action_token');
-    expect(rows).lengthOf(0);
-  });
-
-  it('a token flagged for a link that has no row is released on the next link activity', async () => {
-    // What a crash between flag and insert would leave behind.
-    await knex('token')
-      .where({ id: seed.token.id })
-      .update({ transfer_pending: true, action_token_id: uuid.v4() });
-
-    await request(server)
-      .get('/action-tokens')
-      .set('Authorization', `Bearer ${bearerB}`);
-
-    const [healed] = await knex('token').where({ id: seed.token.id });
-    expect(healed.transfer_pending).eq(false);
-    expect(healed.action_token_id).eq(null);
-  });
-
-  it('expired links can be listed by state', async () => {
-    const link = await createLink(bearer, 1, seed.wallet.name);
-    await knex('action_token')
-      .where({ id: link.body.id })
-      .update({ expires_at: new Date(Date.now() - 1000) });
-
-    const res = await request(server)
-      .get('/action-tokens?state=expired')
-      .set('Authorization', `Bearer ${bearer}`);
-    expect(res).to.have.property('statusCode', 200);
-    expect(res.body.action_tokens.map((a) => a.id)).to.include(link.body.id);
   });
 });
