@@ -440,6 +440,7 @@ class ActionTokenService {
     const result = await this._transferService.redeemActionToken({
       senderWalletId: payload.sender_wallet_id,
       receiverWalletId,
+      walletLoginId,
       tokenIds: payload.token_ids,
       // Release inside the redeem transaction, so a link whose record cannot
       // be read fails closed rather than transferring flagged tokens.

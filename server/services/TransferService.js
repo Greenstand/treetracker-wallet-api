@@ -445,6 +445,7 @@ class TransferService {
   async redeemActionToken({
     senderWalletId,
     receiverWalletId,
+    walletLoginId,
     tokenIds,
     actionTokenId,
   }) {
@@ -468,7 +469,7 @@ class TransferService {
       const tokens = await Promise.all(tokenIds.map((id) => token.getById(id)));
 
       const result = await this._transfer.transferActionToken(
-        receiverWallet.id,
+        walletLoginId,
         senderWallet,
         receiverWallet,
         tokens,
