@@ -58,6 +58,21 @@ describe('Redeem an action token into a specific wallet', () => {
     expect(res.body.wallet_id).to.equal(seed.walletC.id);
   });
 
+  it(`${seed.walletB.name} can see the redeemed transfer in its history`, async () => {
+    const res = await request(server)
+      .get('/transfers')
+      .set('Authorization', `Bearer ${bearerTokenB}`);
+
+    expect(res).to.have.property('statusCode', 200);
+    expect(res.body.transfers).to.be.an('array').that.satisfies((transfers) =>
+      transfers.some(
+        (transfer) =>
+          transfer.source_wallet === seed.wallet.name &&
+          transfer.destination_wallet === seed.walletC.name,
+      ),
+    );
+  });
+
   it(`${seed.wallet.name} issues another action token`, async () => {
     const [{ id: freshTokenId }] = await seed.addTokenToWallet(seed.wallet.id);
     const res = await request(server)
