@@ -32,7 +32,7 @@ const actionTokenRedeemSchema = Joi.object({
 });
 
 const actionTokenListQuerySchema = Joi.object({
-  state: Joi.string().valid('active', 'redeemed', 'cancelled', 'expired'),
+  state: Joi.string().valid('active', 'redeemed', 'cancelled'),
   limit: Joi.number().integer().min(1).max(2000).default(1000),
   offset: Joi.number().integer().min(0).default(0),
 });

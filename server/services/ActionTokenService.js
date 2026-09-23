@@ -184,7 +184,7 @@ class ActionTokenService {
   ) {
     let tokenIds;
 
-    await this._releaseStaleReservations();
+    await this._releaseExpiredReservations();
 
     // Absent sender_wallet keeps the previous behaviour: the login wallet.
     let senderWalletId = walletLoginId;
@@ -242,20 +242,6 @@ class ActionTokenService {
           )}`,
         );
       }
-      // A link speaks for one sender wallet, and claim time refuses any
-      // token that wallet does not own. Say so now, to the sender: a token
-      // of a managed wallet needs sender_wallet set to that wallet.
-      const foreign = resolved.filter(
-        (token) => token.wallet_id !== senderWalletId,
-      );
-      if (foreign.length > 0) {
-        throw new HttpError(
-          409,
-          `Token(s) do not belong to the sender wallet: ${foreign
-            .map((token) => token.id)
-            .join(', ')}`,
-        );
-      }
     } else {
       tokenIds = await this._selectAvailableTokens(
         { sender_wallet, walletLoginId },
@@ -284,23 +270,21 @@ class ActionTokenService {
     // Claim the tokens with the flag every transfer path already honours, so
     // a normal send can no longer take a token this link promised. The
     // conditional update is atomic, so two concurrent creations cannot both
-    // take the same row. Flags and row land in one transaction: a short
-    // reservation (a concurrent link or send got there first) or a failed
-    // insert rolls the flags back, so no token can stay flagged for a link
-    // that does not exist.
-    await this._session.beginTransaction();
-    try {
-      const reserved = await this._token.reserveForActionToken(
-        tokenIds,
-        id,
-        senderWalletId,
+    // take the same row.
+    const reserved = await this._token.reserveForActionToken(tokenIds, id);
+    if (reserved !== tokenIds.length) {
+      // A concurrent link or send took some of them between the selection
+      // above and this update. Hand back the rows this call did flag: they
+      // carry an id no action_token row will ever have, so nothing else
+      // (cancel, redeem, expiry) could release them.
+      await this._token.releaseActionTokenReservation(id);
+      throw new HttpError(
+        409,
+        `Wallet does not have ${tokenIds.length} tokens available`,
       );
-      if (reserved !== tokenIds.length) {
-        throw new HttpError(
-          409,
-          `Wallet does not have ${tokenIds.length} tokens available`,
-        );
-      }
+    }
+
+    try {
       await this._actionTokenRepository.create({
         id,
         sender_wallet_id: senderWalletId,
@@ -310,11 +294,9 @@ class ActionTokenService {
         state: STATE.active,
         expires_at: expiresAt,
       });
-      await this._session.commitTransaction();
     } catch (e) {
-      if (this._session.isTransactionInProgress()) {
-        await this._session.rollbackTransaction();
-      }
+      // Same orphan otherwise: flagged tokens with no link to release them.
+      await this._token.releaseActionTokenReservation(id);
       throw e;
     }
 
@@ -327,22 +309,22 @@ class ActionTokenService {
   }
 
   /*
-   * Flip overdue links to expired, then hand back every token flagged for a
-   * link that is not active any more: expired, cancelled, redeemed, or one
-   * that never got its row. One statement, so it also heals whatever an
-   * earlier crash left behind. Called at the start of generate() and list(),
-   * so ordinary link activity by anyone does the housekeeping and no cron
-   * job is needed.
+   * Hand back the tokens of any link whose expiry has passed. Called at the
+   * start of generate() and list(), so ordinary link activity by anyone
+   * releases everyone's expired links and no cron job is needed.
    */
-  async _releaseStaleReservations() {
-    await this._actionTokenRepository.expireOverdue();
-    return this._token.releaseOrphanedActionTokenReservations();
+  async _releaseExpiredReservations() {
+    const expiredIds = await this._actionTokenRepository.expireOverdue();
+    await Promise.all(
+      expiredIds.map((id) => this._token.releaseActionTokenReservation(id)),
+    );
+    return expiredIds;
   }
 
   // Lists the links issued from the login wallet or any wallet it controls,
   // since generate() lets a sender share from a sub-wallet (#869).
   async list(walletLoginId, { state, limit, offset } = {}) {
-    await this._releaseStaleReservations();
+    await this._releaseExpiredReservations();
     const senderWalletIds = await this._controlledWalletIds(walletLoginId);
     const { result, count } = await this._actionTokenRepository.getBySenders(
       senderWalletIds,
@@ -375,23 +357,11 @@ class ActionTokenService {
         `Cannot cancel an action token in state '${record.state}'`,
       );
     }
-    // State and release in one transaction, so a crash between them cannot
-    // leave the tokens flagged for a cancelled link.
-    await this._session.beginTransaction();
-    let updated;
-    try {
-      updated = await this._actionTokenRepository.update({
-        id,
-        state: STATE.cancelled,
-      });
-      await this._token.releaseActionTokenReservation(id);
-      await this._session.commitTransaction();
-    } catch (e) {
-      if (this._session.isTransactionInProgress()) {
-        await this._session.rollbackTransaction();
-      }
-      throw e;
-    }
+    const updated = await this._actionTokenRepository.update({
+      id,
+      state: STATE.cancelled,
+    });
+    await this._token.releaseActionTokenReservation(id);
     return ActionTokenService.toSummary(updated);
   }
 
