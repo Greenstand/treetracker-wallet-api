@@ -75,8 +75,10 @@ describe('WalletRepository', () => {
       expect(query.sql).match(
         /select.*wallet.*where.*actor_wallet_id.*request_type.*/,
       );
-      expect(query.sql.match(/display_name/g)).to.have.length(3);
-      expect(query.sql.match(/cover_url/g)).to.have.length(3);
+      // Four selects since #900: the wallet itself, both trust unions, and
+      // the union of wallets sharing its keycloak account.
+      expect(query.sql.match(/display_name/g)).to.have.length(4);
+      expect(query.sql.match(/cover_url/g)).to.have.length(4);
       query.response([{ id: 1 }]);
     });
     const entity = await walletRepository.getAllWallets(uuid.v4());
