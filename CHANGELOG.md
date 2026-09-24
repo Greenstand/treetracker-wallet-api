@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.34](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.33...v1.44.0-keycloak.34) (2026-09-24)
+
+
+### Features
+
+* **wallet:** create every wallet as a top level wallet ([caa0157](https://github.com/Greenstand/treetracker-wallet-api/commit/caa0157a9480a5ea8e6f44a73e7b1541302f2738)), closes [Greenstand/treetracker-wallet-app#900](https://github.com/Greenstand/treetracker-wallet-app/issues/900)
+
 # [1.44.0-keycloak.33](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.32...v1.44.0-keycloak.33) (2026-09-24)
 
 
