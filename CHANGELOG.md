@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.33](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.32...v1.44.0-keycloak.33) (2026-09-24)
+
+
+### Features
+
+* revert to 7d9cc05 by diff + apply ([40ca79a](https://github.com/Greenstand/treetracker-wallet-api/commit/40ca79a6a87c529d90fe66fd6cc198dc8146b511))
+
 # [1.44.0-keycloak.16](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.15...v1.44.0-keycloak.16) (2026-08-30)
 
 
