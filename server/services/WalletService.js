@@ -234,6 +234,12 @@ class WalletService {
     return this._wallet.hasControlOver(parentId, childId);
   }
 
+  // No token counts here: the admin list is a directory, and counting per row
+  // would be one query per wallet over the whole table.
+  async getAllWalletsAdmin(options) {
+    return this._wallet.getAllWalletsAdmin(options);
+  }
+
   async batchCreateWallet(
     sender_wallet,
     token_transfer_amount_default,

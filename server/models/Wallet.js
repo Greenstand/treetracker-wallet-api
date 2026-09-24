@@ -215,6 +215,10 @@ class Wallet {
       getCount,
     );
   }
+
+  async getAllWalletsAdmin(options) {
+    return this._walletRepository.getAllWalletsAdmin(options);
+  }
 }
 
 module.exports = Wallet;

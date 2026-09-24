@@ -15,6 +15,7 @@ class JWTService {
     const tokenArray = authorization.split('Bearer ');
     const token = tokenArray[1];
     let walletId;
+    let roles = [];
     if (token) {
       const KEYCLOAK_URL =
         process.env.KEYCLOAK_URL ||
@@ -48,12 +49,22 @@ class JWTService {
               'ERROR: Authentication, invalid token received',
             );
           walletId = decod.sub;
+          // Keycloak puts realm roles and per-client roles in separate claims,
+          // and either may carry an admin role, so read both.
+          roles = [
+            ...new Set([
+              ...(decod.realm_access?.roles || []),
+              ...Object.values(decod.resource_access || {}).flatMap(
+                (access) => access?.roles || [],
+              ),
+            ]),
+          ];
         },
       );
     } else {
       throw new HttpError(401, 'ERROR: Authentication, invalid token received');
     }
-    return { id: walletId };
+    return { id: walletId, roles };
   }
 }
 
