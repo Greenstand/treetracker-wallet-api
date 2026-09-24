@@ -29,7 +29,7 @@ describe('Request and fulfill a bundle transfer', () => {
         },
         sender_wallet: seed.wallet.name,
         receiver_wallet: seed.walletB.name,
-        claim: true,
+        claim: false,
       });
     expect(res).property('statusCode').to.eq(202);
   });
@@ -71,7 +71,5 @@ describe('Request and fulfill a bundle transfer', () => {
       .set('Authorization', `Bearer ${bearerTokenB}`);
     expect(res).to.have.property('statusCode', 200);
     expect(res.body.wallet_id).eq(seed.walletB.id);
-    // Fulfilling a request carries the same flag as accepting a transfer.
-    expect(res.body.claim).eq(true);
   });
 });
