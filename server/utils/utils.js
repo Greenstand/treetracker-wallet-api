@@ -51,6 +51,21 @@ exports.errorHandler = (err, req, res, _next) => {
   }
 };
 
+// Admin endpoints answer about every wallet, so they authorize on a keycloak
+// role instead of wallet ownership. An admin account has no wallet of its own,
+// which is why this cannot go through verifyJWTHandler below.
+exports.verifyRoleHandler = (role) =>
+  exports.handlerWrapper(async (req, res, next) => {
+    const { id, roles = [] } = await JWTService.verify(
+      req.headers.authorization,
+    );
+    if (!roles.includes(role)) {
+      throw new HttpError(403, `ERROR: Authorization, ${role} role required`);
+    }
+    req.keycloak_id = id;
+    next();
+  });
+
 exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
   const result = await JWTService.verify(req.headers.authorization);
   const walletService = new WalletService();

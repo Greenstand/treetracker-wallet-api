@@ -113,4 +113,49 @@ describe('WalletRepository', () => {
     );
     expect(entity).to.eql({ wallets: [{ id: 1 }], count: 1 });
   });
+
+  // The admin listing must not be scoped to a caller: no wallet_trust join and
+  // no wallet id in the where clause (#1239).
+  it('getAllWalletsAdmin queries every wallet, with no caller scope', async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', (query, step) => {
+      if (step === 1) {
+        expect(query.sql).match(/select.*count.*from "wallet"/);
+        expect(query.sql).not.match(/wallet_trust/);
+        expect(query.sql).not.match(/keycloak_account_id/);
+        query.response([{ count: 7 }]);
+      } else {
+        expect(query.sql).match(/select.*from "wallet".*order by.*limit/);
+        expect(query.sql).not.match(/wallet_trust/);
+        query.response([{ id: 1 }]);
+      }
+    });
+
+    const entity = await walletRepository.getAllWalletsAdmin({
+      limit: 10,
+      offset: 0,
+      sort_by: 'created_at',
+      order: 'desc',
+    });
+
+    expect(entity).to.eql({ wallets: [{ id: 1 }], count: 7 });
+  });
+
+  it('getAllWalletsAdmin filters by name when one is given', async () => {
+    tracker.uninstall();
+    tracker.install();
+    tracker.on('query', (query, step) => {
+      expect(query.sql).match(/"name" ilike/);
+      query.response(step === 1 ? [{ count: 1 }] : [{ id: 1 }]);
+    });
+
+    await walletRepository.getAllWalletsAdmin({
+      limit: 10,
+      offset: 0,
+      name: 'wal',
+      sort_by: 'name',
+      order: 'asc',
+    });
+  });
 });

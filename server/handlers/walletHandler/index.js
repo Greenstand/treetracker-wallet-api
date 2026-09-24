@@ -8,6 +8,7 @@ const TransferService = require('../../services/TransferService');
 
 const {
   walletGetQuerySchema,
+  walletGetAdminQuerySchema,
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
@@ -296,11 +297,32 @@ const walletBatchTransfer = async (req, res) => {
   res.status(200).send(result);
 };
 
+// Lists every wallet, for the admin panel. Authorization is the wallet-admin
+// role on the route, not wallet ownership (#1239).
+const walletGetAdmin = async (req, res) => {
+  const validatedQuery = await walletGetAdminQuerySchema.validateAsync(
+    req.query,
+    { abortEarly: false },
+  );
+  const { limit, offset, name, sort_by, order } = validatedQuery;
+
+  const { wallets, count } = await new WalletService().getAllWalletsAdmin({
+    limit,
+    offset,
+    name,
+    sort_by,
+    order,
+  });
+
+  res.status(200).json({ total: count, query: validatedQuery, wallets });
+};
+
 module.exports = {
   walletPost,
   walletPatch,
   walletGetTrustRelationships,
   walletGet,
+  walletGetAdmin,
   walletSingleGet,
   walletBatchCreate,
   walletBatchTransfer,
