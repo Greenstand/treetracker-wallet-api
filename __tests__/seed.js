@@ -124,7 +124,6 @@ async function clear() {
   log.debug('clear tables');
   await knex('transaction').del();
   await knex('token').del();
-  await knex('action_token').del();
   await knex('wallet').del();
   await knex('wallet_trust').del();
   await knex('transfer').del();

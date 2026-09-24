@@ -35,15 +35,13 @@ describe('Wallet: Get wallets of an account', () => {
     expect(res.count).to.eq(11);
   });
 
-  // The token verifies; the account simply has no wallet row yet. That is a
-  // 409 with reason no_wallet, not an authentication failure.
-  it('should return 409, the account has no wallet yet', async () => {
+  it('should return 401, user does not exist', async () => {
     await request(server)
       .get('/wallets')
       .send({ wallet: 'azAZ.-@0123456789' })
       .set('content-type', 'application/json')
       .set('Authorization', `Bearer ${uuid.v4()}`)
-      .expect(409);
+      .expect(401);
   });
 
   it('Get wallets of WalletA without params', async () => {

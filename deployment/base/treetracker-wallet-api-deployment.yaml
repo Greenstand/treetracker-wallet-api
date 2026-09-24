@@ -44,15 +44,6 @@ spec:
                 secretKeyRef:
                   name: treetracker-api-database-connection
                   key: db
-            # Signs share links (POST /action-tokens). The API refuses to start
-            # without it (#573). Provided per cluster by a SealedSecret in the
-            # overlay, see deployment/README.md. Rotating it invalidates every
-            # outstanding link.
-            - name: ACTION_TOKEN_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: treetracker-wallet-action-token
-                  key: secret
             - name: DATABASE_SCHEMA
               valueFrom:
                 secretKeyRef:

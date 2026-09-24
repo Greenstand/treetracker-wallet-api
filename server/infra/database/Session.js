@@ -24,24 +24,14 @@ class Session {
       throw new Error('Can not start transaction in transaction');
     }
     this.thx = await knex.transaction();
-    // knex 0.21: commit() resolves even when COMMIT itself fails, for example
-    // a serialization failure Postgres only detects at commit time. Only this
-    // promise rejects then, so commitTransaction() awaits it.
-    this.thxDone = this.thx.executionPromise;
   }
 
   async commitTransaction() {
     if (!this.thx) {
       throw new Error('Can not commit transaction before start it!');
     }
-    const { thx, thxDone } = this;
-    // A failed COMMIT ends the transaction on the database side as well, so
-    // it is over either way. Clear first: a caller's rollback path must not
-    // send ROLLBACK on a finished transaction.
+    await this.thx.commit();
     this.thx = undefined;
-    this.thxDone = undefined;
-    await thx.commit();
-    await thxDone;
   }
 
   async rollbackTransaction() {

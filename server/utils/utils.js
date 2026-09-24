@@ -37,14 +37,6 @@ exports.errorHandler = (err, req, res, _next) => {
     res.status(err.code).send({
       code: err.code,
       message: err.message,
-      ...(err.reason && { reason: err.reason }),
-    });
-  } else if (err.code === '40001') {
-    // Postgres serialization failure. Every connection runs SERIALIZABLE, so
-    // two conflicting requests leave one aborted. It is transient, not broken.
-    res.status(409).send({
-      code: 409,
-      message: 'Another request changed this at the same time, please retry',
     });
   } else if (err instanceof ValidationError) {
     res.status(422).send({
@@ -69,16 +61,8 @@ exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
       req.keycloak_id = result.id;
       next();
     } else {
-      // The token verified on the line above. The only thing missing is a
-      // wallet, so do not call this an authentication failure: 401 stays
-      // reserved for a token that is genuinely bad or expired.
-      log.error('no wallet for this account yet');
-      throw new HttpError(
-        409,
-        'ERROR: This account has no wallet yet',
-        undefined,
-        'no_wallet',
-      );
+      log.error('user info not found');
+      throw new HttpError(401, 'ERROR: Authentication, invalid token received');
     }
   } else {
     req.wallet_id = wallet.id;
