@@ -61,6 +61,9 @@ class WalletRepository extends BaseRepository {
       .select('id')
       .table(this._tableName)
       .where('keycloak_account_id', keycloakAccountId)
+      // Several wallets share this id since #900, so order to keep the login
+      // wallet stable rather than whichever row comes back first.
+      .orderBy('created_at', 'asc')
       .first();
 
     return object;
@@ -133,12 +136,38 @@ class WalletRepository extends BaseRepository {
           TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE.trusted,
       });
 
+    // Wallets of the same account. They are top level, not sub-wallets, so
+    // no trust row links them (#900). Built from the caller's own keycloak
+    // id, which is why it is a subquery rather than a join.
+    let union3 = this._session
+      .getDB()
+      .select(
+        'id',
+        'name',
+        'about',
+        'display_name',
+        'logo_url',
+        'cover_url',
+        'created_at',
+      )
+      .table('wallet')
+      .whereNotNull('keycloak_account_id')
+      .whereIn(
+        'keycloak_account_id',
+        this._session
+          .getDB()
+          .select('keycloak_account_id')
+          .table('wallet')
+          .where('id', id),
+      );
+
     if (name) {
       union1 = union1.where('name', 'ilike', `%${name}%`);
       union2 = union2.where('name', 'ilike', `%${name}%`);
+      union3 = union3.where('name', 'ilike', `%${name}%`);
     }
 
-    query = query.union(union1, union2).orderBy(sort_by, order);
+    query = query.union(union1, union2, union3).orderBy(sort_by, order);
 
     query = this._session.getDB().select('*').from(query.as('t'));
 

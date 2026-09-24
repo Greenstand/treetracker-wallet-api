@@ -192,26 +192,38 @@ describe('walletRouter', () => {
       sinon.restore();
     });
 
-    it('successfully creates managed wallet', async () => {
-      const createWalletStub = sinon
-        .stub(WalletService.prototype, 'createWallet')
+    // Since #900 a second wallet is top level too, carrying the account's
+    // keycloak id, rather than a sub-wallet hung off the first.
+    it('creates a second wallet as a top level wallet', async () => {
+      const getKeycloakIdStub = sinon
+        .stub(WalletService.prototype, 'getKeycloakIdByWalletId')
+        .resolves(keycloakId);
+      const createWalletStub = sinon.stub(
+        WalletService.prototype,
+        'createWallet',
+      );
+      const createParentWalletStub = sinon
+        .stub(WalletService.prototype, 'createParentWallet')
         .resolves(mockWallet);
+
       const res = await request(app).post('/wallets').send({
         wallet: mockWallet.wallet,
         about: mockWallet.about,
       });
+
       expect(res).property('statusCode').eq(201);
       expect(queueStub.calledOnce).to.be.true;
       expect(res.body.wallet).eq(mockWallet.wallet);
-      expect(res.body.id).eq(mockWallet.id);
-      expect(res.body.about).eq(mockWallet.about);
+      expect(getKeycloakIdStub).calledOnceWithExactly(authenticatedWalletId);
       expect(
-        createWalletStub.calledOnceWithExactly(
-          authenticatedWalletId,
+        createParentWalletStub.calledOnceWithExactly(
+          keycloakId,
           mockWallet.wallet,
           mockWallet.about,
         ),
       ).eql(true);
+      // No sub-wallet is made, so no manage trust row is written.
+      expect(createWalletStub).not.called;
     });
 
     it('successfully creates parent wallet', async () => {
