@@ -93,6 +93,62 @@ describe('routers/utils', () => {
     });
   });
 
+  describe('verifyRoleHandler', () => {
+    // An admin has no wallet, so this must authorize on the role alone (#1239).
+    function appWith(role) {
+      const app = express();
+      app.get('/test', helper.verifyRoleHandler(role), async (req, res) => {
+        res.send({ keycloakId: req.keycloak_id });
+      });
+      app.use(helper.errorHandler);
+      return app;
+    }
+
+    afterEach(() => sinon.restore());
+
+    it('a token carrying the role passes, without looking for a wallet', async () => {
+      const keycloakId = uuid.v4();
+      sinon
+        .stub(JWTService, 'verify')
+        .resolves({ id: keycloakId, roles: ['wallet-admin'] });
+      const getWalletIdByKeycloakId = sinon.stub(
+        WalletService.prototype,
+        'getWalletIdByKeycloakId',
+      );
+
+      const res = await request(appWith('wallet-admin'))
+        .get('/test')
+        .set('Authorization', `Bearer token`);
+
+      expect(res.statusCode).eq(200);
+      expect(res.body).eql({ keycloakId });
+      expect(getWalletIdByKeycloakId.notCalled).eql(true);
+    });
+
+    it('a token without the role gets 403', async () => {
+      sinon
+        .stub(JWTService, 'verify')
+        .resolves({ id: uuid.v4(), roles: ['some-other-role'] });
+
+      const res = await request(appWith('wallet-admin'))
+        .get('/test')
+        .set('Authorization', `Bearer token`);
+
+      expect(res.statusCode).eq(403);
+      expect(res.body.message).match(/wallet-admin role required/);
+    });
+
+    it('a token with no roles claim gets 403, not a crash', async () => {
+      sinon.stub(JWTService, 'verify').resolves({ id: uuid.v4() });
+
+      const res = await request(appWith('wallet-admin'))
+        .get('/test')
+        .set('Authorization', `Bearer token`);
+
+      expect(res.statusCode).eq(403);
+    });
+  });
+
   describe('verifyJWTHandler', () => {
     it('pass correct token should pass the verify', async () => {
       const keycloakId = uuid.v4();

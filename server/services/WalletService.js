@@ -241,6 +241,10 @@ class WalletService {
     return this.hasControlOver(walletLoginId, wallet.id);
   }
 
+  async getAllWalletsAdmin(options) {
+    return this._wallet.getAllWalletsAdmin(options);
+  }
+
   async batchCreateWallet(
     sender_wallet,
     token_transfer_amount_default,

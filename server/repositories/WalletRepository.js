@@ -206,6 +206,36 @@ class WalletRepository extends BaseRepository {
 
     return { wallets };
   }
+
+  // Every wallet, with no caller in the picture. getAllWallets above always
+  // starts from a wallet id, so an admin listing cannot reuse it (#1239).
+  async getAllWalletsAdmin({ limit, offset, name, sort_by, order }) {
+    let query = this._session
+      .getDB()
+      .select(
+        'id',
+        'name',
+        'about',
+        'display_name',
+        'logo_url',
+        'cover_url',
+        'created_at',
+      )
+      .table('wallet');
+
+    if (name) {
+      query = query.where('name', 'ilike', `%${name}%`);
+    }
+
+    const count = await query.clone().clearSelect().count('*');
+
+    const wallets = await query
+      .orderBy(sort_by, order)
+      .limit(limit)
+      .offset(offset);
+
+    return { wallets, count: +count[0].count };
+  }
 }
 
 module.exports = WalletRepository;
