@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const HttpError = require('../utils/HttpError');
 const TokenService = require('./TokenService');
 const TransferService = require('./TransferService');
+const WalletService = require('./WalletService');
 
 const ACTION_TOKEN_TYPE = 'send-token';
 const ACTION_TOKEN_TTL = process.env.ACTION_TOKEN_TTL || '7d';
@@ -16,6 +17,7 @@ class ActionTokenService {
   constructor() {
     this._tokenService = new TokenService();
     this._transferService = new TransferService();
+    this._walletService = new WalletService();
   }
 
   /** 
@@ -57,16 +59,52 @@ class ActionTokenService {
     return decoded;
   }
 
-  async generate({ recipient_email, tokens, bundle }, walletLoginId) {
+  async generate(
+    { recipient_email, tokens, bundle, sender_wallet },
+    walletLoginId,
+  ) {
     let tokenIds;
+
+    // A link may draw from any wallet the caller controls, not only the one
+    // they logged in with. Absent sender_wallet keeps the old behaviour (#869).
+    let senderWalletId = walletLoginId;
+    if (sender_wallet) {
+      const wallet = await this._walletService.getByName(sender_wallet);
+      const isOwn = await this._walletService.hasControlOver(
+        walletLoginId,
+        wallet.id,
+      );
+      if (!isOwn) {
+        throw new HttpError(
+          403,
+          'Wallet does not belong to the logged in wallet',
+        );
+      }
+      senderWalletId = wallet.id;
+    }
 
     if (tokens) {
       const resolved = await Promise.all(
         tokens.map((id) => this._tokenService.getById({ id, walletLoginId })),
       );
+      // A link speaks for one sender wallet, and redeem refuses any token that
+      // wallet does not own. Say so now, to the sender, rather than issuing a
+      // link that cannot be claimed.
+      const foreign = resolved.filter(
+        (token) => token.wallet_id !== senderWalletId,
+      );
+      if (foreign.length > 0) {
+        throw new HttpError(
+          409,
+          `Token(s) do not belong to the sender wallet: ${foreign
+            .map((token) => token.id)
+            .join(', ')}`,
+        );
+      }
       tokenIds = resolved.map((token) => token.id);
     } else {
       const resolved = await this._tokenService.getTokens({
+        wallet: sender_wallet,
         limit: bundle.bundle_size,
         offset: 0,
         walletLoginId,
@@ -82,7 +120,7 @@ class ActionTokenService {
 
     const actionToken = ActionTokenService.signActionToken({
       sub: recipient_email,
-      sender_wallet_id: walletLoginId,
+      sender_wallet_id: senderWalletId,
       token_ids: tokenIds,
     });
 
