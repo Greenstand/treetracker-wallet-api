@@ -493,12 +493,8 @@ class WalletService {
   }
 
   async hasControlOverByName(parentId, childName) {
-    //
-    const walletInstance = await this._walletService.getByName(childName);
-    const isSub = await this._walletService.hasControlOver(
-      parentId,
-      childName.id,
-    );
+    const walletInstance = await this.getByIdOrName(childName);
+    const isSub = await this.hasControlOver(parentId, walletInstance.id);
     if (!isSub) {
       throw new HttpError(
         403,
