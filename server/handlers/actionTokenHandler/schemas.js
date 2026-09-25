@@ -11,10 +11,12 @@ const actionTokenGenerateSchema = Joi.alternatives().conditional(
   {
     then: Joi.object({
       recipient_email: Joi.string().email().required(),
+      sender_wallet: Joi.string(),
       tokens: Joi.array().items(Joi.string().uuid()).required().unique(),
     }),
     otherwise: Joi.object({
       recipient_email: Joi.string().email().required(),
+      sender_wallet: Joi.string(),
       bundle: Joi.object({
         bundle_size: Joi.number().integer().min(1).max(10000).required(),
       }).required(),
