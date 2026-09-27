@@ -55,10 +55,14 @@ exports.verifyJWTHandler = exports.handlerWrapper(async (req, res, next) => {
   const result = await JWTService.verify(req.headers.authorization);
   const walletService = new WalletService();
 
+  // The token identifies an account, so carry the account id on every request.
+  // Since #900 an account owns several equal wallets, and the one resolved
+  // below is only the oldest of them, so it cannot stand in for the account.
+  req.keycloak_id = result.id;
+
   const wallet = await walletService.getWalletIdByKeycloakId(result.id);
   if (!wallet || !wallet.id) {
     if (req.originalUrl === '/wallets' && req.method === 'POST') {
-      req.keycloak_id = result.id;
       next();
     } else {
       log.error('user info not found');

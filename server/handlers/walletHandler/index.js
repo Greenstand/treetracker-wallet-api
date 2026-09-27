@@ -17,7 +17,6 @@ const {
   walletBatchTransferBodySchema,
   csvValidationSchemaTransfer,
 } = require('./schemas');
-const HttpError = require('../../utils/HttpError');
 
 const walletGet = async (req, res) => {
   const validatedQuery = await walletGetQuerySchema.validateAsync(req.query, {
@@ -148,9 +147,9 @@ const walletPost = async (req, res) => {
 
   // Every wallet made here is a top level wallet carrying the account's
   // keycloak id. Sub-wallets, which need a manage trust row, are not a
-  // concept this app uses (#900).
-  const keycloakId = req.keycloak_id || (await walletService.getKeycloakIdByWalletId(wallet_id));
-  if (!keycloakId) throw new HttpError(500, 'keycloak id not found');
+  // concept this app uses (#900). The id comes straight off the request: the
+  // token identifies the account, so it never has to be looked up.
+  const { keycloak_id: keycloakId } = req;
   const returnedWallet = await walletService.createParentWallet(
     keycloakId,
     walletToBeCreated,
