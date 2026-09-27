@@ -122,6 +122,28 @@ describe('routers/utils', () => {
       sinon.restore();
     });
 
+    it('carries the account id even when the caller has a wallet', async () => {
+      const keycloakId = uuid.v4();
+      sinon.stub(JWTService, 'verify').returns({ id: keycloakId });
+      sinon
+        .stub(WalletService.prototype, 'getWalletIdByKeycloakId')
+        .resolves({ id: uuid.v4() });
+      const app = express();
+      app.get('/test', helper.verifyJWTHandler, async (req, res) => {
+        res.send({ keycloakId: req.keycloak_id, walletId: req.wallet_id });
+      });
+      app.use(helper.errorHandler);
+
+      const res = await request(app)
+        .get('/test')
+        .set('Authorization', `Bearer token`);
+
+      expect(res.statusCode).eq(200);
+      expect(res.body.keycloakId).eql(keycloakId);
+      expect(res.body.walletId).to.exist;
+      sinon.restore();
+    });
+
     it('to create parent wallet', async () => {
       const keycloakId = uuid.v4();
       const verifyStub = sinon.stub(JWTService, 'verify').returns({

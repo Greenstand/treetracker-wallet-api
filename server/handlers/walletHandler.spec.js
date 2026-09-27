@@ -195,9 +195,10 @@ describe('walletRouter', () => {
     // Since #900 a second wallet is top level too, carrying the account's
     // keycloak id, rather than a sub-wallet hung off the first.
     it('creates a second wallet as a top level wallet', async () => {
-      const getKeycloakIdStub = sinon
-        .stub(WalletService.prototype, 'getKeycloakIdByWalletId')
-        .resolves(keycloakId);
+      const getKeycloakIdStub = sinon.stub(
+        WalletService.prototype,
+        'getKeycloakIdByWalletId',
+      );
       const createWalletStub = sinon.stub(
         WalletService.prototype,
         'createWallet',
@@ -214,7 +215,7 @@ describe('walletRouter', () => {
       expect(res).property('statusCode').eq(201);
       expect(queueStub.calledOnce).to.be.true;
       expect(res.body.wallet).eq(mockWallet.wallet);
-      expect(getKeycloakIdStub).calledOnceWithExactly(authenticatedWalletId);
+      expect(getKeycloakIdStub.notCalled).eql(true);
       expect(
         createParentWalletStub.calledOnceWithExactly(
           keycloakId,
