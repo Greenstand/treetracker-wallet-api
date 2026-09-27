@@ -215,7 +215,6 @@ describe('walletRouter', () => {
       expect(res).property('statusCode').eq(201);
       expect(queueStub.calledOnce).to.be.true;
       expect(res.body.wallet).eq(mockWallet.wallet);
-      // The account id rides on the request, so no lookup is needed.
       expect(getKeycloakIdStub.notCalled).eql(true);
       expect(
         createParentWalletStub.calledOnceWithExactly(

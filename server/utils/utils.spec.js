@@ -122,8 +122,6 @@ describe('routers/utils', () => {
       sinon.restore();
     });
 
-    // The account is the identity. A wallet only stands for itself, so every
-    // request carries the account id, not just the one that creates a wallet.
     it('carries the account id even when the caller has a wallet', async () => {
       const keycloakId = uuid.v4();
       sinon.stub(JWTService, 'verify').returns({ id: keycloakId });

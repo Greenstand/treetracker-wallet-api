@@ -147,8 +147,7 @@ const walletPost = async (req, res) => {
 
   // Every wallet made here is a top level wallet carrying the account's
   // keycloak id. Sub-wallets, which need a manage trust row, are not a
-  // concept this app uses (#900). The id comes straight off the request: the
-  // token identifies the account, so it never has to be looked up.
+  // concept this app uses (#900).
   const { keycloak_id: keycloakId } = req;
   const returnedWallet = await walletService.createParentWallet(
     keycloakId,
