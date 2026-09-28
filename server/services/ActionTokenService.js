@@ -62,23 +62,19 @@ class ActionTokenService {
   async generate(
     { recipient_email, tokens, bundle, sender_wallet },
     walletLoginId,
+    keycloakId,
   ) {
     let tokenIds;
 
-    // A link may draw from any wallet the caller controls, not only the one
-    // they logged in with. Absent sender_wallet keeps the old behaviour (#869).
     let senderWalletId = walletLoginId;
     if (sender_wallet) {
       const wallet = await this._walletService.getByName(sender_wallet);
-      const isOwn = await this._walletService.hasControlOver(
+      const isOwn = await this._walletService.canActFor(wallet, {
+        keycloakId,
         walletLoginId,
-        wallet.id,
-      );
+      });
       if (!isOwn) {
-        throw new HttpError(
-          403,
-          'Wallet does not belong to the logged in wallet',
-        );
+        throw new HttpError(403, 'Wallet does not belong to this account');
       }
       senderWalletId = wallet.id;
     }
@@ -87,9 +83,6 @@ class ActionTokenService {
       const resolved = await Promise.all(
         tokens.map((id) => this._tokenService.getById({ id, walletLoginId })),
       );
-      // A link speaks for one sender wallet, and redeem refuses any token that
-      // wallet does not own. Say so now, to the sender, rather than issuing a
-      // link that cannot be claimed.
       const foreign = resolved.filter(
         (token) => token.wallet_id !== senderWalletId,
       );

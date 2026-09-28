@@ -9,10 +9,14 @@ const actionTokenGenerate = async (req, res) => {
     req.body,
     { abortEarly: false },
   );
-  const { wallet_id } = req;
+  const { wallet_id, keycloak_id } = req;
 
   const actionTokenService = new ActionTokenService();
-  const result = await actionTokenService.generate(validatedBody, wallet_id);
+  const result = await actionTokenService.generate(
+    validatedBody,
+    wallet_id,
+    keycloak_id,
+  );
 
   res.status(201).json(result);
 };

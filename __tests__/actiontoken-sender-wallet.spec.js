@@ -34,6 +34,38 @@ describe('Action token: sender_wallet', () => {
     expect(res.body).to.have.property('token_count', 1);
   });
 
+  // A second wallet of the same account is top level, so nothing links it to the
+  // first except the account id (#900).
+  it('accepts a second wallet of the same account, with no trust row', async () => {
+    const created = await request(server)
+      .post('/wallets')
+      .set('Authorization', `Bearer ${bearerTokenA}`)
+      .set('content-type', 'application/json')
+      .send({ wallet: 'walletA-second' })
+      .expect(201);
+
+    const [own] = await seed.addTokenToWallet(created.body.id);
+
+    const issued = await request(server)
+      .post('/action-tokens')
+      .set('Authorization', `Bearer ${bearerTokenA}`)
+      .send({
+        recipient_email: 'samwel@example.com',
+        sender_wallet: 'walletA-second',
+        bundle: { bundle_size: 1 },
+      });
+
+    expect(issued).to.have.property('statusCode', 201);
+
+    const redeemed = await request(server)
+      .post('/action-tokens/redeem')
+      .set('Authorization', `Bearer ${bearerTokenB}`)
+      .send({ action_token: issued.body.action_token });
+
+    expect(redeemed).to.have.property('statusCode', 200);
+    expect(redeemed.body.parameters.tokens).to.include(own.id);
+  });
+
   it('draws the tokens from the named wallet, not the login wallet', async () => {
     // walletB manages walletC, and the only token in walletC is tokenB.
     const issued = await request(server)

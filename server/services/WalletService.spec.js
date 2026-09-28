@@ -18,6 +18,50 @@ describe('WalletService', () => {
     sinon.restore();
   });
 
+  describe('canActFor', () => {
+    it('passes on the account id alone, without consulting trust', async () => {
+      const keycloakId = uuid.v4();
+      const hasControlOverStub = sinon.stub(Wallet.prototype, 'hasControlOver');
+
+      const result = await walletService.canActFor(
+        { id: uuid.v4(), keycloak_account_id: keycloakId },
+        { keycloakId, walletLoginId: uuid.v4() },
+      );
+
+      expect(result).eql(true);
+      expect(hasControlOverStub.notCalled).eql(true);
+    });
+
+    it('falls back to trust for a wallet carrying no account id', async () => {
+      const walletLoginId = uuid.v4();
+      const walletId = uuid.v4();
+      const hasControlOverStub = sinon
+        .stub(Wallet.prototype, 'hasControlOver')
+        .resolves(true);
+
+      const result = await walletService.canActFor(
+        { id: walletId, keycloak_account_id: null },
+        { keycloakId: uuid.v4(), walletLoginId },
+      );
+
+      expect(result).eql(true);
+      expect(
+        hasControlOverStub.calledOnceWithExactly(walletLoginId, walletId),
+      ).eql(true);
+    });
+
+    it('refuses a wallet of another account with no trust', async () => {
+      sinon.stub(Wallet.prototype, 'hasControlOver').resolves(false);
+
+      const result = await walletService.canActFor(
+        { id: uuid.v4(), keycloak_account_id: uuid.v4() },
+        { keycloakId: uuid.v4(), walletLoginId: uuid.v4() },
+      );
+
+      expect(result).eql(false);
+    });
+  });
+
   it('createParentWallet', async () => {
     const createParentWalletStub = sinon.stub(
       Wallet.prototype,

@@ -234,6 +234,13 @@ class WalletService {
     return this._wallet.hasControlOver(parentId, childId);
   }
 
+  async canActFor(wallet, { keycloakId, walletLoginId }) {
+    if (keycloakId && wallet.keycloak_account_id === keycloakId) {
+      return true;
+    }
+    return this.hasControlOver(walletLoginId, wallet.id);
+  }
+
   async batchCreateWallet(
     sender_wallet,
     token_transfer_amount_default,
