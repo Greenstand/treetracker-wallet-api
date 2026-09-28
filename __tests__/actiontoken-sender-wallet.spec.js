@@ -1,6 +1,3 @@
-// Integration test: a share link may name the wallet it draws from, and draws
-// from that wallet rather than the login wallet (#869).
-// Auth: Bearer is the wallet's keycloak_account_id (JWTService.verify stubbed by mocks.js)
 require('dotenv').config();
 const request = require('supertest');
 const { expect } = require('chai');
@@ -18,8 +15,6 @@ describe('Action token: sender_wallet', () => {
     bearerTokenB = seed.walletB.keycloak_account_id;
   });
 
-  // The app sends sender_wallet on every share link, so rejecting it as an
-  // unknown key broke the feature outright.
   it('accepts sender_wallet naming the login wallet', async () => {
     const res = await request(server)
       .post('/action-tokens')
@@ -34,8 +29,6 @@ describe('Action token: sender_wallet', () => {
     expect(res.body).to.have.property('token_count', 1);
   });
 
-  // A second wallet of the same account is top level, so nothing links it to the
-  // first except the account id (#900).
   it('accepts a second wallet of the same account, with no trust row', async () => {
     const created = await request(server)
       .post('/wallets')
@@ -67,7 +60,6 @@ describe('Action token: sender_wallet', () => {
   });
 
   it('draws the tokens from the named wallet, not the login wallet', async () => {
-    // walletB manages walletC, and the only token in walletC is tokenB.
     const issued = await request(server)
       .post('/action-tokens')
       .set('Authorization', `Bearer ${bearerTokenB}`)
@@ -101,8 +93,6 @@ describe('Action token: sender_wallet', () => {
     expect(res).to.have.property('statusCode', 403);
   });
 
-  // walletB controls both itself and walletC, so this gets past the per-token
-  // permission check and lands on the sender wallet check.
   it('refuses explicit tokens that the named wallet does not own', async () => {
     const [own] = await seed.addTokenToWallet(seed.walletB.id);
 
