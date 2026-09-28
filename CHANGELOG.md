@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.35](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.34...v1.44.0-keycloak.35) (2026-09-28)
+
+
+### Bug Fixes
+
+* **action-token:** let a share link name the wallet it draws from ([7f33d4e](https://github.com/Greenstand/treetracker-wallet-api/commit/7f33d4eddd9a79b4fcd4d12f832e4289afab23e1)), closes [Greenstand/treetracker-wallet-app#869](https://github.com/Greenstand/treetracker-wallet-app/issues/869)
+
 # [1.44.0-keycloak.34](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.33...v1.44.0-keycloak.34) (2026-09-24)
 
 
