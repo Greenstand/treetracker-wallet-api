@@ -125,6 +125,13 @@ class Token {
     return transactions;
   }
 
+  async getTransferableByOwner(walletId, limit) {
+    return this._tokenRepository.getByFilter(
+      { wallet_id: walletId, transfer_pending: false, claim: false },
+      { limit },
+    );
+  }
+
   async getByOwner(walletId, limit, offset) {
     const tokens = await this._tokenRepository.getByFilter(
       { wallet_id: walletId },

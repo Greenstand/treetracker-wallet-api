@@ -4,6 +4,8 @@
 */
 const jwt = require('jsonwebtoken');
 const HttpError = require('../utils/HttpError');
+const Session = require('../infra/database/Session');
+const Token = require('../models/Token');
 const TokenService = require('./TokenService');
 const TransferService = require('./TransferService');
 const WalletService = require('./WalletService');
@@ -30,6 +32,8 @@ const ACTION_TOKEN_SECRET = resolveActionTokenSecret();
 
 class ActionTokenService {
   constructor() {
+    this._session = new Session();
+    this._token = new Token(this._session);
     this._tokenService = new TokenService();
     this._transferService = new TransferService();
     this._walletService = new WalletService();
@@ -80,6 +84,7 @@ class ActionTokenService {
     keycloakId,
   ) {
     let tokenIds;
+    let tokenCount;
 
     let senderWalletId = walletLoginId;
     if (sender_wallet) {
@@ -111,32 +116,30 @@ class ActionTokenService {
       }
       tokenIds = resolved.map((token) => token.id);
     } else {
-      const resolved = await this._tokenService.getTokens({
-        wallet: sender_wallet,
-        limit: bundle.bundle_size,
-        offset: 0,
-        walletLoginId,
-      });
-      if (resolved.length < bundle.bundle_size) {
+      const available = await this._token.getTransferableByOwner(
+        senderWalletId,
+        bundle.bundle_size,
+      );
+      if (available.length < bundle.bundle_size) {
         throw new HttpError(
           409,
           `Wallet does not have ${bundle.bundle_size} tokens available`,
         );
       }
-      tokenIds = resolved.map((token) => token.id);
+      tokenCount = bundle.bundle_size;
     }
 
     const actionToken = ActionTokenService.signActionToken({
       sub: recipient_email,
       sender_wallet_id: senderWalletId,
-      token_ids: tokenIds,
+      ...(tokenIds ? { token_ids: tokenIds } : { token_count: tokenCount }),
     });
 
     const { exp } = ActionTokenService.verifyActionToken(actionToken);
     return {
       action_token: actionToken,
       expires_at: new Date(exp * 1000).toISOString(),
-      token_count: tokenIds.length,
+      token_count: tokenIds ? tokenIds.length : tokenCount,
     };
   }
 
@@ -146,6 +149,7 @@ class ActionTokenService {
       senderWalletId: payload.sender_wallet_id,
       receiverWalletId: walletLoginId,
       tokenIds: payload.token_ids,
+      tokenCount: payload.token_count,
     });
   }
 }
