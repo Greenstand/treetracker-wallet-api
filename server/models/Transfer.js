@@ -73,13 +73,28 @@ class Transfer {
     const filter = {
       and: [],
     };
-    filter.and.push({
-      or: [
-        { source_wallet_id: walletLoginId },
-        { destination_wallet_id: walletLoginId },
-        { originator_wallet_id: walletLoginId },
-      ],
-    });
+    const { wallets } = await this._wallet.getAllWallets(
+      walletLoginId,
+      undefined,
+      undefined,
+      'created_at',
+      'desc',
+    );
+    // Never let this list go empty: knex drops an empty `or` and every
+    // transfer in the table comes back.
+    const orConditions = [
+      { source_wallet_id: walletLoginId },
+      { destination_wallet_id: walletLoginId },
+      { originator_wallet_id: walletLoginId },
+    ];
+    wallets
+      .filter((wallet) => wallet.id !== walletLoginId)
+      .forEach((wallet) => {
+        orConditions.push({ source_wallet_id: wallet.id });
+        orConditions.push({ destination_wallet_id: wallet.id });
+        orConditions.push({ originator_wallet_id: wallet.id });
+      });
+    filter.and.push({ or: orConditions });
     if (state) {
       filter.and.push({ state });
     }
