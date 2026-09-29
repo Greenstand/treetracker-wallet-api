@@ -6,9 +6,12 @@
  */
 
 class HttpError extends Error {
-  constructor(code, message, toRollback) {
+  // `reason` is a stable slug for cases a client must branch on, where the
+  // status alone is ambiguous. It is sent in the response body.
+  constructor(code, message, toRollback, reason) {
     super(message);
     this.code = code;
+    this.reason = reason;
     // set rollback flag, so the transaction of db would rollback when catch this error
     // set default to true
     this._toRollback = toRollback || true;
