@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.36](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.35...v1.44.0-keycloak.36) (2026-09-29)
+
+
+### Bug Fixes
+
+* **deploy:** require ACTION_TOKEN_SECRET again and provide it per cluster ([#573](https://github.com/Greenstand/treetracker-wallet-api/issues/573)) ([b9e3b95](https://github.com/Greenstand/treetracker-wallet-api/commit/b9e3b95b22613e08884c70a1a19b60027439d353))
+
 # [1.44.0-keycloak.35](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.34...v1.44.0-keycloak.35) (2026-09-28)
 
 
