@@ -260,10 +260,10 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
-      const transfer = await this._transfer.getById({
+      const transfer = await this.getTransferById(
         transferId,
         walletLoginId,
-      });
+      );
 
       const originator_wallet_id = await this._walletService.getByName(
         transfer.originating_wallet,
@@ -321,10 +321,10 @@ class TransferService {
     try {
       await this._session.beginTransaction();
 
-      const transfer = await this._transfer.getById({
+      const transfer = await this.getTransferById(
         transferId,
         walletLoginId,
-      });
+      );
 
       const originator_wallet_id = await this._walletService.getByName(
         transfer.originating_wallet,
