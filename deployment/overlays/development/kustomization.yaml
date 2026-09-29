@@ -2,3 +2,5 @@ patchesStrategicMerge:
   - mapping.yaml
 resources:
   - ../../base
+  # Cluster-specific: the encrypted ACTION_TOKEN_SECRET (see deployment/README.md)
+  - treetracker-wallet-action-token-sealed-secret.yaml
