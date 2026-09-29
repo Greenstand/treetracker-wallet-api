@@ -1,5 +1,6 @@
 const Session = require('../infra/database/Session');
 const Transfer = require('../models/Transfer');
+const Token = require('../models/Token');
 const HttpError = require('../utils/HttpError');
 const WalletService = require('./WalletService');
 const TokenService = require('./TokenService');
@@ -11,6 +12,7 @@ class TransferService {
   constructor() {
     this._session = new Session();
     this._transfer = new Transfer(this._session);
+    this._token = new Token(this._session);
     this._walletService = new WalletService();
     this._eventService = new EventService();
   }
@@ -441,7 +443,12 @@ class TransferService {
 
 
    // Transfer the tokens promised by a redeemed action token 
-  async redeemActionToken({ senderWalletId, receiverWalletId, tokenIds }) {
+  async redeemActionToken({
+    senderWalletId,
+    receiverWalletId,
+    tokenIds,
+    tokenCount,
+  }) {
     try {
       await this._session.beginTransaction();
 
@@ -449,10 +456,24 @@ class TransferService {
       const receiverWallet =
         await this._walletService.getById(receiverWalletId);
 
-      const tokenService = new TokenService();
-      const tokens = await Promise.all(
-        tokenIds.map((id) => tokenService.getById({ id }, true)),
-      );
+      let tokens;
+      if (tokenIds) {
+        const tokenService = new TokenService();
+        tokens = await Promise.all(
+          tokenIds.map((id) => tokenService.getById({ id }, true)),
+        );
+      } else {
+        tokens = await this._token.getTransferableByOwner(
+          senderWallet.id,
+          tokenCount,
+        );
+        if (tokens.length < tokenCount) {
+          throw new HttpError(
+            409,
+            `Wallet does not have ${tokenCount} tokens available`,
+          );
+        }
+      }
 
       const result = await this._transfer.transferActionToken(
         receiverWallet.id,
@@ -464,7 +485,7 @@ class TransferService {
       const payload = {
         walletSender: senderWallet.name,
         walletReceiver: receiverWallet.name,
-        tokenTransferred: tokenIds,
+        tokenTransferred: tokens.map((token) => token.id),
       };
 
       await this._eventService.logEvent({
