@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.37](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.36...v1.44.0-keycloak.37) (2026-09-29)
+
+
+### Bug Fixes
+
+* **action-token:** promise a count, not named tokens ([334b9c2](https://github.com/Greenstand/treetracker-wallet-api/commit/334b9c239d581a711c4dd23cb8d87a21b6ebd3aa)), closes [#574](https://github.com/Greenstand/treetracker-wallet-api/issues/574) [#571](https://github.com/Greenstand/treetracker-wallet-api/issues/571)
+
 # [1.44.0-keycloak.36](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.35...v1.44.0-keycloak.36) (2026-09-29)
 
 
