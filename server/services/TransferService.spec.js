@@ -356,6 +356,33 @@ describe('TransferService', () => {
       expect(commitTransactionStub.notCalled).eql(true);
     });
 
+    it('should return 404 when the decline transfer is not found', async () => {
+      getByIdStub.resolves(undefined);
+
+      let error;
+      try {
+        await transferService.declineTransfer('transferId', 'walletLoginId');
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).to.have.property('code', 404);
+      expect(error).to.have.property(
+        'message',
+        'Transfer does not exist or it is not related to this wallet',
+      );
+      expect(
+        getByIdStub.calledOnceWithExactly({
+          transferId: 'transferId',
+          walletLoginId: 'walletLoginId',
+        }),
+      ).eql(true);
+      expect(declineTransferStub.notCalled).to.eql(true);
+      expect(logEventStub.notCalled).to.eql(true);
+      expect(rollbackTransactionStub.calledOnce).to.eql(true);
+      expect(commitTransactionStub.notCalled).to.eql(true);
+    });
+
     it('should decline transfer', async () => {
       getByNameStub.onFirstCall().resolves(originator_wallet_id);
       getByNameStub.onSecondCall().resolves(destination_wallet_id);
@@ -455,6 +482,33 @@ describe('TransferService', () => {
       expect(beginTransactionStub.calledOnce).eql(true);
       expect(rollbackTransactionStub.calledOnce).eql(true);
       expect(commitTransactionStub.notCalled).eql(true);
+    });
+
+    it('should return 404 when the cancel transfer is not found', async () => {
+      getByIdStub.resolves(undefined);
+
+      let error;
+      try {
+        await transferService.cancelTransfer('transferId', 'walletLoginId');
+      } catch (e) {
+        error = e;
+      }
+
+      expect(error).to.have.property('code', 404);
+      expect(error).to.have.property(
+        'message',
+        'Transfer does not exist or it is not related to this wallet',
+      );
+      expect(
+        getByIdStub.calledOnceWithExactly({
+          transferId: 'transferId',
+          walletLoginId: 'walletLoginId',
+        }),
+      ).eql(true);
+      expect(cancelTransferStub.notCalled).to.eql(true);
+      expect(logEventStub.notCalled).to.eql(true);
+      expect(rollbackTransactionStub.calledOnce).to.eql(true);
+      expect(commitTransactionStub.notCalled).to.eql(true);
     });
 
     it('should cancel transfer', async () => {
