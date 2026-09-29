@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.38](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.37...v1.44.0-keycloak.38) (2026-09-29)
+
+
+### Bug Fixes
+
+* **transfer:** list transfers of every wallet the account has ([af71753](https://github.com/Greenstand/treetracker-wallet-api/commit/af717539b208cb584bcc7f72663627b9fc6c12bd)), closes [#590](https://github.com/Greenstand/treetracker-wallet-api/issues/590) [Greenstand/treetracker-wallet-app#852](https://github.com/Greenstand/treetracker-wallet-app/issues/852)
+
 # [1.44.0-keycloak.37](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.36...v1.44.0-keycloak.37) (2026-09-29)
 
 
