@@ -148,6 +148,7 @@ class ActionTokenService {
     return this._transferService.redeemActionToken({
       senderWalletId: payload.sender_wallet_id,
       receiverWalletId: walletLoginId,
+      walletLoginId,
       tokenIds: payload.token_ids,
       tokenCount: payload.token_count,
     });

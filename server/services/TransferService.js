@@ -446,6 +446,7 @@ class TransferService {
   async redeemActionToken({
     senderWalletId,
     receiverWalletId,
+    walletLoginId,
     tokenIds,
     tokenCount,
   }) {
@@ -476,7 +477,7 @@ class TransferService {
       }
 
       const result = await this._transfer.transferActionToken(
-        receiverWallet.id,
+        walletLoginId,
         senderWallet,
         receiverWallet,
         tokens,
