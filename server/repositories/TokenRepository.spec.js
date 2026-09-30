@@ -30,4 +30,16 @@ describe('TokenRepository', () => {
     );
     expect(tokens).lengthOf(1);
   });
+
+
+  it('getByTransferId selects token.* to avoid the transaction.id collision', async () => {
+    tracker.on('query', (query) => {
+      const sql = query.sql.replace(/["'`]/g, '').toLowerCase();
+      expect(sql).to.match(/^select\s+token\.\*/);
+      query.response([]);
+    });
+    await tokenRepository.getByTransferId(
+      '226f76cd-52b0-486b-b58a-98230696c748',
+    );
+  });
 });
