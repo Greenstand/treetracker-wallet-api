@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.42](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.41...v1.44.0-keycloak.42) (2026-10-01)
+
+
+### Features
+
+* **admin:** list every wallet for a wallet-admin ([2d8e413](https://github.com/Greenstand/treetracker-wallet-api/commit/2d8e413c7c62e992cf670c6703e80adea50611bf)), closes [Greenstand/treetracker-admin-client#1239](https://github.com/Greenstand/treetracker-admin-client/issues/1239)
+
 # [1.44.0-keycloak.41](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.40...v1.44.0-keycloak.41) (2026-10-01)
 
 
