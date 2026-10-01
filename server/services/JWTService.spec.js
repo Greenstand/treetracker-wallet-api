@@ -73,7 +73,30 @@ describe('JWTService', () => {
         });
 
       const result = await JWTService.verify('Bearer valid_token');
-      expect(result).to.eql({ id: 'userId' });
+      expect(result).to.eql({ id: 'userId', roles: [] });
+    });
+
+    // Keycloak splits realm roles and per-client roles across two claims, and
+    // an admin role can sit in either (#1239).
+    it('collects roles from both the realm and client claims', async () => {
+      sinon
+        .stub(jwksClient.JwksClient.prototype, 'getSigningKey')
+        .resolves({ getPublicKey: () => 'fake-public-key' });
+      sinon
+        .stub(JWTTools, 'verify')
+        .callsFake((token, publicKey, options, callback) => {
+          callback(undefined, {
+            sub: 'userId',
+            realm_access: { roles: ['wallet-admin'] },
+            resource_access: {
+              'some-client': { roles: ['wallet-admin', 'other'] },
+            },
+          });
+        });
+
+      const result = await JWTService.verify('Bearer valid_token');
+      expect(result.roles).to.have.members(['wallet-admin', 'other']);
+      expect(result.roles).lengthOf(2);
     });
   });
 });

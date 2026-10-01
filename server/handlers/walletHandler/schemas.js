@@ -22,6 +22,14 @@ const walletGetQuerySchema = Joi.object({
   created_at_end_date: Joi.date().iso(),
 });
 
+const walletGetAdminQuerySchema = Joi.object({
+  limit: Joi.number().integer().min(1).max(2000).default(100),
+  offset: Joi.number().integer().min(0).default(0),
+  name: Joi.string(),
+  sort_by: Joi.string().valid('created_at', 'name').default('created_at'),
+  order: Joi.string().valid('asc', 'desc').default('desc'),
+});
+
 const walletIdParamSchema = Joi.object({
   wallet_id: Joi.string().uuid().required(),
 });
@@ -103,6 +111,7 @@ const walletBatchTransferBodySchema = Joi.object({
 
 module.exports = {
   walletGetQuerySchema,
+  walletGetAdminQuerySchema,
   walletIdParamSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
