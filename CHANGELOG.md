@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.41](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.40...v1.44.0-keycloak.41) (2026-10-01)
+
+
+### Bug Fixes
+
+* **wallet-api:** stop transaction.id from clobbering token.id ([58d2001](https://github.com/Greenstand/treetracker-wallet-api/commit/58d20011d2a635a2c6a6c9774741f0720ad712ca)), closes [#564](https://github.com/Greenstand/treetracker-wallet-api/issues/564) [#593](https://github.com/Greenstand/treetracker-wallet-api/issues/593) [Greenstand/treetracker-wallet-app#853](https://github.com/Greenstand/treetracker-wallet-app/issues/853)
+
 # [1.44.0-keycloak.40](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.39...v1.44.0-keycloak.40) (2026-10-01)
 
 
