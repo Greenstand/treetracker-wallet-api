@@ -35,7 +35,7 @@ class TokenRepository extends BaseRepository {
   async getByTransferId(transferId, limit, offset) {
     return this._session
       .getDB()
-      .select('*')
+      .select('token.*')
       .from('token')
       .join('transaction', 'token.id', 'transaction.token_id')
       .where('transaction.transfer_id', transferId)
