@@ -26,6 +26,7 @@ const actionTokenGenerateSchema = Joi.alternatives().conditional(
 
 const actionTokenRedeemSchema = Joi.object({
   action_token: Joi.string().required(),
+  wallet: Joi.string(),
 });
 
 module.exports = { actionTokenGenerateSchema, actionTokenRedeemSchema };

@@ -143,11 +143,25 @@ class ActionTokenService {
     };
   }
 
-  async redeem({ action_token }, walletLoginId) {
+  async redeem({ action_token, wallet }, walletLoginId, keycloakId) {
     const payload = ActionTokenService.verifyActionToken(action_token);
+
+    let receiverWalletId = walletLoginId;
+    if (wallet) {
+      const receiver = await this._walletService.getByName(wallet);
+      const isOwn = await this._walletService.canActFor(receiver, {
+        keycloakId,
+        walletLoginId,
+      });
+      if (!isOwn) {
+        throw new HttpError(403, 'Wallet does not belong to this account');
+      }
+      receiverWalletId = receiver.id;
+    }
+
     return this._transferService.redeemActionToken({
       senderWalletId: payload.sender_wallet_id,
-      receiverWalletId: walletLoginId,
+      receiverWalletId,
       tokenIds: payload.token_ids,
       tokenCount: payload.token_count,
     });
