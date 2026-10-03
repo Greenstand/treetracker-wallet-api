@@ -178,18 +178,55 @@ If you have not installed db-migrate globally, while in the database folder, you
 
 See here to learn more about db-migrate: https://db-migrate.readthedocs.io/en/latest/
 
+# Branches and Authentication
+
+This repository currently maintains two API variants. They use the same codebase and
+database, but they authenticate requests differently and are deployed under different
+paths.
+
+| Branch     | Deployed API path  | Authentication                                                      |
+| ---------- | ------------------ | ------------------------------------------------------------------- |
+| `master`   | `/wallet/v2`       | API-issued JWT plus the `treetracker-api-key` header                |
+| `keycloak` | `/wallet/keycloak` | Keycloak access token verified against the realm's JWKS; no API key |
+
+The `master` branch is the legacy v1/v2 API. It verifies JWTs signed by the wallet
+API's configured `PRIVATE_KEY` and `PUBLIC_KEY` values and identifies the wallet
+directly from the token.
+
+The `keycloak` branch is used by the current wallet app. Keycloak handles login and
+issues the access token. The API verifies that token, reads the Keycloak account ID,
+and maps it to one or more wallets through `keycloak_account_id`.
+
+Both branches connect to the same PostgreSQL database. A schema, migration, or test
+data change made through one branch can therefore affect the other branch. Check the
+target branch before changing database behavior.
+
+You can identify the deployed variant with unauthenticated requests:
+
+```bash
+curl -i https://dev-k8s.treetracker.org/wallet/v2/wallets
+# master: requires the treetracker-api-key header
+
+curl -i https://dev-k8s.treetracker.org/wallet/keycloak/wallets
+# keycloak: requires a Keycloak bearer token
+```
+
+Based on the current deployment setup, new web-wallet-app features and fixes should
+normally branch from `keycloak` and target `keycloak`. Changes specifically intended
+for the legacy API should target `master`.
+
+NB: Confirm the target branch with maintainers
+before starting work, especially for changes affecting shared database tables or
+migrations, and review compatibility with both variants.
 
 # Keycloak and Access Key Setup
-
-
 
 ## Overview
 
 Keycloak is used for authentication and authorization in this project. For an excellent introduction to Keycloak, watch this video: https://www.youtube.com/watch?v=fvxQ8bW0vO8
 
-
-
 ## Development Environment
+
 - Contact the admin team for login credentials
 
 ## Generate an access token using curl:
@@ -204,7 +241,6 @@ curl --location 'https://dev-k8s.treetracker.org/keycloak/realms/treetracker/pro
 --data-urlencode 'password=get-from-admin' \
 
 ```
-
 
 ### Running Scripts
 
