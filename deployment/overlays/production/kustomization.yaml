@@ -1,7 +1,9 @@
-patchesStrategicMerge:
-  - mapping.yaml
-bases:
-  - ../../base
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 resources:
+  - ../../base
   # Cluster-specific: the encrypted ACTION_TOKEN_SECRET (see deployment/README.md)
   - treetracker-wallet-action-token-sealed-secret.yaml
+patches:
+  - path: mapping.yaml
+  - path: deployment.yaml
