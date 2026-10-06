@@ -24,6 +24,7 @@ EventEnums.TRUST = {
 
 EventEnums.WALLET = {
   wallet_created: 'wallet_created',
+  keycloak_account_bound: 'keycloak_account_bound',
 };
 
 module.exports = EventEnums;

@@ -245,6 +245,35 @@ class WalletService {
     return this._wallet.getAllWalletsAdmin(options);
   }
 
+  async getWalletAdmin(walletId) {
+    const wallet = await this._wallet.getById(walletId);
+    delete wallet.password;
+    delete wallet.salt;
+    return wallet;
+  }
+
+  async bindKeycloakAccount(walletId, keycloakAccountId) {
+    const wallet = await this.getWalletAdmin(walletId);
+
+    const updated = await this._wallet.updateWallet({
+      id: walletId,
+      keycloak_account_id: keycloakAccountId,
+    });
+
+    await this._event.logEvent({
+      wallet_id: walletId,
+      type: EventEnums.WALLET.keycloak_account_bound,
+      payload: {
+        previous_keycloak_account_id: wallet.keycloak_account_id,
+        keycloak_account_id: keycloakAccountId,
+      },
+    });
+
+    delete updated.password;
+    delete updated.salt;
+    return updated;
+  }
+
   async batchCreateWallet(
     sender_wallet,
     token_transfer_amount_default,

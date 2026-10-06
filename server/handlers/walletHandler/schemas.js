@@ -34,6 +34,10 @@ const walletIdParamSchema = Joi.object({
   wallet_id: Joi.string().uuid().required(),
 });
 
+const walletKeycloakAccountPostSchema = Joi.object({
+  keycloak_account_id: Joi.string().uuid().required(),
+});
+
 const walletGetTrustRelationshipsSchema = Joi.object({
   state: Joi.string().valid(
     ...Object.values(TrustRelationshipEnums.ENTITY_TRUST_STATE_TYPE),
@@ -113,6 +117,7 @@ module.exports = {
   walletGetQuerySchema,
   walletGetAdminQuerySchema,
   walletIdParamSchema,
+  walletKeycloakAccountPostSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
   walletPatchSchema,
