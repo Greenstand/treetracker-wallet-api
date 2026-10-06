@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: treetracker-wallet-api-keycloak
+spec:
+  template:
+    spec:
+      containers:
+        - name: treetracker-wallet-api-keycloak
+          env:
+            - name: NODE_LOG_LEVEL
+              value: info
+            # Welcome gift on the user's first wallet: 1 token from the Greenstand prod wallet.
+            # The base value is the dev sender wallet, which does not exist in prod.
+            - name: SENDER_WALLET_ID
+              value: 1ab8fd0f-415a-4105-bb46-03655ab7f356
+            - name: REGISTER_REWARD_TOKEN_COUNT
+              value: "1"
