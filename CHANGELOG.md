@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.43](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.42...v1.44.0-keycloak.43) (2026-10-06)
+
+
+### Bug Fixes
+
+* **deploy:** production overlay for the wallet app release ([#609](https://github.com/Greenstand/treetracker-wallet-api/issues/609)) ([40eda7b](https://github.com/Greenstand/treetracker-wallet-api/commit/40eda7bd8603aca195a26312bad5973a5cf86a2b))
+
 # [1.44.0-keycloak.42](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.41...v1.44.0-keycloak.42) (2026-10-01)
 
 
