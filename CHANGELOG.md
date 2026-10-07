@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.44](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.43...v1.44.0-keycloak.44) (2026-10-07)
+
+
+### Features
+
+* **admin:** bind a keycloak account to an existing wallet ([bfacd1b](https://github.com/Greenstand/treetracker-wallet-api/commit/bfacd1b19832eca53388d65c2db6257744a3f64f)), closes [#590](https://github.com/Greenstand/treetracker-wallet-api/issues/590)
+
 # [1.44.0-keycloak.43](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.42...v1.44.0-keycloak.43) (2026-10-06)
 
 
