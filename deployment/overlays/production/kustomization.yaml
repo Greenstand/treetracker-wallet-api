@@ -4,6 +4,8 @@ resources:
   - ../../base
   # Cluster-specific: the encrypted ACTION_TOKEN_SECRET (see deployment/README.md)
   - treetracker-wallet-action-token-sealed-secret.yaml
+  # Cluster-specific: S3 credentials of IAM user svc-wallet-api-prod for bucket treetracker-api-wallet-prod
+  - aws-s3-sealed-secret.yaml
 patches:
   - path: mapping.yaml
   - path: deployment.yaml
