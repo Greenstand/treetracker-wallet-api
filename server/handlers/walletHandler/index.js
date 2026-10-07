@@ -10,6 +10,7 @@ const {
   walletGetQuerySchema,
   walletGetAdminQuerySchema,
   walletIdParamSchema,
+  walletKeycloakAccountPostSchema,
   walletGetTrustRelationshipsSchema,
   walletPostSchema,
   walletPatchSchema,
@@ -315,6 +316,33 @@ const walletGetAdmin = async (req, res) => {
   res.status(200).json({ total: count, query: validatedQuery, wallets });
 };
 
+const walletSingleGetAdmin = async (req, res) => {
+  const { wallet_id } = await walletIdParamSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+
+  const wallet = await new WalletService().getWalletAdmin(wallet_id);
+
+  res.status(200).json(wallet);
+};
+
+const walletKeycloakAccountPost = async (req, res) => {
+  const { wallet_id } = await walletIdParamSchema.validateAsync(req.params, {
+    abortEarly: false,
+  });
+  const { keycloak_account_id } =
+    await walletKeycloakAccountPostSchema.validateAsync(req.body, {
+      abortEarly: false,
+    });
+
+  const wallet = await new WalletService().bindKeycloakAccount(
+    wallet_id,
+    keycloak_account_id,
+  );
+
+  res.status(200).json(wallet);
+};
+
 module.exports = {
   walletPost,
   walletPatch,
@@ -322,6 +350,8 @@ module.exports = {
   walletGet,
   walletGetAdmin,
   walletSingleGet,
+  walletSingleGetAdmin,
+  walletKeycloakAccountPost,
   walletBatchCreate,
   walletBatchTransfer,
 };

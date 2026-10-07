@@ -1,0 +1,1 @@
+-- Postgres cannot drop a value from an enum type, so this is irreversible.
