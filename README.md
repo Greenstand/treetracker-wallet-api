@@ -624,6 +624,18 @@ Any developers joining the project should feel free to review any outstanding pu
 
 When you are ready to submit a pull request, please rebase your branch off of the shared master branch again to integrate any new updates in the codebase before submitting.
 
+# CI releases
+
+The development workflow runs semantic-release before building an image. If no
+release is published, Docker build/push, development deployment, and post-deploy
+end-to-end tests are skipped. When a release is published, these jobs check out
+its Git tag and use its version for the Docker image tag.
+
+The manual v1.10 patch workflow also builds and uploads an image tag only after a
+release is published. It runs from master and checks out v1.10 for the release,
+adding the release-output plugin to that branch's existing configuration.
+Manual test and production deployment workflows can still deploy an existing tag.
+
 # How to patch v1.10.x
 
 Now the online version of wallet API is v1.10.x, to patch this version:
@@ -631,7 +643,7 @@ Now the online version of wallet API is v1.10.x, to patch this version:
 1. Checkout branch: v1.10
 2. Do the work, commit, NOTE, just commit with comment `fix:` rather than `feat`
 3. Raise PR against v1.10
-4. Run action: Patch v1.10.x and Release (NOTE, choose running on branch v1.10)
+4. Run action: Patch v1.10.x and Release (NOTE, choose running on branch master; the workflow releases v1.10)
 5. Check if new tag with name v1.10.x created
 6. Run action: Deploy to Production (NOTE, choose running on branch v1.10, and the tag name just created)
 7. Check the online version, it should be the one you released.
