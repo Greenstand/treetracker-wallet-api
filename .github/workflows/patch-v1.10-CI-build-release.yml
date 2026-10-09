@@ -2,7 +2,7 @@
 name: Patch v1.10.x and Release
 on:
   workflow_dispatch:
-  
+
 env:
   project-directory: ./
 
@@ -28,7 +28,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-        # just care about the v1.10.x version, this is the current online version
+      # just care about the v1.10.x version, this is the current online version
       - uses: actions/checkout@v2
         with:
           ref: v1.10
@@ -67,52 +67,89 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@postgres/postgres
           CI: true
   release:
-    name: Release and Build
+    name: Release v1.10
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      new-release-published: ${{ steps.semantic-release.outputs.new-release-published }}
+      new-release-version: ${{ steps.semantic-release.outputs.new-release-version }}
+      new-release-git-tag: ${{ steps.semantic-release.outputs.new-release-git-tag }}
     steps:
-    - uses: actions/checkout@v2
-      # just care about the v1.10.x version, this is the current online version
-      with:
-        ref: v1.10
-    - name: Use Node.js 14.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: '14.x'
-    - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
-    - run: semantic-release --branches v1.10
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: npm clean install
-      run: npm ci
-      working-directory: ${{ env.project-directory }}
-    - name: get-npm-version
-      id: package-version
-      uses: martinbeentjes/npm-get-version-action@master
-      with:
-        path: ./
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
-    - name: Login to DockerHub
-      uses: docker/login-action@v1 
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build snapshot with git sha and push on merge
-      id: docker_build_snapshot_merge
-      uses: docker/build-push-action@v2
-      with:
-        context: ./
-        file: ./Dockerfile
-        push: true
-        tags: greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }}
-    - shell: bash
-      run: |
-        echo '${{ steps.package-version.outputs.current-version }}' > image-tag
-    - name: persist tag name
-      uses: actions/upload-artifact@v1
-      with:
-        name: image-tag-${{github.sha}}
-        path: image-tag
+      - uses: actions/checkout@v4
+        with:
+          ref: v1.10
+          fetch-depth: 0
+      - name: Use Node.js LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+      - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
+      # The maintenance branch does not inherit master's release-output plugin.
+      # Copy only that plugin from the workflow revision, preserving its config.
+      - name: Enable release outputs on the maintenance branch
+        env:
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const { execFileSync } = require('child_process');
+          const workflowConfig = JSON.parse(execFileSync('git', ['show', `${process.env.WORKFLOW_SHA}:.releaserc`], { encoding: 'utf8' }));
+          const outputPlugin = workflowConfig.plugins.find(plugin => Array.isArray(plugin) && plugin[0] === '@semantic-release/exec');
+          if (!outputPlugin) throw new Error('Release-output plugin is missing from the workflow revision');
+          const config = JSON.parse(fs.readFileSync('.releaserc', 'utf8'));
+          config.plugins = config.plugins.filter(plugin => (Array.isArray(plugin) ? plugin[0] : plugin) !== '@semantic-release/exec');
+          config.plugins.push(outputPlugin);
+          fs.writeFileSync('.releaserc', `${JSON.stringify(config, null, 2)}\n`);
+          NODE
+      - name: Run semantic-release
+        id: semantic-release
+        # A dispatch from master still releases the checked-out v1.10 branch.
+        run: env GITHUB_REF=refs/heads/v1.10 semantic-release --branches v1.10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: Build and push v1.10 release image
+    needs: release
+    if: needs.release.outputs.new-release-published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.new-release-git-tag }}
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14.x'
+      - name: npm clean install
+        run: npm ci
+        working-directory: ${{ env.project-directory }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push release image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags: greenstand/treetracker-wallet-api:${{ needs.release.outputs.new-release-version }}
+      - name: Write image tag
+        env:
+          IMAGE_TAG: ${{ needs.release.outputs.new-release-version }}
+        run: printf '%s\n' "$IMAGE_TAG" > image-tag
+      - name: Persist tag name
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-tag-${{ github.sha }}
+          path: image-tag

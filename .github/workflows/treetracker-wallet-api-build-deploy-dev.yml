@@ -12,34 +12,54 @@ env:
   project-directory: ./
 
 jobs:
-  build:
-    name: Release and Build
+  release:
+    name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     if: |
       !contains(github.event.head_commit.message, 'skip-ci') &&
       github.event_name == 'push' &&
       github.repository == 'Greenstand/treetracker-wallet-api'
+    outputs:
+      new-release-published: ${{ steps.semantic-release.outputs.new-release-published }}
+      new-release-version: ${{ steps.semantic-release.outputs.new-release-version }}
+      new-release-git-tag: ${{ steps.semantic-release.outputs.new-release-git-tag }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use Node.js LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
+      - name: Run semantic-release
+        id: semantic-release
+        run: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: Build and push release image
+    runs-on: ubuntu-latest
+    needs: release
+    if: needs.release.outputs.new-release-published == 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.new-release-git-tag }}
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
 
-      - run: npm i -g semantic-release @semantic-release/{git,exec,changelog}
-      - run: semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: npm clean install
         run: npm ci
         working-directory: ${{ env.project-directory }}
-
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@master
-        with:
-          path: ./
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -60,50 +80,27 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: greenstand/treetracker-wallet-api:${{ steps.package-version.outputs.current-version }}
-
-      - shell: bash
-        run: |
-          echo '${{ steps.package-version.outputs.current-version }}' > image-tag
-
-      - name: persist tag name
-        uses: actions/upload-artifact@v4
-        with:
-          name: image-tag-${{github.sha}}
-          path: image-tag
+          tags: greenstand/treetracker-wallet-api:${{ needs.release.outputs.new-release-version }}
 
   deploy:
     name: Deploy latest to development environment
     runs-on: ubuntu-latest
-    needs: build
-    if: |
-      !contains(github.event.head_commit.message, 'skip-ci') &&
-      github.event_name == 'push' &&
-      github.repository == 'Greenstand/${{ github.event.repository.name }}'
+    needs: [release, build]
+    if: needs.release.outputs.new-release-published == 'true'
     steps:
       - uses: actions/checkout@v4
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@master
         with:
-          path: ./
-
-      - name: Download tag name
-        uses: actions/download-artifact@v4
-        with:
-          name: image-tag-${{github.sha}}
-
-      - name: Set image tag name
-        id: image-tag-name
-        run: |
-          value=`cat image-tag`
-          echo "::set-output name=image-tag-name::$value"
+          ref: ${{ needs.release.outputs.new-release-git-tag }}
 
       - name: Install kustomize
         run: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
 
       - name: Run kustomize
-        run: (cd deployment/overlays/development && ../../../kustomize edit set image greenstand/treetracker-wallet-api:${{ steps.image-tag-name.outputs.image-tag-name }} )
+        env:
+          IMAGE_TAG: ${{ needs.release.outputs.new-release-version }}
+        run: |
+          cd deployment/overlays/development
+          ../../../kustomize edit set image "greenstand/treetracker-wallet-api:${IMAGE_TAG}"
 
       - name: Install doctl for kubernetes
         uses: digitalocean/action-doctl@v2
@@ -124,12 +121,15 @@ jobs:
   test:
     name: End to End Test
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: [release, deploy]
+    if: needs.release.outputs.new-release-published == 'true'
     env:
       ENVIRONMENT: dev
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.new-release-git-tag }}
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
