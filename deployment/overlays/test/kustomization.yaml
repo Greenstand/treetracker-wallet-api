@@ -2,3 +2,4 @@ patchesStrategicMerge:
   - mapping.yaml
 resources:
   - ../../base
+  - treetracker-wallet-action-token-sealed-secret.yaml
