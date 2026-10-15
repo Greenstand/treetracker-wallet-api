@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.45](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.44...v1.44.0-keycloak.45) (2026-10-15)
+
+
+### Bug Fixes
+
+* add wallet action token secret for test ([a6b5a1d](https://github.com/Greenstand/treetracker-wallet-api/commit/a6b5a1dc9eacf15488df921739ed8907e01bf5cd))
+
 # [1.44.0-keycloak.44](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.43...v1.44.0-keycloak.44) (2026-10-07)
 
 
