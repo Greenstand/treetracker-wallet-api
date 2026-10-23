@@ -221,8 +221,6 @@ migrations, and review compatibility with both variants.
 
 # Keycloak Setup
 
-## Overview
-
 The `keycloak` branch uses Keycloak for authentication and authorization. The
 legacy `master` branch uses the API-issued JWT and API-key flow described in the
 [Branches and Authentication](#branches-and-authentication) section.
