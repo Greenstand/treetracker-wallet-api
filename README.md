@@ -178,33 +178,89 @@ If you have not installed db-migrate globally, while in the database folder, you
 
 See here to learn more about db-migrate: https://db-migrate.readthedocs.io/en/latest/
 
+# Branches and Authentication
 
-# Keycloak and Access Key Setup
+This repository currently maintains two API variants. They use the same codebase and
+database, but they authenticate requests differently and are deployed under different
+paths.
 
+| Branch     | Deployed API path  | Authentication                                                      |
+| ---------- | ------------------ | ------------------------------------------------------------------- |
+| `master`   | `/wallet/v2`       | API-issued JWT plus the `treetracker-api-key` header                |
+| `keycloak` | `/wallet/keycloak` | Keycloak access token verified against the realm's JWKS; no API key |
 
+The `master` branch is the legacy v1/v2 API. It verifies JWTs signed by the wallet
+API's configured `PRIVATE_KEY` and `PUBLIC_KEY` values and identifies the wallet
+directly from the token.
 
-## Overview
+The `keycloak` branch is used by the current wallet app. Keycloak handles login and
+issues the access token. The API verifies that token, reads the Keycloak account ID,
+and maps it to one or more wallets through `keycloak_account_id`.
 
-Keycloak is used for authentication and authorization in this project. For an excellent introduction to Keycloak, watch this video: https://www.youtube.com/watch?v=fvxQ8bW0vO8
+Both branches connect to the same PostgreSQL database. A schema, migration, or test
+data change made through one branch can therefore affect the other branch. Check the
+target branch before changing database behavior.
 
-
-
-## Development Environment
-- Contact the admin team for login credentials
-
-## Generate an access token using curl:
+You can identify the deployed variant with unauthenticated requests:
 
 ```bash
+curl -i https://dev-k8s.treetracker.org/wallet/v2/wallets
+# master: requires the treetracker-api-key header
 
-curl --location 'https://dev-k8s.treetracker.org/keycloak/realms/treetracker/protocol/openid-connect/token' \
---header 'Content-Type: application/x-www-form-urlencoded' \
---data-urlencode 'client_id=get-from-admin' \
---data-urlencode 'grant_type=password' \
---data-urlencode 'username=get-from-admin' \
---data-urlencode 'password=get-from-admin' \
-
+curl -i https://dev-k8s.treetracker.org/wallet/keycloak/wallets
+# keycloak: requires a Keycloak bearer token
 ```
 
+Based on the current deployment setup, new web-wallet-app features and fixes should
+normally branch from `keycloak` and target `keycloak`. Changes specifically intended
+for the legacy API should target `master`.
+
+NB: Confirm the target branch with maintainers
+before starting work, especially for changes affecting shared database tables or
+migrations, and review compatibility with both variants.
+
+# Keycloak Setup
+
+The `keycloak` branch uses Keycloak for authentication and authorization. The
+legacy `master` branch uses the API-issued JWT and API-key flow described in the
+[Branches and Authentication](#branches-and-authentication) section.
+
+The development Keycloak issuer is:
+
+```text
+https://dev-k8s.treetracker.org/keycloak/realms/treetracker
+```
+
+Ask the maintainers for a development Keycloak username, password, and client
+ID. Do not commit these credentials to the repository.
+
+## Request a development access token
+
+Set the values supplied by the maintainers in your shell and request a token:
+
+```bash
+KEYCLOAK_CLIENT_ID="<client-id>"
+KEYCLOAK_USERNAME="<username>"
+KEYCLOAK_PASSWORD="<password>"
+
+curl --location \
+  "https://dev-k8s.treetracker.org/keycloak/realms/treetracker/protocol/openid-connect/token" \
+  --header "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "client_id=${KEYCLOAK_CLIENT_ID}" \
+  --data-urlencode "grant_type=password" \
+  --data-urlencode "username=${KEYCLOAK_USERNAME}" \
+  --data-urlencode "password=${KEYCLOAK_PASSWORD}"
+```
+
+Use the returned `access_token` as a bearer token when calling the Keycloak API:
+
+```http
+Authorization: Bearer <access-token>
+```
+
+The repository's Docker Compose configuration provides PostgreSQL for local
+API development. It does not provision a local Keycloak server; the commands
+above use the shared development Keycloak instance.
 
 ### Running Scripts
 
