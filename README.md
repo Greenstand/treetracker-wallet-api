@@ -219,28 +219,50 @@ NB: Confirm the target branch with maintainers
 before starting work, especially for changes affecting shared database tables or
 migrations, and review compatibility with both variants.
 
-# Keycloak and Access Key Setup
+# Keycloak Setup
 
 ## Overview
 
-Keycloak is used for authentication and authorization in this project. For an excellent introduction to Keycloak, watch this video: https://www.youtube.com/watch?v=fvxQ8bW0vO8
+The `keycloak` branch uses Keycloak for authentication and authorization. The
+legacy `master` branch uses the API-issued JWT and API-key flow described in the
+[Branches and Authentication](#branches-and-authentication) section.
 
-## Development Environment
+The development Keycloak issuer is:
 
-- Contact the admin team for login credentials
+```text
+https://dev-k8s.treetracker.org/keycloak/realms/treetracker
+```
 
-## Generate an access token using curl:
+Ask the maintainers for a development Keycloak username, password, and client
+ID. Do not commit these credentials to the repository.
+
+## Request a development access token
+
+Set the values supplied by the maintainers in your shell and request a token:
 
 ```bash
+KEYCLOAK_CLIENT_ID="<client-id>"
+KEYCLOAK_USERNAME="<username>"
+KEYCLOAK_PASSWORD="<password>"
 
-curl --location 'https://dev-k8s.treetracker.org/keycloak/realms/treetracker/protocol/openid-connect/token' \
---header 'Content-Type: application/x-www-form-urlencoded' \
---data-urlencode 'client_id=get-from-admin' \
---data-urlencode 'grant_type=password' \
---data-urlencode 'username=get-from-admin' \
---data-urlencode 'password=get-from-admin' \
-
+curl --location \
+  "https://dev-k8s.treetracker.org/keycloak/realms/treetracker/protocol/openid-connect/token" \
+  --header "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "client_id=${KEYCLOAK_CLIENT_ID}" \
+  --data-urlencode "grant_type=password" \
+  --data-urlencode "username=${KEYCLOAK_USERNAME}" \
+  --data-urlencode "password=${KEYCLOAK_PASSWORD}"
 ```
+
+Use the returned `access_token` as a bearer token when calling the Keycloak API:
+
+```http
+Authorization: Bearer <access-token>
+```
+
+The repository's Docker Compose configuration provides PostgreSQL for local
+API development. It does not provision a local Keycloak server; the commands
+above use the shared development Keycloak instance.
 
 ### Running Scripts
 
