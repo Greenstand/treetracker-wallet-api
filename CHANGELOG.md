@@ -1,3 +1,10 @@
+# [1.44.0-keycloak.46](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.45...v1.44.0-keycloak.46) (2026-11-10)
+
+
+### Bug Fixes
+
+* **deploy:** allow the admin panel origin on the production wallet API ([#620](https://github.com/Greenstand/treetracker-wallet-api/issues/620)) ([532d901](https://github.com/Greenstand/treetracker-wallet-api/commit/532d901a734d700649429f8b32e222f4b5837405))
+
 # [1.44.0-keycloak.45](https://github.com/Greenstand/treetracker-wallet-api/compare/v1.44.0-keycloak.44...v1.44.0-keycloak.45) (2026-10-15)
 
 
