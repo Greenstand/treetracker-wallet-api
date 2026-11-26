@@ -401,22 +401,23 @@ describe('TrustService', () => {
     });
   });
 
-  describe('trustRelationshipGetById', async () => {
-    const trustRelationshipGetByIdStub = sinon
-      .stub(Trust.prototype, 'trustRelationshipGetById')
-      .resolves('trustRelationship');
+    it('trustRelationshipGetById', async () => {
+      const trustRelationshipGetByIdStub = sinon
+        .stub(Trust.prototype, 'getTrustRelationshipById')
+        .resolves('trustRelationship');
 
-    const trustRelationship = await trustService.trustRelationshipGetById({
-      walletId: 'walletId',
-      trustRelationshipId: 'id',
-    });
-
-    expect(trustRelationship).eql('trustRelationship');
-    expect(
-      trustRelationshipGetByIdStub.calledOnceWithExactly({
-        walletId: 'walletId',
+      const trustRelationship = await trustService.trustRelationshipGetById({
+        walletLoginId: 'walletId',
         trustRelationshipId: 'id',
-      }),
-    ).eql(true);
-  });
+      });
+
+      expect(trustRelationship).eql('trustRelationship');
+      expect(
+        trustRelationshipGetByIdStub.calledOnceWithExactly({
+          walletId: 'walletId',
+          trustRelationshipId: 'id',
+        }),
+      ).eql(true);
+    });
 });
+
