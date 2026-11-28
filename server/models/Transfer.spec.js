@@ -124,6 +124,10 @@ describe('Transfer Model', () => {
     const state = uuid();
     const walletId = uuid();
 
+    sinon
+      .stub(Wallet.prototype, 'getAllWallets')
+      .resolves({wallets: []});
+
     const getByFilterStub = sinon
       .stub(Transfer.prototype, 'getByFilter')
       .resolves({transfers:[{id: transferId}]});
